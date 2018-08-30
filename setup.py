@@ -16,15 +16,15 @@ requirements = [
 ]
 
 setup(
-    name='django-eth',
-    version='0.2.3',
+    name='gnosis-py',
+    version='0.1.0',
     packages=find_packages(),
     install_requires=requirements,
     include_package_data=True,
     license='MIT License',
-    description='Ethereum utilities for Django and Django Rest projects',
+    description='Gnosis libraries for Python Projects',
     long_description=README,
-    url='https://github.com/gnosis/django-eth',
+    url='https://github.com/gnosis/gnosis-py',
     author='Uxío',
     author_email='uxio@gnosis.pm',
     keywords=['ethereum', 'django', 'rest', 'gnosis'],

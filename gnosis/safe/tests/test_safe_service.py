@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 GAS_PRICE = settings.SAFE_GAS_PRICE
 
 
-class TestHelpers(TestCase, TestCaseWithSafeContractMixin):
+class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_safe_tests()
