@@ -6,8 +6,8 @@ from ethereum.transactions import secpk1n
 from faker import Factory as FakerFactory
 from faker import Faker
 
-from ..safe_service import SafeService
 from ..safe_creation_tx import SafeCreationTx
+from ..safe_service import SafeService
 
 fakerFactory = FakerFactory.create()
 faker = Faker()

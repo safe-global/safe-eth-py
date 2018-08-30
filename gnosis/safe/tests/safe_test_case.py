@@ -4,7 +4,6 @@ from ..contracts import get_safe_personal_contract
 from ..ethereum_service import EthereumService
 from ..safe_service import SafeService
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,4 +30,3 @@ class TestCaseWithSafeContractMixin:
         cls.safe_service.master_copy_address = cls.safe_personal_contract_address
         cls.safe_service.valid_master_copy_addresses = [cls.safe_personal_contract_address]
         cls.safe_personal_contract = get_safe_personal_contract(cls.w3, cls.safe_personal_contract_address)
-
