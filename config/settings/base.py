@@ -1,0 +1,2 @@
+INSTALLED_APPS = (
+)
