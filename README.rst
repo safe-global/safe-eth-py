@@ -5,16 +5,8 @@ Django Ethereum (gnosis-py)
 
 |travis| |coveralls| |python| |django| |pipy|
 
-Django ethereum is a set of helpers for working with
-ethereum using Django and Django Rest framework.
-
-It includes:
-
-- Basic serializers (signature, transaction)
-- Serializer fields (Ethereum address field, hexadecimal field)
-- Model fields (Ethereum address, Ethereum big integer field)
-- Signing messages
-- Utils for testing
+Gnosis-py includes a set of libraries to work with Gnosis projects.
+Currently `Gnosis Safe <https://github.com/gnosis/safe-contracts>`_ is supported.
 
 Quick start
 -----------
