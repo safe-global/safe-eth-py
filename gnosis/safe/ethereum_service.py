@@ -59,6 +59,9 @@ class EthereumService:
     def get_balance(self, address, block_identifier=None):
         return self.w3.eth.getBalance(address, block_identifier)
 
+    def get_transaction(self, tx_hash):
+        return self.w3.eth.getTransaction(tx_hash)
+
     def get_transaction_receipt(self, tx_hash, timeout=None):
         if not timeout:
             return self.w3.eth.getTransactionReceipt(tx_hash)
@@ -67,6 +70,9 @@ class EthereumService:
                 return self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
             except Timeout:
                 return None
+
+    def get_block(self, block_number, full_transactions=False):
+        return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
 
     def send_raw_transaction(self, raw_transaction):
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))

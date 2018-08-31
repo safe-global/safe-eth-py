@@ -10,7 +10,7 @@ from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,
                         get_paying_proxy_deployed_bytecode,
-                        get_safe_personal_contract)
+                        get_safe_personal_contract, get_safe_team_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
 
@@ -73,6 +73,24 @@ class SafeServiceProvider:
             del cls.instance
 
 
+class SafeTeamServiceProvider:
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            from django.conf import settings
+            ethereum_service = EthereumServiceProvider()
+            cls.instance = SafeTeamService(ethereum_service,
+                                           settings.SAFE_TEAM_CONTRACT_ADDRESS,
+                                           settings.SAFE_TEAM_VALID_CONTRACT_ADDRESSES,
+                                           settings.SAFE_TX_SENDER_PRIVATE_KEY,
+                                           settings.SAFE_FUNDER_PRIVATE_KEY)
+        return cls.instance
+
+    @classmethod
+    def del_singleton(cls):
+        if hasattr(cls, "instance"):
+            del cls.instance
+
+
 class SafeService:
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
@@ -89,6 +107,12 @@ class SafeService:
             self.funder_address = self.ethereum_service.private_key_to_address(self.funder_private_key)
         else:
             self.funder_address = None
+
+    def get_contract(self, safe_address=None):
+        if safe_address:
+            return get_safe_personal_contract(self.w3, address=safe_address)
+        else:
+            return get_safe_personal_contract(self.w3)
 
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int) -> SafeCreationTx:
         safe_creation_tx = SafeCreationTx(w3=self.w3,
@@ -111,7 +135,7 @@ class SafeService:
         """
         assert deployer_account or deployer_private_key
 
-        safe_personal_contract = get_safe_personal_contract(self.w3)
+        safe_personal_contract = self.get_contract()
         constructor = safe_personal_contract.constructor()
         gas = 5125602
 
@@ -168,9 +192,6 @@ class SafeService:
         proxy_code = get_paying_proxy_deployed_bytecode()
 
         return deployed_proxy_code == proxy_code
-
-    def get_contract(self, safe_address):
-        return get_safe_personal_contract(self.w3, address=safe_address)
 
     def get_gas_token(self):
         return NULL_ADDRESS
@@ -441,3 +462,42 @@ class SafeService:
         return (r.to_bytes(32, byteorder=byte_order) +
                 s.to_bytes(32, byteorder=byte_order) +
                 v.to_bytes(1, byteorder=byte_order))
+
+
+class SafeTeamService(SafeService):
+    def get_contract(self, safe_address=None):
+        if safe_address:
+            return get_safe_team_contract(self.w3, address=safe_address)
+        else:
+            return get_safe_team_contract(self.w3)
+
+    @staticmethod
+    def get_hash_for_safe_tx(safe_tx_typehash: str,
+                             safe_address: str,
+                             to: str,
+                             value: int,
+                             data: bytes,
+                             operation: int,
+                             nonce: int) -> HexBytes:
+
+        data = data or b''
+        to = to or NULL_ADDRESS
+
+        # Solidity: abi.encode(params)
+        encoded_transaction_params = eth_abi.encode_abi(
+            ['bytes32', 'address', 'uint256', 'bytes32', 'uint', 'uint256'],
+            [HexBytes(safe_tx_typehash), to, value, sha3(data), operation, nonce]
+        )
+
+        # Solidity: keccak256(seed)
+        safe_transaction_hash = sha3(encoded_transaction_params)
+
+        # Solidity: Keccak256(abi.encodePacked(params))
+        safe_final_transaction_hash = sha3(
+            bytes.fromhex('19') +
+            bytes.fromhex('01') +
+            HexBytes(safe_address) +
+            safe_transaction_hash
+        )
+
+        return HexBytes(safe_final_transaction_hash)
