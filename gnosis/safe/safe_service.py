@@ -1,10 +1,10 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 import eth_abi
 from django_eth.constants import NULL_ADDRESS
-from ethereum.utils import sha3
+from ethereum.utils import check_checksum, sha3
 from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
 
@@ -46,6 +46,10 @@ class SignatureNotProvidedByOwner(SafeServiceException):
 
 
 class CannotPayGasWithEther(SafeServiceException):
+    pass
+
+
+class InvalidChecksumAddress(SafeServiceException):
     pass
 
 
@@ -94,13 +98,23 @@ class SafeTeamServiceProvider:
 class SafeService:
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
-                 valid_master_copy_addresses: List[str],
+                 valid_master_copy_addresses: Set[str],
                  tx_sender_private_key: str=None,
                  funder_private_key: str=None):
         self.ethereum_service = ethereum_service
         self.w3 = self.ethereum_service.w3
+
+        for address in [master_copy_address] + list(valid_master_copy_addresses):
+            if address and not check_checksum(address):
+                raise InvalidChecksumAddress
+
         self.master_copy_address = master_copy_address
-        self.valid_master_copy_addresses = valid_master_copy_addresses
+        self.valid_master_copy_addresses = set(valid_master_copy_addresses)
+        if master_copy_address:
+            self.valid_master_copy_addresses.add(master_copy_address)
+        else:
+            logger.warning('Master copy address for SafeService is None')
+
         self.tx_sender_private_key = tx_sender_private_key
         self.funder_private_key = funder_private_key
         if self.funder_private_key:
