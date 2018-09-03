@@ -230,7 +230,7 @@ class SafeService:
 
             # Estimated gas in hex must be 64
             if len(estimated_gas_hex) != 64:
-                logger.warning('Error estimating gas, returned value is %s', result)
+                logger.warning('Exception estimating gas, returned value is %s', result)
                 raise SafeGasEstimationError(result)
 
             estimated_gas = int(estimated_gas_hex, 16)
@@ -292,7 +292,8 @@ class SafeService:
 
         return data_gas
 
-    def check_funds_for_tx_gas(self, safe_address: str, gas: int, data_gas: int, gas_price: int, gas_token: str) -> bool:
+    def check_funds_for_tx_gas(self, safe_address: str, gas: int, data_gas: int, gas_price: int, gas_token: str
+                               )-> bool:
         """
         Check safe has enough funds to pay for a tx
         :param safe_address: Address of the safe
@@ -358,15 +359,15 @@ class SafeService:
                 gas_token,
                 signatures,
             ).call(block_identifier='pending')
+
+            if not success:
+                raise InvalidMultisigTx
         except BadFunctionCallOutput as exc:
             str_exc = str(exc)
             if 'Signature not provided by owner' in str_exc:
                 raise SignatureNotProvidedByOwner
             elif 'Could not pay gas costs with ether' in str_exc:
                 raise CannotPayGasWithEther
-
-        if not success:
-            raise InvalidMultisigTx
 
         tx_sender_address = self.ethereum_service.private_key_to_address(tx_sender_private_key)
 
