@@ -3,7 +3,7 @@ from logging import getLogger
 from typing import List, Set, Tuple
 
 import eth_abi
-from py_eth_sig_utils import encodeTypedData
+from py_eth_sig_utils import encode_typed_data
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import check_checksum, sha3
 from hexbytes import HexBytes
@@ -487,7 +487,7 @@ class SafeService:
                 }, 
             }
         
-        return HexBytes(encodeTypedData(data))
+        return HexBytes(encode_typed_data(data))
 
     def check_hash(self, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
         for i, owner in enumerate(sorted(owners, key=lambda x: x.lower())):
