@@ -14,9 +14,8 @@ CreateAndAddModules: 0x8513246e65c474ad05e88ae8ca7c5a6b04246550
 MultiSend: 0x7830ceb6f513568c05bd995d0767cceea2ef9662
 """
 
-GNOSIS_SAFE_TEAM_INTERFACE = load_contract_interface('GnosisSafeTeamEdition.json')
 GNOSIS_SAFE_OWNER_MANAGER_INTERFACE = load_contract_interface('GnosisSafeOwnerManager.json')
-GNOSIS_SAFE_PERSONAL_INTERFACE = load_contract_interface('GnosisSafePersonalEdition.json')
+GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
 
 
@@ -28,20 +27,8 @@ def get_safe_personal_contract(w3: Web3, address=None):
     :return: Safe Contract
     """
     return w3.eth.contract(address,
-                           abi=GNOSIS_SAFE_PERSONAL_INTERFACE['abi'],
-                           bytecode=GNOSIS_SAFE_PERSONAL_INTERFACE['bytecode'])
-
-
-def get_safe_team_contract(w3: Web3, address=None):
-    """
-    Get Safe Team Contract. It should be used to access Safe methods on Proxy contracts.
-    :param w3: Web3 instance
-    :param address: address of the safe contract/proxy contract
-    :return: Safe Contract
-    """
-    return w3.eth.contract(address,
-                           abi=GNOSIS_SAFE_TEAM_INTERFACE['abi'],
-                           bytecode=GNOSIS_SAFE_TEAM_INTERFACE['bytecode'])
+                           abi=GNOSIS_SAFE_INTERFACE['abi'],
+                           bytecode=GNOSIS_SAFE_INTERFACE['bytecode'])
 
 
 def get_safe_owner_manager_contract(w3: Web3, address=None):
