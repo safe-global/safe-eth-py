@@ -56,6 +56,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         data_gas = 300000
         gas_price = 1
         gas_token = NULL_ADDRESS
+        refund_receiver = NULL_ADDRESS
         nonce = self.safe_service.retrieve_nonce(my_safe_address)
         safe_multisig_tx_hash = self.safe_service.get_hash_for_safe_tx(safe_address=my_safe_address,
                                                                        to=to,
@@ -66,6 +67,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                                                                        data_gas=data_gas,
                                                                        gas_price=gas_price,
                                                                        gas_token=gas_token,
+                                                                       refund_receiver=refund_receiver,
                                                                        nonce=nonce)
 
         # Just to make sure we are not miscalculating tx_hash
@@ -78,6 +80,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
             data_gas,
             gas_price,
             gas_token,
+            refund_receiver,
             nonce).call()
 
         self.assertEqual(safe_multisig_tx_hash, contract_multisig_tx_hash)
@@ -115,6 +118,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                 data_gas,
                 gas_price,
                 gas_token,
+                refund_receiver,
                 signatures_packed,
                 tx_sender_private_key=keys[0],
                 tx_gas_price=GAS_PRICE,
@@ -156,6 +160,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
             data_gas,
             gas_price,
             gas_token,
+            refund_receiver,
             signatures_packed,
             tx_sender_private_key=keys[0],
             tx_gas_price=GAS_PRICE,
@@ -205,7 +210,8 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         self.assertGreater(data_gas, 0)
 
     def test_hash_safe_multisig_tx(self):
-        expected_hash = HexBytes('0x7df475fa56c7e4bd8e4baa7193afed78fd2f9b7f8d827a9b659ce0441bcc0702')
+
+        expected_hash = HexBytes('0xc9d69a2350aede7978fdee58e702647e4bbdc82168577aa4a43b66ad815c6d1a')
         tx_hash = self.safe_service.get_hash_for_safe_tx('0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
                                                          '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
                                                          5000000,
@@ -215,10 +221,11 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                                                          100,
                                                          10000,
                                                          '0x' + '0' * 40,
+                                                         '0x' + '0' * 40,
                                                          67)
         self.assertEqual(expected_hash, tx_hash)
 
-        expected_hash = HexBytes('0x2e6c07d4b8b0ebb63d8b0988aa1b65f358e69557cd772d6772fa150f32e76f37')
+        expected_hash = HexBytes('0x8ca8db91d72b379193f6e229eb2dff0d0621b6ef452d90638ee3206e9b7349b3')
         tx_hash = self.safe_service.get_hash_for_safe_tx('0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
                                                          '0x' + '0' * 40,
                                                          80000000,
@@ -228,6 +235,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                                                          773,
                                                          22000000,
                                                          '0x' + '0' * 40,
+                                                         '0x' + '0' * 40,
                                                          257000)
         self.assertEqual(expected_hash, tx_hash)
 
@@ -235,24 +243,26 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         expected_hash = self.safe_personal_contract.functions.getTransactionHash(
             '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
             5212459,
-            HexBytes('0x00'),
+            HexBytes(0x00),
             1,
             123456,
             122,
             12345,
             '0x' + '2' * 40,
+            '0x' + '2' * 40,
             10789).call()
         tx_hash = self.safe_service.get_hash_for_safe_tx(self.safe_personal_contract_address,
                                                          '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
                                                          5212459,
-                                                         HexBytes('0x00'),
+                                                         HexBytes(0x00),
                                                          1,
                                                          123456,
                                                          122,
                                                          12345,
                                                          '0x' + '2' * 40,
+                                                         '0x' + '2' * 40,
                                                          10789)
-        self.assertEqual(expected_hash, tx_hash)
+        self.assertEqual(HexBytes(expected_hash), tx_hash)
 
     def test_provider_singleton(self):
         safe_service1 = SafeServiceProvider()
