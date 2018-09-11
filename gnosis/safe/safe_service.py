@@ -30,6 +30,10 @@ class NotEnoughFundsForMultisigTx(SafeServiceException):
     pass
 
 
+class InvalidRefundReceiver(SafeServiceException):
+    pass
+
+
 class InvalidProxyContract(SafeServiceException):
     pass
 
@@ -352,6 +356,12 @@ class SafeService:
         balance = self.ethereum_service.get_balance(safe_address)
         return balance >= ((gas + data_gas) * gas_price)
 
+    def check_refund_receiver(self, refund_receiver: str) -> bool:
+        # We only support tx.origin as refund receiver right now
+        # In the future we can also accept transactions where it is set to our service account to receive the payments.
+        # This would prevent that anybody can front-run our service
+        return refund_receiver == NULL_ADDRESS
+
     def send_multisig_tx(self,
                          safe_address: str,
                          to: str,
@@ -373,7 +383,9 @@ class SafeService:
         refund_receiver = refund_receiver or NULL_ADDRESS
         to = to or NULL_ADDRESS
 
-        #TODO: refund_receiver should be 0x0 or our service
+        # Make sure refund receiver is set to 0x0 so that the contract refunds the gas costs to tx.origin
+        if not self.check_refund_receiver(refund_receiver):
+            raise InvalidRefundReceiver(refund_receiver)
 
         # Make sure proxy contract is ours
         if not self.check_proxy_code(safe_address):
