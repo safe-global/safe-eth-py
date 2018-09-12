@@ -3,17 +3,17 @@ from logging import getLogger
 from typing import List, Set, Tuple
 
 import eth_abi
-from py_eth_sig_utils import encode_typed_data
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import check_checksum, sha3
 from hexbytes import HexBytes
+from py_eth_sig_utils import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,
                         get_paying_proxy_deployed_bytecode,
                         get_safe_personal_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
-from .safe_creation_tx import SafeCreationTx 
+from .safe_creation_tx import SafeCreationTx
 
 logger = getLogger(__name__)
 
@@ -175,7 +175,7 @@ class SafeService:
         master_safe = self.get_contract(contract_address)
         setup_function = master_safe.functions.setup(
             # We use 2 owners that nobody controls for the master copy
-            ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"], 
+            ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"],
             # Maximum security
             2,
             NULL_ADDRESS,
@@ -188,7 +188,7 @@ class SafeService:
             tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
         else:
             tx_hash = setup_function.transact({'from': deployer_account})
-        
+
         tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
@@ -458,14 +458,14 @@ class SafeService:
                              operation: int, safe_tx_gas: int, data_gas: int, gas_price: int,
                              gas_token: str, refund_receiver: str, nonce: int) -> HexBytes:
 
-        data = data.hex() or b''
+        data = data.hex() if data else ''
         gas_token = gas_token or NULL_ADDRESS
         refund_receiver = refund_receiver or NULL_ADDRESS
         to = to or NULL_ADDRESS
 
-        data = { 
-                "types": { 
-                    "EIP712Domain": [ 
+        data = {
+                "types": {
+                    "EIP712Domain": [
                         { "name": 'verifyingContract', "type": 'address' },
                     ],
                     "SafeTx": [
@@ -496,9 +496,9 @@ class SafeService:
                     "gasToken": gas_token,
                     "refundReceiver": refund_receiver,
                     "nonce": nonce,
-                }, 
+                },
             }
-        
+
         return HexBytes(encode_typed_data(data))
 
     def check_hash(self, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:

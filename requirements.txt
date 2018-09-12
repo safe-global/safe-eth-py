@@ -6,4 +6,4 @@ faker==0.8.17
 hexbytes==0.1.0
 psycopg2-binary==2.7.5
 py-eth-sig-utils==0.2.0
-web3[tester]==4.6.0
+web3[tester]==4.7.1
