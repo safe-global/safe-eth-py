@@ -12,7 +12,7 @@ from ethereum.utils import checksum_encode, mk_contract_address
 from hexbytes import HexBytes
 from web3 import Web3
 
-from .contracts import get_paying_proxy_contract, get_safe_personal_contract
+from .contracts import get_paying_proxy_contract, get_safe_contract
 
 logger = getLogger(__name__)
 
@@ -31,7 +31,7 @@ class SafeCreationTx:
         self.funder = funder
         self.payment_token = payment_token
 
-        self.gnosis_safe_contract = get_safe_personal_contract(w3, master_copy)
+        self.gnosis_safe_contract = get_safe_contract(w3, master_copy)
         self.paying_proxy_contract = get_paying_proxy_contract(w3)
 
         safe_tx = self.get_initial_setup_safe_tx(owners, threshold)

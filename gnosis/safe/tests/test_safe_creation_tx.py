@@ -5,7 +5,7 @@ from django.test import TestCase
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import checksum_encode, ecrecover_to_pub, sha3
 
-from ..contracts import get_safe_personal_contract
+from ..contracts import get_safe_contract
 from ..safe_creation_tx import SafeCreationTx
 from .factories import generate_valid_s
 from .test_safe_service import TestCaseWithSafeContractMixin
@@ -56,7 +56,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
         self.assertEqual(tx_receipt.contractAddress, safe_builder.safe_address)
 
-        deployed_safe_proxy_contract = get_safe_personal_contract(w3, tx_receipt.contractAddress)
+        deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
 
         logger.info("Deployer account has still %d gwei left (will be lost)",
                     w3.fromWei(w3.eth.getBalance(safe_builder.deployer_address), 'gwei'))
@@ -115,7 +115,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
         logger.info("Deployer account has still %d gwei left (will be lost)",
                     w3.fromWei(w3.eth.getBalance(safe_builder.deployer_address), 'gwei'))
 
-        deployed_safe_proxy_contract = get_safe_personal_contract(w3, tx_receipt.contractAddress)
+        deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
 
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)

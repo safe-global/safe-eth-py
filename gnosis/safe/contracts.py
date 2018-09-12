@@ -7,8 +7,7 @@ from .abis import load_contract_interface
 Rinkeby contracts https://github.com/gnosis/safe-contracts/releases/tag/v0.0.1
 -----------------
 ProxyFactory: 0x075794c3797bb4cfea74a75d1aae636036af37cd
-GnosisSafePersonalEdition: 0x44E7f5855A77FE1793A96BE8a1c9C3Eaf47E9D09
-GnosisSafeTeamEdition: 0x607c2ea232621ad2221201511f7982d870f1afe5
+GnosisSafe: 0xC65f75fbFFb1628293F9320168500ed336CF3E24
 DailyLimitModule: 0xac94a500b707fd5c4cdb89777f29b3b28bde2f0c
 CreateAndAddModules: 0x8513246e65c474ad05e88ae8ca7c5a6b04246550
 MultiSend: 0x7830ceb6f513568c05bd995d0767cceea2ef9662
@@ -19,7 +18,7 @@ GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
 
 
-def get_safe_personal_contract(w3: Web3, address=None):
+def get_safe_contract(w3: Web3, address=None):
     """
     Get Safe Personal Contract. It should be used to access Safe methods on Proxy contracts.
     :param w3: Web3 instance

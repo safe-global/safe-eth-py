@@ -11,7 +11,7 @@ from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,
                         get_paying_proxy_deployed_bytecode,
-                        get_safe_personal_contract)
+                        get_safe_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
 
@@ -70,8 +70,8 @@ class SafeServiceProvider:
             from django.conf import settings
             ethereum_service = EthereumServiceProvider()
             cls.instance = SafeService(ethereum_service,
-                                       settings.SAFE_PERSONAL_CONTRACT_ADDRESS,
-                                       settings.SAFE_PERSONAL_VALID_CONTRACT_ADDRESSES,
+                                       settings.SAFE_CONTRACT_ADDRESS,
+                                       settings.SAFE_VALID_CONTRACT_ADDRESSES,
                                        settings.SAFE_TX_SENDER_PRIVATE_KEY,
                                        settings.SAFE_FUNDER_PRIVATE_KEY)
         return cls.instance
@@ -129,9 +129,9 @@ class SafeService:
 
     def get_contract(self, safe_address=None):
         if safe_address:
-            return get_safe_personal_contract(self.w3, address=safe_address)
+            return get_safe_contract(self.w3, address=safe_address)
         else:
-            return get_safe_personal_contract(self.w3)
+            return get_safe_contract(self.w3)
 
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int) -> SafeCreationTx:
         safe_creation_tx = SafeCreationTx(w3=self.w3,
@@ -405,7 +405,7 @@ class SafeService:
         tx_gas_price = tx_gas_price or gas_price
         tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key
 
-        safe_contract = get_safe_personal_contract(self.w3, address=safe_address)
+        safe_contract = get_safe_contract(self.w3, address=safe_address)
         try:
             success = safe_contract.functions.execTransaction(
                 to,

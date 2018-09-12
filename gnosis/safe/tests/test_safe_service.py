@@ -6,7 +6,7 @@ from django_eth.constants import NULL_ADDRESS
 from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes
 
-from ..contracts import get_safe_personal_contract
+from ..contracts import get_safe_contract
 from ..safe_service import InvalidMasterCopyAddress, SafeServiceProvider
 from .factories import deploy_safe, generate_safe
 from .safe_test_case import TestCaseWithSafeContractMixin
@@ -46,7 +46,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
             'value': owner0_balance
         }))
 
-        my_safe_contract = get_safe_personal_contract(w3, my_safe_address)
+        my_safe_contract = get_safe_contract(w3, my_safe_address)
 
         to = funder
         value = safe_balance // 2
