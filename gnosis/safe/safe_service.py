@@ -82,24 +82,6 @@ class SafeServiceProvider:
             del cls.instance
 
 
-class SafeTeamServiceProvider:
-    def __new__(cls):
-        if not hasattr(cls, 'instance'):
-            from django.conf import settings
-            ethereum_service = EthereumServiceProvider()
-            cls.instance = SafeTeamService(ethereum_service,
-                                           settings.SAFE_TEAM_CONTRACT_ADDRESS,
-                                           settings.SAFE_TEAM_VALID_CONTRACT_ADDRESSES,
-                                           settings.SAFE_TX_SENDER_PRIVATE_KEY,
-                                           settings.SAFE_FUNDER_PRIVATE_KEY)
-        return cls.instance
-
-    @classmethod
-    def del_singleton(cls):
-        if hasattr(cls, "instance"):
-            del cls.instance
-
-
 class SafeService:
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
