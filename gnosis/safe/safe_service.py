@@ -136,8 +136,8 @@ class SafeService:
         """
         assert deployer_account or deployer_private_key
 
-        safe_personal_contract = self.get_contract()
-        constructor = safe_personal_contract.constructor()
+        safe_contract = self.get_contract()
+        constructor = safe_contract.constructor()
         gas = 6000000
 
         if deployer_private_key:

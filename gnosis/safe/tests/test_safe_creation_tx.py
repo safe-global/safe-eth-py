@@ -37,7 +37,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                       owners=owners,
                                       threshold=threshold,
                                       signature_s=s,
-                                      master_copy=self.safe_personal_contract_address,
+                                      master_copy=self.safe_contract_address,
                                       gas_price=gas_price,
                                       funder=NULL_ADDRESS)
 
@@ -80,7 +80,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                       owners=owners,
                                       threshold=threshold,
                                       signature_s=s,
-                                      master_copy=self.safe_personal_contract_address,
+                                      master_copy=self.safe_contract_address,
                                       gas_price=gas_price,
                                       funder=funder)
 
@@ -134,7 +134,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_personal_contract_address,
+                                          master_copy=self.safe_contract_address,
                                           gas_price=gas_price,
                                           funder=None)
 
@@ -167,7 +167,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                       owners=owners,
                                       threshold=threshold,
                                       signature_s=s,
-                                      master_copy=self.safe_personal_contract_address,
+                                      master_copy=self.safe_contract_address,
                                       gas_price=gas_price,
                                       funder=funder)
 

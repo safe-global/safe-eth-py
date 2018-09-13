@@ -24,9 +24,9 @@ class TestCaseWithSafeContractMixin:
                                        funder_private_key=cls.FUNDER_PRIVATE_KEY)
         cls.w3 = cls.ethereum_service.w3
 
-        cls.safe_personal_deployer = cls.w3.eth.accounts[0]
-        cls.safe_personal_contract_address = cls.safe_service.deploy_master_contract(deployer_account=
-                                                                                     cls.safe_personal_deployer)
-        cls.safe_service.master_copy_address = cls.safe_personal_contract_address
-        cls.safe_service.valid_master_copy_addresses = [cls.safe_personal_contract_address]
-        cls.safe_personal_contract = get_safe_contract(cls.w3, cls.safe_personal_contract_address)
+        cls.safe_deployer = cls.w3.eth.accounts[0]
+        cls.safe_contract_address = cls.safe_service.deploy_master_contract(deployer_account=
+                                                                                     cls.safe_deployer)
+        cls.safe_service.master_copy_address = cls.safe_contract_address
+        cls.safe_service.valid_master_copy_addresses = [cls.safe_contract_address]
+        cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)

@@ -240,7 +240,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         self.assertEqual(expected_hash, tx_hash)
 
         # Expected hash must be the same calculated by `getTransactionHash` of the contract
-        expected_hash = self.safe_personal_contract.functions.getTransactionHash(
+        expected_hash = self.safe_contract.functions.getTransactionHash(
             '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
             5212459,
             HexBytes(0x00),
@@ -251,7 +251,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
             '0x' + '2' * 40,
             '0x' + '2' * 40,
             10789).call()
-        tx_hash = self.safe_service.get_hash_for_safe_tx(self.safe_personal_contract_address,
+        tx_hash = self.safe_service.get_hash_for_safe_tx(self.safe_contract_address,
                                                          '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
                                                          5212459,
                                                          HexBytes(0x00),
