@@ -237,6 +237,11 @@ class SafeService:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier='pending')
 
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
+        """
+        :return: int: Estimated gas
+        :raises: SafeGasEstimationError: If gas cannot be estimated
+        :raises: ValueError: Cannot decode received data
+        """
         data = data or b''
         # Add 10k else we will fail in case of nested calls
         base_gas = 10000
