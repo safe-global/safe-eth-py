@@ -2,7 +2,6 @@ from enum import Enum
 from logging import getLogger
 from typing import List, Set, Tuple
 
-import eth_abi
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import check_checksum, sha3
 from hexbytes import HexBytes
@@ -19,10 +18,6 @@ logger = getLogger(__name__)
 
 
 class SafeServiceException(Exception):
-    pass
-
-
-class InvalidMultisigTx(SafeServiceException):
     pass
 
 
@@ -46,15 +41,23 @@ class SafeGasEstimationError(SafeServiceException):
     pass
 
 
-class SignatureNotProvidedByOwner(SafeServiceException):
-    pass
-
-
-class CannotPayGasWithEther(SafeServiceException):
-    pass
-
-
 class InvalidChecksumAddress(SafeServiceException):
+    pass
+
+
+class InvalidMultisigTx(SafeServiceException):
+    pass
+
+
+class SignatureNotProvidedByOwner(InvalidMultisigTx):
+    pass
+
+
+class InvalidSignaturesProvided(InvalidMultisigTx):
+    pass
+
+
+class CannotPayGasWithEther(InvalidMultisigTx):
     pass
 
 
@@ -359,6 +362,10 @@ class SafeService:
                          tx_sender_private_key=None,
                          tx_gas=None,
                          tx_gas_price=None) -> Tuple[str, any]:
+        """
+        :return: Tuple(tx_hash, tx)
+        :raises: InvalidMultisigTx: If user tx cannot go through the Safe
+        """
 
         data = data or b''
         gas_token = gas_token or NULL_ADDRESS
@@ -407,9 +414,13 @@ class SafeService:
         except BadFunctionCallOutput as exc:
             str_exc = str(exc)
             if 'Signature not provided by owner' in str_exc:
-                raise SignatureNotProvidedByOwner
+                raise SignatureNotProvidedByOwner(str_exc)
+            elif 'Invalid signatures provided' in str_exc:
+                raise InvalidSignaturesProvided(str_exc)
             elif 'Could not pay gas costs with ether' in str_exc:
-                raise CannotPayGasWithEther
+                raise CannotPayGasWithEther(str_exc)
+            else:
+                raise InvalidMultisigTx(str_exc)
 
         tx_sender_address = self.ethereum_service.private_key_to_address(tx_sender_private_key)
 
@@ -508,7 +519,7 @@ class SafeService:
     def signatures_to_bytes(cls, signatures: List[Tuple[int, int, int]]) -> bytes:
         """
         Convert signatures to bytes
-        :param signatures: list of v, r, s
+        :param signatures: list of tuples(v, r, s)
         :return: 65 bytes per signature
         """
         return b''.join([cls.signature_to_bytes(vrs) for vrs in signatures])

@@ -2,7 +2,7 @@
 ps aux | grep ganache-cli | grep -v grep > /dev/null
 if [ $? -eq 1 ]; then
     echo 'Running Ganache-Cli'
-    ganache-cli -d --defaultBalanceEther 10000 -a 10 --noVMErrorsOnRPCResponse &
+    ganache-cli -d --defaultBalanceEther 10000 -a 10 --noVMErrorsOnRPCResponse > /dev/null &
     GANACHE_PID=$!
     sleep 3
 fi
