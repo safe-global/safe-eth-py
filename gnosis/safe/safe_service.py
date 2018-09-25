@@ -5,7 +5,7 @@ from typing import List, Set, Tuple
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import check_checksum, sha3
 from hexbytes import HexBytes
-from py_eth_sig_utils import encode_typed_data
+from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,

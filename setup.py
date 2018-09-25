@@ -12,13 +12,13 @@ requirements = [
     "Django>=2.0.0",
     "ethereum>=2.3.2",
     "hexbytes>=0.1.0",
-    "py-eth-sig-utils>=0.2.0",
+    "py-eth-sig-utils>=0.3.0",
     "web3>=4",
 ]
 
 setup(
     name='gnosis-py',
-    version='0.2.2',
+    version='0.2.3',
     packages=find_packages(),
     install_requires=requirements,
     include_package_data=True,
