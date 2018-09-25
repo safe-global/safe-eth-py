@@ -274,6 +274,15 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         self.assertEqual(self.safe_service.retrieve_master_copy_address(proxy_address),
                          self.safe_service.master_copy_address)
 
+    def test_retrieve_is_owner(self):
+        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
+        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
+        for owner in safe_creation.owners:
+            self.assertTrue(self.safe_service.retrieve_is_owner(proxy_address, owner))
+
+        random_address, _ = get_eth_address_with_key()
+        self.assertFalse(self.safe_service.retrieve_is_owner(proxy_address, random_address))
+
     def test_retrieve_nonce(self):
         safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
@@ -283,3 +292,50 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
         self.assertEqual(self.safe_service.retrieve_threshold(proxy_address), 2)
+
+    # TODO Test approve tx from another contract
+    def test_send_previously_approved_tx(self):
+        owners = self.w3.eth.accounts[:4]
+        safe_creation = generate_safe(self.safe_service, owners=owners, threshold=2)
+        safe_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0],
+                                   initial_funding_wei=self.w3.toWei(0.01, 'ether'))
+        safe_instance = get_safe_contract(self.w3, safe_address)
+
+        to, _ = get_eth_address_with_key()
+        value = self.w3.toWei(0.001, 'ether')
+        data = b''
+        operation = 0
+        safe_tx_gas = 500000
+        data_gas = 500000
+        gas_price = 1
+        gas_token = NULL_ADDRESS
+        refund_receiver = NULL_ADDRESS
+        nonce = self.safe_service.retrieve_nonce(safe_address)
+
+        self.assertEqual(nonce, 0)
+
+        safe_tx_hash = self.safe_service.get_hash_for_safe_tx(safe_address, to, value, data, operation, safe_tx_gas,
+                                                              data_gas, gas_price, gas_token, refund_receiver, nonce)
+
+        safe_tx_contract_hash = safe_instance.functions.getTransactionHash(to, value, data, operation,
+                                                                           safe_tx_gas, data_gas, gas_price, gas_token,
+                                                                           refund_receiver, nonce).call()
+
+        self.assertEqual(safe_tx_hash, safe_tx_contract_hash)
+
+        safe_instance.functions.approveHash(safe_tx_hash).transact({'from': owners[0]})
+        safe_instance.functions.approveHash(safe_tx_hash).transact({'from': owners[1]})
+
+        for owner in (owners[0], owners[1]):
+            is_approved = self.safe_service.retrieve_is_hash_approved(safe_address, owner, safe_tx_hash)
+            self.assertTrue(is_approved)
+
+        # Prepare signatures. v must be 1 for previously signed and r the owner
+        signatures = (1, int(owners[0], 16), 0), (1, int(owners[1], 16), 0)
+        signature_bytes = self.safe_service.signatures_to_bytes(signatures)
+
+        self.safe_service.send_multisig_tx(safe_address, to, value, data, operation, safe_tx_gas,
+                                           data_gas, gas_price, gas_token, refund_receiver, signature_bytes)
+
+        balance = self.w3.eth.getBalance(to)
+        self.assertEquals(value, balance)

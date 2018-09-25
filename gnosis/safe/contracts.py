@@ -4,13 +4,23 @@ from web3 import Web3
 from .abis import load_contract_interface
 
 """
-Rinkeby contracts https://github.com/gnosis/safe-contracts/releases/tag/v0.0.1
+Rinkeby contracts https://github.com/gnosis/safe-contracts/releases/tag/v0.0.2-alpha
 -----------------
-ProxyFactory: 0x075794c3797bb4cfea74a75d1aae636036af37cd
-GnosisSafe: 0xC65f75fbFFb1628293F9320168500ed336CF3E24
-DailyLimitModule: 0xac94a500b707fd5c4cdb89777f29b3b28bde2f0c
-CreateAndAddModules: 0x8513246e65c474ad05e88ae8ca7c5a6b04246550
-MultiSend: 0x7830ceb6f513568c05bd995d0767cceea2ef9662
+Safes
+GnosisSafe: 0x2727d69c0bd14b1ddd28371b8d97e808adc1c2f7
+
+Factories
+ProxyFactory: 0xf81e35398b5d09d891db0199064ff4a53e7ecae6
+
+Libraries
+CreateAndAddModules: 0x5096cd7f7f5f2e621a480c1ae8969c03cb647a91
+MultiSend: 0x607ecc85c613548367ebdee103d6d256d42d5978
+
+Modules
+StateChannelModule: 0x46060a29a9ea946b2e37058288e029554a9d73c8
+DailyLimitModule: 0x6e3a1f364c112736ca88ea113b70dcae53a4def6
+SocialRecoveryModule: 0x96967d1f6bade086b8e31f04b14753f9649b3d9e
+WhitelistModule: 0xbb2d70bafda6dd0f8770713b71e7fecf74adfd95
 """
 
 GNOSIS_SAFE_OWNER_MANAGER_INTERFACE = load_contract_interface('GnosisSafeOwnerManager.json')

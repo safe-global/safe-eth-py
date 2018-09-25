@@ -22,8 +22,8 @@ def generate_valid_s():
             return s
 
 
-def generate_safe(safe_service: SafeService, owners=None, number_owners=3, threshold=None,
-                  gas_price=1) -> SafeCreationTx:
+def generate_safe(safe_service: SafeService, owners=None, number_owners: int=3, threshold: int=None,
+                  gas_price: int=1) -> SafeCreationTx:
     s = generate_valid_s()
 
     if not owners:
@@ -37,7 +37,7 @@ def generate_safe(safe_service: SafeService, owners=None, number_owners=3, thres
     return safe_service.build_safe_creation_tx(s, owners, threshold, gas_price=gas_price)
 
 
-def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder) -> str:
+def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder: str, initial_funding_wei: int=0) -> str:
     w3.eth.waitForTransactionReceipt(
         w3.eth.sendTransaction({
             'from': funder,
@@ -46,15 +46,26 @@ def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder) -> str:
         })
     )
 
-    w3.eth.sendTransaction({
-        'from': funder,
-        'to': safe_creation_tx.safe_address,
-        'value': safe_creation_tx.payment
-    })
+    w3.eth.waitForTransactionReceipt(
+        w3.eth.sendTransaction({
+            'from': funder,
+            'to': safe_creation_tx.safe_address,
+            'value': safe_creation_tx.payment
+        })
+    )
 
     tx_hash = w3.eth.sendRawTransaction(bytes(safe_creation_tx.raw_tx))
     tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     assert tx_receipt.contractAddress == safe_creation_tx.safe_address
     assert tx_receipt.status
+
+    if initial_funding_wei > 0:
+        w3.eth.waitForTransactionReceipt(
+            w3.eth.sendTransaction({
+                'from': funder,
+                'to': safe_creation_tx.safe_address,
+                'value': initial_funding_wei
+            })
+        )
 
     return safe_creation_tx.safe_address

@@ -3,14 +3,13 @@ from logging import getLogger
 from typing import List, Set, Tuple
 
 from django_eth.constants import NULL_ADDRESS
-from ethereum.utils import check_checksum, sha3
+from ethereum.utils import check_checksum
 from hexbytes import HexBytes
 from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,
-                        get_paying_proxy_deployed_bytecode,
-                        get_safe_contract)
+                        get_paying_proxy_deployed_bytecode, get_safe_contract, get_safe_owner_manager_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
 
@@ -117,6 +116,12 @@ class SafeService:
             return get_safe_contract(self.w3, address=safe_address)
         else:
             return get_safe_contract(self.w3)
+
+    def get_owner_manager_contract(self, safe_address=None):
+        if safe_address:
+            return get_safe_owner_manager_contract(self.w3, address=safe_address)
+        else:
+            return get_safe_owner_manager_contract(self.w3)
 
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int) -> SafeCreationTx:
         safe_creation_tx = SafeCreationTx(w3=self.w3,
@@ -229,6 +234,17 @@ class SafeService:
     def retrieve_master_copy_address(self, safe_address) -> str:
         return get_paying_proxy_contract(self.w3, safe_address).functions.implementation().call(
             block_identifier='pending')
+
+    def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes) -> bool:
+        return self.get_contract(safe_address
+                                 ).functions.approvedHashes(owner, safe_hash).call(block_identifier='pending')
+
+    def retrieve_is_message_signed(self, safe_address, message_hash: bytes) -> bool:
+        return self.get_contract(safe_address
+                                 ).functions.signedMessages(message_hash).call(block_identifier='pending')
+
+    def retrieve_is_owner(self, safe_address, owner: str) -> bool:
+        return self.get_owner_manager_contract(safe_address).functions.isOwner(owner).call(block_identifier='pending')
 
     def retrieve_nonce(self, safe_address) -> int:
         return self.get_contract(safe_address).functions.nonce().call(block_identifier='pending')
