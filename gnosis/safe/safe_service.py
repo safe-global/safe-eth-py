@@ -237,7 +237,7 @@ class SafeService:
 
     def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes) -> bool:
         return self.get_contract(safe_address
-                                 ).functions.approvedHashes(owner, safe_hash).call(block_identifier='pending')
+                                 ).functions.approvedHashes(owner, safe_hash).call(block_identifier='pending') == 1
 
     def retrieve_is_message_signed(self, safe_address, message_hash: bytes) -> bool:
         return self.get_contract(safe_address
