@@ -231,26 +231,28 @@ class SafeService:
     def get_refund_receiver(self):
         return NULL_ADDRESS
 
-    def retrieve_master_copy_address(self, safe_address) -> str:
+    def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
         return get_paying_proxy_contract(self.w3, safe_address).functions.implementation().call(
-            block_identifier='pending')
+            block_identifier=block_identifier)
 
-    def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes) -> bool:
+    def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes, block_identifier='pending') -> bool:
         return self.get_contract(safe_address
-                                 ).functions.approvedHashes(owner, safe_hash).call(block_identifier='pending') == 1
+                                 ).functions.approvedHashes(owner,
+                                                            safe_hash).call(block_identifier=block_identifier) == 1
 
-    def retrieve_is_message_signed(self, safe_address, message_hash: bytes) -> bool:
+    def retrieve_is_message_signed(self, safe_address, message_hash: bytes, block_identifier='pending') -> bool:
         return self.get_contract(safe_address
-                                 ).functions.signedMessages(message_hash).call(block_identifier='pending')
+                                 ).functions.signedMessages(message_hash).call(block_identifier=block_identifier)
 
-    def retrieve_is_owner(self, safe_address, owner: str) -> bool:
-        return self.get_owner_manager_contract(safe_address).functions.isOwner(owner).call(block_identifier='pending')
+    def retrieve_is_owner(self, safe_address, owner: str, block_identifier='pending') -> bool:
+        return self.get_owner_manager_contract(safe_address
+                                               ).functions.isOwner(owner).call(block_identifier=block_identifier)
 
-    def retrieve_nonce(self, safe_address) -> int:
-        return self.get_contract(safe_address).functions.nonce().call(block_identifier='pending')
+    def retrieve_nonce(self, safe_address, block_identifier='pending') -> int:
+        return self.get_contract(safe_address).functions.nonce().call(block_identifier=block_identifier)
 
-    def retrieve_threshold(self, safe_address) -> int:
-        return self.get_contract(safe_address).functions.getThreshold().call(block_identifier='pending')
+    def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
+        return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
 
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
