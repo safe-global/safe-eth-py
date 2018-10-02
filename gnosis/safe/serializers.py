@@ -53,7 +53,4 @@ class SafeMultisigTxSerializer(SafeMultisigEstimateTxSerializer):
         if data.get('gas_token'):
             raise ValidationError('Gas Token is still not supported')
 
-        if data.get('refund_receiver'):
-            raise ValidationError('Refund receiver is still not supported')
-
         return data
