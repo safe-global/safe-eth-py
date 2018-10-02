@@ -10,7 +10,7 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
     to = EthereumAddressField(default=None, allow_null=True)
     value = serializers.IntegerField(min_value=0)
     data = HexadecimalField(default=None, allow_null=True, allow_blank=True)
-    operation = serializers.IntegerField(min_value=0, max_value=2)  # Call, DelegateCall or Create
+    operation = serializers.IntegerField(min_value=0)
 
     def validate_operation(self, value):
         try:
