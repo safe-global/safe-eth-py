@@ -338,4 +338,4 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                                            data_gas, gas_price, gas_token, refund_receiver, signature_bytes)
 
         balance = self.w3.eth.getBalance(to)
-        self.assertEquals(value, balance)
+        self.assertEqual(value, balance)
