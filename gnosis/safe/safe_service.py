@@ -304,7 +304,7 @@ class SafeService:
                 return estimated_gas + base_gas
 
     def estimate_tx_data_gas(self, safe_address: str, to: str, value: int, data: bytes,
-                             operation: int, estimate_tx_gas: int):
+                             operation: int, estimate_tx_gas: int) -> int:
         data = data or b''
         paying_proxy_contract = self.get_contract(safe_address)
         threshold = self.retrieve_threshold(safe_address)
@@ -387,6 +387,7 @@ class SafeService:
                          tx_gas=None,
                          tx_gas_price=None) -> Tuple[str, any]:
         """
+        This function is for being called from the safe relay service
         :return: Tuple(tx_hash, tx)
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
@@ -412,10 +413,21 @@ class SafeService:
         if not self.check_funds_for_tx_gas(safe_address, safe_tx_gas, data_gas, gas_price, gas_token):
             raise NotEnoughFundsForMultisigTx
 
+        estimate_safe_tx_gas = self.estimate_tx_gas(safe_address, to, value, data, operation)
+        estimate_safe_data_gas = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
+                                                           estimate_safe_tx_gas)
+
+        if safe_tx_gas < estimate_safe_tx_gas or data_gas < estimate_safe_data_gas:
+            raise SafeGasEstimationError("Estimated gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
+                                         (estimate_safe_tx_gas, estimate_safe_data_gas))
+
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
 
         # Use wrapped tx gas_price if not provided
         tx_gas_price = tx_gas_price or gas_price
+
+        # If is lower we don't get the refund for the tx
+        assert gas_price >= tx_gas_price
         tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key
 
         safe_contract = get_safe_contract(self.w3, address=safe_address)
