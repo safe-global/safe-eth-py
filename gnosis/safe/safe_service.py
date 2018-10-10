@@ -96,7 +96,7 @@ class SafeService:
 
         for address in [master_copy_address] + list(valid_master_copy_addresses):
             if address and not check_checksum(address):
-                raise InvalidChecksumAddress
+                raise InvalidChecksumAddress('Master copy without checksum')
 
         self.master_copy_address = master_copy_address
         self.valid_master_copy_addresses = set(valid_master_copy_addresses)
