@@ -1,5 +1,5 @@
 Django==2.1.2
-django-eth==0.2.3
+django-eth==0.2.4
 djangorestframework==3.8.2
 ethereum==2.3.2
 faker==0.9.1
