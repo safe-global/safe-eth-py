@@ -23,7 +23,6 @@ SocialRecoveryModule: 0x96967d1f6bade086b8e31f04b14753f9649b3d9e
 WhitelistModule: 0xbb2d70bafda6dd0f8770713b71e7fecf74adfd95
 """
 
-GNOSIS_SAFE_OWNER_MANAGER_INTERFACE = load_contract_interface('GnosisSafeOwnerManager.json')
 GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
 
@@ -38,18 +37,6 @@ def get_safe_contract(w3: Web3, address=None):
     return w3.eth.contract(address,
                            abi=GNOSIS_SAFE_INTERFACE['abi'],
                            bytecode=GNOSIS_SAFE_INTERFACE['bytecode'])
-
-
-def get_safe_owner_manager_contract(w3: Web3, address=None):
-    """
-    Get Safe Contract - OwnerManager class.
-    :param w3: Web3 instance
-    :param address: address of the safe contract/proxy contract
-    :return: Safe Contract
-    """
-    return w3.eth.contract(Web3.toChecksumAddress(address),
-                           abi=GNOSIS_SAFE_OWNER_MANAGER_INTERFACE['abi'],
-                           bytecode=GNOSIS_SAFE_OWNER_MANAGER_INTERFACE['bytecode'])
 
 
 def get_paying_proxy_contract(w3: Web3, address=None):

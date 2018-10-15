@@ -9,8 +9,7 @@ from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,
-                        get_paying_proxy_deployed_bytecode, get_safe_contract,
-                        get_safe_owner_manager_contract)
+                        get_paying_proxy_deployed_bytecode, get_safe_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
 
@@ -46,6 +45,10 @@ class InvalidChecksumAddress(SafeServiceException):
 
 
 class InvalidMultisigTx(SafeServiceException):
+    pass
+
+
+class InvalidInternalTx(InvalidMultisigTx):
     pass
 
 
@@ -117,12 +120,6 @@ class SafeService:
             return get_safe_contract(self.w3, address=safe_address)
         else:
             return get_safe_contract(self.w3)
-
-    def get_owner_manager_contract(self, safe_address=None):
-        if safe_address:
-            return get_safe_owner_manager_contract(self.w3, address=safe_address)
-        else:
-            return get_safe_owner_manager_contract(self.w3)
 
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int) -> SafeCreationTx:
         safe_creation_tx = SafeCreationTx(w3=self.w3,
@@ -212,8 +209,7 @@ class SafeService:
         return contract_address
 
     def check_master_copy(self, address) -> bool:
-        master_copy_address = self.retrieve_master_copy_address(address)
-        return master_copy_address in self.valid_master_copy_addresses
+        return self.retrieve_master_copy_address(address) in self.valid_master_copy_addresses
 
     def check_proxy_code(self, address) -> bool:
         """
@@ -246,11 +242,13 @@ class SafeService:
                                  ).functions.signedMessages(message_hash).call(block_identifier=block_identifier)
 
     def retrieve_is_owner(self, safe_address, owner: str, block_identifier='pending') -> bool:
-        return self.get_owner_manager_contract(safe_address
-                                               ).functions.isOwner(owner).call(block_identifier=block_identifier)
+        return self.get_contract(safe_address).functions.isOwner(owner).call(block_identifier=block_identifier)
 
     def retrieve_nonce(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.nonce().call(block_identifier=block_identifier)
+
+    def retrieve_owners(self, safe_address, block_identifier='pending')-> List[str]:
+        return self.get_contract(safe_address).functions.getOwners().call(block_identifier=block_identifier)
 
     def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
@@ -308,7 +306,6 @@ class SafeService:
         data = data or b''
         paying_proxy_contract = self.get_contract(safe_address)
         threshold = self.retrieve_threshold(safe_address)
-        nonce = self.retrieve_nonce(safe_address)
 
         # Calculate gas for signatures
         signature_gas = threshold * (1 * 68 + 2 * 32 * 68)
@@ -332,8 +329,7 @@ class SafeService:
             signatures,
         ).buildTransaction({
             'gas': 1,
-            'gasPrice': 1,
-            'nonce': nonce
+            'gasPrice': 1
         })['data'])
 
         data_gas = signature_gas + self.ethereum_service.estimate_data_gas(data)
@@ -348,12 +344,12 @@ class SafeService:
 
         return data_gas
 
-    def check_funds_for_tx_gas(self, safe_address: str, gas: int, data_gas: int, gas_price: int, gas_token: str
-                               )-> bool:
+    def check_funds_for_tx_gas(self, safe_address: str, safe_tx_gas: int, data_gas: int, gas_price: int,
+                               gas_token: str)-> bool:
         """
         Check safe has enough funds to pay for a tx
         :param safe_address: Address of the safe
-        :param gas: Start gas
+        :param safe_tx_gas: Start gas
         :param data_gas: Data gas
         :param gas_price: Gas Price
         :param gas_token: Gas Token, still not supported. Must be the NULL address
@@ -363,7 +359,7 @@ class SafeService:
         assert gas_token == NULL_ADDRESS
 
         balance = self.ethereum_service.get_balance(safe_address)
-        return balance >= ((gas + data_gas) * gas_price)
+        return balance >= ((safe_tx_gas + data_gas) * gas_price)
 
     def check_refund_receiver(self, refund_receiver: str) -> bool:
         # We only support tx.origin as refund receiver right now
@@ -446,7 +442,7 @@ class SafeService:
             ).call(block_identifier='pending')
 
             if not success:
-                raise InvalidMultisigTx
+                raise InvalidInternalTx
         except BadFunctionCallOutput as exc:
             str_exc = str(exc)
             if 'Signature not provided by owner' in str_exc:

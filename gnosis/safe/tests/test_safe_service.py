@@ -288,6 +288,12 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
         self.assertEqual(self.safe_service.retrieve_nonce(proxy_address), 0)
 
+    def test_retrieve_owners(self):
+        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
+        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
+        owners = self.safe_service.retrieve_owners(proxy_address)
+        self.assertEqual(set(owners), set(safe_creation.owners))
+
     def test_retrieve_threshold(self):
         safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
