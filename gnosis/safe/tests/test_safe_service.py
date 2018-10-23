@@ -209,6 +209,13 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         data_gas = self.safe_service.estimate_tx_gas(safe_address, to, value, data, operation)
         self.assertGreater(data_gas, 0)
 
+    def test_estimate_tx_signature_gas(self):
+        for threshold in range(2, 5):
+            safe_creation = generate_safe(self.safe_service, number_owners=6, threshold=threshold)
+            proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
+            tx_signature_gas_estimation = self.safe_service.estimate_tx_signature_gas(proxy_address)
+            self.assertGreater(tx_signature_gas_estimation, 4000 * threshold)
+
     def test_hash_safe_multisig_tx(self):
 
         expected_hash = HexBytes('0xc9d69a2350aede7978fdee58e702647e4bbdc82168577aa4a43b66ad815c6d1a')

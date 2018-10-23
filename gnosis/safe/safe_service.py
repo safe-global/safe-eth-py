@@ -344,6 +344,16 @@ class SafeService:
 
         return data_gas
 
+    def estimate_tx_signature_gas(self, safe_address: str):
+        """
+        Estimates the gas for the verification of the signatures before executing a transaction.
+        :param safe_address: Address of the safe
+        :return: gas costs per signature * threshold of Safe
+        """
+        SIGNATURE_GAS_COSTS = 4500  # ecrecover ~= 4K gas, we use a little more just in case
+        threshold = self.retrieve_threshold(safe_address)
+        return threshold * SIGNATURE_GAS_COSTS
+
     def check_funds_for_tx_gas(self, safe_address: str, safe_tx_gas: int, data_gas: int, gas_price: int,
                                gas_token: str)-> bool:
         """
@@ -409,13 +419,15 @@ class SafeService:
         if not self.check_funds_for_tx_gas(safe_address, safe_tx_gas, data_gas, gas_price, gas_token):
             raise NotEnoughFundsForMultisigTx
 
-        estimate_safe_tx_gas = self.estimate_tx_gas(safe_address, to, value, data, operation)
-        estimate_safe_data_gas = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
-                                                           estimate_safe_tx_gas)
+        safe_tx_gas_estimation = self.estimate_tx_gas(safe_address, to, value, data, operation)
+        safe_data_gas_estimation = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
+                                                             safe_tx_gas_estimation)
+        safe_signature_gas_estimation = self.estimate_tx_signature_gas(safe_address)
 
-        if safe_tx_gas < estimate_safe_tx_gas or data_gas < estimate_safe_data_gas:
-            raise SafeGasEstimationError("Estimated gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
-                                         (estimate_safe_tx_gas, estimate_safe_data_gas))
+        if safe_tx_gas < (safe_tx_gas_estimation + safe_signature_gas_estimation) or data_gas < safe_data_gas_estimation:
+            raise SafeGasEstimationError("Gas should be at least equal to safe-tx-gas=%d "
+                                         "(estimate tx gas + estimate signature gas) and data-gas=%d" %
+                                         (safe_tx_gas_estimation + safe_signature_gas_estimation, safe_data_gas_estimation))
 
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
 
