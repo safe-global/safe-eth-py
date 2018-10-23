@@ -89,6 +89,10 @@ class SafeServiceProvider:
 
 
 class SafeService:
+    GAS_FOR_MASTER_DEPLOY = 6000000
+    GAS_FOR_PROXY_DEPLOY = 5125602
+    GAS_PER_SIGNATURE_CHECK = 4500  # ecrecover ~= 4K gas, we use a little more just in case
+
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
                  valid_master_copy_addresses: Set[str],
@@ -144,7 +148,7 @@ class SafeService:
 
         safe_contract = self.get_contract()
         constructor = safe_contract.constructor()
-        gas = 6000000
+        gas = self.GAS_FOR_MASTER_DEPLOY
 
         if deployer_private_key:
             deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
@@ -194,7 +198,7 @@ class SafeService:
 
         safe_proxy_contract = get_paying_proxy_contract(self.w3)
         constructor = safe_proxy_contract.constructor(self.master_copy_address, b'', NULL_ADDRESS, NULL_ADDRESS, 0)
-        gas = 5125602
+        gas = self.GAS_FOR_PROXY_DEPLOY
 
         if deployer_account:
             tx_hash = constructor.transact({'from': deployer_account, 'gas': gas})
@@ -350,9 +354,8 @@ class SafeService:
         :param safe_address: Address of the safe
         :return: gas costs per signature * threshold of Safe
         """
-        SIGNATURE_GAS_COSTS = 4500  # ecrecover ~= 4K gas, we use a little more just in case
         threshold = self.retrieve_threshold(safe_address)
-        return threshold * SIGNATURE_GAS_COSTS
+        return threshold * self.GAS_PER_SIGNATURE_CHECK
 
     def check_funds_for_tx_gas(self, safe_address: str, safe_tx_gas: int, data_gas: int, gas_price: int,
                                gas_token: str)-> bool:
