@@ -347,7 +347,7 @@ class SafeService:
 
         return data_gas
 
-    def estimate_tx_operation_gas(self, safe_address: str, data_bytes_length: int):
+    def estimate_tx_operational_gas(self, safe_address: str, data_bytes_length: int):
         """
         Estimates the gas for the verification of the signatures and other safe related tasks
         before and after executing a transaction.
