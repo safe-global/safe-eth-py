@@ -91,7 +91,7 @@ class SafeServiceProvider:
 class SafeService:
     GAS_FOR_MASTER_DEPLOY = 6000000
     GAS_FOR_PROXY_DEPLOY = 5125602
-    GAS_PER_SIGNATURE_CHECK = 4500  # ecrecover ~= 4K gas, we use a little more just in case
+    GAS_PER_SIGNATURE_CHECK = 5000  # ecrecover ~= 4K gas, we use a little more just in case
 
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
@@ -425,12 +425,9 @@ class SafeService:
         safe_tx_gas_estimation = self.estimate_tx_gas(safe_address, to, value, data, operation)
         safe_data_gas_estimation = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
                                                              safe_tx_gas_estimation)
-        safe_signature_gas_estimation = self.estimate_tx_signature_gas(safe_address)
-
-        if safe_tx_gas < (safe_tx_gas_estimation + safe_signature_gas_estimation) or data_gas < safe_data_gas_estimation:
-            raise SafeGasEstimationError("Gas should be at least equal to safe-tx-gas=%d "
-                                         "(estimate tx gas + estimate signature gas) and data-gas=%d" %
-                                         (safe_tx_gas_estimation + safe_signature_gas_estimation, safe_data_gas_estimation))
+        if safe_tx_gas < safe_tx_gas_estimation or data_gas < safe_data_gas_estimation:
+            raise SafeGasEstimationError("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
+                                         (safe_tx_gas_estimation, safe_data_gas_estimation))
 
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
 
