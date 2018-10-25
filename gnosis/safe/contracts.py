@@ -25,6 +25,8 @@ WhitelistModule: 0xbb2d70bafda6dd0f8770713b71e7fecf74adfd95
 
 GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
+ERC20_INTERFACE = load_contract_interface('ERC20.json')
+ERC20_EXAMPLE_INTERFACE = load_contract_interface('ERC20TestToken.json')
 
 
 def get_safe_contract(w3: Web3, address=None):
@@ -51,6 +53,24 @@ def get_paying_proxy_contract(w3: Web3, address=None):
     return w3.eth.contract(address,
                            abi=PAYING_PROXY_INTERFACE['abi'],
                            bytecode=PAYING_PROXY_INTERFACE['bytecode'])
+
+
+def get_erc20_contract(w3: Web3, address=None):
+    """
+    Get ERC20 interface
+    :param w3: Web3 instance
+    :param address: address of the proxy contract
+    :return: ERC 20 contract
+    """
+    return w3.eth.contract(address,
+                           abi=ERC20_INTERFACE['abi'],
+                           bytecode=ERC20_INTERFACE['bytecode'])
+
+
+def get_example_erc20_contract(w3: Web3, address=None):
+    return w3.eth.contract(address,
+                           abi=ERC20_EXAMPLE_INTERFACE['abi'],
+                           bytecode=ERC20_EXAMPLE_INTERFACE['bytecode'])
 
 
 def get_paying_proxy_deployed_bytecode() -> bytes:

@@ -8,6 +8,7 @@ from faker import Faker
 
 from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeService
+from ..contracts import get_example_erc20_contract
 
 fakerFactory = FakerFactory.create()
 faker = Faker()
@@ -69,3 +70,13 @@ def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder: str, initial_fundi
         )
 
     return safe_creation_tx.safe_address
+
+
+def deploy_example_erc20(w3, amount: int, owner: str, funder: str=None):
+    funder = funder or w3.eth.accounts[0]
+    erc20_contract = get_example_erc20_contract(w3)
+    tx_hash = erc20_contract.constructor(amount, owner).transact({'from': funder})
+    tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    erc20_address = tx_receipt.contractAddress
+    deployed_erc20 = get_example_erc20_contract(w3, erc20_address)
+    return deployed_erc20

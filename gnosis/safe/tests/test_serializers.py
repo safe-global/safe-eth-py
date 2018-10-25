@@ -1,10 +1,31 @@
 from django.test import TestCase
 from django_eth.tests.factories import get_eth_address_with_key
 
-from ..serializers import SafeMultisigEstimateTxSerializer
+from ..serializers import SafeMultisigEstimateTxSerializer, SafeSignatureSerializer
+from django_eth.constants import *
 
 
 class TestSerializers(TestCase):
+    def test_safe_signature_serializer(self):
+        for v in [0, 1]:
+            self.assertFalse(SafeSignatureSerializer(data={'v': v, 'r': -1, 's': 0}).is_valid())
+            self.assertTrue(SafeSignatureSerializer(data={'v': v, 'r': 0, 's': 0}).is_valid())
+            self.assertTrue(SafeSignatureSerializer(data={'v': v, 'r': SIGNATURE_R_MAX_VALUE + 1, 's': 0}).is_valid())
+            self.assertTrue(SafeSignatureSerializer(data={'v': v, 'r': SIGNATURE_R_MAX_VALUE + 1,
+                                                          's': SIGNATURE_S_MAX_VALUE + 1}).is_valid())
+
+        for v in [27, 28]:
+            self.assertFalse(SafeSignatureSerializer(data={'v': v, 'r': 0, 's': 0}).is_valid())
+            self.assertTrue(SafeSignatureSerializer(data={'v': v, 'r': SIGNATURE_R_MIN_VALUE + 1,
+                                                          's': SIGNATURE_S_MAX_VALUE - 1}).is_valid())
+            self.assertTrue(SafeSignatureSerializer(data={'v': v, 'r': SIGNATURE_R_MAX_VALUE - 1,
+                                                          's': SIGNATURE_S_MIN_VALUE + 1}).is_valid())
+
+            self.assertFalse(SafeSignatureSerializer(data={'v': v, 'r': SIGNATURE_R_MAX_VALUE + 1,
+                                                           's': SIGNATURE_S_MAX_VALUE - 1}).is_valid())
+            self.assertFalse(SafeSignatureSerializer(data={'v': v, 'r': SIGNATURE_R_MIN_VALUE + 1,
+                                                           's': SIGNATURE_S_MAX_VALUE + 1}).is_valid())
+
     def test_safe_multisig_tx_estimate_serializer(self):
         safe_address, _ = get_eth_address_with_key()
         eth_address, _ = get_eth_address_with_key()

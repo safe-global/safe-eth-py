@@ -9,7 +9,7 @@ from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
 from .contracts import (get_paying_proxy_contract,
-                        get_paying_proxy_deployed_bytecode, get_safe_contract)
+                        get_paying_proxy_deployed_bytecode, get_safe_contract, get_erc20_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
 
@@ -225,9 +225,6 @@ class SafeService:
 
         return deployed_proxy_code == proxy_code
 
-    def get_gas_token(self):
-        return NULL_ADDRESS
-
     def get_refund_receiver(self):
         return NULL_ADDRESS
 
@@ -255,6 +252,9 @@ class SafeService:
 
     def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
+
+    def retrieve_token_balance(self, safe_address: str, token_address: str):
+        return get_erc20_contract(self.w3, token_address).functions.balanceOf(safe_address).call()
 
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
@@ -306,7 +306,7 @@ class SafeService:
                 return estimated_gas + base_gas
 
     def estimate_tx_data_gas(self, safe_address: str, to: str, value: int, data: bytes,
-                             operation: int, estimate_tx_gas: int) -> int:
+                             operation: int, gas_token: str, estimate_tx_gas: int) -> int:
         data = data or b''
         paying_proxy_contract = self.get_contract(safe_address)
         threshold = self.retrieve_threshold(safe_address)
@@ -317,7 +317,7 @@ class SafeService:
         safe_tx_gas = estimate_tx_gas
         data_gas = 0
         gas_price = 1
-        gas_token = NULL_ADDRESS
+        gas_token = gas_token or NULL_ADDRESS
         signatures = b''
         refund_receiver = NULL_ADDRESS
         data = HexBytes(paying_proxy_contract.functions.execTransaction(
@@ -370,19 +370,21 @@ class SafeService:
         :param safe_tx_gas: Start gas
         :param data_gas: Data gas
         :param gas_price: Gas Price
-        :param gas_token: Gas Token, still not supported. Must be the NULL address
+        :param gas_token: Gas Token, to use token instead of ether for the gas
         :return: True if enough funds, False, otherwise
         """
-        # Gas token is still not supported
-        assert gas_token == NULL_ADDRESS
-
-        balance = self.ethereum_service.get_balance(safe_address)
-        return balance >= ((safe_tx_gas + data_gas) * gas_price)
+        if gas_token == NULL_ADDRESS:
+            balance = self.ethereum_service.get_balance(safe_address)
+        else:
+            balance = self.retrieve_token_balance(safe_address, gas_token)
+        return balance >= (safe_tx_gas + data_gas) * gas_price
 
     def check_refund_receiver(self, refund_receiver: str) -> bool:
-        # We only support tx.origin as refund receiver right now
-        # In the future we can also accept transactions where it is set to our service account to receive the payments.
-        # This would prevent that anybody can front-run our service
+        """
+        We only support tx.origin as refund receiver right now
+        In the future we can also accept transactions where it is set to our service account to receive the payments.
+        This would prevent that anybody can front-run our service
+        """
         return refund_receiver == NULL_ADDRESS
 
     def send_multisig_tx(self,
@@ -411,6 +413,9 @@ class SafeService:
         refund_receiver = refund_receiver or NULL_ADDRESS
         to = to or NULL_ADDRESS
 
+        tx_gas_price = tx_gas_price or gas_price  # Use wrapped tx gas_price if not provided
+        assert gas_price >= tx_gas_price  # If is lower we don't get the refund for the tx
+
         # Make sure refund receiver is set to 0x0 so that the contract refunds the gas costs to tx.origin
         if not self.check_refund_receiver(refund_receiver):
             raise InvalidRefundReceiver(refund_receiver)
@@ -429,19 +434,14 @@ class SafeService:
 
         safe_tx_gas_estimation = self.estimate_tx_gas(safe_address, to, value, data, operation)
         safe_data_gas_estimation = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
-                                                             safe_tx_gas_estimation)
+                                                             gas_token, safe_tx_gas_estimation)
         if safe_tx_gas < safe_tx_gas_estimation or data_gas < safe_data_gas_estimation:
             raise SafeGasEstimationError("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
                                          (safe_tx_gas_estimation, safe_data_gas_estimation))
 
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
-
-        # Use wrapped tx gas_price if not provided
-        tx_gas_price = tx_gas_price or gas_price
-
-        # If is lower we don't get the refund for the tx
-        assert gas_price >= tx_gas_price
         tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key
+        tx_sender_address = self.ethereum_service.private_key_to_address(tx_sender_private_key)
 
         safe_contract = get_safe_contract(self.w3, address=safe_address)
         try:
@@ -456,7 +456,7 @@ class SafeService:
                 gas_token,
                 refund_receiver,
                 signatures,
-            ).call(block_identifier='pending')
+            ).call({'from': tx_sender_address}, block_identifier='pending')
 
             if not success:
                 raise InvalidInternalTx
@@ -470,8 +470,6 @@ class SafeService:
                 raise CannotPayGasWithEther(str_exc)
             else:
                 raise InvalidMultisigTx(str_exc)
-
-        tx_sender_address = self.ethereum_service.private_key_to_address(tx_sender_private_key)
 
         tx = safe_contract.functions.execTransaction(
             to,
