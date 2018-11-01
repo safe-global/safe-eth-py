@@ -40,7 +40,7 @@ class SafeCreationTx:
         self.gas = self._calculate_gas(owners, encoded_data)
 
         # Payment will be safe deploy cost + transfer fees for sending money to the deployer
-        self.payment = self.gas * self.gas_price + 23000
+        self.payment = (self.gas + 23000) * self.gas_price
 
         self.contract_creation_tx_dict = self._build_proxy_contract_creation_tx(master_copy=self.master_copy,
                                                                                 initializer=encoded_data,
