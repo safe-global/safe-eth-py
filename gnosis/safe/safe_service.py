@@ -274,7 +274,7 @@ class SafeService:
             ).buildTransaction({
                 'from': safe_address,
                 'gas': int(1e7),
-                'gasPrice': 1,
+                'gasPrice': 0,
             })
             # If we build the tx web3 will not try to decode it for us
             result = self.w3.eth.call(tx, block_identifier='pending').hex()
