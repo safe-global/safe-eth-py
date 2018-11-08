@@ -8,8 +8,8 @@ from hexbytes import HexBytes
 from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
-from .contracts import (get_paying_proxy_contract,
-                        get_paying_proxy_deployed_bytecode, get_safe_contract, get_erc20_contract)
+from .contracts import (get_erc20_contract, get_paying_proxy_contract,
+                        get_paying_proxy_deployed_bytecode, get_safe_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
 
@@ -231,6 +231,10 @@ class SafeService:
 
     def get_refund_receiver(self):
         return NULL_ADDRESS
+
+    def is_master_copy_deployed(self):
+        code = self.w3.eth.getCode(self.master_copy_address)
+        return not (code == b'\x00')
 
     def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
         return get_paying_proxy_contract(self.w3, safe_address).functions.implementation().call(

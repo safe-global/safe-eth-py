@@ -6,9 +6,9 @@ from ethereum.transactions import secpk1n
 from faker import Factory as FakerFactory
 from faker import Faker
 
+from ..contracts import get_example_erc20_contract
 from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeService
-from ..contracts import get_example_erc20_contract
 
 fakerFactory = FakerFactory.create()
 faker = Faker()

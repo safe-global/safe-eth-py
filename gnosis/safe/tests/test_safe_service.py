@@ -1,6 +1,5 @@
 import logging
 
-
 from django.conf import settings
 from django.test import TestCase
 from django_eth.constants import NULL_ADDRESS
@@ -8,8 +7,10 @@ from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes
 
 from ..contracts import get_safe_contract
-from ..safe_service import InvalidMasterCopyAddress, SafeServiceProvider, GasTooLow, NotEnoughFundsForMultisigTx
-from .factories import deploy_safe, generate_safe, deploy_example_erc20
+from ..safe_service import (GasTooLow, InvalidMasterCopyAddress,
+                            NotEnoughFundsForMultisigTx, SafeService,
+                            SafeServiceProvider)
+from .factories import deploy_example_erc20, deploy_safe, generate_safe
 from .safe_test_case import TestCaseWithSafeContractMixin
 
 logger = logging.getLogger(__name__)
@@ -351,6 +352,14 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                                                          '0x' + '2' * 40,
                                                          10789)
         self.assertEqual(HexBytes(expected_hash), tx_hash)
+
+    def test_is_master_copy_deployed(self):
+        self.assertTrue(self.safe_service.is_master_copy_deployed())
+        random_address, _ = get_eth_address_with_key()
+        master_copy = self.safe_service.master_copy_address
+        self.safe_service.master_copy_address = random_address
+        self.assertFalse(self.safe_service.is_master_copy_deployed())
+        self.safe_service.master_copy_address = master_copy
 
     def test_provider_singleton(self):
         safe_service1 = SafeServiceProvider()
