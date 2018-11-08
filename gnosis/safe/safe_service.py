@@ -20,6 +20,10 @@ class SafeServiceException(Exception):
     pass
 
 
+class GasTooLow(SafeServiceException):
+    pass
+
+
 class NotEnoughFundsForMultisigTx(SafeServiceException):
     pass
 
@@ -414,7 +418,8 @@ class SafeService:
         to = to or NULL_ADDRESS
 
         tx_gas_price = tx_gas_price or gas_price  # Use wrapped tx gas_price if not provided
-        assert gas_price >= tx_gas_price  # If is lower we don't get the refund for the tx
+        if gas_token == NULL_ADDRESS and gas_price < tx_gas_price:  # If is lower we don't get the refund for the tx
+            raise GasTooLow('Gas=%s and should be at least %d' % (tx_gas_price, gas_price))
 
         # Make sure refund receiver is set to 0x0 so that the contract refunds the gas costs to tx.origin
         if not self.check_refund_receiver(refund_receiver):

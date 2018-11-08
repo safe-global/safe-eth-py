@@ -8,7 +8,7 @@ from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes
 
 from ..contracts import get_safe_contract
-from ..safe_service import InvalidMasterCopyAddress, SafeServiceProvider
+from ..safe_service import InvalidMasterCopyAddress, SafeServiceProvider, GasTooLow, NotEnoughFundsForMultisigTx
 from .factories import deploy_safe, generate_safe, deploy_example_erc20
 from .safe_test_case import TestCaseWithSafeContractMixin
 
@@ -127,7 +127,6 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
 
         self.safe_service.valid_master_copy_addresses = valid_master_copy_addresses
 
-        """
         with self.assertRaises(NotEnoughFundsForMultisigTx):
             self.safe_service.send_multisig_tx(
                 my_safe_address,
@@ -139,11 +138,11 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
                 data_gas,
                 gas_price,
                 gas_token,
+                refund_receiver,
                 signatures_packed,
                 tx_sender_private_key=keys[0],
                 tx_gas_price=GAS_PRICE,
             )
-        """
 
         # Send something to the safe
         w3.eth.waitForTransactionReceipt(w3.eth.sendTransaction({
@@ -151,6 +150,24 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
             'to': my_safe_address,
             'value': safe_balance
         }))
+
+        with self.assertRaises(GasTooLow):
+            self.safe_service.send_multisig_tx(
+                my_safe_address,
+                to,
+                value,
+                data,
+                operation,
+                safe_tx_gas,
+                data_gas,
+                gas_price,
+                gas_token,
+                refund_receiver,
+                signatures_packed,
+                tx_sender_private_key=keys[0],
+                tx_gas_price=gas_price + 1,
+            )
+
         sent_tx_hash, tx = self.safe_service.send_multisig_tx(
             my_safe_address,
             to,
