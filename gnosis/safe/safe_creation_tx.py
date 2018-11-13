@@ -29,7 +29,7 @@ class SafeCreationTx:
         self.master_copy = master_copy
         self.gas_price = gas_price
         self.funder = funder
-        self.payment_token = payment_token
+        self.payment_token = payment_token or NULL_ADDRESS
 
         self.gnosis_safe_contract = get_safe_contract(w3, master_copy)
         self.paying_proxy_contract = get_paying_proxy_contract(w3)
@@ -37,9 +37,9 @@ class SafeCreationTx:
         safe_tx = self.get_initial_setup_safe_tx(owners, threshold)
         encoded_data = safe_tx['data']
 
-        self.gas = self._calculate_gas(owners, encoded_data)
+        self.gas = self._calculate_gas(owners, encoded_data, payment_token)
 
-        # Payment will be safe deploy cost + transfer fees for sending money to the deployer
+        # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
         self.payment = (self.gas + 23000) * self.gas_price
 
         self.contract_creation_tx_dict = self._build_proxy_contract_creation_tx(master_copy=self.master_copy,
@@ -55,8 +55,7 @@ class SafeCreationTx:
          self.r) = self._generate_valid_transaction(gas_price,
                                                     self.gas,
                                                     self.contract_creation_tx_dict['data'],
-                                                    self.s
-                                                    )
+                                                    self.s)
         self.raw_tx = rlp.encode(self.contract_creation_tx)
         self.tx_hash = self.contract_creation_tx.hash
         self.deployer_address = checksum_encode(self.contract_creation_tx.sender)
@@ -83,11 +82,21 @@ class SafeCreationTx:
         raise ValueError('Valid signature not found with s=%d', s)
 
     @staticmethod
-    def _calculate_gas(owners: List[str], encoded_data: bytes) -> int:
+    def _calculate_gas(owners: List[str], encoded_data: bytes, payment_token: str) -> int:
+        # TODO Do gas calculation estimating the call instead this magic
+
         base_gas = 60580  # Transaction standard gas
+
+        # TODO If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
+        # The other 1K is for overhead of making the call
+        if payment_token != NULL_ADDRESS:
+            payment_token_gas = 21000
+        else:
+            payment_token_gas = 0
+
         data_gas = 68 * len(encoded_data)  # Data gas
         gas_per_owner = 18020  # Magic number calculated by testing and averaging owners
-        return base_gas + data_gas + 270000 + len(owners) * gas_per_owner
+        return base_gas + data_gas + payment_token_gas + 270000 + len(owners) * gas_per_owner
 
     def get_initial_setup_safe_tx(self, owners: List[str], threshold: int) -> Dict[any, any]:
         return self.gnosis_safe_contract.functions.setup(
@@ -121,8 +130,6 @@ class SafeCreationTx:
             funder = NULL_ADDRESS
             payment = 0
 
-        payment_token = payment_token if payment_token else NULL_ADDRESS
-
         return self.paying_proxy_contract.constructor(
             master_copy,
             initializer,
@@ -138,6 +145,9 @@ class SafeCreationTx:
     def _generate_valid_transaction(self, gas_price: int, gas: int, data: str, s: int, nonce: int=0) -> Tuple[
                                                                                                         Transaction,
                                                                                                         int, int]:
+        """
+        :return: ContractCreationTx, v, r
+        """
         zero_address = HexBytes('0x' + '0' * 40)
         f_address = HexBytes('0x' + 'f' * 40)
         for _ in range(100):

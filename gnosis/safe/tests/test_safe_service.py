@@ -399,7 +399,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
     def test_retrieve_token_balance(self):
         funder = self.w3.eth.accounts[0]
         amount = 200
-        deployed_erc20 = deploy_example_erc20(self.w3, amount, funder, funder=funder)
+        deployed_erc20 = deploy_example_erc20(self.w3, amount, funder, deployer=funder)
 
         safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])

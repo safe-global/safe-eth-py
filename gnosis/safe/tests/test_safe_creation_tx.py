@@ -7,7 +7,7 @@ from ethereum.utils import checksum_encode, ecrecover_to_pub, sha3
 
 from ..contracts import get_safe_contract
 from ..safe_creation_tx import SafeCreationTx
-from .factories import generate_valid_s
+from .factories import generate_valid_s, deploy_example_erc20
 from .test_safe_service import TestCaseWithSafeContractMixin
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                       funder=funder)
 
         ether = 0.01
-        logger.info("Send %d ether to safe %s", ether, safe_builder.deployer_address)
+        logger.info("Send %d ether to safe %s", ether, safe_builder.safe_address)
         w3.eth.sendTransaction({
             'from': user_external_account,
             'to': safe_builder.safe_address,
@@ -114,6 +114,64 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
 
         logger.info("Deployer account has still %d gwei left (will be lost)",
                     w3.fromWei(w3.eth.getBalance(safe_builder.deployer_address), 'gwei'))
+
+        deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
+
+        self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
+        self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
+
+    def test_safe_creation_tx_builder_with_token_payment(self):
+        logger.info("Test Safe Proxy creation With Gas Payment".center(LOG_TITLE_WIDTH, '-'))
+        w3 = self.w3
+
+        s = generate_valid_s()
+
+        erc20_deployer = w3.eth.accounts[0]
+        funder = w3.eth.accounts[1]
+        owners = w3.eth.accounts[2:4]
+        threshold = len(owners) - 1
+        gas_price = GAS_PRICE
+
+        erc20_contract = deploy_example_erc20(w3, int(1e18), erc20_deployer, deployer=erc20_deployer)
+
+        safe_creation_tx = SafeCreationTx(w3=w3,
+                                          owners=owners,
+                                          threshold=threshold,
+                                          signature_s=s,
+                                          master_copy=self.safe_contract_address,
+                                          gas_price=gas_price,
+                                          payment_token=erc20_contract.address,
+                                          funder=funder)
+
+        # In this test we will pretend that ether value = token value, so we send tokens as ether payment
+        payment = safe_creation_tx.payment
+        deployer_address = safe_creation_tx.deployer_address
+        safe_address = safe_creation_tx.safe_address
+        logger.info("Send %d tokens to safe %s", erc20_deployer, safe_address)
+        erc20_contract.functions.transfer(safe_address, payment).transact({'from': erc20_deployer})
+        self.assertEqual(erc20_contract.functions.balanceOf(safe_address).call(), payment)
+
+        logger.info("Send %d ether to deployer %s", w3.fromWei(payment, 'ether'), deployer_address)
+        w3.eth.sendTransaction({
+            'from': funder,
+            'to': safe_creation_tx.deployer_address,
+            'value': safe_creation_tx.payment
+        })
+
+        logger.info("Create proxy contract with address %s", safe_creation_tx.safe_address)
+
+        funder_balance = w3.eth.getBalance(funder)
+
+        # This tx will create the Safe Proxy and return tokens to the funder
+        tx_hash = w3.eth.sendRawTransaction(safe_creation_tx.raw_tx)
+        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        self.assertEqual(tx_receipt.contractAddress, safe_address)
+        self.assertEqual(w3.eth.getBalance(funder), funder_balance)
+        self.assertEqual(erc20_contract.functions.balanceOf(funder).call(), payment)
+        self.assertEqual(erc20_contract.functions.balanceOf(safe_address).call(), 0)
+
+        logger.info("Deployer account has still %d gwei left (will be lost)",
+                    w3.fromWei(w3.eth.getBalance(safe_creation_tx.deployer_address), 'gwei'))
 
         deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
 

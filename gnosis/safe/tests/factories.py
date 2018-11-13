@@ -35,7 +35,7 @@ def generate_safe(safe_service: SafeService, owners=None, number_owners: int=3, 
 
     threshold = threshold if threshold else len(owners)
 
-    return safe_service.build_safe_creation_tx(s, owners, threshold, gas_price=gas_price)
+    return safe_service.build_safe_creation_tx(s, owners, threshold, gas_price=gas_price, payment_token=None)
 
 
 def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder: str, initial_funding_wei: int=0) -> str:
@@ -72,10 +72,10 @@ def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder: str, initial_fundi
     return safe_creation_tx.safe_address
 
 
-def deploy_example_erc20(w3, amount: int, owner: str, funder: str=None):
-    funder = funder or w3.eth.accounts[0]
+def deploy_example_erc20(w3, amount: int, owner: str, deployer: str=None):
+    deployer = deployer or w3.eth.accounts[0]
     erc20_contract = get_example_erc20_contract(w3)
-    tx_hash = erc20_contract.constructor(amount, owner).transact({'from': funder})
+    tx_hash = erc20_contract.constructor(amount, owner).transact({'from': deployer})
     tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     erc20_address = tx_receipt.contractAddress
     deployed_erc20 = get_example_erc20_contract(w3, erc20_address)

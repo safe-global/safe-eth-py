@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Union
 
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import check_checksum
@@ -128,14 +128,16 @@ class SafeService:
         else:
             return get_safe_contract(self.w3)
 
-    def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int) -> SafeCreationTx:
+    def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int,
+                               payment_token: Union[str, None]) -> SafeCreationTx:
         safe_creation_tx = SafeCreationTx(w3=self.w3,
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
                                           master_copy=self.master_copy_address,
                                           gas_price=gas_price,
-                                          funder=self.funder_address)
+                                          funder=self.funder_address,
+                                          payment_token=payment_token)
 
         assert safe_creation_tx.contract_creation_tx.nonce == 0
         return safe_creation_tx
