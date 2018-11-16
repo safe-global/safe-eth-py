@@ -20,7 +20,20 @@ logger = getLogger(__name__)
 
 class SafeCreationTx:
     def __init__(self, w3: Web3, owners: List[str], threshold: int, signature_s: int, master_copy: str,
-                 gas_price: int, funder: str, payment_token: Union[str, None]=None, payment_token_eth_value: float=1.0):
+                 gas_price: int, funder: Union[str, None], payment_token: Union[str, None]=None,
+                 payment_token_eth_value: float=1.0):
+        """
+        Prepare Safe creation
+        :param w3: Web3 instance
+        :param owners: Owners of the Safe
+        :param threshold: Minimum number of users required to operate the Safe
+        :param signature_s: Random s value for ecdsa signature
+        :param master_copy: Safe master copy address
+        :param gas_price: Gas Price
+        :param funder: Address to refund when the Safe is created. Address(0) if no need to refund
+        :param payment_token: Payment token instead of paying the funder with ether. If None Ether will be used
+        :param payment_token_eth_value: Value of payment token per 1 Ether
+        """
 
         assert 0 < threshold <= len(owners)
 
@@ -29,7 +42,7 @@ class SafeCreationTx:
         self.s = signature_s
         self.master_copy = master_copy
         self.gas_price = gas_price
-        self.funder = funder
+        self.funder = funder or NULL_ADDRESS
         self.payment_token = payment_token or NULL_ADDRESS
 
         self.gnosis_safe_contract = get_safe_contract(w3, master_copy)
