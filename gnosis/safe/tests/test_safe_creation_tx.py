@@ -178,6 +178,42 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
 
+        # Check that payment is the same when payment_token_eth_value is 1.0
+        safe_creation_tx_2 = SafeCreationTx(w3=w3,
+                                            owners=owners,
+                                            threshold=threshold,
+                                            signature_s=s,
+                                            master_copy=self.safe_contract_address,
+                                            gas_price=gas_price,
+                                            payment_token=erc20_contract.address,
+                                            payment_token_eth_value=1.0,
+                                            funder=funder)
+        self.assertEqual(safe_creation_tx_2.payment, safe_creation_tx.payment)
+
+        # Check that payment is less when payment_token_eth_value is set(token value > ether)
+        safe_creation_tx_3 = SafeCreationTx(w3=w3,
+                                            owners=owners,
+                                            threshold=threshold,
+                                            signature_s=s,
+                                            master_copy=self.safe_contract_address,
+                                            gas_price=gas_price,
+                                            payment_token=erc20_contract.address,
+                                            payment_token_eth_value=1.1,
+                                            funder=funder)
+        self.assertLess(safe_creation_tx_3.payment, safe_creation_tx.payment)
+
+        # Check that payment is more when payment_token_eth_value is set(token value < ether)
+        safe_creation_tx_4 = SafeCreationTx(w3=w3,
+                                            owners=owners,
+                                            threshold=threshold,
+                                            signature_s=s,
+                                            master_copy=self.safe_contract_address,
+                                            gas_price=gas_price,
+                                            payment_token=erc20_contract.address,
+                                            payment_token_eth_value=0.1,
+                                            funder=funder)
+        self.assertGreater(safe_creation_tx_4.payment, safe_creation_tx.payment)
+
     def test_safe_gas_with_multiple_owners(self):
         logger.info("Test Safe Proxy creation gas with multiple owners".center(LOG_TITLE_WIDTH, '-'))
         w3 = self.w3

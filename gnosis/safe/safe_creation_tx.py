@@ -1,6 +1,7 @@
+import math
 import os
 from logging import getLogger
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import rlp
 from django_eth.constants import NULL_ADDRESS
@@ -19,7 +20,7 @@ logger = getLogger(__name__)
 
 class SafeCreationTx:
     def __init__(self, w3: Web3, owners: List[str], threshold: int, signature_s: int, master_copy: str,
-                 gas_price: int, funder: str, payment_token: str=None):
+                 gas_price: int, funder: str, payment_token: Union[str, None]=None, payment_token_eth_value: float=1.0):
 
         assert 0 < threshold <= len(owners)
 
@@ -40,7 +41,7 @@ class SafeCreationTx:
         self.gas = self._calculate_gas(owners, encoded_data, payment_token)
 
         # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
-        self.payment = (self.gas + 23000) * self.gas_price
+        self.payment = math.ceil((self.gas + 23000) * self.gas_price / payment_token_eth_value)
 
         self.contract_creation_tx_dict = self._build_proxy_contract_creation_tx(master_copy=self.master_copy,
                                                                                 initializer=encoded_data,
