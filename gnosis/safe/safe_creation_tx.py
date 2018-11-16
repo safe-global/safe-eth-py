@@ -54,7 +54,8 @@ class SafeCreationTx:
         self.gas = self._calculate_gas(owners, encoded_data, payment_token)
 
         # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
-        self.payment = math.ceil((self.gas + 23000) * self.gas_price / payment_token_eth_value)
+        self.payment_ether = (self.gas + 23000) * self.gas_price
+        self.payment = math.ceil(self.payment_ether / payment_token_eth_value)
 
         self.contract_creation_tx_dict = self._build_proxy_contract_creation_tx(master_copy=self.master_copy,
                                                                                 initializer=encoded_data,
