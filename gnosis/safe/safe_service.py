@@ -8,7 +8,7 @@ from hexbytes import HexBytes
 from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
-from .contracts import (get_erc20_contract, get_paying_proxy_contract,
+from .contracts import (get_paying_proxy_contract,
                         get_paying_proxy_deployed_bytecode, get_safe_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
 from .safe_creation_tx import SafeCreationTx
@@ -264,9 +264,6 @@ class SafeService:
     def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
 
-    def retrieve_token_balance(self, safe_address: str, token_address: str):
-        return get_erc20_contract(self.w3, token_address).functions.balanceOf(safe_address).call()
-
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
         :return: int: Estimated gas
@@ -387,7 +384,7 @@ class SafeService:
         if gas_token == NULL_ADDRESS:
             balance = self.ethereum_service.get_balance(safe_address)
         else:
-            balance = self.retrieve_token_balance(safe_address, gas_token)
+            balance = self.ethereum_service.get_erc20_balance(safe_address, gas_token)
         return balance >= (safe_tx_gas + data_gas) * gas_price
 
     def check_refund_receiver(self, refund_receiver: str) -> bool:

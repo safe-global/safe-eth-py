@@ -7,7 +7,7 @@ from ethereum.utils import checksum_encode, ecrecover_to_pub, sha3
 
 from ..contracts import get_safe_contract
 from ..safe_creation_tx import SafeCreationTx
-from .factories import generate_valid_s, deploy_example_erc20
+from .factories import deploy_example_erc20, generate_valid_s
 from .test_safe_service import TestCaseWithSafeContractMixin
 
 logger = logging.getLogger(__name__)

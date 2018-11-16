@@ -8,8 +8,7 @@ from hexbytes import HexBytes
 
 from ..contracts import get_safe_contract
 from ..safe_service import (GasTooLow, InvalidMasterCopyAddress,
-                            NotEnoughFundsForMultisigTx, SafeService,
-                            SafeServiceProvider)
+                            NotEnoughFundsForMultisigTx, SafeServiceProvider)
 from .factories import deploy_example_erc20, deploy_safe, generate_safe
 from .safe_test_case import TestCaseWithSafeContractMixin
 
@@ -217,7 +216,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         amount_token = int(1e18)
         funder = self.w3.eth.accounts[0]
         erc20_contract = deploy_example_erc20(self.w3, amount_token, my_safe_address, funder)
-        safe_token_balance = self.safe_service.retrieve_token_balance(my_safe_address, erc20_contract.address)
+        safe_token_balance = self.ethereum_service.get_erc20_balance(my_safe_address, erc20_contract.address)
         self.assertEqual(safe_token_balance, amount_token)
 
         signature_packed = self.safe_service.signature_to_bytes((1, int(owner, 16), 0))
@@ -248,11 +247,11 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
             tx_gas_price=GAS_PRICE,
         )
 
-        safe_token_balance = self.safe_service.retrieve_token_balance(my_safe_address, erc20_contract.address)
+        safe_token_balance = self.ethereum_service.get_erc20_balance(my_safe_address, erc20_contract.address)
 
         # Token was used for tx gas costs. Sender must have some tokens now and safe should have less
         self.assertLess(safe_token_balance, amount_token)
-        owner_token_balance = self.safe_service.retrieve_token_balance(owner, erc20_contract.address)
+        owner_token_balance = self.ethereum_service.get_erc20_balance(owner, erc20_contract.address)
         self.assertGreater(owner_token_balance, 0)
 
         # All ether on safe was transferred to receiver
@@ -396,7 +395,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
         self.assertEqual(self.safe_service.retrieve_threshold(proxy_address), 2)
 
-    def test_retrieve_token_balance(self):
+    def test_token_balance(self):
         funder = self.w3.eth.accounts[0]
         amount = 200
         deployed_erc20 = deploy_example_erc20(self.w3, amount, funder, deployer=funder)
@@ -404,11 +403,11 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
         safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
         proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
 
-        balance = self.safe_service.retrieve_token_balance(proxy_address, deployed_erc20.address)
+        balance = self.ethereum_service.get_erc20_balance(proxy_address, deployed_erc20.address)
         self.assertEqual(balance, 0)
 
         deployed_erc20.functions.transfer(proxy_address, amount).transact({'from': funder})
-        balance = self.safe_service.retrieve_token_balance(proxy_address, deployed_erc20.address)
+        balance = self.ethereum_service.get_erc20_balance(proxy_address, deployed_erc20.address)
         self.assertEqual(balance, amount)
 
     # TODO Test approve tx from another contract

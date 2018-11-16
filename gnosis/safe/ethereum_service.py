@@ -8,6 +8,8 @@ from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 from web3.utils.threads import Timeout
 
+from .contracts import get_erc20_contract
+
 logger = getLogger(__name__)
 
 
@@ -56,8 +58,11 @@ class EthereumService:
                 gas += 68  # Any other byte -> 68 Gas
         return gas
 
-    def get_balance(self, address, block_identifier=None):
+    def get_balance(self, address: str, block_identifier=None):
         return self.w3.eth.getBalance(address, block_identifier)
+
+    def get_erc20_balance(self, address: str, erc20_address: str):
+        return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
 
     def get_transaction(self, tx_hash):
         return self.w3.eth.getTransaction(tx_hash)
