@@ -21,7 +21,7 @@ logger = getLogger(__name__)
 class SafeCreationTx:
     def __init__(self, w3: Web3, owners: List[str], threshold: int, signature_s: int, master_copy: str,
                  gas_price: int, funder: Union[str, None], payment_token: Union[str, None]=None,
-                 payment_token_eth_value: float=1.0):
+                 payment_token_eth_value: float=1.0, fixed_creation_cost: Union[int, None]=None):
         """
         Prepare Safe creation
         :param w3: Web3 instance
@@ -33,6 +33,7 @@ class SafeCreationTx:
         :param funder: Address to refund when the Safe is created. Address(0) if no need to refund
         :param payment_token: Payment token instead of paying the funder with ether. If None Ether will be used
         :param payment_token_eth_value: Value of payment token per 1 Ether
+        :param fixed_creation_cost: Fixed creation cost of Safe (Wei)
         """
 
         assert 0 < threshold <= len(owners)
@@ -53,8 +54,13 @@ class SafeCreationTx:
 
         self.gas = self._calculate_gas(owners, encoded_data, payment_token)
 
-        # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
-        self.payment_ether = (self.gas + 23000) * self.gas_price
+        if fixed_creation_cost is None:
+            # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
+            self.payment_ether = (self.gas + 23000) * self.gas_price
+        else:
+            self.payment_ether = fixed_creation_cost
+
+        # Calculate payment for tokens using the conversion (if used)
         self.payment = math.ceil(self.payment_ether / payment_token_eth_value)
 
         self.contract_creation_tx_dict = self._build_proxy_contract_creation_tx(master_copy=self.master_copy,

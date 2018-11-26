@@ -129,7 +129,8 @@ class SafeService:
             return get_safe_contract(self.w3)
 
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int,
-                               payment_token: Union[str, None], payment_token_eth_value: float=1.0) -> SafeCreationTx:
+                               payment_token: Union[str, None], payment_token_eth_value: float=1.0,
+                               fixed_creation_cost: Union[int, None]=None) -> SafeCreationTx:
         safe_creation_tx = SafeCreationTx(w3=self.w3,
                                           owners=owners,
                                           threshold=threshold,
@@ -138,7 +139,8 @@ class SafeService:
                                           gas_price=gas_price,
                                           funder=self.funder_address,
                                           payment_token=payment_token,
-                                          payment_token_eth_value=payment_token_eth_value)
+                                          payment_token_eth_value=payment_token_eth_value,
+                                          fixed_creation_cost=fixed_creation_cost)
 
         assert safe_creation_tx.contract_creation_tx.nonce == 0
         return safe_creation_tx
