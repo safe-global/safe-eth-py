@@ -84,21 +84,21 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                       gas_price=gas_price,
                                       funder=funder)
 
-        ether = 0.01
-        logger.info("Send %d ether to safe %s", ether, safe_builder.safe_address)
+        safe_balance = w3.toWei(0.01, 'ether')
+        logger.info("Send %d ether to safe %s", w3.fromWei(safe_balance, 'ether'), safe_builder.safe_address)
         w3.eth.sendTransaction({
             'from': user_external_account,
             'to': safe_builder.safe_address,
-            'value': w3.toWei(ether, 'ether')
+            'value': safe_balance
         })
-        self.assertEqual(w3.eth.getBalance(safe_builder.safe_address), w3.toWei(ether, 'ether'))
+        self.assertEqual(w3.eth.getBalance(safe_builder.safe_address), safe_balance)
 
-        ether = safe_builder.payment
-        logger.info("Send %d gwei to deployer %s", w3.fromWei(ether, 'gwei'), safe_builder.deployer_address)
+        logger.info("Send %d gwei to deployer %s", w3.fromWei(safe_builder.payment_ether, 'gwei'),
+                    safe_builder.deployer_address)
         w3.eth.sendTransaction({
             'from': funder,
             'to': safe_builder.deployer_address,
-            'value': safe_builder.payment
+            'value': safe_builder.payment_ether
         })
 
         logger.info("Create proxy contract with address %s", safe_builder.safe_address)
@@ -213,6 +213,70 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                             payment_token_eth_value=0.1,
                                             funder=funder)
         self.assertGreater(safe_creation_tx_4.payment, safe_creation_tx.payment)
+
+    def test_safe_creation_tx_builder_with_fixed_cost(self):
+        logger.info("Test Safe Proxy creation With Fixed Cost".center(LOG_TITLE_WIDTH, '-'))
+        w3 = self.w3
+
+        s = generate_valid_s()
+
+        funder = w3.eth.accounts[1]
+        owners = w3.eth.accounts[2:4]
+        threshold = len(owners) - 1
+        gas_price = GAS_PRICE
+        fixed_creation_cost = 123  # Wei
+
+        safe_creation_tx = SafeCreationTx(w3=w3,
+                                          owners=owners,
+                                          threshold=threshold,
+                                          signature_s=s,
+                                          master_copy=self.safe_contract_address,
+                                          gas_price=gas_price,
+                                          payment_token=None,
+                                          funder=funder,
+                                          fixed_creation_cost=fixed_creation_cost)
+
+        self.assertEqual(safe_creation_tx.payment, fixed_creation_cost)
+        self.assertGreaterEqual(safe_creation_tx.payment_ether, safe_creation_tx.gas * safe_creation_tx.gas_price)
+
+        deployer_address = safe_creation_tx.deployer_address
+        safe_address = safe_creation_tx.safe_address
+        safe_balance = w3.toWei(0.01, 'ether')
+        logger.info("Send %d ether to safe %s", w3.fromWei(safe_balance, 'ether'), safe_address)
+        w3.eth.sendTransaction({
+            'from': funder,
+            'to': safe_address,
+            'value': safe_balance
+        })
+        self.assertEqual(w3.eth.getBalance(safe_address), safe_balance)
+
+        logger.info("Send %d ether to deployer %s", w3.fromWei(safe_creation_tx.payment_ether, 'ether'),
+                    deployer_address)
+        w3.eth.sendTransaction({
+            'from': funder,
+            'to': deployer_address,
+            'value': safe_creation_tx.payment_ether
+        })
+
+        logger.info("Create proxy contract with address %s", safe_creation_tx.safe_address)
+
+        funder_balance = w3.eth.getBalance(funder)
+
+        # This tx will create the Safe Proxy and return tokens to the funder
+        tx_hash = w3.eth.sendRawTransaction(safe_creation_tx.raw_tx)
+        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        self.assertEqual(tx_receipt.contractAddress, safe_address)
+        self.assertEqual(w3.eth.getBalance(safe_address), safe_balance - fixed_creation_cost)
+        self.assertLess(w3.eth.getBalance(deployer_address), safe_creation_tx.payment_ether)
+        self.assertEqual(w3.eth.getBalance(funder), funder_balance + safe_creation_tx.payment)
+
+        logger.info("Deployer account has still %d gwei left (will be lost)",
+                    w3.fromWei(w3.eth.getBalance(safe_creation_tx.deployer_address), 'gwei'))
+
+        deployed_safe_proxy_contract = get_safe_contract(w3, safe_address)
+
+        self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
+        self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
 
     def test_safe_gas_with_multiple_owners(self):
         logger.info("Test Safe Proxy creation gas with multiple owners".center(LOG_TITLE_WIDTH, '-'))

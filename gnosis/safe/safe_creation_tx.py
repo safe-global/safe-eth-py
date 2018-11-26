@@ -54,14 +54,14 @@ class SafeCreationTx:
 
         self.gas = self._calculate_gas(owners, encoded_data, payment_token)
 
-        if fixed_creation_cost is None:
-            # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
-            self.payment_ether = (self.gas + 23000) * self.gas_price
-        else:
-            self.payment_ether = fixed_creation_cost
+        # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
+        self.payment_ether = (self.gas + 23000) * self.gas_price
 
-        # Calculate payment for tokens using the conversion (if used)
-        self.payment = math.ceil(self.payment_ether / payment_token_eth_value)
+        if fixed_creation_cost is None:
+            # Calculate payment for tokens using the conversion (if used)
+            self.payment = math.ceil(self.payment_ether / payment_token_eth_value)
+        else:
+            self.payment = fixed_creation_cost
 
         self.contract_creation_tx_dict = self._build_proxy_contract_creation_tx(master_copy=self.master_copy,
                                                                                 initializer=encoded_data,
