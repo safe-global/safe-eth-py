@@ -136,12 +136,11 @@ class EthereumService:
         :return: True if tx was mined with the number of confirmations required, False otherwise
         """
         tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
-        if not tx_receipt:
+        if not tx_receipt or tx_receipt['blockNumber'] is None:
+            # If tx_receipt exists but blockNumber is None, tx is still pending (just Parity)
             return False
         else:
-            block_number = self.w3.eth.blockNumber
-            tx_block_number = tx_receipt['blockNumber']
-            return (block_number - tx_block_number) >= confirmations
+            return (self.w3.eth.blockNumber - tx_receipt['blockNumber']) >= confirmations
 
     @staticmethod
     def private_key_to_address(private_key):
