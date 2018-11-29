@@ -20,7 +20,7 @@ class SafeServiceException(Exception):
     pass
 
 
-class GasTooLow(SafeServiceException):
+class GasPriceTooLow(SafeServiceException):
     pass
 
 
@@ -413,7 +413,9 @@ class SafeService:
                          tx_gas=None,
                          tx_gas_price=None) -> Tuple[str, any]:
         """
-        This function is for being called from the safe relay service
+        Send multisig tx to the Safe
+        :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + data_gas) * 2` will be used
+        :param tx_gas_price: Gas price of the external tx. If not, `gas_price` will be used
         :return: Tuple(tx_hash, tx)
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
@@ -422,20 +424,13 @@ class SafeService:
         gas_token = gas_token or NULL_ADDRESS
         refund_receiver = refund_receiver or NULL_ADDRESS
         to = to or NULL_ADDRESS
-
         tx_gas_price = tx_gas_price or gas_price  # Use wrapped tx gas_price if not provided
-        if gas_token == NULL_ADDRESS and gas_price < tx_gas_price:  # If is lower we don't get the refund for the tx
-            raise GasTooLow('Gas=%s and should be at least %d' % (tx_gas_price, gas_price))
-
-        # Make sure refund receiver is set to 0x0 so that the contract refunds the gas costs to tx.origin
-        if not self.check_refund_receiver(refund_receiver):
-            raise InvalidRefundReceiver(refund_receiver)
 
         # Make sure proxy contract is ours
         if not self.check_proxy_code(safe_address):
             raise InvalidProxyContract(safe_address)
 
-        # Make sure master copy is updated
+        # Make sure master copy is valid
         if not self.check_master_copy(safe_address):
             raise InvalidMasterCopyAddress
 
@@ -452,6 +447,7 @@ class SafeService:
 
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
         tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key
+        # TODO Use EthereumService, as it's a static method
         tx_sender_address = self.ethereum_service.private_key_to_address(tx_sender_private_key)
 
         safe_contract = get_safe_contract(self.w3, address=safe_address)
