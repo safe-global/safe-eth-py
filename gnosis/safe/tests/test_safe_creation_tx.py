@@ -147,7 +147,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
         payment = safe_creation_tx.payment
         deployer_address = safe_creation_tx.deployer_address
         safe_address = safe_creation_tx.safe_address
-        logger.info("Send %d tokens to safe %s", erc20_deployer, safe_address)
+        logger.info("Send %d tokens to safe %s", payment, safe_address)
         erc20_contract.functions.transfer(safe_address, payment).transact({'from': erc20_deployer})
         self.assertEqual(erc20_contract.functions.balanceOf(safe_address).call(), payment)
 
