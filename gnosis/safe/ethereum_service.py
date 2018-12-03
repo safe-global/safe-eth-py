@@ -72,7 +72,9 @@ class EthereumService:
             return self.w3.eth.getTransactionReceipt(tx_hash)
         else:
             try:
-                return self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
+                tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
+                # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
+                return None if tx_receipt['blockNumber'] is None else tx_receipt
             except Timeout:
                 return None
 
