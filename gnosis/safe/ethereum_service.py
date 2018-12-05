@@ -38,8 +38,8 @@ class EthereumService:
         except (ConnectionError, FileNotFoundError):
             self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
 
-    def get_nonce_for_account(self, address):
-        return self.w3.eth.getTransactionCount(address, 'pending')
+    def get_nonce_for_account(self, address, block_identifier=None):
+        return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
     @property
     def current_block_number(self):
@@ -84,7 +84,7 @@ class EthereumService:
     def send_raw_transaction(self, raw_transaction):
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
-    def send_eth_to(self, to: str, gas_price: int, value: int, gas: int=22000) -> bytes:
+    def send_eth_to(self, to: str, gas_price: int, value: int, gas: int=22000, block_identifier=None) -> bytes:
         """
         Send ether using configured account
         :param to: to
@@ -95,7 +95,6 @@ class EthereumService:
         """
 
         assert check_checksum(to)
-
         assert value < self.w3.toWei(self.max_eth_to_send, 'ether')
 
         private_key = self.funder_private_key
@@ -107,7 +106,7 @@ class EthereumService:
                     'value': value,
                     'gas': gas,
                     'gasPrice': gas_price,
-                    'nonce': self.get_nonce_for_account(ethereum_account),
+                    'nonce': self.get_nonce_for_account(ethereum_account, block_identifier=block_identifier),
                 }
 
             signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
@@ -121,7 +120,7 @@ class EthereumService:
                     'value': value,
                     'gas': gas,
                     'gasPrice': gas_price,
-                    'nonce': self.get_nonce_for_account(ethereum_account),
+                    'nonce': self.get_nonce_for_account(ethereum_account, block_identifier=block_identifier),
                 }
             logger.debug('Sending %d wei from %s to %s', value, ethereum_account, to)
             return self.w3.eth.sendTransaction(tx)
