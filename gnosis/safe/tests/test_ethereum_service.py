@@ -34,3 +34,40 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
 
         nonce = self.ethereum_service.get_nonce_for_account(address, block_identifier='pending')
         self.assertEqual(nonce, 0)
+
+    def test_send_eth_to(self):
+        address, _ = get_eth_address_with_key()
+        self.ethereum_service.send_eth_to(address, 1, value=1)
+        self.assertEqual(self.ethereum_service.get_balance(address), 1)
+
+    def test_send_unsigned_transaction(self):
+        address = self.w3.eth.accounts[5]
+        to, _ = get_eth_address_with_key()
+        value = 4
+
+        tx = {
+            'to': to,
+            'value': value,
+            'gas': 23000,
+            'gasPrice': 1,
+        }
+
+        self.ethereum_service.send_unsigned_transaction(tx, public_key=address)
+        self.assertEqual(self.ethereum_service.get_balance(to), value)
+        first_nonce = tx['nonce']
+        self.assertGreaterEqual(first_nonce, 0)
+
+        # Will use the same nonce
+        with self.assertRaisesMessage(ValueError, 'correct nonce'):
+            self.ethereum_service.send_unsigned_transaction(tx, public_key=address)
+
+        # With retry, everything should work
+        self.ethereum_service.send_unsigned_transaction(tx, public_key=address, retry=True)
+        self.assertEqual(tx['nonce'], first_nonce + 1)
+        self.assertEqual(self.ethereum_service.get_balance(to), value * 2)
+
+        # We try again with the first nonce, and should work too
+        tx['nonce'] = first_nonce
+        self.ethereum_service.send_unsigned_transaction(tx, public_key=address, retry=True)
+        self.assertEqual(tx['nonce'], first_nonce + 2)
+        self.assertEqual(self.ethereum_service.get_balance(to), value * 3)

@@ -4,6 +4,7 @@ from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
                             privtoaddr, sha3)
 from hexbytes import HexBytes
+from typing import Dict, Union
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 from web3.utils.threads import Timeout
@@ -81,52 +82,95 @@ class EthereumService:
     def get_block(self, block_number, full_transactions=False):
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
 
-    def send_raw_transaction(self, raw_transaction):
+    def send_raw_transaction(self, raw_transaction) -> bytes:
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
-    def send_eth_to(self, to: str, gas_price: int, value: int, gas: int=22000, block_identifier=None) -> bytes:
+    def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Union[None, str]=None,
+                                  public_key: Union[None, str]=None, retry: bool=False,
+                                  block_identifier: Union[None, str]=None) -> bytes:
+        """
+        Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
+        `private_key` cannot be `None`
+        :param tx:
+        :param private_key:
+        :param public_key:
+        :param retry: Retry if a problem with nonce is found
+        :param block_identifier:
+        :return:
+        """
+        if private_key:
+            address = self.private_key_to_address(private_key)
+        elif public_key:
+            address = public_key
+        else:
+            logger.error('No ethereum account provided. Need a public_key or private_key')
+            raise ValueError("Ethereum account was not configured or unlocked in the node")
+
+        nonce = tx.get('nonce')
+        if nonce is None:
+            nonce = self.get_nonce_for_account(address, block_identifier=block_identifier)
+            tx['nonce'] = nonce
+
+        number_errors = 0
+        while number_errors != 5:  # Retry if a problem with a nonce arises
+            try:
+                if private_key:
+                    signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
+                    logger.debug('Sending %d wei from %s to %s', tx['value'], address, tx['to'])
+                    return self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+                elif public_key:
+                    tx['from'] = public_key
+                    if 'nonce' not in tx:
+                        tx['nonce'] = self.get_nonce_for_account(public_key, block_identifier=block_identifier)
+                    return self.w3.eth.sendTransaction(tx)
+            except ValueError as e:
+                str_e = str(e).lower()
+                if retry and 'replacement transaction underpriced' in str_e:
+                    logger.error('Tx with same nonce was already sent, retrying with nonce + 1')
+                    tx['nonce'] += 1
+                elif retry and "the tx doesn't have the correct nonce" in str_e:
+                    logger.error('Tx does not have the correct nonce, retrying recovering nonce again')
+                    tx['nonce'] = self.get_nonce_for_account(address, block_identifier='latest')
+                    number_errors += 1
+                else:
+                    raise e
+
+    def send_eth_to(self, to: str, gas_price: int, value: int, gas: int=22000, retry: bool=False,
+                    block_identifier=None) -> bytes:
         """
         Send ether using configured account
         :param to: to
         :param gas_price: gas_price
         :param value: value(wei)
         :param gas: gas, defaults to 22000
+        :param retry: Retry if a problem is found
+        :param block_identifier: None default, 'pending' not confirmed txs
         :return: tx_hash
         """
 
         assert check_checksum(to)
         assert value < self.w3.toWei(self.max_eth_to_send, 'ether')
 
-        private_key = self.funder_private_key
+        private_key = None
+        public_key = None
 
-        if private_key:
-            ethereum_account = self.private_key_to_address(private_key)
-            tx = {
-                    'to': to,
-                    'value': value,
-                    'gas': gas,
-                    'gasPrice': gas_price,
-                    'nonce': self.get_nonce_for_account(ethereum_account, block_identifier=block_identifier),
-                }
-
-            signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
-            logger.debug('Sending %d wei from %s to %s', value, ethereum_account, to)
-            return self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+        if self.funder_private_key:
+            private_key = self.funder_private_key
         elif self.w3.eth.accounts:
-            ethereum_account = self.w3.eth.accounts[0]
-            tx = {
-                    'from': ethereum_account,
-                    'to': to,
-                    'value': value,
-                    'gas': gas,
-                    'gasPrice': gas_price,
-                    'nonce': self.get_nonce_for_account(ethereum_account, block_identifier=block_identifier),
-                }
-            logger.debug('Sending %d wei from %s to %s', value, ethereum_account, to)
-            return self.w3.eth.sendTransaction(tx)
+            public_key = self.w3.eth.accounts[0]
         else:
             logger.error('No ethereum account configured')
             raise ValueError("Ethereum account was not configured or unlocked in the node")
+
+        tx = {
+            'to': to,
+            'value': value,
+            'gas': gas,
+            'gasPrice': gas_price,
+        }
+
+        return self.send_unsigned_transaction(tx, private_key=private_key, public_key=public_key,
+                                              retry=retry, block_identifier=block_identifier)
 
     def check_tx_with_confirmations(self, tx_hash: str, confirmations: int) -> bool:
         """
