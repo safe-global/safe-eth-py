@@ -4,7 +4,7 @@ from django.test import TestCase
 from django_eth.tests.factories import get_eth_address_with_key
 
 from ..ethereum_service import EthereumServiceProvider
-from .factories import deploy_example_erc20, deploy_safe, generate_safe
+from .factories import deploy_example_erc20
 from .test_safe_service import TestCaseWithSafeContractMixin
 
 logger = logging.getLogger(__name__)
