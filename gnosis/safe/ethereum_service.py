@@ -3,6 +3,7 @@ from logging import getLogger
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
                             privtoaddr, sha3)
+from functools import wraps
 from hexbytes import HexBytes
 from typing import Dict, Union
 from web3 import HTTPProvider, Web3
@@ -12,6 +13,43 @@ from web3.utils.threads import Timeout
 from .contracts import get_erc20_contract
 
 logger = getLogger(__name__)
+
+
+class TransactionAlreadyImported(ValueError):
+    pass
+
+
+class ReplacementTransactionUnderpriced(ValueError):
+    pass
+
+
+class FromAddressNotFound(ValueError):
+    pass
+
+
+class InvalidNonce(ValueError):
+    pass
+
+
+def tx_with_exception_handling(func):
+    error_with_exception: Dict[str, Exception] = {
+        'Transaction with the same hash was already imported': TransactionAlreadyImported,
+        'replacement transaction underpriced': ReplacementTransactionUnderpriced,
+        'from not found': FromAddressNotFound,
+        'correct nonce': InvalidNonce,
+    }
+
+    @wraps(func)
+    def with_exception_handling(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError as exc:
+            str_exc = str(exc).lower()
+            for reason, custom_exception in error_with_exception.items():
+                if reason.lower() in str_exc:
+                    raise custom_exception(str(exc)) from exc
+            raise exc
+    return with_exception_handling
 
 
 class EthereumServiceProvider:
@@ -82,6 +120,11 @@ class EthereumService:
     def get_block(self, block_number, full_transactions=False):
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
 
+    @tx_with_exception_handling
+    def send_transaction(self, transaction_dict: Dict[str, any]) -> bytes:
+        return self.w3.eth.sendTransaction(transaction_dict)
+
+    @tx_with_exception_handling
     def send_raw_transaction(self, raw_transaction) -> bytes:
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
@@ -122,7 +165,7 @@ class EthereumService:
                     tx['from'] = public_key
                     if 'nonce' not in tx:
                         tx['nonce'] = self.get_nonce_for_account(public_key, block_identifier=block_identifier)
-                    return self.w3.eth.sendTransaction(tx)
+                    return self.send_transaction(tx)
             except ValueError as e:
                 str_e = str(e).lower()
                 if retry and 'replacement transaction underpriced' in str_e:

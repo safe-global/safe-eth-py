@@ -3,7 +3,7 @@ import logging
 from django.test import TestCase
 from django_eth.tests.factories import get_eth_address_with_key
 
-from ..ethereum_service import EthereumServiceProvider
+from ..ethereum_service import EthereumServiceProvider, InvalidNonce, FromAddressNotFound
 from .factories import deploy_example_erc20
 from .test_safe_service import TestCaseWithSafeContractMixin
 
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
     @classmethod
     def setUpTestData(cls):
+        cls.gas_price = 1
         cls.ethereum_service = EthereumServiceProvider()
         cls.w3 = cls.ethereum_service.w3
 
@@ -37,8 +38,29 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
 
     def test_send_eth_to(self):
         address, _ = get_eth_address_with_key()
-        self.ethereum_service.send_eth_to(address, 1, value=1)
+        self.ethereum_service.send_eth_to(address, self.gas_price, value=1)
         self.assertEqual(self.ethereum_service.get_balance(address), 1)
+
+    def test_send_transaction(self):
+        address = self.w3.eth.accounts[0]
+        to, _ = get_eth_address_with_key()
+        value = 1
+        tx = {
+            'to': to,
+            'value': value,
+            'gas': 23000,
+            'gasPrice': self.gas_price,
+            'nonce': self.ethereum_service.get_nonce_for_account(address)
+        }
+
+        with self.assertRaises(FromAddressNotFound):
+            self.ethereum_service.send_transaction(tx)
+
+        tx['from'] = address
+        self.ethereum_service.send_transaction(tx)
+
+        with self.assertRaises(InvalidNonce):
+            self.ethereum_service.send_transaction(tx)
 
     def test_send_unsigned_transaction(self):
         address = self.w3.eth.accounts[5]
@@ -58,7 +80,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
         self.assertGreaterEqual(first_nonce, 0)
 
         # Will use the same nonce
-        with self.assertRaisesMessage(ValueError, 'correct nonce'):
+        with self.assertRaisesMessage(InvalidNonce, 'correct nonce'):
             self.ethereum_service.send_unsigned_transaction(tx, public_key=address)
 
         # With retry, everything should work
