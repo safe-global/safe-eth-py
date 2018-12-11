@@ -31,12 +31,18 @@ class InvalidNonce(ValueError):
     pass
 
 
+class InsufficientFunds(ValueError):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
         'replacement transaction underpriced': ReplacementTransactionUnderpriced,
         'from not found': FromAddressNotFound,
         'correct nonce': InvalidNonce,
+        'insufficient funds': InsufficientFunds,
+        "doesn't have enough funds": InsufficientFunds,
     }
 
     @wraps(func)

@@ -3,7 +3,7 @@ import logging
 from django.test import TestCase
 from django_eth.tests.factories import get_eth_address_with_key
 
-from ..ethereum_service import EthereumServiceProvider, InvalidNonce, FromAddressNotFound
+from ..ethereum_service import EthereumServiceProvider, InvalidNonce, InsufficientFunds, FromAddressNotFound
 from .factories import deploy_example_erc20
 from .test_safe_service import TestCaseWithSafeContractMixin
 
@@ -58,8 +58,14 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
 
         tx['from'] = address
         self.ethereum_service.send_transaction(tx)
+        self.assertEqual(self.ethereum_service.get_balance(to), 1)
 
         with self.assertRaises(InvalidNonce):
+            self.ethereum_service.send_transaction(tx)
+
+        tx['value'] = self.ethereum_service.get_balance(address) + 1
+        tx['nonce'] = self.ethereum_service.get_nonce_for_account(address)
+        with self.assertRaises(InsufficientFunds):
             self.ethereum_service.send_transaction(tx)
 
     def test_send_unsigned_transaction(self):
