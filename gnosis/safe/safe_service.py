@@ -11,7 +11,7 @@ from web3.exceptions import BadFunctionCallOutput
 from .contracts import (get_paying_proxy_contract,
                         get_paying_proxy_deployed_bytecode, get_safe_contract)
 from .ethereum_service import EthereumService, EthereumServiceProvider
-from .safe_creation_tx import SafeCreationTx
+from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 
 logger = getLogger(__name__)
 
@@ -45,6 +45,10 @@ class SafeGasEstimationError(SafeServiceException):
 
 
 class InvalidChecksumAddress(SafeServiceException):
+    pass
+
+
+class InvalidPaymentToken(SafeServiceException):
     pass
 
 
@@ -131,18 +135,21 @@ class SafeService:
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int,
                                payment_token: Union[str, None], payment_token_eth_value: float=1.0,
                                fixed_creation_cost: Union[int, None]=None) -> SafeCreationTx:
-        safe_creation_tx = SafeCreationTx(w3=self.w3,
-                                          owners=owners,
-                                          threshold=threshold,
-                                          signature_s=s,
-                                          master_copy=self.master_copy_address,
-                                          gas_price=gas_price,
-                                          funder=self.funder_address,
-                                          payment_token=payment_token,
-                                          payment_token_eth_value=payment_token_eth_value,
-                                          fixed_creation_cost=fixed_creation_cost)
+        try:
+            safe_creation_tx = SafeCreationTx(w3=self.w3,
+                                              owners=owners,
+                                              threshold=threshold,
+                                              signature_s=s,
+                                              master_copy=self.master_copy_address,
+                                              gas_price=gas_price,
+                                              funder=self.funder_address,
+                                              payment_token=payment_token,
+                                              payment_token_eth_value=payment_token_eth_value,
+                                              fixed_creation_cost=fixed_creation_cost)
+        except InvalidERC20Token as exc:
+            raise InvalidPaymentToken('Invalid payment token %s' % payment_token) from exc
 
-        assert safe_creation_tx.contract_creation_tx.nonce == 0
+        assert safe_creation_tx.tx_pyethereum.nonce == 0
         return safe_creation_tx
 
     def deploy_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:

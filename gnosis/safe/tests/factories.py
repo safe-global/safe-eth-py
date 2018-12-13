@@ -55,7 +55,7 @@ def deploy_safe(w3, safe_creation_tx: SafeCreationTx, funder: str, initial_fundi
         })
     )
 
-    tx_hash = w3.eth.sendRawTransaction(bytes(safe_creation_tx.raw_tx))
+    tx_hash = w3.eth.sendRawTransaction(bytes(safe_creation_tx.tx_raw))
     tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     assert tx_receipt.contractAddress == safe_creation_tx.safe_address
     assert tx_receipt.status

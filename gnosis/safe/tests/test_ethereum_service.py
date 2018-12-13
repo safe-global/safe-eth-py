@@ -3,7 +3,8 @@ import logging
 from django.test import TestCase
 from django_eth.tests.factories import get_eth_address_with_key
 
-from ..ethereum_service import EthereumServiceProvider, InvalidNonce, InsufficientFunds, FromAddressNotFound
+from ..ethereum_service import (EthereumServiceProvider, FromAddressNotFound,
+                                InsufficientFunds, InvalidNonce)
 from .factories import deploy_example_erc20
 from .test_safe_service import TestCaseWithSafeContractMixin
 

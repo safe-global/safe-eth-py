@@ -1,11 +1,11 @@
+from functools import wraps
 from logging import getLogger
+from typing import Dict, Union
 
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
                             privtoaddr, sha3)
-from functools import wraps
 from hexbytes import HexBytes
-from typing import Dict, Union
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 from web3.utils.threads import Timeout

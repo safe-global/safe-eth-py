@@ -7,5 +7,3 @@ hexbytes==0.1.0
 psycopg2-binary==2.7.6.1
 py-eth-sig-utils==0.3.0
 web3[tester]==4.8.2
-#FIXME Remove this when 1.4.5 is updated
-py-ecc==1.4.3
