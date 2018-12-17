@@ -65,7 +65,7 @@ class SafeCreationTx:
         safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold)
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
-        # estimated_gas: int = self._estimate_gas(master_copy, safe_setup_data, funder, payment_token, gas_price)
+        estimated_gas: int = self._estimate_gas(master_copy, safe_setup_data, funder, payment_token, gas_price)
         # self.gas = max(magic_gas, estimated_gas)
         # TODO Disable formal gas estimation until CREATE2
         self.gas = magic_gas
