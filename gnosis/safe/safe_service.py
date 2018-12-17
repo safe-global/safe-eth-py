@@ -24,6 +24,10 @@ class GasPriceTooLow(SafeServiceException):
     pass
 
 
+class CannotEstimateGas(SafeServiceException):
+    pass
+
+
 class NotEnoughFundsForMultisigTx(SafeServiceException):
     pass
 
@@ -40,10 +44,6 @@ class InvalidMasterCopyAddress(SafeServiceException):
     pass
 
 
-class SafeGasEstimationError(SafeServiceException):
-    pass
-
-
 class InvalidChecksumAddress(SafeServiceException):
     pass
 
@@ -57,6 +57,10 @@ class InvalidMultisigTx(SafeServiceException):
 
 
 class InvalidInternalTx(InvalidMultisigTx):
+    pass
+
+
+class InvalidGasEstimation(InvalidMultisigTx):
     pass
 
 
@@ -276,7 +280,7 @@ class SafeService:
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
         :return: int: Estimated gas
-        :raises: SafeGasEstimationError: If gas cannot be estimated
+        :raises: CannotEstimateGas: If gas cannot be estimated
         :raises: ValueError: Cannot decode received data
         """
         data = data or b''
@@ -303,8 +307,9 @@ class SafeService:
 
             # Estimated gas in hex must be 64
             if len(estimated_gas_hex) != 64:
-                logger.warning('Exception estimating gas, returned value is %s', result)
-                raise SafeGasEstimationError(result)
+                logger.warning('Safe=%s Problem estimating gas, returned value is %s for tx=%s',
+                               safe_address, result, tx)
+                raise CannotEstimateGas('Received %s for tx=%s' % (result, tx))
 
             estimated_gas = int(estimated_gas_hex, 16)
             return estimated_gas + base_gas
@@ -449,8 +454,8 @@ class SafeService:
         safe_data_gas_estimation = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
                                                              gas_token, safe_tx_gas_estimation)
         if safe_tx_gas < safe_tx_gas_estimation or data_gas < safe_data_gas_estimation:
-            raise SafeGasEstimationError("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
-                                         (safe_tx_gas_estimation, safe_data_gas_estimation))
+            raise InvalidGasEstimation("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
+                                       (safe_tx_gas_estimation, safe_data_gas_estimation))
 
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
         tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key
