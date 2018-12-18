@@ -155,10 +155,8 @@ class EthereumService:
             logger.error('No ethereum account provided. Need a public_key or private_key')
             raise ValueError("Ethereum account was not configured or unlocked in the node")
 
-        nonce = tx.get('nonce')
-        if nonce is None:
-            nonce = self.get_nonce_for_account(address, block_identifier=block_identifier)
-            tx['nonce'] = nonce
+        if tx.get('nonce') is None:
+            tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
 
         for _ in range(20):
             try:

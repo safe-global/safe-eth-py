@@ -506,7 +506,6 @@ class SafeService:
             'from': tx_sender_address,
             'gas': tx_gas,
             'gasPrice': tx_gas_price,
-            'nonce': self.ethereum_service.get_nonce_for_account(tx_sender_address, block_identifier=block_identifier)
         })
 
         tx_hash = self.ethereum_service.send_unsigned_transaction(tx,
