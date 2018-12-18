@@ -163,7 +163,7 @@ class EthereumService:
                 if private_key:
                     signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
                     logger.debug('Sending %d wei from %s to %s', tx['value'], address, tx['to'])
-                    return self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+                    return self.send_raw_transaction(signed_tx.rawTransaction)
                 elif public_key:
                     tx['from'] = public_key
                     if 'nonce' not in tx:
