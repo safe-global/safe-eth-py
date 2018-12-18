@@ -423,7 +423,8 @@ class SafeService:
                          signatures: bytes,
                          tx_sender_private_key=None,
                          tx_gas=None,
-                         tx_gas_price=None) -> Tuple[str, any]:
+                         tx_gas_price=None,
+                         block_identifier='pending') -> Tuple[str, any]:
         """
         Send multisig tx to the Safe
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + data_gas) * 2` will be used
@@ -475,7 +476,7 @@ class SafeService:
                 gas_token,
                 refund_receiver,
                 signatures,
-            ).call({'from': tx_sender_address}, block_identifier='pending')
+            ).call({'from': tx_sender_address}, block_identifier=block_identifier)
 
             if not success:
                 raise InvalidInternalTx
@@ -505,12 +506,16 @@ class SafeService:
             'from': tx_sender_address,
             'gas': tx_gas,
             'gasPrice': tx_gas_price,
-            'nonce': self.ethereum_service.get_nonce_for_account(tx_sender_address)
+            'nonce': self.ethereum_service.get_nonce_for_account(tx_sender_address, block_identifier=block_identifier)
         })
 
         tx_signed = self.w3.eth.account.signTransaction(tx, tx_sender_private_key)
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx,
+                                                                  private_key=tx_sender_private_key,
+                                                                  retry=True,
+                                                                  block_identifier=block_identifier)
 
-        return self.w3.eth.sendRawTransaction(tx_signed.rawTransaction), tx
+        return tx_hash, tx
 
     @staticmethod
     def get_hash_for_safe_tx(safe_address: str, to: str, value: int, data: bytes,
