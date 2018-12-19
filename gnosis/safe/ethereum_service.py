@@ -171,12 +171,14 @@ class EthereumService:
             except ReplacementTransactionUnderpriced as e:
                 if not retry or not number_errors:
                     raise e
-                logger.error('Tx with same nonce was already sent, retrying with nonce + 1')
+                logger.error('address=%s Tx with nonce=%d was already sent, retrying with nonce + 1',
+                             address, tx['nonce'])
                 tx['nonce'] += 1
             except InvalidNonce as e:
                 if not retry or not number_errors:
                     raise e
-                logger.error('Tx does not have the correct nonce, retrying recovering nonce again')
+                logger.error('address=%s Tx with invalid nonce=%d, retrying recovering nonce again',
+                             address, tx['nonce'])
                 tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
                 number_errors -= 1
 
