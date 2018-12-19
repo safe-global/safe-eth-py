@@ -66,9 +66,7 @@ class SafeCreationTx:
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
         estimated_gas: int = self._estimate_gas(master_copy, safe_setup_data, funder, payment_token, gas_price)
-        # self.gas = max(magic_gas, estimated_gas)
-        # TODO Disable formal gas estimation until CREATE2
-        self.gas = magic_gas
+        self.gas = max(magic_gas, estimated_gas)
 
         # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
         self.payment_ether, self.payment = self._calculate_funder_payment(self.gas,
