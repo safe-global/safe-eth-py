@@ -29,6 +29,49 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
         token_balance = self.ethereum_service.get_erc20_balance(another_account, erc20_contract.address)
         self.assertEqual(token_balance, 0)
 
+    def test_estimate_gas(self):
+        send_ether_gas = 21000
+        from_ = self.w3.eth.accounts[0]
+        to, _ = get_eth_address_with_key()
+        gas = self.ethereum_service.estimate_gas(from_, to, 5, None, block_identifier='pending')
+        self.assertEqual(gas, send_ether_gas)
+
+        gas = self.ethereum_service.estimate_gas(from_, to, 5, b'')
+        self.assertEqual(gas, send_ether_gas)
+
+        gas = self.ethereum_service.estimate_gas(from_, to, 5, None)
+        self.assertEqual(gas, send_ether_gas)
+
+    def test_estimate_gas_with_erc20(self):
+        send_ether_gas = 21000
+        amount_tokens = 5000
+        amount_to_send = amount_tokens // 2
+        from_ = self.w3.eth.accounts[0]
+        to, _ = get_eth_address_with_key()
+
+        erc20_contract = deploy_example_erc20(self.w3, amount_tokens, from_, deployer=self.w3.eth.accounts[0])
+        data = erc20_contract.functions.transfer(to, amount_to_send).buildTransaction()['data']
+
+        # Ganache returns error because there is data but address is not a contract
+        with self.assertRaisesMessage(ValueError, 'transaction which calls a contract function'):
+            self.ethereum_service.estimate_gas(from_, to, 0, data, block_identifier='pending')
+        # `to` is not a contract, no functions will be triggered
+        # gas = self.ethereum_service.estimate_gas(from_, to, 0, data, block_identifier='pending')
+        # self.assertGreater(gas, send_ether_gas)
+        # self.assertLess(gas, send_ether_gas + 2000)
+
+        gas = self.ethereum_service.estimate_gas(from_, erc20_contract.address, 0, data, block_identifier='pending')
+        self.assertGreater(gas, send_ether_gas)
+
+        # We do the real erc20 transfer for the next test case
+        erc20_contract.functions.transfer(to, amount_to_send).transact({'from': from_})
+        token_balance = self.ethereum_service.get_erc20_balance(to, erc20_contract.address)
+        self.assertTrue(token_balance, amount_to_send)
+
+        # Gas will be lowest now because you don't have to pay for storage
+        gas2 = self.ethereum_service.estimate_gas(from_, erc20_contract.address, 0, data, block_identifier='pending')
+        self.assertLess(gas2, gas)
+
     def test_get_nonce(self):
         address, _ = get_eth_address_with_key()
         nonce = self.ethereum_service.get_nonce_for_account(address)

@@ -277,8 +277,9 @@ class SafeService:
     def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
 
-    def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
+    def estimate_tx_gas_with_safe(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
+        Estimate tx gas using safe `requiredTxGas` method
         :return: int: Estimated gas
         :raises: CannotEstimateGas: If gas cannot be estimated
         :raises: ValueError: Cannot decode received data
@@ -326,6 +327,24 @@ class SafeService:
                 assert len(estimated_gas_hex) == 64
                 estimated_gas = int(estimated_gas_hex, 16)
                 return estimated_gas + base_gas
+
+    def estimate_tx_gas_with_web3(self, safe_address: str, to: str, value: int, data: bytes) -> int:
+        """
+        Estimate tx gas using web3
+        """
+        return 1000 + self.ethereum_service.estimate_gas(safe_address, to, value, data, block_identifier='pending')
+
+    def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
+        """
+        Estimate tx gas. Use the max of calculation using safe method and web3 if operation == CALL or
+        use just the safe calculation otherwise
+        """
+        safe_gas_estimation = self.estimate_tx_gas_with_safe(safe_address, to, value, data, operation)
+        if SafeOperation(operation) == SafeOperation.CALL:
+            return max(safe_gas_estimation,
+                       self.estimate_tx_gas_with_web3(safe_address, to, value, data))
+        else:
+            return safe_gas_estimation
 
     def estimate_tx_data_gas(self, safe_address: str, to: str, value: int, data: bytes,
                              operation: int, gas_token: str, estimate_tx_gas: int) -> int:

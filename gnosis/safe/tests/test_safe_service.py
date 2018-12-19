@@ -51,7 +51,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
 
         to = funder
         value = safe_balance // 2
-        data = HexBytes(0x00)
+        data = HexBytes('')
         operation = 0
         safe_tx_gas = 100000
         data_gas = 300000
@@ -206,7 +206,7 @@ class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
 
         to = receiver
         value = safe_balance
-        data = HexBytes(0x00)
+        data = HexBytes('')
         operation = 0
         safe_tx_gas = 100000
         data_gas = 300000

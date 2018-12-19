@@ -1,3 +1,4 @@
+import requests
 from functools import wraps
 from logging import getLogger
 from typing import Dict, Union
@@ -89,6 +90,32 @@ class EthereumService:
     @property
     def current_block_number(self):
         return self.w3.eth.blockNumber
+
+    def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier=None):
+        data = data or b''
+        params = [
+            {"from": from_,
+             "to": to,
+             "data": HexBytes(data).hex(),
+             "value": HexBytes(value).hex(),
+             },
+        ]
+        if block_identifier:
+            params.append(block_identifier)
+
+        payload = {
+            "method": "eth_estimateGas",
+            "params": params,
+            "jsonrpc": "2.0",
+            "id": 1
+        }
+
+        response = requests.post(url=self.ethereum_node_url, json=payload)
+        response_json = response.json()
+        if 'error' in response_json:
+            raise ValueError(response_json['error'])
+        else:
+            return int(response_json['result'], 16)
 
     @staticmethod
     def estimate_data_gas(data: bytes):
