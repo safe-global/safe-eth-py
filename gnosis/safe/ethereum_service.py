@@ -158,32 +158,27 @@ class EthereumService:
         if tx.get('nonce') is None:
             tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
 
-        for _ in range(20):
+        number_errors = 5
+        while number_errors >= 0:
             try:
                 if private_key:
                     signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
                     logger.debug('Sending %d wei from %s to %s', tx['value'], address, tx['to'])
                     return self.send_raw_transaction(signed_tx.rawTransaction)
                 elif public_key:
-                    tx['from'] = public_key
-                    if 'nonce' not in tx:
-                        tx['nonce'] = self.get_nonce_for_account(public_key, block_identifier=block_identifier)
+                    tx['from'] = address
                     return self.send_transaction(tx)
             except ReplacementTransactionUnderpriced as e:
-                if not retry:
+                if not retry or not number_errors:
                     raise e
                 logger.error('Tx with same nonce was already sent, retrying with nonce + 1')
-                old_nonce = tx['nonce']
-                new_nonce = self.get_nonce_for_account(address, block_identifier=block_identifier)
-                if old_nonce != new_nonce:
-                    tx['nonce'] += new_nonce
-                else:
-                    tx['nonce'] += 1
+                tx['nonce'] += 1
             except InvalidNonce as e:
-                if not retry:
+                if not retry or not number_errors:
                     raise e
                 logger.error('Tx does not have the correct nonce, retrying recovering nonce again')
                 tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
+                number_errors -= 1
 
     def send_eth_to(self, to: str, gas_price: int, value: int, gas: int=22000, retry: bool=False,
                     block_identifier=None) -> bytes:
