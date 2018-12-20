@@ -149,7 +149,7 @@ class EthereumService:
                 return None
 
         # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
-        return None if tx_receipt['blockNumber'] is None else tx_receipt
+        return tx_receipt if tx_receipt and tx_receipt['blockNumber'] is not None else None
 
     def get_block(self, block_number, full_transactions=False):
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
