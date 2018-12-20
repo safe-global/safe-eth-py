@@ -141,14 +141,15 @@ class EthereumService:
 
     def get_transaction_receipt(self, tx_hash, timeout=None):
         if not timeout:
-            return self.w3.eth.getTransactionReceipt(tx_hash)
+            tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
         else:
             try:
                 tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
-                # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
-                return None if tx_receipt['blockNumber'] is None else tx_receipt
             except Timeout:
                 return None
+
+        # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
+        return None if tx_receipt['blockNumber'] is None else tx_receipt
 
     def get_block(self, block_number, full_transactions=False):
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
