@@ -286,7 +286,6 @@ class SafeService:
         """
         data = data or b''
         # Add 10k else we will fail in case of nested calls
-        base_gas = 10000
         try:
             tx = self.get_contract(safe_address).functions.requiredTxGas(
                 to,
@@ -313,7 +312,7 @@ class SafeService:
                 raise CannotEstimateGas('Received %s for tx=%s' % (result, tx))
 
             estimated_gas = int(estimated_gas_hex, 16)
-            return estimated_gas + base_gas
+            return estimated_gas
         except ValueError as e:
             data = e.args[0]['data']
             key = list(data.keys())[0]
@@ -326,23 +325,32 @@ class SafeService:
                 estimated_gas_hex = result[138:]
                 assert len(estimated_gas_hex) == 64
                 estimated_gas = int(estimated_gas_hex, 16)
-                return estimated_gas + base_gas
+                return estimated_gas
 
     def estimate_tx_gas_with_web3(self, safe_address: str, to: str, value: int, data: bytes) -> int:
         """
         Estimate tx gas using web3
         """
-        return 1000 + self.ethereum_service.estimate_gas(safe_address, to, value, data, block_identifier='pending')
+        return self.ethereum_service.estimate_gas(safe_address, to, value, data, block_identifier='pending')
 
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
         Estimate tx gas. Use the max of calculation using safe method and web3 if operation == CALL or
         use just the safe calculation otherwise
         """
-        safe_gas_estimation = self.estimate_tx_gas_with_safe(safe_address, to, value, data, operation)
+        # Costs to route through the proxy and nested calls
+        proxy_gas = 1000
+        # https://github.com/ethereum/solidity/blob/dfe3193c7382c80f1814247a162663a97c3f5e67/libsolidity/codegen/ExpressionCompiler.cpp#L1764
+        # This was `false` before solc 0.4.21 -> `m_context.evmVersion().canOverchargeGasForCall()`
+        # So gas needed by caller will be around 35k
+        old_call_gas = 35000
+        safe_gas_estimation = (self.estimate_tx_gas_with_safe(safe_address, to, value, data, operation)
+                               + proxy_gas + old_call_gas)
         if SafeOperation(operation) == SafeOperation.CALL:
-            return max(safe_gas_estimation,
-                       self.estimate_tx_gas_with_web3(safe_address, to, value, data))
+            web3_gas_estimation = (self.estimate_tx_gas_with_web3(safe_address, to, value, data)
+                                   + proxy_gas + old_call_gas)
+            return max(safe_gas_estimation, web3_gas_estimation)
+
         else:
             return safe_gas_estimation
 
