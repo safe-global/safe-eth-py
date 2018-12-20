@@ -348,8 +348,11 @@ class SafeService:
                                + proxy_gas + old_call_gas)
         # We cannot estimate DELEGATECALL (different storage)
         if SafeOperation(operation) == SafeOperation.CALL:
-            web3_gas_estimation = (self.estimate_tx_gas_with_web3(safe_address, to, value, data)
-                                   + proxy_gas + old_call_gas)
+            try:
+                web3_gas_estimation = (self.estimate_tx_gas_with_web3(safe_address, to, value, data)
+                                       + proxy_gas + old_call_gas)
+            except ValueError:
+                web3_gas_estimation = 0
             return max(safe_gas_estimation, web3_gas_estimation)
 
         else:
