@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.test import TestCase
+
 from django_eth.constants import NULL_ADDRESS
 from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes

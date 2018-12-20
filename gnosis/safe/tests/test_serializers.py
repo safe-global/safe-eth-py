@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from django_eth.constants import *
 from django_eth.tests.factories import get_eth_address_with_key
 

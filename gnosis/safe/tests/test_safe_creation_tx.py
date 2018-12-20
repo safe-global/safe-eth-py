@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.test import TestCase
+
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import checksum_encode, ecrecover_to_pub, sha3
 

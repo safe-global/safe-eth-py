@@ -1,6 +1,7 @@
 import logging
 
 from django.test import TestCase
+
 from django_eth.tests.factories import get_eth_address_with_key
 
 from ..ethereum_service import (EthereumServiceProvider, FromAddressNotFound,
