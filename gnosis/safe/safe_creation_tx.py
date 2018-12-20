@@ -69,10 +69,10 @@ class SafeCreationTx:
         self.gas = max(magic_gas, estimated_gas)
 
         # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
-        self.payment_ether, self.payment = self._calculate_funder_payment(self.gas,
-                                                                          gas_price,
-                                                                          fixed_creation_cost,
-                                                                          payment_token_eth_value)
+        self.payment = self._calculate_refund_payment(self.gas,
+                                                      gas_price,
+                                                      fixed_creation_cost,
+                                                      payment_token_eth_value)
 
         self.tx_dict: Dict[str, any] = self._build_proxy_contract_creation_tx(master_copy=master_copy,
                                                                               initializer=safe_setup_data,
@@ -91,6 +91,10 @@ class SafeCreationTx:
         self.v = self.tx_pyethereum.v
         self.r = self.tx_pyethereum.r
         assert checksum_encode(mk_contract_address(self.deployer_address, nonce=0)) == self.safe_address
+
+    @property
+    def payment_ether(self):
+        return self.gas * self.gas_price
 
     @staticmethod
     def find_valid_random_signature(s: int) -> Tuple[int, int]:
@@ -137,18 +141,15 @@ class SafeCreationTx:
         return base_gas + data_gas + payment_token_gas + 270000 + len(owners) * gas_per_owner
 
     @staticmethod
-    def _calculate_funder_payment(gas: int, gas_price: int, fixed_creation_cost: int,
-                                  payment_token_eth_value: float) -> Tuple[int, int]:
-        # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
-        payment_ether: int = (gas + 23000) * gas_price
-
+    def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: int,
+                                  payment_token_eth_value: float) -> Tuple[int]:
         if fixed_creation_cost is None:
+            # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
+            base_payment: int = (gas + 23000) * gas_price
             # Calculate payment for tokens using the conversion (if used)
-            payment: int = math.ceil(payment_ether / payment_token_eth_value)
+            return math.ceil(base_payment / payment_token_eth_value)
         else:
-            payment: int = fixed_creation_cost
-
-        return payment_ether, payment
+            return fixed_creation_cost
 
     def _build_proxy_contract_creation_constructor(self,
                                                    master_copy: str,

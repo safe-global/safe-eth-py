@@ -42,12 +42,12 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                           funder=NULL_ADDRESS)
 
         logger.info("Send %d gwei to deployer %s",
-                    w3.fromWei(safe_creation_tx.payment, 'gwei'),
+                    w3.fromWei(safe_creation_tx.payment_ether, 'gwei'),
                     safe_creation_tx.deployer_address)
         w3.eth.sendTransaction({
             'from': funder,
             'to': safe_creation_tx.deployer_address,
-            'value': safe_creation_tx.payment
+            'value': safe_creation_tx.payment_ether
         })
 
         logger.info("Create proxy contract with address %s", safe_creation_tx.safe_address)
@@ -63,6 +63,34 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
 
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
+
+    def test_safe_creation_tx_builder_with_not_enough_funds(self):
+        w3 = self.w3
+        s = generate_valid_s()
+        funder = w3.eth.accounts[1]
+        owners = w3.eth.accounts[2:6]
+        threshold = len(owners) - 1
+        gas_price = GAS_PRICE
+
+        safe_creation_tx = SafeCreationTx(w3=w3,
+                                          owners=owners,
+                                          threshold=threshold,
+                                          signature_s=s,
+                                          master_copy=self.safe_contract_address,
+                                          gas_price=gas_price,
+                                          funder=NULL_ADDRESS)
+
+        logger.info("Send %d gwei to deployer %s",
+                    w3.fromWei(safe_creation_tx.payment_ether - 1, 'gwei'),
+                    safe_creation_tx.deployer_address)
+        w3.eth.sendTransaction({
+            'from': funder,
+            'to': safe_creation_tx.deployer_address,
+            'value': safe_creation_tx.payment_ether - 1
+        })
+
+        with self.assertRaisesMessage(ValueError, 'enough funds'):
+            w3.eth.sendRawTransaction(safe_creation_tx.tx_raw)
 
     def test_safe_creation_tx_builder_with_payment(self):
         logger.info("Test Safe Proxy creation With Payment".center(LOG_TITLE_WIDTH, '-'))
@@ -250,7 +278,7 @@ class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
                                           fixed_creation_cost=fixed_creation_cost)
 
         self.assertEqual(safe_creation_tx.payment, fixed_creation_cost)
-        self.assertGreaterEqual(safe_creation_tx.payment_ether, safe_creation_tx.gas * safe_creation_tx.gas_price)
+        self.assertEqual(safe_creation_tx.payment_ether, safe_creation_tx.gas * safe_creation_tx.gas_price)
 
         deployer_address = safe_creation_tx.deployer_address
         safe_address = safe_creation_tx.safe_address
