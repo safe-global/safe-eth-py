@@ -97,7 +97,7 @@ class EthereumService:
             {"from": from_,
              "to": to,
              "data": HexBytes(data).hex(),
-             "value": HexBytes(value).hex(),
+             "value": "0x{:x}".format(value),  # No leading zeroes
              },
         ]
         if block_identifier:
