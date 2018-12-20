@@ -1,8 +1,8 @@
-import requests
 from functools import wraps
 from logging import getLogger
 from typing import Dict, Union
 
+import requests
 from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
                             privtoaddr, sha3)
