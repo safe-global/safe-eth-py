@@ -346,6 +346,7 @@ class SafeService:
         old_call_gas = 35000
         safe_gas_estimation = (self.estimate_tx_gas_with_safe(safe_address, to, value, data, operation)
                                + proxy_gas + old_call_gas)
+        # We cannot estimate DELEGATECALL (different storage)
         if SafeOperation(operation) == SafeOperation.CALL:
             web3_gas_estimation = (self.estimate_tx_gas_with_web3(safe_address, to, value, data)
                                    + proxy_gas + old_call_gas)
