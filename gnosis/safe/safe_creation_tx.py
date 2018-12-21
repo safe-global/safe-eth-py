@@ -9,7 +9,7 @@ from eth_account.internal.transactions import (encode_transaction,
                                                serializable_unsigned_transaction_from_dict)
 from ethereum.exceptions import InvalidTransaction
 from ethereum.transactions import Transaction, secpk1n
-from ethereum.utils import check_checksum, checksum_encode, mk_contract_address
+from ethereum.utils import checksum_encode, mk_contract_address
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
@@ -65,7 +65,7 @@ class SafeCreationTx:
         safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold)
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
-        estimated_gas: int = self._estimate_gas(master_copy, safe_setup_data, funder, payment_token, gas_price)
+        estimated_gas: int = self._estimate_gas(master_copy, safe_setup_data, funder, payment_token)
         self.gas = max(magic_gas, estimated_gas)
 
         # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
@@ -237,8 +237,7 @@ class SafeCreationTx:
                       master_copy: str,
                       initializer: bytes,
                       funder: str,
-                      payment_token: str,
-                      gas_price: int) -> int:
+                      payment_token: str) -> int:
         """
         Gas estimation done using web3 and calling the node
         Payment cannot be estimated, as no ether is in the address. So we add some gas later.
@@ -246,10 +245,10 @@ class SafeCreationTx:
         :param initializer: Data initializer to send to GnosisSafe setup method
         :param funder: Address that should get the payment (if payment set)
         :param payment_token: Address if a token is used. If not set, 0x0 will be ether
-        :param gas_price: Gas price
         :return: Total gas estimation
         """
 
+        # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
         gas: int = self._build_proxy_contract_creation_constructor(
             master_copy,
             initializer,
@@ -257,15 +256,18 @@ class SafeCreationTx:
             payment_token,
             0).estimateGas()
 
+        # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
-            estimated_payment: int = (gas + 23000) * gas_price
-            gas += self.w3.eth.estimateGas({'to': funder, 'value': estimated_payment})
+            # Same cost to send 1 ether than 1000
+            gas += self.w3.eth.estimateGas({'to': funder, 'value': 1})
         else:
-            # Top should be around 52000 when storage is needed (funder no previous owner of token)
-            estimated_payment: int = (gas + 52000) * gas_price
+            # Top should be around 52000 when storage is needed (funder no previous owner of token),
+            # we use value 1 as we are simulating an internal call, and in that calls you don't pay for the data.
+            # If it was a new tx sending 5000 tokens would be more expensive than sending 1 because of data costs
             try:
-                gas += get_erc20_contract(self.w3, payment_token).functions.transfer(funder,
-                                                                                     estimated_payment).estimateGas()
+                gas += get_erc20_contract(self.w3,
+                                          payment_token).functions.transfer(funder, 1).estimateGas({'from':
+                                                                                                    payment_token})
             except ValueError as exc:
                 raise InvalidERC20Token from exc
 
