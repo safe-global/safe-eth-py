@@ -19,3 +19,9 @@ script:
   - coverage run --source=$SOURCE_FOLDER manage.py test --settings=config.settings.test
 after_success:
   - coveralls
+deploy:
+  provider: script
+  script: bash scripts/deploy.sh "${PYPI_USER}" "${PYPI_PASS}"
+  skip_cleanup: true
+  on:
+    tags: true
