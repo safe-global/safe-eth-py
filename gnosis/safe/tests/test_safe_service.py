@@ -13,14 +13,14 @@ from gnosis.eth.tests.utils import deploy_example_erc20
 from ..safe_service import (InvalidMasterCopyAddress,
                             NotEnoughFundsForMultisigTx, SafeServiceProvider)
 from .factories import deploy_safe, generate_safe
-from .safe_test_case import TestCaseWithSafeContractMixin
+from .safe_test_case import SafeTestCaseMixin
 
 logger = logging.getLogger(__name__)
 
 GAS_PRICE = settings.SAFE_GAS_PRICE
 
 
-class TestSafeService(TestCase, TestCaseWithSafeContractMixin):
+class TestSafeService(TestCase, SafeTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_safe_tests()

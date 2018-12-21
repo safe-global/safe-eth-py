@@ -49,7 +49,6 @@ class SafeSignatureSerializer(serializers.Serializer):
         return SIGNATURE_S_MIN_VALUE <= s <= SIGNATURE_S_MAX_VALUE
 
 
-
 class SafeMultisigEstimateTxSerializer(serializers.Serializer):
     safe = EthereumAddressField()
     to = EthereumAddressField(default=None, allow_null=True)

@@ -11,7 +11,7 @@ from gnosis.eth.tests.utils import deploy_example_erc20
 
 from ..safe_creation_tx import SafeCreationTx
 from .factories import generate_valid_s
-from .test_safe_service import TestCaseWithSafeContractMixin
+from .test_safe_service import SafeTestCaseMixin
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ LOG_TITLE_WIDTH = 100
 GAS_PRICE = settings.SAFE_GAS_PRICE
 
 
-class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
+class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_safe_tests()
