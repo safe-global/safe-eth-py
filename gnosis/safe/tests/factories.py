@@ -3,14 +3,9 @@ from logging import getLogger
 
 from django_eth.tests.factories import get_eth_address_with_key
 from ethereum.transactions import secpk1n
-from faker import Factory as FakerFactory
-from faker import Faker
 
 from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeService
-
-fakerFactory = FakerFactory.create()
-faker = Faker()
 
 logger = getLogger(__name__)
 
