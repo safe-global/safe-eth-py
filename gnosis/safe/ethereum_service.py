@@ -113,7 +113,26 @@ class EthereumService:
         response = requests.post(url=self.ethereum_node_url, json=payload)
         response_json = response.json()
         if 'error' in response_json:
-            raise ValueError(response_json['error'])
+            # When using `pending`, Geth returns
+            """
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "error": {
+                    "code": -32602,
+                    "message": "too many arguments, want at most 1"
+                }
+            }
+            """
+            if response_json['error']['code'] == -32602:
+                return self.w3.eth.estimateGas({
+                    "from": from_,
+                    "to": to,
+                    "data": data,
+                    "value": value,
+                })
+            else:
+                raise ValueError(response_json['error'])
         else:
             return int(response_json['result'], 16)
 
