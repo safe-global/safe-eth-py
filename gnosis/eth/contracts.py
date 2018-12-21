@@ -4,23 +4,18 @@ from web3 import Web3
 from gnosis.eth.abis import load_contract_interface
 
 """
-Rinkeby contracts https://github.com/gnosis/safe-contracts/releases/tag/v0.0.2-alpha
------------------
-Safes
-GnosisSafe: 0x2727d69c0bd14b1ddd28371b8d97e808adc1c2f7
+Safe Addresses. Should be the same for every chain. Check:
+https://github.com/gnosis/safe-contracts/blob/development/zos.mainnet.json
+https://github.com/gnosis/safe-contracts/blob/development/zos.rinkeby.json
+
+GnosisSafe: 0x8942595a2dc5181df0465af0d7be08c8f23c93af
 
 Factories
-ProxyFactory: 0xf81e35398b5d09d891db0199064ff4a53e7ecae6
+ProxyFactory: 0x88cd603a5dc47857d02865bbc7941b588c533263
 
 Libraries
-CreateAndAddModules: 0x5096cd7f7f5f2e621a480c1ae8969c03cb647a91
-MultiSend: 0x607ecc85c613548367ebdee103d6d256d42d5978
-
-Modules
-StateChannelModule: 0x46060a29a9ea946b2e37058288e029554a9d73c8
-DailyLimitModule: 0x6e3a1f364c112736ca88ea113b70dcae53a4def6
-SocialRecoveryModule: 0x96967d1f6bade086b8e31f04b14753f9649b3d9e
-WhitelistModule: 0xbb2d70bafda6dd0f8770713b71e7fecf74adfd95
+CreateAndAddModules: 0xcbf223ccb3264e447167d4772c312df403ab87f0
+MultiSend: 0xe74d6af1670fb6560dd61ee29eb57c7bc027ce4e
 """
 
 GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
