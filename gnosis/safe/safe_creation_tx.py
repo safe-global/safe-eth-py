@@ -14,8 +14,8 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
 
-from .contracts import (get_erc20_contract, get_paying_proxy_contract,
-                        get_safe_contract)
+from ..eth.contracts import (get_erc20_contract, get_paying_proxy_contract,
+                             get_safe_contract)
 
 logger = getLogger(__name__)
 

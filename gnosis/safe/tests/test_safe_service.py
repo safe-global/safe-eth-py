@@ -7,10 +7,12 @@ from django_eth.constants import NULL_ADDRESS
 from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes
 
-from ..contracts import get_safe_contract
-from ..safe_service import (GasPriceTooLow, InvalidMasterCopyAddress,
+from gnosis.eth.contracts import get_safe_contract
+from gnosis.eth.tests.utils import deploy_example_erc20
+
+from ..safe_service import (InvalidMasterCopyAddress,
                             NotEnoughFundsForMultisigTx, SafeServiceProvider)
-from .factories import deploy_example_erc20, deploy_safe, generate_safe
+from .factories import deploy_safe, generate_safe
 from .safe_test_case import TestCaseWithSafeContractMixin
 
 logger = logging.getLogger(__name__)

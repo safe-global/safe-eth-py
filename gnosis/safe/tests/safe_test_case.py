@@ -1,13 +1,11 @@
 import logging
 from typing import List
 
-from django_eth.constants import NULL_ADDRESS
+from gnosis.eth.contracts import get_safe_contract
+from gnosis.eth.ethereum_service import EthereumService
 
-from ..contracts import get_safe_contract
-from ..ethereum_service import EthereumService
-from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeService, SafeServiceProvider
-from .factories import deploy_safe, generate_safe, generate_valid_s
+from .factories import deploy_safe, generate_safe
 
 logger = logging.getLogger(__name__)
 

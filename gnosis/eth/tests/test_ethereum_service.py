@@ -6,13 +6,12 @@ from django_eth.tests.factories import get_eth_address_with_key
 
 from ..ethereum_service import (EthereumServiceProvider, FromAddressNotFound,
                                 InsufficientFunds, InvalidNonce)
-from .factories import deploy_example_erc20
-from .test_safe_service import TestCaseWithSafeContractMixin
+from .utils import deploy_example_erc20
 
 logger = logging.getLogger(__name__)
 
 
-class TestSafeCreationTx(TestCase, TestCaseWithSafeContractMixin):
+class TestSafeCreationTx(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.gas_price = 1

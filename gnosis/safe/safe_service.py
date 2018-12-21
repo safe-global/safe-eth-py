@@ -8,9 +8,12 @@ from hexbytes import HexBytes
 from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
-from .contracts import (get_paying_proxy_contract,
-                        get_paying_proxy_deployed_bytecode, get_safe_contract)
-from .ethereum_service import EthereumService, EthereumServiceProvider
+from gnosis.eth.ethereum_service import (EthereumService,
+                                         EthereumServiceProvider)
+
+from ..eth.contracts import (get_paying_proxy_contract,
+                             get_paying_proxy_deployed_bytecode,
+                             get_safe_contract)
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 
 logger = getLogger(__name__)

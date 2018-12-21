@@ -1,7 +1,7 @@
 from hexbytes import HexBytes
 from web3 import Web3
 
-from .abis import load_contract_interface
+from gnosis.eth.abis import load_contract_interface
 
 """
 Rinkeby contracts https://github.com/gnosis/safe-contracts/releases/tag/v0.0.2-alpha
