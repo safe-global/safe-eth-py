@@ -1,22 +1,36 @@
 import logging
 
+from django.conf import settings
 from django.test import TestCase
 
 from django_eth.tests.factories import get_eth_address_with_key
+from hexbytes import HexBytes
 
-from ..ethereum_service import (EthereumServiceProvider, FromAddressNotFound,
-                                InsufficientFunds, InvalidNonce)
+from ..ethereum_service import (EthereumServiceProvider, EtherLimitExceeded,
+                                FromAddressNotFound, InsufficientFunds,
+                                InvalidNonce)
 from .utils import deploy_example_erc20
 
-logger = logging.getLogger(__name__)
+GAS_PRICE = 1
 
-
-class TestSafeCreationTx(TestCase):
+class TestEthereumService(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.gas_price = 1
         cls.ethereum_service = EthereumServiceProvider()
         cls.w3 = cls.ethereum_service.w3
+
+    def test_check_tx_with_confirmations(self):
+        value = 1
+        to, _ = get_eth_address_with_key()
+
+        tx_hash = self.ethereum_service.send_eth_to(to=to, gas_price=GAS_PRICE, value=value)
+        self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
+
+        _ = self.ethereum_service.send_eth_to(to=to, gas_price=GAS_PRICE, value=value)
+        self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
+
+        _ = self.ethereum_service.send_eth_to(to=to, gas_price=GAS_PRICE, value=value)
+        self.assertTrue(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
 
     def test_erc20_balance(self):
         amount = 1000
@@ -80,10 +94,33 @@ class TestSafeCreationTx(TestCase):
         nonce = self.ethereum_service.get_nonce_for_account(address, block_identifier='pending')
         self.assertEqual(nonce, 0)
 
+    def test_estimate_data_gas(self):
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('')), 0)
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('0x00')), 4)
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('0x000204')), 4 + 68 * 2)
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('0x050204')), 68 * 3)
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('0x0502040000')), 68 * 3 + 4 * 2)
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('0x050204000001')), 68 * 4 + 4 * 2)
+        self.assertEqual(self.ethereum_service.estimate_data_gas(HexBytes('0x00050204000001')), 4 + 68 * 4 + 4 * 2)
+
+    def test_provider_singleton(self):
+        ethereum_service1 = EthereumServiceProvider()
+        ethereum_service2 = EthereumServiceProvider()
+        self.assertEqual(ethereum_service1, ethereum_service2)
+
     def test_send_eth_to(self):
         address, _ = get_eth_address_with_key()
-        self.ethereum_service.send_eth_to(address, self.gas_price, value=1)
-        self.assertEqual(self.ethereum_service.get_balance(address), 1)
+        value = 1
+        self.ethereum_service.send_eth_to(address, GAS_PRICE, value)
+        self.assertEqual(self.ethereum_service.get_balance(address), value)
+
+        value = self.w3.toWei(self.ethereum_service.max_eth_to_send, 'ether') + 1
+        with self.assertRaises(EtherLimitExceeded):
+            self.ethereum_service.send_eth_to(address, GAS_PRICE, value)
+
+    def test_send_eth_without_key(self):
+        with self.settings(SAFE_FUNDER_PRIVATE_KEY=None):
+            self.test_send_eth_to()
 
     def test_send_transaction(self):
         address = self.w3.eth.accounts[0]
@@ -93,7 +130,7 @@ class TestSafeCreationTx(TestCase):
             'to': to,
             'value': value,
             'gas': 23000,
-            'gasPrice': self.gas_price,
+            'gasPrice': GAS_PRICE,
             'nonce': self.ethereum_service.get_nonce_for_account(address)
         }
 
@@ -143,3 +180,17 @@ class TestSafeCreationTx(TestCase):
         self.ethereum_service.send_unsigned_transaction(tx, public_key=address, retry=True)
         self.assertEqual(tx['nonce'], first_nonce + 2)
         self.assertEqual(self.ethereum_service.get_balance(to), value * 3)
+
+    def test_wait_for_tx_receipt(self):
+        value = 1
+        to = self.w3.eth.accounts[-1]
+
+        tx_hash = self.ethereum_service.send_eth_to(to=to, gas_price=GAS_PRICE, value=value)
+        receipt1 = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=None)
+        receipt2 = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=20)
+        self.assertIsNotNone(receipt1)
+        self.assertEqual(receipt1, receipt2)
+
+        fake_tx_hash = self.w3.sha3(0)
+        self.assertIsNone(self.ethereum_service.get_transaction_receipt(fake_tx_hash, timeout=None))
+        self.assertIsNone(self.ethereum_service.get_transaction_receipt(fake_tx_hash, timeout=1))

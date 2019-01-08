@@ -36,6 +36,10 @@ class InsufficientFunds(ValueError):
     pass
 
 
+class EtherLimitExceeded(ValueError):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
@@ -243,7 +247,8 @@ class EthereumService:
         """
 
         assert check_checksum(to)
-        assert value < self.w3.toWei(self.max_eth_to_send, 'ether')
+        if value > self.w3.toWei(self.max_eth_to_send, 'ether'):
+            raise EtherLimitExceeded('%d is bigger than %f' % (value, self.max_eth_to_send))
 
         private_key = None
         public_key = None
