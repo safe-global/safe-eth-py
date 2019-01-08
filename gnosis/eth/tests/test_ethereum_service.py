@@ -3,8 +3,9 @@ import logging
 from django.conf import settings
 from django.test import TestCase
 
-from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes
+
+from gnosis.eth.utils import get_eth_address_with_key
 
 from ..ethereum_service import (EthereumServiceProvider, EtherLimitExceeded,
                                 FromAddressNotFound, InsufficientFunds,

@@ -2,12 +2,13 @@ from enum import Enum
 from logging import getLogger
 from typing import List, Set, Tuple, Union
 
-from django_eth.constants import NULL_ADDRESS
 from ethereum.utils import check_checksum
 from hexbytes import HexBytes
-from py_eth_sig_utils.eip712 import encode_typed_data
 from web3.exceptions import BadFunctionCallOutput
 
+from py_eth_sig_utils.eip712 import encode_typed_data
+
+from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.ethereum_service import (EthereumService,
                                          EthereumServiceProvider)
 

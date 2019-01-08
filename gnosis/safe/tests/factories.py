@@ -1,8 +1,9 @@
 import os
 from logging import getLogger
 
-from django_eth.tests.factories import get_eth_address_with_key
 from ethereum.transactions import secpk1n
+
+from gnosis.eth.utils import get_eth_address_with_key
 
 from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeService

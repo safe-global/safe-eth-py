@@ -3,12 +3,12 @@ import logging
 from django.conf import settings
 from django.test import TestCase
 
-from django_eth.constants import NULL_ADDRESS
-from django_eth.tests.factories import get_eth_address_with_key
 from hexbytes import HexBytes
 
+from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.tests.utils import deploy_example_erc20
+from gnosis.eth.utils import get_eth_address_with_key
 
 from ..safe_service import (InvalidMasterCopyAddress,
                             NotEnoughFundsForMultisigTx, SafeServiceProvider)

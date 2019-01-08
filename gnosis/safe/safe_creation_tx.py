@@ -4,7 +4,6 @@ from logging import getLogger
 from typing import Dict, List, Tuple, Union
 
 import rlp
-from django_eth.constants import NULL_ADDRESS
 from eth_account.internal.transactions import (encode_transaction,
                                                serializable_unsigned_transaction_from_dict)
 from ethereum.exceptions import InvalidTransaction
@@ -13,6 +12,8 @@ from ethereum.utils import checksum_encode, mk_contract_address
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
+
+from gnosis.eth.constants import NULL_ADDRESS
 
 from ..eth.contracts import (get_erc20_contract, get_paying_proxy_contract,
                              get_safe_contract)
