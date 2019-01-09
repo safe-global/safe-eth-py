@@ -1,4 +1,4 @@
-Django==2.1.4
+Django==2.1.5
 djangorestframework==3.9.0
 ethereum==2.3.2
 faker==1.0.1
