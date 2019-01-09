@@ -1,6 +1,7 @@
 from .base import *
 
 INSTALLED_APPS += (
+    'gnosis.eth.django.tests',
 )
 
 SECRET_KEY = 'testtest'
@@ -8,8 +9,12 @@ DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        # 'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 

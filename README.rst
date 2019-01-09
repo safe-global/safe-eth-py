@@ -13,6 +13,18 @@ Quick start
 
 Just run ``pip install gnosis-py`` or add it to your **requirements.txt**
 
+Ethereum django utils
+---------------------
+Now django-eth is part of this package, you can find it under `gnosis.eth.django`
+Django ethereum is a set of helpers for working with ethereum using Django and Django Rest framework.
+
+It includes:
+
+- Basic serializers (signature, transaction)
+- Serializer fields (Ethereum address field, hexadecimal field)
+- Model fields (Ethereum address, Ethereum big integer field)
+- Utils for testing
+
 Contributors
 ------------
 - Denís Graña (denis@gnosis.pm)

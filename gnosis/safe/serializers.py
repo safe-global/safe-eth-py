@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from django_eth.serializers import EthereumAddressField, HexadecimalField
-
 from gnosis.eth.constants import *
+from gnosis.eth.django.serializers import (EthereumAddressField,
+                                           HexadecimalField)
 
 from .safe_service import SafeOperation
 
