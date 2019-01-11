@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, Set, Tuple, Union
+from typing import List, Set, Tuple, Union, NamedTuple
 
 from ethereum.utils import check_checksum
 from hexbytes import HexBytes
@@ -14,6 +14,7 @@ from gnosis.eth.contracts import (get_paying_proxy_contract,
                                   get_safe_contract)
 from gnosis.eth.ethereum_service import (EthereumService,
                                          EthereumServiceProvider)
+from gnosis.eth.utils import get_eth_address_with_key
 
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 
@@ -78,6 +79,12 @@ class InvalidSignaturesProvided(InvalidMultisigTx):
 
 class CannotPayGasWithEther(InvalidMultisigTx):
     pass
+
+
+class SafeCreationEstimate(NamedTuple):
+    gas: int
+    gas_price: int
+    payment: int
 
 
 class SafeOperation(Enum):
@@ -234,6 +241,17 @@ class SafeService:
 
         contract_address = tx_receipt.contractAddress
         return contract_address
+
+    def estimate_safe_creation(self, number_owners: int, gas_price: int, payment_token: Union[str, None],
+                               payment_token_eth_value: float = 1.0,
+                               fixed_creation_cost: Union[int, None] = None) -> SafeCreationEstimate:
+        s = 15
+        owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
+        threshold = number_owners
+        safe_creation_tx = self.build_safe_creation_tx(s, owners, threshold, gas_price, payment_token,
+                                                       payment_token_eth_value=payment_token_eth_value,
+                                                       fixed_creation_cost=fixed_creation_cost)
+        return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment)
 
     def check_master_copy(self, address) -> bool:
         return self.retrieve_master_copy_address(address) in self.valid_master_copy_addresses
