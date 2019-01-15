@@ -25,6 +25,15 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
     def setUpTestData(cls):
         cls.prepare_safe_tests()
 
+    def test_estimate_safe_creation(self):
+        number_owners = 4
+        gas_price = GAS_PRICE
+        payment_token = NULL_ADDRESS
+        safe_creation_estimate = self.safe_service.estimate_safe_creation(number_owners, gas_price, payment_token)
+        self.assertGreater(safe_creation_estimate.gas_price, 0)
+        self.assertGreater(safe_creation_estimate.gas, 0)
+        self.assertGreater(safe_creation_estimate.payment, 0)
+
     def test_send_multisig_tx(self):
         # Create Safe
         w3 = self.w3
