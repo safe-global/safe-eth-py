@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, Set, Tuple, Union, NamedTuple
+from typing import List, NamedTuple, Set, Tuple, Union
 
 from ethereum.utils import check_checksum
 from hexbytes import HexBytes
