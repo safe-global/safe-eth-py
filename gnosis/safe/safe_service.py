@@ -616,10 +616,11 @@ class SafeService:
 
         return HexBytes(encode_typed_data(data))
 
-    def check_hash(self, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
+    @classmethod
+    def check_hash(cls, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
         for i, owner in enumerate(sorted(owners, key=lambda x: x.lower())):
-            v, r, s = self.signature_split(signatures, i)
-            if self.ethereum_service.get_signing_address(tx_hash, v, r, s) != owner:
+            v, r, s = cls.signature_split(signatures, i)
+            if EthereumService.get_signing_address(tx_hash, v, r, s) != owner:
                 return False
         return True
 
