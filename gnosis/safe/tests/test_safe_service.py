@@ -1,33 +1,28 @@
 import logging
 
-from django.conf import settings
 from django.test import TestCase
 
 from hexbytes import HexBytes
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
-from gnosis.eth.tests.utils import deploy_example_erc20
 from gnosis.eth.utils import get_eth_address_with_key
 
 from ..safe_service import (InvalidMasterCopyAddress,
                             NotEnoughFundsForMultisigTx, SafeServiceProvider)
-from .factories import deploy_safe, generate_safe
 from .safe_test_case import SafeTestCaseMixin
 
 logger = logging.getLogger(__name__)
-
-GAS_PRICE = settings.SAFE_GAS_PRICE
 
 
 class TestSafeService(TestCase, SafeTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
-        cls.prepare_safe_tests()
+        cls.prepare_tests()
 
     def test_estimate_safe_creation(self):
         number_owners = 4
-        gas_price = GAS_PRICE
+        gas_price = self.gas_price
         payment_token = NULL_ADDRESS
         safe_creation_estimate = self.safe_service.estimate_safe_creation(number_owners, gas_price, payment_token)
         self.assertGreater(safe_creation_estimate.gas_price, 0)
@@ -37,7 +32,8 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
     def test_send_multisig_tx(self):
         # Create Safe
         w3 = self.w3
-        funder = w3.eth.accounts[0]
+        funder_account = self.ethereum_test_account
+        funder = funder_account.address
         owners_with_keys = [get_eth_address_with_key(), get_eth_address_with_key()]
         # Signatures must be sorted!
         owners_with_keys.sort(key=lambda x: x[0].lower())
@@ -45,19 +41,18 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         keys = [x[1] for x in owners_with_keys]
         threshold = len(owners_with_keys)
 
-        safe_creation = generate_safe(self.safe_service, owners=owners, threshold=threshold)
-        my_safe_address = deploy_safe(w3, safe_creation, funder)
+        safe_creation = self.deploy_test_safe(threshold=threshold, owners=owners)
+        my_safe_address = safe_creation.safe_address
 
         # The balance we will send to the safe
-        safe_balance = w3.toWei(0.01, 'ether')
+        safe_balance = w3.toWei(0.02, 'ether')
 
         # Send something to the owner[0], who will be sending the tx
         owner0_balance = safe_balance
-        w3.eth.waitForTransactionReceipt(w3.eth.sendTransaction({
-            'from': funder,
+        self.send_tx({
             'to': owners[0],
             'value': owner0_balance
-        }))
+        }, funder_account)
 
         my_safe_contract = get_safe_contract(w3, my_safe_address)
 
@@ -134,7 +129,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
                 refund_receiver,
                 signatures_packed,
                 tx_sender_private_key=keys[0],
-                tx_gas_price=GAS_PRICE,
+                tx_gas_price=self.gas_price,
             )
 
         self.safe_service.valid_master_copy_addresses = valid_master_copy_addresses
@@ -153,15 +148,14 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
                 refund_receiver,
                 signatures_packed,
                 tx_sender_private_key=keys[0],
-                tx_gas_price=GAS_PRICE,
+                tx_gas_price=self.gas_price,
             )
 
         # Send something to the safe
-        w3.eth.waitForTransactionReceipt(w3.eth.sendTransaction({
-            'from': funder,
+        self.send_tx({
             'to': my_safe_address,
             'value': safe_balance
-        }))
+        }, funder_account)
 
         sent_tx_hash, tx = self.safe_service.send_multisig_tx(
             my_safe_address,
@@ -176,41 +170,39 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
             refund_receiver,
             signatures_packed,
             tx_sender_private_key=keys[0],
-            tx_gas_price=GAS_PRICE,
+            tx_gas_price=self.gas_price,
         )
 
         tx_receipt = w3.eth.waitForTransactionReceipt(sent_tx_hash)
         self.assertTrue(tx_receipt['status'])
         owner0_new_balance = w3.eth.getBalance(owners[0])
         gas_used = tx_receipt['gasUsed']
-        gas_cost = gas_used * GAS_PRICE
+        gas_cost = gas_used * self.gas_price
         estimated_payment = (data_gas + gas_used) * gas_price
         real_payment = owner0_new_balance - (owner0_balance - gas_cost)
         # Estimated payment will be bigger, because it uses all the tx gas. Real payment only uses gas left
         # in the point of calculation of the payment, so it will be slightly lower
         self.assertTrue(estimated_payment > real_payment > 0)
-        self.assertTrue(owner0_new_balance > owner0_balance - tx['gas'] * GAS_PRICE)
+        self.assertTrue(owner0_new_balance > owner0_balance - tx['gas'] * self.gas_price)
         self.assertEqual(self.safe_service.retrieve_nonce(my_safe_address), 1)
 
     def test_send_multisig_tx_gas_token(self):
         # Create safe with one owner, fund the safe and the owner with `safe_balance`
-        owner, owner_key = get_eth_address_with_key()
         receiver, _ = get_eth_address_with_key()
         threshold = 1
-        funder = self.w3.eth.accounts[0]
-        safe_balance = self.w3.toWei(0.01, 'ether')
-        self.w3.eth.waitForTransactionReceipt(self.w3.eth.sendTransaction({
-            'from': funder,
-            'to': owner,
-            'value': safe_balance
-        }))
-        safe_creation = generate_safe(self.safe_service, owners=[owner], threshold=threshold)
-        my_safe_address = deploy_safe(self.w3, safe_creation, funder, initial_funding_wei=safe_balance)
+        funder_account = self.ethereum_test_account
+        funder = funder_account.address
+        safe_balance_ether = 0.02
+        safe_balance = self.w3.toWei(safe_balance_ether, 'ether')
+        owner_account = self.create_account(initial_ether=safe_balance_ether)
+        owner = owner_account.address
+
+        safe_creation = self.deploy_test_safe(threshold=threshold, owners=[owner], initial_funding_wei=safe_balance)
+        my_safe_address = safe_creation.safe_address
 
         # Give erc20 tokens to the safe
         amount_token = int(1e18)
-        funder = self.w3.eth.accounts[0]
-        erc20_contract = deploy_example_erc20(self.w3, amount_token, my_safe_address, funder)
+        erc20_contract = self.deploy_example_erc20(amount_token, my_safe_address)
         safe_token_balance = self.ethereum_service.get_erc20_balance(my_safe_address, erc20_contract.address)
         self.assertEqual(safe_token_balance, amount_token)
 
@@ -238,8 +230,8 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
             gas_token,
             refund_receiver,
             signature_packed,
-            tx_sender_private_key=owner_key,
-            tx_gas_price=GAS_PRICE,
+            tx_sender_private_key=owner_account.privateKey,
+            tx_gas_price=self.gas_price,
         )
 
         safe_token_balance = self.ethereum_service.get_erc20_balance(my_safe_address, erc20_contract.address)
@@ -254,14 +246,17 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(receiver_balance, safe_balance)
 
     def test_check_proxy_code(self):
-        proxy_contract_address = self.safe_service.deploy_proxy_contract(deployer_account=self.w3.eth.accounts[0])
+        proxy_contract_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
+                                                                         self.ethereum_test_account.privateKey)
         self.assertTrue(self.safe_service.check_proxy_code(proxy_contract_address))
 
-        safe_contract_address = self.safe_service.deploy_master_contract(deployer_account=self.w3.eth.accounts[0])
+        safe_contract_address = self.safe_service.deploy_master_contract(deployer_private_key=
+                                                                         self.ethereum_test_account.privateKey)
         self.assertFalse(self.safe_service.check_proxy_code(safe_contract_address))
 
     def test_estimate_tx_data_gas(self):
-        safe_address = self.safe_service.deploy_proxy_contract(deployer_account=self.w3.eth.accounts[0])
+        safe_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
+                                                               self.ethereum_test_account.privateKey)
         to, _ = get_eth_address_with_key()
         value = int('abc', 16)
         data = HexBytes('0xabcdef')
@@ -278,7 +273,8 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(data_gas2, data_gas + 68 - 4)
 
     def test_estimate_tx_gas(self):
-        safe_address = self.safe_service.deploy_proxy_contract(deployer_account=self.w3.eth.accounts[0])
+        safe_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
+                                                               self.ethereum_test_account.privateKey)
         to, _ = get_eth_address_with_key()
         value = int('abc', 16)
         data = HexBytes('0xabcdef')
@@ -288,9 +284,9 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
 
     def test_estimate_tx_operational_gas(self):
         for threshold in range(2, 5):
-            safe_creation = generate_safe(self.safe_service, number_owners=6, threshold=threshold)
-            proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
-            tx_signature_gas_estimation = self.safe_service.estimate_tx_operational_gas(proxy_address, 0)
+            safe_creation = self.deploy_test_safe(threshold=threshold, number_owners=6)
+            my_safe_address = safe_creation.safe_address
+            tx_signature_gas_estimation = self.safe_service.estimate_tx_operational_gas(my_safe_address, 0)
             self.assertGreaterEqual(tx_signature_gas_estimation, 20000)
 
     def test_hash_safe_multisig_tx(self):
@@ -361,56 +357,64 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(safe_service1, safe_service2)
 
     def test_retrieve_master_copy_address(self):
-        proxy_address = self.safe_service.deploy_proxy_contract(deployer_account=self.w3.eth.accounts[0])
+        proxy_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
+                                                                self.ethereum_test_account.privateKey)
         self.assertEqual(self.safe_service.retrieve_master_copy_address(proxy_address),
                          self.safe_service.master_copy_address)
 
     def test_retrieve_is_owner(self):
-        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
-        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
         for owner in safe_creation.owners:
-            self.assertTrue(self.safe_service.retrieve_is_owner(proxy_address, owner))
+            self.assertTrue(self.safe_service.retrieve_is_owner(my_safe_address, owner))
 
         random_address, _ = get_eth_address_with_key()
-        self.assertFalse(self.safe_service.retrieve_is_owner(proxy_address, random_address))
+        self.assertFalse(self.safe_service.retrieve_is_owner(my_safe_address, random_address))
 
     def test_retrieve_nonce(self):
-        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
-        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
-        self.assertEqual(self.safe_service.retrieve_nonce(proxy_address), 0)
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
+        self.assertEqual(self.safe_service.retrieve_nonce(my_safe_address), 0)
 
     def test_retrieve_owners(self):
-        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
-        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
-        owners = self.safe_service.retrieve_owners(proxy_address)
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
+        owners = self.safe_service.retrieve_owners(my_safe_address)
         self.assertEqual(set(owners), set(safe_creation.owners))
 
     def test_retrieve_threshold(self):
-        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
-        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
-        self.assertEqual(self.safe_service.retrieve_threshold(proxy_address), 2)
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
+        self.assertEqual(self.safe_service.retrieve_threshold(my_safe_address), 2)
 
     def test_token_balance(self):
-        funder = self.w3.eth.accounts[0]
+        funder_account = self.ethereum_test_account
+        funder = funder_account.address
         amount = 200
-        deployed_erc20 = deploy_example_erc20(self.w3, amount, funder, deployer=funder)
+        deployed_erc20 = self.deploy_example_erc20(amount, funder)
 
-        safe_creation = generate_safe(self.safe_service, number_owners=3, threshold=2)
-        proxy_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0])
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
 
-        balance = self.ethereum_service.get_erc20_balance(proxy_address, deployed_erc20.address)
+        balance = self.ethereum_service.get_erc20_balance(my_safe_address, deployed_erc20.address)
         self.assertEqual(balance, 0)
 
-        deployed_erc20.functions.transfer(proxy_address, amount).transact({'from': funder})
-        balance = self.ethereum_service.get_erc20_balance(proxy_address, deployed_erc20.address)
+        transfer_tx = deployed_erc20.functions.transfer(my_safe_address, amount).buildTransaction({'from': funder})
+        self.send_tx(transfer_tx, funder_account)
+
+        balance = self.ethereum_service.get_erc20_balance(my_safe_address, deployed_erc20.address)
         self.assertEqual(balance, amount)
 
     # TODO Test approve tx from another contract
     def test_send_previously_approved_tx(self):
-        owners = self.w3.eth.accounts[:4]
-        safe_creation = generate_safe(self.safe_service, owners=owners, threshold=2)
-        safe_address = deploy_safe(self.w3, safe_creation, self.w3.eth.accounts[0],
-                                   initial_funding_wei=self.w3.toWei(0.01, 'ether'))
+        number_owners = 4
+        accounts = [self.create_account(initial_ether=0.01) for _ in range(number_owners)]
+        accounts.sort(key=lambda x: x.address.lower())
+        owners = [account.address for account in accounts]
+
+        safe_creation = self.deploy_test_safe(threshold=2, owners=owners,
+                                              initial_funding_wei=self.w3.toWei(0.01, 'ether'))
+        safe_address = safe_creation.safe_address
         safe_instance = get_safe_contract(self.w3, safe_address)
 
         to, _ = get_eth_address_with_key()
@@ -435,8 +439,9 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
 
         self.assertEqual(safe_tx_hash, safe_tx_contract_hash)
 
-        safe_instance.functions.approveHash(safe_tx_hash).transact({'from': owners[0]})
-        safe_instance.functions.approveHash(safe_tx_hash).transact({'from': owners[1]})
+        approve_hash_fn = safe_instance.functions.approveHash(safe_tx_hash)
+        for account in accounts[:2]:
+            self.send_tx(approve_hash_fn.buildTransaction({'from': account.address}), account)
 
         for owner in (owners[0], owners[1]):
             is_approved = self.safe_service.retrieve_is_hash_approved(safe_address, owner, safe_tx_hash)

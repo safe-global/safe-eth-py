@@ -182,7 +182,8 @@ class SafeService:
 
         if deployer_private_key:
             deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
-            tx = constructor.transact({'gas': gas}).buildTransaction()
+            nonce = self.ethereum_service.get_nonce_for_account(deployer_account, 'pending')
+            tx = constructor.buildTransaction({'gas': gas, 'nonce': nonce})
             signed_tx = self.w3.eth.account.signTransaction(tx, private_key=deployer_private_key)
             tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
         else:
@@ -205,7 +206,9 @@ class SafeService:
         )
 
         if deployer_private_key:
-            tx = setup_function.transact({'gas': gas}).buildTransaction()
+            deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
+            nonce = self.ethereum_service.get_nonce_for_account(deployer_account, 'pending')
+            tx = setup_function.buildTransaction({'gas': gas, 'nonce': nonce})
             signed_tx = self.w3.eth.account.signTransaction(tx, private_key=deployer_private_key)
             tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
         else:
@@ -233,7 +236,9 @@ class SafeService:
         if deployer_account:
             tx_hash = constructor.transact({'from': deployer_account, 'gas': gas})
         else:
-            tx = constructor.transact({'gas': gas}).buildTransaction()
+            deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
+            nonce = self.ethereum_service.get_nonce_for_account(deployer_account, 'pending')
+            tx = constructor.buildTransaction({'gas': gas, 'nonce': nonce})
             signed_tx = self.w3.eth.account.signTransaction(tx, private_key=deployer_private_key)
             tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
 

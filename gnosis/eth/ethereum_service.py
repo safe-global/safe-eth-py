@@ -41,6 +41,10 @@ class EtherLimitExceeded(ValueError):
     pass
 
 
+class SenderAccountNotFoundInNode(ValueError):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
@@ -49,6 +53,7 @@ def tx_with_exception_handling(func):
         'correct nonce': InvalidNonce,
         'insufficient funds': InsufficientFunds,
         "doesn't have enough funds": InsufficientFunds,
+        'sender account not recognized': SenderAccountNotFoundInNode,
     }
 
     @wraps(func)
