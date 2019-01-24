@@ -5,8 +5,8 @@ from django.conf import settings
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 
-from gnosis.eth.ethereum_service import EthereumServiceProvider
-from gnosis.eth.tests.utils import deploy_example_erc20, send_tx
+from ..ethereum_service import EthereumServiceProvider
+from .utils import deploy_example_erc20, send_tx
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +25,14 @@ class EthereumTestCaseMixin:
     def send_tx(self, tx, account: LocalAccount) -> bytes:
         return send_tx(self.w3, tx, account)
 
-    def create_account(self, initial_ether: float = 0) -> LocalAccount:
+    def send_ether(self, to, value):
+        return send_tx(self.w3, {'to': to, 'value': value}, self.ethereum_test_account)
+
+    def create_account(self, initial_ether: float = 0, initial_wei: int = 0) -> LocalAccount:
         account = Account.create()
-        if initial_ether > .0:
+        if initial_ether > .0 or initial_wei > 0:
             self.send_tx({'to': account.address,
-                          'value': self.w3.toWei(initial_ether, 'ether')
+                          'value': self.w3.toWei(initial_ether, 'ether') + initial_wei
                           }, self.ethereum_test_account)
         return account
 

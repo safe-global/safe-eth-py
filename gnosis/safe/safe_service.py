@@ -513,8 +513,9 @@ class SafeService:
         safe_data_gas_estimation = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
                                                              gas_token, safe_tx_gas_estimation)
         if safe_tx_gas < safe_tx_gas_estimation or data_gas < safe_data_gas_estimation:
-            raise InvalidGasEstimation("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d" %
-                                       (safe_tx_gas_estimation, safe_data_gas_estimation))
+            raise InvalidGasEstimation("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d. Current is "
+                                       "safe-tx-gas=%d and data-gas=%d" %
+                                       (safe_tx_gas_estimation, safe_data_gas_estimation, safe_tx_gas, data_gas))
 
         tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
         tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key

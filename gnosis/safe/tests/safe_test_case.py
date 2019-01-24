@@ -7,7 +7,7 @@ from gnosis.eth.utils import get_eth_address_with_key
 
 from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeServiceProvider
-from .factories import deploy_safe, generate_safe
+from .utils import deploy_safe, generate_safe
 
 logger = logging.getLogger(__name__)
 
@@ -23,15 +23,23 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.safe_service.valid_master_copy_addresses = [cls.safe_contract_address]
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
 
-    def deploy_test_safe(self, number_owners: int = 3, threshold: int = None, owners: List[str] = None,
-                         initial_funding_wei: int = 0) -> SafeCreationTx:
+    def build_test_safe(self, number_owners: int = 3, threshold: int = None,
+                        owners: List[str] = None)-> SafeCreationTx:
         owners = owners if owners else [get_eth_address_with_key()[0] for _ in range(number_owners)]
         threshold = threshold if threshold else len(owners) - 1
-        funder_account = self.ethereum_test_account
 
         safe_creation_tx = generate_safe(self.safe_service,
                                          owners=owners,
                                          threshold=threshold)
+        return safe_creation_tx
+
+
+    def deploy_test_safe(self, number_owners: int = 3, threshold: int = None, owners: List[str] = None,
+                         initial_funding_wei: int = 0) -> SafeCreationTx:
+        owners = owners if owners else [get_eth_address_with_key()[0] for _ in range(number_owners)]
+        threshold = threshold if threshold else len(owners) - 1
+        safe_creation_tx = self.build_test_safe(threshold=threshold, owners=owners)
+        funder_account = self.ethereum_test_account
         safe_address = deploy_safe(self.w3,
                                    safe_creation_tx,
                                    funder_account.address,
