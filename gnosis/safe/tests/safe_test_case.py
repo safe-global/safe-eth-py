@@ -20,7 +20,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
 
         # If safe master copy not deployed we do
         cls.safe_contract_address = cls.safe_service.master_copy_address
-        if cls.w3.eth.getCode(cls.safe_service.master_copy_address) == bytes.fromhex('00'):
+        if not cls.w3.eth.getCode(cls.safe_service.master_copy_address):
+            print('Deploying contract')
             cls.safe_contract_address = cls.safe_service.deploy_master_contract(deployer_private_key=
                                                                                 cls.ethereum_test_account.privateKey)
             cls.safe_service.master_copy_address = cls.safe_contract_address
@@ -36,7 +37,6 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                                          owners=owners,
                                          threshold=threshold)
         return safe_creation_tx
-
 
     def deploy_test_safe(self, number_owners: int = 3, threshold: int = None, owners: List[str] = None,
                          initial_funding_wei: int = 0) -> SafeCreationTx:

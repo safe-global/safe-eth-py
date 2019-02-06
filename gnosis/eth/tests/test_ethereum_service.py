@@ -64,9 +64,11 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
         transfer_tx = erc20_contract.functions.transfer(to, amount_to_send).buildTransaction({'from': from_})
         data = transfer_tx['data']
 
+        # Ganache does not cares about all this anymore
+        # ---------------------------------------------
         # Ganache returns error because there is data but address is not a contract
-        with self.assertRaisesMessage(ValueError, 'transaction which calls a contract function'):
-            self.ethereum_service.estimate_gas(from_, to, 0, data, block_identifier='pending')
+        # with self.assertRaisesMessage(ValueError, 'transaction which calls a contract function'):
+        #    self.ethereum_service.estimate_gas(from_, to, 0, data, block_identifier='pending')
         # `to` is not a contract, no functions will be triggered
         # gas = self.ethereum_service.estimate_gas(from_, to, 0, data, block_identifier='pending')
         # self.assertGreater(gas, send_ether_gas)

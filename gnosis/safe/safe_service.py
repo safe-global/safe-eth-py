@@ -272,12 +272,11 @@ class SafeService:
 
         return deployed_proxy_code == proxy_code
 
-    def get_refund_receiver(self):
+    def get_refund_receiver(self) -> str:
         return NULL_ADDRESS
 
-    def is_master_copy_deployed(self):
-        code = self.w3.eth.getCode(self.master_copy_address)
-        return not (code == b'\x00')
+    def is_master_copy_deployed(self) -> bool:
+        return bool(self.w3.eth.getCode(self.master_copy_address))
 
     def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
         return get_paying_proxy_contract(self.w3, safe_address).functions.implementation().call(
