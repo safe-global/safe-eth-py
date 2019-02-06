@@ -73,19 +73,15 @@ class EthereumServiceProvider:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             from django.conf import settings
-            cls.instance = EthereumService(settings.ETHEREUM_NODE_URL,
-                                           settings.SAFE_FUNDER_MAX_ETH,
-                                           settings.SAFE_FUNDER_PRIVATE_KEY)
+            cls.instance = EthereumService(settings.ETHEREUM_NODE_URL)
         return cls.instance
 
 
 class EthereumService:
     NULL_ADDRESS = NULL_ADDRESS
 
-    def __init__(self, ethereum_node_url, max_eth_to_send=0.1, funder_private_key=None):
+    def __init__(self, ethereum_node_url):
         self.ethereum_node_url = ethereum_node_url
-        self.max_eth_to_send = max_eth_to_send
-        self.funder_private_key = funder_private_key
         self.w3 = Web3(HTTPProvider(self.ethereum_node_url))
         try:
             if self.w3.net.chainId != 1:
@@ -239,8 +235,8 @@ class EthereumService:
                 tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
                 number_errors -= 1
 
-    def send_eth_to(self, to: str, gas_price: int, value: int, gas: int=22000, retry: bool=False,
-                    block_identifier=None) -> bytes:
+    def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int=22000,
+                    retry: bool = False, block_identifier=None, max_eth_to_send: int = 0) -> bytes:
         """
         Send ether using configured account
         :param to: to
@@ -253,19 +249,8 @@ class EthereumService:
         """
 
         assert check_checksum(to)
-        if value > self.w3.toWei(self.max_eth_to_send, 'ether'):
-            raise EtherLimitExceeded('%d is bigger than %f' % (value, self.max_eth_to_send))
-
-        private_key = None
-        public_key = None
-
-        if self.funder_private_key:
-            private_key = self.funder_private_key
-        elif self.w3.eth.accounts:
-            public_key = self.w3.eth.accounts[0]
-        else:
-            logger.error('No ethereum account configured')
-            raise ValueError("Ethereum account was not configured or unlocked in the node")
+        if max_eth_to_send and value > self.w3.toWei(max_eth_to_send, 'ether'):
+            raise EtherLimitExceeded('%d is bigger than %f' % (value, max_eth_to_send))
 
         tx = {
             'to': to,
@@ -274,8 +259,8 @@ class EthereumService:
             'gasPrice': gas_price,
         }
 
-        return self.send_unsigned_transaction(tx, private_key=private_key, public_key=public_key,
-                                              retry=retry, block_identifier=block_identifier)
+        return self.send_unsigned_transaction(tx, private_key=private_key, retry=retry,
+                                              block_identifier=block_identifier)
 
     def check_tx_with_confirmations(self, tx_hash: str, confirmations: int) -> bool:
         """

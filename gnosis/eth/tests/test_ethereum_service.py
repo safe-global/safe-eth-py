@@ -19,13 +19,16 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
         value = 1
         to, _ = get_eth_address_with_key()
 
-        tx_hash = self.ethereum_service.send_eth_to(to=to, gas_price=self.gas_price, value=value)
+        tx_hash = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                                    to=to, gas_price=self.gas_price, value=value)
         self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_service.send_eth_to(to=to, gas_price=self.gas_price, value=value)
+        _ = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                              to=to, gas_price=self.gas_price, value=value)
         self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_service.send_eth_to(to=to, gas_price=self.gas_price, value=value)
+        _ = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                              to=to, gas_price=self.gas_price, value=value)
         self.assertTrue(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
 
     def test_erc20_balance(self):
@@ -111,12 +114,14 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
     def test_send_eth_to(self):
         address, _ = get_eth_address_with_key()
         value = 1
-        self.ethereum_service.send_eth_to(address, self.gas_price, value)
+        self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey, address, self.gas_price, value)
         self.assertEqual(self.ethereum_service.get_balance(address), value)
 
-        value = self.w3.toWei(self.ethereum_service.max_eth_to_send, 'ether') + 1
         with self.assertRaises(EtherLimitExceeded):
-            self.ethereum_service.send_eth_to(address, self.gas_price, value)
+            max_eth_to_send = 1
+            value = self.w3.toWei(max_eth_to_send, 'ether') + 1
+            self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey, address, self.gas_price, value,
+                                              max_eth_to_send=max_eth_to_send)
 
     def test_send_eth_without_key(self):
         with self.settings(SAFE_FUNDER_PRIVATE_KEY=None):
@@ -225,7 +230,8 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
         value = 1
         to = Account.create().address
 
-        tx_hash = self.ethereum_service.send_eth_to(to=to, gas_price=self.gas_price, value=value)
+        tx_hash = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                                    to=to, gas_price=self.gas_price, value=value)
         receipt1 = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=None)
         receipt2 = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=20)
         self.assertIsNotNone(receipt1)
