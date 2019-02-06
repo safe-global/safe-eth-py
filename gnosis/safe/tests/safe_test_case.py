@@ -17,9 +17,13 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     def prepare_tests(cls):
         super().prepare_tests()
         cls.safe_service = SafeServiceProvider()
-        cls.safe_contract_address = cls.safe_service.deploy_master_contract(deployer_private_key=
-                                                                            cls.ethereum_test_account.privateKey)
-        cls.safe_service.master_copy_address = cls.safe_contract_address
+
+        # If safe master copy not deployed we do
+        cls.safe_contract_address = cls.safe_service.master_copy_address
+        if cls.w3.eth.getCode(cls.safe_service.master_copy_address) == bytes.fromhex('00'):
+            cls.safe_contract_address = cls.safe_service.deploy_master_contract(deployer_private_key=
+                                                                                cls.ethereum_test_account.privateKey)
+            cls.safe_service.master_copy_address = cls.safe_contract_address
         cls.safe_service.valid_master_copy_addresses = [cls.safe_contract_address]
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
 
