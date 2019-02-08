@@ -23,7 +23,7 @@ after_success:
   - coveralls
 deploy:
   provider: script
-  script: bash scripts/deploy.sh "${PYPI_USER}" "${PYPI_PASS}"
+  script: bash scripts/deploy_pipy.sh "${PYPI_USER}" "${PYPI_PASS}"
   skip_cleanup: true
   on:
     tags: true
