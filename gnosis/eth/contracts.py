@@ -22,6 +22,7 @@ GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
 ERC20_INTERFACE = load_contract_interface('ERC20.json')
 ERC20_EXAMPLE_INTERFACE = load_contract_interface('ERC20TestToken.json')
+PROXY_FACTORY2_INTERFACE = load_contract_interface('ProxyFactory2.json')
 
 
 def get_safe_contract(w3: Web3, address=None):
@@ -66,6 +67,12 @@ def get_example_erc20_contract(w3: Web3, address=None):
     return w3.eth.contract(address,
                            abi=ERC20_EXAMPLE_INTERFACE['abi'],
                            bytecode=ERC20_EXAMPLE_INTERFACE['bytecode'])
+
+
+def get_proxy_factory2_contract(w3: Web3, address=None):
+    return w3.eth.contract(address,
+                           abi=PROXY_FACTORY2_INTERFACE['abi'],
+                           bytecode=PROXY_FACTORY2_INTERFACE['bytecode'])
 
 
 def get_paying_proxy_deployed_bytecode() -> bytes:
