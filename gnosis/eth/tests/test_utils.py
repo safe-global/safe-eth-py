@@ -4,8 +4,7 @@ from eth_abi import encode_abi
 from eth_account import Account
 from hexbytes import HexBytes
 
-from gnosis.eth.constants import NULL_ADDRESS
-
+from ..constants import NULL_ADDRESS
 from ..contracts import get_proxy_factory2_contract
 from ..utils import generate_address_2
 from .ethereum_test_case import EthereumTestCaseMixin

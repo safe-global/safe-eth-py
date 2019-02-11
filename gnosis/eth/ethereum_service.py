@@ -80,7 +80,7 @@ class EthereumServiceProvider:
 class EthereumService:
     NULL_ADDRESS = NULL_ADDRESS
 
-    def __init__(self, ethereum_node_url):
+    def __init__(self, ethereum_node_url: str):
         self.ethereum_node_url = ethereum_node_url
         self.w3 = Web3(HTTPProvider(self.ethereum_node_url))
         try:

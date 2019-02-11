@@ -1,12 +1,12 @@
 import os
-from typing import Union
+from typing import Tuple, Union
 
 from ethereum import utils
 from hexbytes import HexBytes
 from web3 import Web3
 
 
-def get_eth_address_with_key() -> (str, bytes):
+def get_eth_address_with_key() -> Tuple[str, bytes]:
     # import secp256k1
     # private_key = secp256k1.PrivateKey().private_key
     private_key = utils.sha3(os.urandom(4096))
