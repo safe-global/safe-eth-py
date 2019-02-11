@@ -20,14 +20,14 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         from_ = '0x8942595A2dC5181Df0465AF0D7be08c8f23C93af'
         salt = self.w3.sha3(text='aloha')
         init_code = '0x00abcd'
-        expected = '0x8d02c796dd019916f65eba1c9d65a7079ece00e0'
+        expected = '0x8D02C796Dd019916F65EBa1C9D65a7079Ece00E0'
         address2 = generate_address_2(from_, salt, init_code)
         self.assertEqual(address2, expected)
 
         from_ = HexBytes('0x8942595A2dC5181Df0465AF0D7be08c8f23C93af')
         salt = self.w3.sha3(text='aloha').hex()
         init_code = HexBytes('0x00abcd')
-        expected = '0x8d02c796dd019916f65eba1c9d65a7079ece00e0'
+        expected = '0x8D02C796Dd019916F65EBa1C9D65a7079Ece00E0'
         address2 = generate_address_2(from_, salt, init_code)
         self.assertEqual(address2, expected)
 

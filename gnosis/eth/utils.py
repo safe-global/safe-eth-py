@@ -41,4 +41,4 @@ def generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_c
 
     init_code_hash = Web3.sha3(init_code)
     contract_address = Web3.sha3(HexBytes('ff') + from_ + salt + init_code_hash)
-    return HexBytes(contract_address[12:]).hex()
+    return Web3.toChecksumAddress(contract_address[12:])
