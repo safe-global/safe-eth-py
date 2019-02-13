@@ -84,7 +84,7 @@ class EthereumService:
         self.ethereum_node_url = ethereum_node_url
         self.w3 = Web3(HTTPProvider(self.ethereum_node_url))
         try:
-            if self.w3.net.chainId != 1:
+            if int(self.w3.net.version) != 1:
                 self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
             # For tests using dummy connections (like IPC)
         except (ConnectionError, FileNotFoundError):
