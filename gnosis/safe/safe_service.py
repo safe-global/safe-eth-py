@@ -303,15 +303,34 @@ class SafeService:
     def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
 
-    def estimate_tx_gas_with_safe(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
+    def estimate_tx_gas_with_safe(self, safe_address: str, to: str, value: int, data: bytes, operation: int,
+                                  block_identifier='pending') -> int:
         """
         Estimate tx gas using safe `requiredTxGas` method
         :return: int: Estimated gas
         :raises: CannotEstimateGas: If gas cannot be estimated
         :raises: ValueError: Cannot decode received data
         """
+
         data = data or b''
-        # Add 10k else we will fail in case of nested calls
+
+        def parse_revert_data(result: bytes) -> int:
+            # 4 bytes - error method id
+            # 32 bytes - position
+            # 32 bytes - length
+            # Last 32 bytes - value of revert (if everything went right)
+            gas_estimation_offset = 4 + 32 + 32
+            estimated_gas = result[gas_estimation_offset:]
+
+            # Estimated gas must be 32 bytes
+            if len(estimated_gas) != 32:
+                logger.warning('Safe=%s Problem estimating gas, returned value is %s for tx=%s',
+                               safe_address, result.hex(), tx)
+                raise CannotEstimateGas('Received %s for tx=%s' % (result.hex(), tx))
+
+            return int(estimated_gas.hex(), 16)
+
+        # Add 10k, else we will fail in case of nested calls
         try:
             tx = self.get_contract(safe_address).functions.requiredTxGas(
                 to,
@@ -324,23 +343,35 @@ class SafeService:
                 'gasPrice': 0,
             })
             # If we build the tx web3 will not try to decode it for us
-            result = self.w3.eth.call(tx, block_identifier='pending').hex()
-            # 2 - 0x
-            # 8 - error method id
-            # 64 - position
-            # 64 - length
-            estimated_gas_hex = result[138:]
-
-            # Estimated gas in hex must be 64
-            if len(estimated_gas_hex) != 64:
-                logger.warning('Safe=%s Problem estimating gas, returned value is %s for tx=%s',
-                               safe_address, result, tx)
-                raise CannotEstimateGas('Received %s for tx=%s' % (result, tx))
-
-            estimated_gas = int(estimated_gas_hex, 16)
-            return estimated_gas
+            # Ganache 6.3.0 and Geth are working like this
+            result: HexBytes = self.w3.eth.call(tx, block_identifier=block_identifier)
+            return parse_revert_data(result)
         except ValueError as e:
-            data = e.args[0]['data']
+            error_dict = e.args[0]
+
+            # Parity has a problem with `pending` calls if not running in `archive` mode. We use 'latest'
+            if error_dict.get('message') and 'your node is running with state pruning' in error_dict['message']:
+                logger.warning("Parity is not configured in archive mode, using `latest` instead of `pending` "
+                               "for calling Safe's `requiredTxGas`")
+                return self.estimate_tx_gas_with_safe(safe_address, to, value, data, operation,
+                                                      block_identifier='latest')
+
+            data = error_dict.get('data')
+            if not data:
+                raise e
+            """
+            Parity throws a ValueError, e.g.
+            {'code': -32015,
+             'message': 'VM execution error.',
+             'data': 'Reverted 0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000
+                      000000000000000000000000000000000000000000000002c4d6574686f642063616e206f6e6c792062652063616c6c656
+                      42066726f6d207468697320636f6e74726163740000000000000000000000000000000000000000'}
+            """
+            if isinstance(data, str) and 'Reverted ' in data:
+                # Parity
+                result = HexBytes(data.replace('Reverted ', ''))
+                return parse_revert_data(result)
+
             key = list(data.keys())[0]
             result = data[key]['return']
             if result == '0x0':
