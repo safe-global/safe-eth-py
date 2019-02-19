@@ -1,4 +1,5 @@
 import requests
+import time
 from hexbytes import HexBytes
 from typing import List, NamedTuple, Set, Tuple, Union, Dict
 
@@ -77,18 +78,52 @@ def decode_delegate_call_trace(trace: Dict[str, any], next_trace: Dict[str, any]
                             ret_offset, ret_length)
 
 
-node_url = 'http://localhost:8545'
-tx_hash = '0x0142c3f42220d839af4f1dbb7b9ab9482669ab8714c785fdd418d954077f9816'
-post = trace_transaction(tx_hash, disable_stack=False)
-response = requests.post(node_url, json=post)
-gas = response.json()['result']['gas']
-failed = response.json()['result']['failed']
-return_value = response.json()['result']['returnValue']
-struct_logs = response.json()['result']['structLogs']
-for i, trace in enumerate(struct_logs):
+def decode_trace(trace, next_trace) -> DecodedCallTrace:
+    decoded_call_trace = None
     if trace['op'] in ('CALL', 'CALLCODE'):
-        print(decode_call_trace(trace, struct_logs[i + 1]))
+        return decode_call_trace(trace, next_trace)
     elif trace['op'] in ('DELEGATECALL', 'STATICCALL'):
-        print(decode_delegate_call_trace(trace, struct_logs[i + 1]))
-    elif trace['op'] == 'CREATE':
-        print('CREATE')
+        return decode_delegate_call_trace(trace, next_trace)
+    return None
+
+
+def decode_tx():
+    node_url = 'http://localhost:8545'
+    tx_hash = '0x0142c3f42220d839af4f1dbb7b9ab9482669ab8714c785fdd418d954077f9816'
+    post = trace_transaction(tx_hash, disable_stack=False)
+    response = requests.post(node_url, json=post)
+    gas = response.json()['result']['gas']
+    failed = response.json()['result']['failed']
+    return_value = response.json()['result']['returnValue']
+    struct_logs = response.json()['result']['structLogs']
+    for i in range(len(struct_logs) - 1):
+        decoded_call_trace = decode_trace(struct_logs[i], struct_logs[i + 1])
+        if decoded_call_trace:
+            print(decoded_call_trace)
+
+def decode_block(block):
+    for tx in block:
+        struct_logs = tx['result']['structLogs']
+        for i in range(len(struct_logs) - 1):
+            decoded_call_trace = decode_trace(struct_logs[i], struct_logs[i + 1])
+            if decoded_call_trace:
+                print(decoded_call_trace)
+
+
+def decode_blocks():
+    node_url = 'http://localhost:8545'
+    first_block = 7235792
+    for block_number in range(first_block, 7241099):
+        print('Block\t%d' % block_number)
+        post = trace_block_by_number(block_number, disable_stack=False)
+        response = requests.post(node_url, json=post)
+        # Decode json
+        start = time.time()
+        print('Start', start)
+        response_json = response.json()
+        end = time.time()
+        print('Elapsed', end - start)
+        decode_block(response_json['result'])
+
+# decode_tx()
+decode_blocks()
