@@ -85,10 +85,9 @@ def decode_block(block) -> Dict[str, List[DecodedCallTrace]]:
     tx_hash_with_decoded_traces = {}
     for tx in block:
         tx_hash = tx['transactionHash']
-        if 'trace' not in tx_hash:  # trace_block
-            print(tx)
-            tx_hash_with_decoded_traces[tx_hash] = decode_transaction_trace(tx)
-        else:  # replay_trace_block
+        if tx_hash and 'trace' not in tx_hash:  # trace_block
+            tx_hash_with_decoded_traces[tx_hash] = decode_transaction_trace([tx])
+        elif tx_hash:  # replay_trace_block
             tx_hash_with_decoded_traces[tx_hash] = decode_transaction_trace(tx['trace'])
     return tx_hash_with_decoded_traces
 
