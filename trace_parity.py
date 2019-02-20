@@ -69,9 +69,9 @@ def decode_transaction_trace(trace: Dict[str, any]) -> List[DecodedCallTrace]:
                     result_key = 'output'
                 result = HexBytes(sub_trace['result'][result_key])
 
-        decoded_call_traces.append(DecodedCallTrace(call_type, from_, to,
-                                                    input_, value, gas,
-                                                    result, error))
+            decoded_call_traces.append(DecodedCallTrace(call_type, from_, to,
+                                                        input_, value, gas,
+                                                        result, error))
     return decoded_call_traces
 
 
@@ -96,6 +96,7 @@ def decode_blocks(first_block: int, last_block: int):
     for block_number in range(first_block, last_block):
         print('Block\t%d' % block_number)
         block_traces = query_trace_block_fast_by_number(block_number)
+        # block_traces = query_trace_block_by_number(block_number)
         decode_block(block_traces)
 
 
