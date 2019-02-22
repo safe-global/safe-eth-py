@@ -387,6 +387,12 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         my_safe_address = safe_creation.safe_address
         self.assertEqual(self.safe_service.retrieve_threshold(my_safe_address), 2)
 
+    def test_retrieve_version(self):
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
+        # Versions must be semantic, like 0.1.0, so we count 3 points
+        self.assertTrue(self.safe_service.retrieve_version(my_safe_address).count('.'), 3)
+
     def test_token_balance(self):
         funder_account = self.ethereum_test_account
         funder = funder_account.address

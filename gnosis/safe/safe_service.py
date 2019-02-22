@@ -303,6 +303,9 @@ class SafeService:
     def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
         return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
 
+    def retrieve_version(self, safe_address, block_identifier='pending') -> str:
+        return self.get_contract(safe_address).functions.VERSION().call(block_identifier=block_identifier)
+
     def estimate_tx_gas_with_safe(self, safe_address: str, to: str, value: int, data: bytes, operation: int,
                                   block_identifier='pending') -> int:
         """
