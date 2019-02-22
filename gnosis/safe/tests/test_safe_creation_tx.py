@@ -190,7 +190,9 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         deployer_address = safe_creation_tx.deployer_address
         safe_address = safe_creation_tx.safe_address
         logger.info("Send %d tokens to safe %s", payment, safe_address)
-        self.send_tx(erc20_contract.functions.transfer(safe_address, payment).buildTransaction({'from': erc20_deployer.address}), erc20_deployer)
+        self.send_tx(erc20_contract.functions.transfer(safe_address,
+                                                       payment).buildTransaction({'from': erc20_deployer.address}),
+                     erc20_deployer)
         self.assertEqual(erc20_contract.functions.balanceOf(safe_address).call(), payment)
 
         logger.info("Send %d ether to deployer %s", w3.fromWei(payment, 'ether'), deployer_address)

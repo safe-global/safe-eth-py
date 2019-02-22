@@ -1,6 +1,6 @@
 from functools import wraps
 from logging import getLogger
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 import requests
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
@@ -77,12 +77,60 @@ class EthereumServiceProvider:
         return cls.instance
 
 
+class Erc20Manager:
+    def __init__(self, ethereum_service):
+        self.w3 = ethereum_service.w3
+        self.ethereum_service = ethereum_service
+
+    def get_balance(self, address: str, erc20_address: str):
+        return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
+
+    def get_transfer_history(self, from_block: int, to_block: int = 0,
+                             from_address: str = '', to_address: str = '',
+                             token_address: str = '') -> List[Dict[str, any]]:
+        """
+        Get events for erc20 transfers. At least one of `from_address`, `to_address` or `token_address` must be
+        defined
+        :param from_block: Block to start querying from
+        :param to_block: Block to stop querying from (0 would be last block)
+        :param from_address: Address sending the erc20 transfer
+        :param to_address: Address receiving the erc20 transfer
+        :param token_address: Address of the token
+        :return: List of events
+        :throws: ReadTimeout
+        """
+        assert from_address or to_address or token_address, 'At least one parameter must be provided'
+
+        erc20 = get_erc20_contract(self.w3)
+
+        argument_filters = {}
+        if from_address:
+            argument_filters['from'] = from_address
+        if to_address:
+            argument_filters['to'] = to_address
+
+        return erc20.events.Transfer.createFilter(fromBlock=from_block,
+                                                  toBlock=to_block if to_block else None,
+                                                  address=token_address if token_address else None,
+                                                  argument_filters=argument_filters).get_all_entries()
+
+    def send_tokens(self, to: str, amount: int, erc20_address: str):
+        """
+        Send tokens to address
+        :param to:
+        :param amount:
+        :param erc20_address:
+        :return:
+        """
+
+
 class EthereumService:
     NULL_ADDRESS = NULL_ADDRESS
 
     def __init__(self, ethereum_node_url: str):
-        self.ethereum_node_url = ethereum_node_url
-        self.w3 = Web3(HTTPProvider(self.ethereum_node_url))
+        self.ethereum_node_url: str = ethereum_node_url
+        self.w3: Web3 = Web3(HTTPProvider(self.ethereum_node_url))
+        self.erc20: Erc20Manager = Erc20Manager(self)
         try:
             if int(self.w3.net.version) != 1:
                 self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
@@ -157,9 +205,6 @@ class EthereumService:
 
     def get_balance(self, address: str, block_identifier=None):
         return self.w3.eth.getBalance(address, block_identifier)
-
-    def get_erc20_balance(self, address: str, erc20_address: str):
-        return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
 
     def get_transaction(self, tx_hash):
         return self.w3.eth.getTransaction(tx_hash)

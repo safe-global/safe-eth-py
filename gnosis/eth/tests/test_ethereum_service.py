@@ -35,12 +35,73 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
         amount = 1000
         address, _ = get_eth_address_with_key()
         erc20_contract = self.deploy_example_erc20(amount, address)
-        token_balance = self.ethereum_service.get_erc20_balance(address, erc20_contract.address)
+        token_balance = self.ethereum_service.erc20.get_balance(address, erc20_contract.address)
         self.assertTrue(token_balance, amount)
 
         another_account, _ = get_eth_address_with_key()
-        token_balance = self.ethereum_service.get_erc20_balance(another_account, erc20_contract.address)
+        token_balance = self.ethereum_service.erc20.get_balance(another_account, erc20_contract.address)
         self.assertEqual(token_balance, 0)
+
+    def test_erc20_events(self):
+        amount = 1000
+        owner_account = self.create_account(initial_ether=0.01)
+
+        # Owner will send amount / 2 to receiver and receiver2. Then receiver1 and receiver 2
+        # will send amount / 4 to receiver3
+        receiver_account = self.create_account(initial_ether=0.01)
+        receiver2_account = self.create_account(initial_ether=0.01)
+        receiver3_account = self.create_account(initial_ether=0.01)
+        erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
+        block_number = self.w3.eth.blockNumber
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, token_address=erc20_contract.address)
+        self.assertFalse(events)
+
+        self.send_tx(erc20_contract.functions.transfer(receiver_account.address,
+                                                       amount // 2).buildTransaction({'from': owner_account.address}),
+                     owner_account)
+        self.send_tx(erc20_contract.functions.transfer(receiver2_account.address,
+                                                       amount // 2).buildTransaction({'from': owner_account.address}),
+                     owner_account)
+
+        self.send_tx(erc20_contract.functions.transfer(receiver3_account.address,
+                                                       amount // 4).buildTransaction({'from': receiver_account.address}),
+                     receiver_account)
+        self.send_tx(erc20_contract.functions.transfer(receiver3_account.address,
+                                                       amount // 4).buildTransaction({'from': receiver2_account.address}),
+                     receiver2_account)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, token_address=erc20_contract.address)
+        self.assertEqual(len(events), 4)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, from_address=owner_account.address)
+        self.assertEqual(len(events), 2)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, from_address=receiver_account.address)
+        self.assertEqual(len(events), 1)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, from_address=receiver2_account.address)
+        self.assertEqual(len(events), 1)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, from_address=receiver3_account.address)
+        self.assertEqual(len(events), 0)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, to_address=receiver2_account.address)
+        self.assertEqual(len(events), 1)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number, to_address=receiver3_account.address)
+        self.assertEqual(len(events), 2)
+        for event in events:
+            self.assertEqual(event.args.value, amount // 4)
+            self.assertEqual(event.args.to, receiver3_account.address)
+
+        events = self.ethereum_service.erc20.get_transfer_history(block_number,
+                                                                  from_address=receiver2_account.address,
+                                                                  to_address=receiver3_account.address)
+        self.assertEqual(len(events), 1)
+        event = events[0]
+        self.assertEqual(event.args.value, amount // 4)
+        self.assertEqual(event.args['from'], receiver2_account.address)
+        self.assertEqual(event.args.to, receiver3_account.address)
 
     def test_estimate_gas(self):
         send_ether_gas = 21000
@@ -82,7 +143,7 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
 
         # We do the real erc20 transfer for the next test case
         self.send_tx(transfer_tx, from_account)
-        token_balance = self.ethereum_service.get_erc20_balance(to, erc20_contract.address)
+        token_balance = self.ethereum_service.erc20.get_balance(to, erc20_contract.address)
         self.assertTrue(token_balance, amount_to_send)
 
         # Gas will be lowest now because you don't have to pay for storage

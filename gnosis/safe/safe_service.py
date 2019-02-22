@@ -486,7 +486,7 @@ class SafeService:
         if gas_token == NULL_ADDRESS:
             balance = self.ethereum_service.get_balance(safe_address)
         else:
-            balance = self.ethereum_service.get_erc20_balance(safe_address, gas_token)
+            balance = self.ethereum_service.erc20.get_balance(safe_address, gas_token)
         return balance >= (safe_tx_gas + data_gas) * gas_price
 
     def check_refund_receiver(self, refund_receiver: str) -> bool:
