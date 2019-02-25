@@ -351,14 +351,6 @@ class SafeService:
             return parse_revert_data(result)
         except ValueError as e:
             error_dict = e.args[0]
-
-            # Parity has a problem with `pending` calls if not running in `archive` mode. We use 'latest'
-            if error_dict.get('message') and 'your node is running with state pruning' in error_dict['message']:
-                logger.warning("Parity is not configured in archive mode, using `latest` instead of `pending` "
-                               "for calling Safe's `requiredTxGas`")
-                return self.estimate_tx_gas_with_safe(safe_address, to, value, data, operation,
-                                                      block_identifier='latest')
-
             data = error_dict.get('data')
             if not data:
                 raise e

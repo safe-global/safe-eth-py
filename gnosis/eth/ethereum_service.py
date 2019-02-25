@@ -8,6 +8,7 @@ from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
+from web3.providers import AutoProvider, BaseProvider
 from web3.utils.threads import Timeout
 
 from gnosis.eth.constants import NULL_ADDRESS
@@ -78,9 +79,28 @@ class EthereumServiceProvider:
 
 
 class Erc20Manager:
-    def __init__(self, ethereum_service):
-        self.w3 = ethereum_service.w3
+    def __init__(self, ethereum_service, slow_provider_timeout: int = 30):
         self.ethereum_service = ethereum_service
+        self.w3 = ethereum_service.w3
+        self.slow_w3 = Web3(self.get_slow_provider(self.w3.providers[0],
+                                                   timeout=slow_provider_timeout))
+
+    @staticmethod
+    def get_slow_provider(provider: BaseProvider, timeout: int):
+        """
+        Get web3 provider for slow queries. Default `HTTPProvider` timeouts after 10 seconds
+        :param provider: Configured Web3 provider
+        :param timeout: Timeout to configure for internal requests (default is 10)
+        :return: A new web3 provider with the `slow_provider_timeout`
+        """
+        if isinstance(provider, AutoProvider):
+            return HTTPProvider(endpoint_uri='http://localhost:8545',
+                                request_kwargs={'timeout': timeout})
+        elif isinstance(provider, HTTPProvider):
+            return HTTPProvider(endpoint_uri=provider.endpoint_uri,
+                                request_kwargs={'timeout': timeout})
+        else:
+            return provider
 
     def get_balance(self, address: str, erc20_address: str):
         return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
@@ -91,6 +111,21 @@ class Erc20Manager:
         """
         Get events for erc20 transfers. At least one of `from_address`, `to_address` or `token_address` must be
         defined
+        An example of event:
+        {
+            "args": {
+                "from": "0x1Ce67Ea59377A163D47DFFc9BaAB99423BE6EcF1",
+                "to": "0xaE9E15896fd32E59C7d89ce7a95a9352D6ebD70E",
+                "value": 15000000000000000
+            },
+            "event": "Transfer",
+            "logIndex": 42,
+            "transactionIndex": 60,
+            "transactionHash": "0x71d6d83fef3347bad848e83dfa0ab28296e2953de946ee152ea81c6dfb42d2b3",
+            "address": "0xfecA834E7da9D437645b474450688DA9327112a5",
+            "blockHash": "0x054de9a496fc7d10303068cbc7ee3e25181a3b26640497859a5e49f0342e7db2",
+            "blockNumber": 7265022
+        }
         :param from_block: Block to start querying from
         :param to_block: Block to stop querying from (0 would be last block)
         :param from_address: Address sending the erc20 transfer
@@ -125,6 +160,10 @@ class Erc20Manager:
 
 
 class EthereumService:
+    """
+    Manage ethereum operations. Uses web3 for the most part, but some other stuff is implemented from scratch.
+    Note: If you want to use `pending` state with `Parity`, it must be run with `--pruning=archive` or `--force-sealing`
+    """
     NULL_ADDRESS = NULL_ADDRESS
 
     def __init__(self, ethereum_node_url: str):
