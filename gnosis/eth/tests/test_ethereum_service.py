@@ -10,28 +10,12 @@ from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 
 
-class TestEthereumService(EthereumTestCaseMixin, TestCase):
+class TestERC20Module(EthereumTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()
 
-    def test_check_tx_with_confirmations(self):
-        value = 1
-        to, _ = get_eth_address_with_key()
-
-        tx_hash = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
-                                                    to=to, gas_price=self.gas_price, value=value)
-        self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
-
-        _ = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
-                                              to=to, gas_price=self.gas_price, value=value)
-        self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
-
-        _ = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
-                                              to=to, gas_price=self.gas_price, value=value)
-        self.assertTrue(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
-
-    def test_erc20_balance(self):
+    def test_get_balance(self):
         amount = 1000
         address, _ = get_eth_address_with_key()
         erc20_contract = self.deploy_example_erc20(amount, address)
@@ -42,7 +26,7 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
         token_balance = self.ethereum_service.erc20.get_balance(another_account, erc20_contract.address)
         self.assertEqual(token_balance, 0)
 
-    def test_erc20_events(self):
+    def test_get_transfer_history(self):
         amount = 1000
         owner_account = self.create_account(initial_ether=0.01)
 
@@ -102,6 +86,35 @@ class TestEthereumService(EthereumTestCaseMixin, TestCase):
         self.assertEqual(event.args.value, amount // 4)
         self.assertEqual(event.args['from'], receiver2_account.address)
         self.assertEqual(event.args.to, receiver3_account.address)
+
+    def test_get_info(self):
+        amount = 1
+        owner = Account.create().address
+        erc20_contract = self.deploy_example_erc20(1, owner)
+        erc20_info = self.ethereum_service.erc20.get_info(erc20_contract.address)
+        self.assertEqual(erc20_info.decimals, 18)
+
+
+class TestEthereumService(EthereumTestCaseMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.prepare_tests()
+
+    def test_check_tx_with_confirmations(self):
+        value = 1
+        to, _ = get_eth_address_with_key()
+
+        tx_hash = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                                    to=to, gas_price=self.gas_price, value=value)
+        self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
+
+        _ = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                              to=to, gas_price=self.gas_price, value=value)
+        self.assertFalse(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
+
+        _ = self.ethereum_service.send_eth_to(self.ethereum_test_account.privateKey,
+                                              to=to, gas_price=self.gas_price, value=value)
+        self.assertTrue(self.ethereum_service.check_tx_with_confirmations(tx_hash, 2))
 
     def test_estimate_gas(self):
         send_ether_gas = 21000

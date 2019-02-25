@@ -1,6 +1,6 @@
 from functools import wraps
 from logging import getLogger
-from typing import Dict, List, Union
+from typing import Dict, List, Union, NamedTuple
 
 import requests
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
@@ -13,7 +13,7 @@ from web3.utils.threads import Timeout
 
 from gnosis.eth.constants import NULL_ADDRESS
 
-from .contracts import get_erc20_contract
+from .contracts import get_erc20_contract, get_example_erc20_contract
 
 logger = getLogger(__name__)
 
@@ -70,6 +70,12 @@ def tx_with_exception_handling(func):
     return with_exception_handling
 
 
+class Erc20_Info(NamedTuple):
+    name: str
+    symbol: str
+    decimals: int
+
+
 class EthereumServiceProvider:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
@@ -102,8 +108,27 @@ class Erc20Manager:
         else:
             return provider
 
-    def get_balance(self, address: str, erc20_address: str):
+    def get_balance(self, address: str, erc20_address: str) -> int:
+        """
+        Get balance of address for `erc20_address`
+        :param address: owner address
+        :param erc20_address: erc20 token address
+        :return: balance
+        """
         return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
+
+    def get_info(self, erc20_address: str) -> Erc20_Info:
+        """
+        Get erc20 information (`name`, `symbol` and `decimals`)
+        :param erc20_address:
+        :return: Erc20_Info
+        """
+        # We use the `example erc20` as the `erc20 interface` doesn't have `name`, `symbol` nor `decimals`
+        erc20 = get_example_erc20_contract(self.w3, erc20_address)
+        name = erc20.functions.name().call()
+        symbol = erc20.functions.symbol().call()
+        decimals = erc20.functions.decimals().call()
+        return Erc20_Info(name, symbol, decimals)
 
     def get_transfer_history(self, from_block: int, to_block: int = 0,
                              from_address: str = '', to_address: str = '',
