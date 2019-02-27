@@ -307,7 +307,7 @@ class EthereumService:
         :param public_key:
         :param retry: Retry if a problem with nonce is found
         :param block_identifier:
-        :return:
+        :return: tx hash
         """
         if private_key:
             address = self.private_key_to_address(private_key)
@@ -326,7 +326,14 @@ class EthereumService:
                 if private_key:
                     signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
                     logger.debug('Sending %d wei from %s to %s', tx['value'], address, tx['to'])
-                    return self.send_raw_transaction(signed_tx.rawTransaction)
+                    try:
+                        return self.send_raw_transaction(signed_tx.rawTransaction)
+                    except TransactionAlreadyImported as e:
+                        # Sometimes Parity 2.2.11 fails with Transaction already imported, even if it's not, but it's
+                        # processed
+                        tx_hash = signed_tx.hash
+                        logger.error('Transaction with tx-hash=%s already imported: %s' % (tx_hash.hex(), str(e)))
+                        return tx_hash
                 elif public_key:
                     tx['from'] = address
                     return self.send_transaction(tx)
