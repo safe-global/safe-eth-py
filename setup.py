@@ -11,7 +11,9 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 requirements = [
     "Django>=2.0.0",
     "ethereum>=2.3.2",
+    "eth-abi2",
     "hexbytes>=0.1.0",
+    "packaging",
     "py-eth-sig-utils>=0.3.0",
     "web3>=4",
 ]

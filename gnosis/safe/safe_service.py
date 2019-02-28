@@ -2,8 +2,10 @@ from enum import Enum
 from logging import getLogger
 from typing import List, NamedTuple, Set, Tuple, Union
 
-from ethereum.utils import check_checksum
+from eth_account import Account
+from ethereum.utils import check_checksum, checksum_encode
 from hexbytes import HexBytes
+from packaging.version import Version
 from web3.exceptions import BadFunctionCallOutput
 
 from py_eth_sig_utils.eip712 import encode_typed_data
@@ -11,10 +13,12 @@ from py_eth_sig_utils.eip712 import encode_typed_data
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import (get_paying_proxy_contract,
                                   get_paying_proxy_deployed_bytecode,
+                                  get_proxy_factory_contract,
                                   get_safe_contract)
 from gnosis.eth.ethereum_service import (EthereumService,
                                          EthereumServiceProvider)
 from gnosis.eth.utils import get_eth_address_with_key
+from gnosis.safe.safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 
@@ -100,6 +104,7 @@ class SafeServiceProvider:
             ethereum_service = EthereumServiceProvider()
             cls.instance = SafeService(ethereum_service,
                                        settings.SAFE_CONTRACT_ADDRESS,
+                                       settings.SAFE_PROXY_FACTORY_ADDRESS,
                                        settings.SAFE_VALID_CONTRACT_ADDRESSES,
                                        settings.SAFE_TX_SENDER_PRIVATE_KEY,
                                        settings.SAFE_FUNDER_PRIVATE_KEY)
@@ -112,11 +117,9 @@ class SafeServiceProvider:
 
 
 class SafeService:
-    GAS_FOR_MASTER_DEPLOY = 6000000
-    GAS_FOR_PROXY_DEPLOY = 5125602
-
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
+                 proxy_factory_address: str,
                  valid_master_copy_addresses: Set[str],
                  tx_sender_private_key: str=None,
                  funder_private_key: str=None):
@@ -125,9 +128,14 @@ class SafeService:
 
         for address in [master_copy_address] + list(valid_master_copy_addresses):
             if address and not check_checksum(address):
-                raise InvalidChecksumAddress('Master copy without checksum')
+                raise InvalidChecksumAddress('Master copy %s has invalid checksum' % address)
 
         self.master_copy_address = master_copy_address
+
+        if not check_checksum(proxy_factory_address):
+            raise InvalidChecksumAddress('Proxy factory %s has invalid checksum' % proxy_factory_address)
+        self.proxy_factory_address = proxy_factory_address
+
         self.valid_master_copy_addresses = set(valid_master_copy_addresses)
         if master_copy_address:
             self.valid_master_copy_addresses.add(master_copy_address)
@@ -167,6 +175,26 @@ class SafeService:
         assert safe_creation_tx.tx_pyethereum.nonce == 0
         return safe_creation_tx
 
+    def build_safe_create2_tx(self, salt_nonce: int, owners: List[str], threshold: int, gas_price: int,
+                              payment_token: Union[str, None], payment_token_eth_value: float = 1.0,
+                              fixed_creation_cost: Union[int, None] = None) -> SafeCreate2Tx:
+        try:
+            safe_creation_tx = SafeCreate2TxBuilder(w3=self.w3,
+                                                    master_copy_address=self.master_copy_address,
+                                                    proxy_factory_address=self.proxy_factory_address
+                                                    ).build(owners=owners,
+                                                            threshold=threshold,
+                                                            salt_nonce=salt_nonce,
+                                                            gas_price=gas_price,
+                                                            payment_receiver=self.funder_address,
+                                                            payment_token=payment_token,
+                                                            payment_token_eth_value=payment_token_eth_value,
+                                                            fixed_creation_cost=fixed_creation_cost)
+        except InvalidERC20Token as exc:
+            raise InvalidPaymentToken('Invalid payment token %s' % payment_token) from exc
+
+        return safe_creation_tx
+
     def deploy_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
@@ -175,19 +203,12 @@ class SafeService:
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
+        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
 
         safe_contract = self.get_contract()
-        constructor = safe_contract.constructor()
-        gas = self.GAS_FOR_MASTER_DEPLOY
-
-        if deployer_private_key:
-            deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
-            nonce = self.ethereum_service.get_nonce_for_account(deployer_account, 'pending')
-            tx = constructor.buildTransaction({'gas': gas, 'nonce': nonce})
-            signed_tx = self.w3.eth.account.signTransaction(tx, private_key=deployer_private_key)
-            tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
-        else:
-            tx_hash = constructor.transact({'from': deployer_account, 'gas': gas})
+        tx = safe_contract.constructor().buildTransaction({'from': deployer_address})
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
 
         tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
@@ -196,55 +217,119 @@ class SafeService:
 
         # Init master copy
         master_safe = self.get_contract(contract_address)
-        setup_function = master_safe.functions.setup(
+        tx = master_safe.functions.setup(
             # We use 2 owners that nobody controls for the master copy
             ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"],
-            # Maximum security
-            2,
-            NULL_ADDRESS,
-            b''
-        )
+            2,             # Threshold. Maximum security
+            NULL_ADDRESS,  # Address for optional DELEGATE CALL
+            b'',           # Data for optional DELEGATE CALL
+            NULL_ADDRESS,  # Payment token
+            0,             # Payment
+            NULL_ADDRESS   # Refund receiver
+        ).buildTransaction({'from': deployer_address})
 
-        if deployer_private_key:
-            deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
-            nonce = self.ethereum_service.get_nonce_for_account(deployer_account, 'pending')
-            tx = setup_function.buildTransaction({'gas': gas, 'nonce': nonce})
-            signed_tx = self.w3.eth.account.signTransaction(tx, private_key=deployer_private_key)
-            tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
-        else:
-            tx_hash = setup_function.transact({'from': deployer_account})
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
 
         tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
-        logger.info("Deployed and initialized Safe Master Contract=%s by %s", contract_address, deployer_account)
+        logger.info("Deployed and initialized Safe Master Contract=%s by %s", contract_address, deployer_address)
         return contract_address
 
-    def deploy_proxy_contract(self, deployer_account=None, deployer_private_key=None) -> str:
+    def deploy_paying_proxy_contract(self, initializer=b'', deployer_account=None, deployer_private_key=None) -> str:
         """
         Deploy proxy contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+        :param initializer: Initializer
         :param deployer_account: Unlocked ethereum account
         :param deployer_private_key: Private key of an ethereum account
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
+        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
 
         safe_proxy_contract = get_paying_proxy_contract(self.w3)
-        constructor = safe_proxy_contract.constructor(self.master_copy_address, b'', NULL_ADDRESS, NULL_ADDRESS, 0)
-        gas = self.GAS_FOR_PROXY_DEPLOY
+        tx = safe_proxy_contract.constructor(self.master_copy_address, initializer,
+                                             NULL_ADDRESS,
+                                             NULL_ADDRESS, 0).buildTransaction({'from': deployer_address})
 
-        if deployer_account:
-            tx_hash = constructor.transact({'from': deployer_account, 'gas': gas})
-        else:
-            deployer_account = self.ethereum_service.private_key_to_address(deployer_private_key)
-            nonce = self.ethereum_service.get_nonce_for_account(deployer_account, 'pending')
-            tx = constructor.buildTransaction({'gas': gas, 'nonce': nonce})
-            signed_tx = self.w3.eth.account.signTransaction(tx, private_key=deployer_private_key)
-            tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
-
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
         tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        assert tx_receipt.status
+        return tx_receipt.contractAddress
 
+    def deploy_proxy_contract(self, initializer=b'', deployer_account=None, deployer_private_key=None) -> str:
+        """
+        Deploy proxy contract using the `Proxy Factory Contract`.
+        Takes deployer_account (if unlocked in the node) or the deployer private key
+        :param initializer: Initializer
+        :param deployer_account: Unlocked ethereum account
+        :param deployer_private_key: Private key of an ethereum account
+        :return: deployed contract address
+        """
+        assert deployer_account or deployer_private_key
+        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+
+        proxy_factory_contract = get_proxy_factory_contract(self.w3, self.proxy_factory_address)
+        create_proxy_fn = proxy_factory_contract.functions.createProxy(self.master_copy_address, initializer)
+        contract_address = create_proxy_fn.call()
+        tx = create_proxy_fn.buildTransaction({'from': deployer_address})
+
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
+        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=120)
+        assert tx_receipt.status
+        return contract_address
+
+    def deploy_proxy_contract_with_nonce(self, salt_nonce: int, initializer: bytes, gas: int, gas_price: int,
+                                         deployer_private_key=None) -> Tuple[bytes, str]:
+        """
+        Deploy proxy contract using `create2` withthe `Proxy Factory Contract`.
+        Takes `deployer_account` (if unlocked in the node) or the `deployer_private_key`
+        :param salt_nonce: Uint256 for `create2` salt
+        :param initializer: Data for safe creation
+        :param gas: Gas
+        :param gas_price: Gas Price
+        :param deployer_private_key: Private key of an ethereum account
+        :return: Tuple(tx-hash, deployed contract address)
+        """
+        assert deployer_private_key
+
+        proxy_factory_contract = get_proxy_factory_contract(self.w3, self.proxy_factory_address)
+        create_proxy_fn = proxy_factory_contract.functions.createProxyWithNonce(self.master_copy_address, initializer,
+                                                                                salt_nonce)
+        contract_address = create_proxy_fn.call()
+
+        deployer_account = Account.privateKeyToAccount(deployer_private_key)
+        nonce = self.ethereum_service.get_nonce_for_account(deployer_account.address, 'pending')
+        # Auto estimation of gas does not work
+        tx = create_proxy_fn.buildTransaction({'from': deployer_account.address, 'gasPrice': gas_price,
+                                               'nonce': nonce, 'gas': gas})
+        signed_tx = deployer_account.signTransaction(tx)
+        tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
+        return tx_hash, contract_address
+
+    def deploy_proxy_factory_contract(self, deployer_account=None, deployer_private_key=None) -> str:
+        """
+        Deploy proxy factory contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+        :param deployer_account: Unlocked ethereum account
+        :param deployer_private_key: Private key of an ethereum account
+        :return: deployed contract address
+        """
+        assert deployer_account or deployer_private_key
+        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+
+        proxy_factory_contract = get_proxy_factory_contract(self.w3)
+        tx = proxy_factory_contract.constructor().buildTransaction({'from': deployer_address})
+
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
+
+        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=120)
+        assert tx_receipt.status
         contract_address = tx_receipt.contractAddress
+        logger.info("Deployed and initialized Proxy Factory Contract=%s by %s", contract_address, deployer_address)
         return contract_address
 
     def estimate_safe_creation(self, number_owners: int, gas_price: int, payment_token: Union[str, None],
@@ -268,19 +353,25 @@ class SafeService:
         :return: True if proxy is valid, False otherwise
         """
         deployed_proxy_code = self.w3.eth.getCode(address)
-        proxy_code = get_paying_proxy_deployed_bytecode()
-
-        return deployed_proxy_code == proxy_code
+        proxy_code_fns = (get_paying_proxy_deployed_bytecode,
+                          get_proxy_factory_contract(self.w3,
+                                                     self.proxy_factory_address).functions.proxyRuntimeCode().call)
+        for proxy_code_fn in proxy_code_fns:
+            if deployed_proxy_code == proxy_code_fn():
+                return True
+        return False
 
     def get_refund_receiver(self) -> str:
         return NULL_ADDRESS
 
     def is_master_copy_deployed(self) -> bool:
-        return bool(self.w3.eth.getCode(self.master_copy_address))
+        return self.ethereum_service.is_contract(self.master_copy_address)
+
+    def is_proxy_factory_deployed(self) -> bool:
+        return self.ethereum_service.is_contract(self.proxy_factory_address)
 
     def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
-        return get_paying_proxy_contract(self.w3, safe_address).functions.implementation().call(
-            block_identifier=block_identifier)
+        return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier))
 
     def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes, block_identifier='pending') -> bool:
         return self.get_contract(safe_address
@@ -602,46 +693,48 @@ class SafeService:
     @staticmethod
     def get_hash_for_safe_tx(safe_address: str, to: str, value: int, data: bytes,
                              operation: int, safe_tx_gas: int, data_gas: int, gas_price: int,
-                             gas_token: str, refund_receiver: str, nonce: int) -> HexBytes:
+                             gas_token: str, refund_receiver: str, nonce: int, safe_version: str = '1.0.0') -> HexBytes:
 
         data = data.hex() if data else ''
         gas_token = gas_token or NULL_ADDRESS
         refund_receiver = refund_receiver or NULL_ADDRESS
         to = to or NULL_ADDRESS
 
+        data_gas_name = 'baseGas' if Version(safe_version) >= Version('1.0.0') else 'dataGas'
+
         data = {
-                "types": {
-                    "EIP712Domain": [
-                        { "name": 'verifyingContract', "type": 'address' },
+                'types': {
+                    'EIP712Domain': [
+                        {'name': 'verifyingContract', 'type': 'address'},
                     ],
-                    "SafeTx": [
-                        { "name": 'to', "type": 'address' },
-                        { "name": 'value', "type": 'uint256' },
-                        { "name": 'data', "type": 'bytes' },
-                        { "name": 'operation', "type": 'uint8' },
-                        { "name": 'safeTxGas', "type": 'uint256' },
-                        { "name": 'dataGas', "type": 'uint256' },
-                        { "name": 'gasPrice', "type": 'uint256' },
-                        { "name": 'gasToken', "type": 'address' },
-                        { "name": 'refundReceiver', "type": 'address' },
-                        { "name": 'nonce', "type": 'uint256' }
+                    'SafeTx': [
+                        {'name': 'to', 'type': 'address'},
+                        {'name': 'value', 'type': 'uint256'},
+                        {'name': 'data', 'type': 'bytes'},
+                        {'name': 'operation', 'type': 'uint8'},
+                        {'name': 'safeTxGas', 'type': 'uint256'},
+                        {'name': data_gas_name, 'type': 'uint256'},
+                        {'name': 'gasPrice', 'type': 'uint256'},
+                        {'name': 'gasToken', 'type': 'address'},
+                        {'name': 'refundReceiver', 'type': 'address'},
+                        {'name': 'nonce', 'type': 'uint256'}
                     ]
                 },
-                "primaryType": 'SafeTx',
-                "domain": {
-                    "verifyingContract": safe_address,
+                'primaryType': 'SafeTx',
+                'domain': {
+                    'verifyingContract': safe_address,
                 },
-                "message": {
-                    "to": to,
-                    "value": value,
-                    "data": data,
-                    "operation": operation,
-                    "safeTxGas": safe_tx_gas,
-                    "dataGas": data_gas,
-                    "gasPrice": gas_price,
-                    "gasToken": gas_token,
-                    "refundReceiver": refund_receiver,
-                    "nonce": nonce,
+                'message': {
+                    'to': to,
+                    'value': value,
+                    'data': data,
+                    'operation': operation,
+                    'safeTxGas': safe_tx_gas,
+                    data_gas_name: data_gas,
+                    'gasPrice': gas_price,
+                    'gasToken': gas_token,
+                    'refundReceiver': refund_receiver,
+                    'nonce': nonce,
                 },
             }
 

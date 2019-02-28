@@ -1,6 +1,6 @@
 from functools import wraps
 from logging import getLogger
-from typing import Dict, List, Union, NamedTuple
+from typing import Dict, List, NamedTuple, Union
 
 import requests
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
@@ -285,8 +285,11 @@ class EthereumService:
         # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
         return tx_receipt if tx_receipt and tx_receipt['blockNumber'] is not None else None
 
-    def get_block(self, block_number, full_transactions=False):
+    def get_block(self, block_number: int, full_transactions=False):
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
+
+    def is_contract(self, contract_address: str):
+        return bool(self.w3.eth.getCode(contract_address))
 
     @tx_with_exception_handling
     def send_transaction(self, transaction_dict: Dict[str, any]) -> bytes:
@@ -296,9 +299,9 @@ class EthereumService:
     def send_raw_transaction(self, raw_transaction) -> bytes:
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
-    def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Union[None, str]=None,
-                                  public_key: Union[None, str]=None, retry: bool=False,
-                                  block_identifier: Union[None, str]=None) -> bytes:
+    def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Union[None, str] = None,
+                                  public_key: Union[None, str] = None, retry: bool = False,
+                                  block_identifier: Union[None, str] = None) -> bytes:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
         `private_key` cannot be `None`

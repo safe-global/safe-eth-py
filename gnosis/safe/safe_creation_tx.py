@@ -26,8 +26,8 @@ class InvalidERC20Token(Exception):
 
 class SafeCreationTx:
     def __init__(self, w3: Web3, owners: List[str], threshold: int, signature_s: int, master_copy: str,
-                 gas_price: int, funder: Union[str, None], payment_token: Union[str, None]=None,
-                 payment_token_eth_value: float=1.0, fixed_creation_cost: Union[int, None]=None):
+                 gas_price: int, funder: Union[str, None], payment_token: Union[str, None] = None,
+                 payment_token_eth_value: float = 1.0, fixed_creation_cost: Union[int, None] = None):
         """
         Prepare Safe creation
         :param w3: Web3 instance
@@ -64,9 +64,11 @@ class SafeCreationTx:
         # This initializer will be passed to the proxy and will be called right after proxy is deployed
         safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold)
 
-        magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
+        # Calculate gas based on experience of previous deployments of the safe
+        calculated_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
+        # Estimate gas using web3
         estimated_gas: int = self._estimate_gas(master_copy, safe_setup_data, funder, payment_token)
-        self.gas = max(magic_gas, estimated_gas)
+        self.gas = max(calculated_gas, estimated_gas)
 
         # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
         self.payment = self._calculate_refund_payment(self.gas,
@@ -278,7 +280,10 @@ class SafeCreationTx:
             owners,
             threshold,
             NULL_ADDRESS,  # Contract address for optional delegate call
-            b''            # Data payload for optional delegate call
+            b'',           # Data payload for optional delegate call
+            NULL_ADDRESS,  # Payment token
+            0,             # Payment
+            NULL_ADDRESS   # Payment Receiver
         ).buildTransaction({
             'gas': 1,
             'gasPrice': 1,

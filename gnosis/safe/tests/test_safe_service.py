@@ -2,6 +2,7 @@ import logging
 
 from django.test import TestCase
 
+from eth_account import Account
 from hexbytes import HexBytes
 
 from gnosis.eth.constants import NULL_ADDRESS
@@ -11,6 +12,7 @@ from gnosis.eth.utils import get_eth_address_with_key
 from ..safe_service import (InvalidMasterCopyAddress,
                             NotEnoughFundsForMultisigTx, SafeServiceProvider)
 from .safe_test_case import SafeTestCaseMixin
+from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,30 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertGreater(safe_creation_estimate.gas_price, 0)
         self.assertGreater(safe_creation_estimate.gas, 0)
         self.assertGreater(safe_creation_estimate.payment, 0)
+
+    def test_deploy_proxy_contract_with_nonce(self):
+        salt_nonce = generate_salt_nonce()
+        owners = [Account.create().address for _ in range(2)]
+        threshold = 2
+        payment_token = None
+        private_key = self.ethereum_test_account.privateKey
+        safe_create2_tx = self.safe_service.build_safe_create2_tx(salt_nonce, owners, threshold, self.gas_price,
+                                                                  payment_token)
+        # Send ether for safe deploying costs
+        self.send_tx({
+            'to': safe_create2_tx.safe_address,
+            'value': safe_create2_tx.payment
+        }, self.ethereum_test_account)
+
+        tx_hash, safe_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                   safe_create2_tx.safe_setup_data,
+                                                                                   safe_create2_tx.gas,
+                                                                                   self.gas_price,
+                                                                                   deployer_private_key=private_key)
+        receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=20)
+        self.assertEqual(receipt.status, 1)
+        self.assertEqual(safe_address, safe_create2_tx.safe_address)
+        self.assertEqual(set(self.safe_service.retrieve_owners(safe_address)), set(owners))
 
     def test_send_multisig_tx(self):
         # Create Safe
@@ -246,17 +272,19 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(receiver_balance, safe_balance)
 
     def test_check_proxy_code(self):
-        proxy_contract_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
-                                                                         self.ethereum_test_account.privateKey)
+        proxy_contract_address = self.deploy_test_safe().safe_address
         self.assertTrue(self.safe_service.check_proxy_code(proxy_contract_address))
 
         safe_contract_address = self.safe_service.deploy_master_contract(deployer_private_key=
                                                                          self.ethereum_test_account.privateKey)
         self.assertFalse(self.safe_service.check_proxy_code(safe_contract_address))
 
+        proxy_contract_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
+                                                                         self.ethereum_test_account.privateKey)
+        self.assertTrue(self.safe_service.check_proxy_code(proxy_contract_address))
+
     def test_estimate_tx_data_gas(self):
-        safe_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
-                                                               self.ethereum_test_account.privateKey)
+        safe_address = self.deploy_test_safe().safe_address
         to, _ = get_eth_address_with_key()
         value = int('abc', 16)
         data = HexBytes('0xabcdef')
@@ -273,8 +301,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(data_gas2, data_gas + 68 - 4)
 
     def test_estimate_tx_gas(self):
-        safe_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
-                                                               self.ethereum_test_account.privateKey)
+        safe_address = self.deploy_test_safe().safe_address
         to, _ = get_eth_address_with_key()
         value = int('abc', 16)
         data = HexBytes('0xabcdef')
@@ -290,7 +317,37 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
             self.assertGreaterEqual(tx_signature_gas_estimation, 20000)
 
     def test_hash_safe_multisig_tx(self):
+        # -------- Old version of the contract --------------------------
         expected_hash = HexBytes('0xc9d69a2350aede7978fdee58e702647e4bbdc82168577aa4a43b66ad815c6d1a')
+        tx_hash = self.safe_service.get_hash_for_safe_tx('0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+                                                         '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+                                                         5000000,
+                                                         HexBytes('0x00'),
+                                                         0,
+                                                         50000,
+                                                         100,
+                                                         10000,
+                                                         '0x' + '0' * 40,
+                                                         '0x' + '0' * 40,
+                                                         67, safe_version='0.1.0')
+        self.assertEqual(expected_hash, tx_hash)
+
+        expected_hash = HexBytes('0x8ca8db91d72b379193f6e229eb2dff0d0621b6ef452d90638ee3206e9b7349b3')
+        tx_hash = self.safe_service.get_hash_for_safe_tx('0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+                                                         '0x' + '0' * 40,
+                                                         80000000,
+                                                         HexBytes('0x562944'),
+                                                         2,
+                                                         54522,
+                                                         773,
+                                                         22000000,
+                                                         '0x' + '0' * 40,
+                                                         '0x' + '0' * 40,
+                                                         257000, safe_version='0.1.0')
+        self.assertEqual(expected_hash, tx_hash)
+
+        # -------- New version of the contract --------------------------
+        expected_hash = HexBytes('0x7c60341f3e1b4483575f38e84e97d6b332a2dd55b9290f39e6e26eef29a04fe7')
         tx_hash = self.safe_service.get_hash_for_safe_tx('0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
                                                          '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
                                                          5000000,
@@ -304,7 +361,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
                                                          67)
         self.assertEqual(expected_hash, tx_hash)
 
-        expected_hash = HexBytes('0x8ca8db91d72b379193f6e229eb2dff0d0621b6ef452d90638ee3206e9b7349b3')
+        expected_hash = HexBytes('0xf585279fd867c94738096f4eab964e9e202014d2f0d5155d751099ad85cbe504')
         tx_hash = self.safe_service.get_hash_for_safe_tx('0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
                                                          '0x' + '0' * 40,
                                                          80000000,
@@ -357,8 +414,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(safe_service1, safe_service2)
 
     def test_retrieve_master_copy_address(self):
-        proxy_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
-                                                                self.ethereum_test_account.privateKey)
+        proxy_address = self.deploy_test_safe().safe_address
         self.assertEqual(self.safe_service.retrieve_master_copy_address(proxy_address),
                          self.safe_service.master_copy_address)
 
