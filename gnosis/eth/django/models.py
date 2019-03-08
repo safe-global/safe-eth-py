@@ -59,6 +59,11 @@ class Uint256Field(models.DecimalField):
         del kwargs['decimal_places']
         return name, path, args, kwargs
 
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        return int(value)
+
 
 class HexField(models.CharField):
     """
