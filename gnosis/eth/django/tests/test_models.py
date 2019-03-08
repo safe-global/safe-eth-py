@@ -27,7 +27,9 @@ class TestModels(TestCase):
             EthereumAddress.objects.create(value='0x23')
 
     def test_uint256_field(self):
-        for value in [2, -2, 2 ** 256, 2 ** 260, None]:
+        for value in [2, -2, 2 ** 256, 2 ** 260,
+                      25572735541615049941137326092682691158109824779649981270427004917341670006487,
+                      None]:
             uint256 = Uint256.objects.create(value=value)
             uint256.refresh_from_db()
             self.assertEqual(uint256.value, value)

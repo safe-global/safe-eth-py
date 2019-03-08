@@ -42,47 +42,22 @@ class EthereumAddressField(models.CharField):
             return value
 
 
-class Uint256Field(models.Field):
+class Uint256Field(models.DecimalField):
     description = _("Ethereum uint256 number")
     """
     Field to store ethereum uint256 values. Uses Decimal db type without decimals to store
     in the database, but retrieve as `int` instead of `Decimal` (https://docs.python.org/3/library/decimal.html)
     """
     def __init__(self, *args, **kwargs):
-        self.max_digits, self.decimal_places = 79, 0  # 2 ** 256 is 78 digits
+        kwargs['max_digits'] = 79  # 2 ** 256 is 78 digits
+        kwargs['decimal_places'] = 0
         super().__init__(*args, **kwargs)
 
-    def get_internal_type(self):
-        return "DecimalField"
-
-    def from_db_value(self, value, expression, connection):
-        return self.to_python(value)
-
-    def get_db_prep_save(self, value, connection):
-        return connection.ops.adapt_decimalfield_value(self.to_python(value),
-                                                       max_digits=self.max_digits,
-                                                       decimal_places=self.decimal_places)
-
-    def get_prep_value(self, value):
-        value = super().get_prep_value(value)
-        return self.to_python(value)
-
-    def to_python(self, value):
-        if value is None:
-            return value
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            raise exceptions.ValidationError(
-                self.error_messages['invalid'],
-                code='invalid',
-                params={'value': value},
-            )
-
-    def formfield(self, **kwargs):
-        defaults = {'form_class': forms.IntegerField}
-        defaults.update(kwargs)
-        return super().formfield(**defaults)
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs['max_digits']
+        del kwargs['decimal_places']
+        return name, path, args, kwargs
 
 
 class HexField(models.CharField):
