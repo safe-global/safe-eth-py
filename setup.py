@@ -18,7 +18,7 @@ requirements = [
 
 setup(
     name='gnosis-py',
-    version='0.13.0',
+    version='0.14.0',
     packages=find_packages(),
     install_requires=requirements,
     include_package_data=True,
