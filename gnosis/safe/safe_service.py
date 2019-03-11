@@ -374,7 +374,7 @@ class SafeService:
         return self.ethereum_service.is_contract(address)
 
     def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
-        return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier))
+        return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier)[-20:])
 
     def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes, block_identifier='pending') -> bool:
         return self.get_contract(safe_address

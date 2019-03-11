@@ -408,6 +408,14 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertFalse(self.safe_service.is_master_copy_deployed())
         self.safe_service.master_copy_address = master_copy
 
+    def test_is_safe_deployed(self):
+        random_address = Account.create().address
+        self.assertFalse(self.safe_service.is_safe_deployed(random_address))
+
+        safe_creation = self.deploy_test_safe(threshold=2, number_owners=3)
+        my_safe_address = safe_creation.safe_address
+        self.assertTrue(self.safe_service.is_safe_deployed(my_safe_address))
+
     def test_provider_singleton(self):
         safe_service1 = SafeServiceProvider()
         safe_service2 = SafeServiceProvider()
