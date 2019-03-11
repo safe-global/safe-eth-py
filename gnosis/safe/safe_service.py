@@ -370,6 +370,9 @@ class SafeService:
     def is_proxy_factory_deployed(self) -> bool:
         return self.ethereum_service.is_contract(self.proxy_factory_address)
 
+    def is_safe_deployed(self, address: str) -> bool:
+        return self.ethereum_service.is_contract(address)
+
     def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
         return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier))
 
