@@ -143,6 +143,11 @@ class SafeService:
             logger.warning('Master copy address for SafeService is None')
 
         self.tx_sender_private_key = tx_sender_private_key
+        if self.tx_sender_private_key:
+            self.tx_sender_address = self.ethereum_service.private_key_to_address(self.tx_sender_private_key)
+        else:
+            self.tx_sender_address = None
+
         self.funder_private_key = funder_private_key
         if self.funder_private_key:
             self.funder_address = self.ethereum_service.private_key_to_address(self.funder_private_key)
