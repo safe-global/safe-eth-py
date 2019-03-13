@@ -3,14 +3,14 @@ from typing import List
 
 from eth_account import Account
 
-from gnosis.eth.contracts import get_proxy_factory_contract, get_safe_contract
+from gnosis.eth.contracts import get_proxy_factory_contract, get_safe_contract, get_old_safe_contract
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
 from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeServiceProvider
-from .utils import deploy_safe, generate_salt_nonce
+from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +28,21 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                                                                                 cls.ethereum_test_account.privateKey)
             cls.safe_service.master_copy_address = cls.safe_contract_address
 
-        cls.safe_service.valid_master_copy_addresses = [cls.safe_contract_address]
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
 
+        cls.safe_old_contract_address = cls.safe_service.master_copy_old_address
+        if not cls.w3.eth.getCode(cls.safe_old_contract_address):
+            cls.safe_old_contract_address = cls.safe_service.deploy_old_master_contract(deployer_private_key=
+                                                                                        cls.ethereum_test_account.privateKey)
+            cls.safe_service.master_copy_old_address = cls.safe_old_contract_address
+        cls.safe_old_contract = get_old_safe_contract(cls.w3, cls.safe_old_contract_address)
+
+        cls.proxy_factory_contract_address = cls.safe_service.proxy_factory_address
         if not cls.w3.eth.getCode(cls.safe_service.proxy_factory_address):
             cls.proxy_factory_contract_address = cls.safe_service.deploy_proxy_factory_contract(deployer_private_key=
                                                                                                 cls.ethereum_test_account.privateKey)
             cls.safe_service.proxy_factory_address = cls.proxy_factory_contract_address
-            cls.proxy_factory_contract = get_proxy_factory_contract(cls.w3, cls.proxy_factory_contract_address)
+        cls.proxy_factory_contract = get_proxy_factory_contract(cls.w3, cls.proxy_factory_contract_address)
 
     def build_test_safe(self, number_owners: int = 3, threshold: int = None,
                         owners: List[str] = None)-> SafeCreate2Tx:

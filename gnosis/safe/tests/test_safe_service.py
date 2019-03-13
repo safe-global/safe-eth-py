@@ -139,8 +139,8 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(set(contract_owners), set(owners))
         self.assertEqual(w3.eth.getBalance(owners[0]), owner0_balance)
 
-        valid_master_copy_addresses = self.safe_service.valid_master_copy_addresses
-        self.safe_service.valid_master_copy_addresses = []
+        master_copy_address = self.safe_service.master_copy_address
+        self.safe_service.master_copy_address = NULL_ADDRESS
         with self.assertRaises(InvalidMasterCopyAddress):
             self.safe_service.send_multisig_tx(
                 my_safe_address,
@@ -158,7 +158,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
                 tx_gas_price=self.gas_price,
             )
 
-        self.safe_service.valid_master_copy_addresses = valid_master_copy_addresses
+        self.safe_service.master_copy_address = master_copy_address
 
         with self.assertRaises(NotEnoughFundsForMultisigTx):
             self.safe_service.send_multisig_tx(

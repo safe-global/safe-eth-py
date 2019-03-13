@@ -14,7 +14,7 @@ from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import (get_paying_proxy_contract,
                                   get_paying_proxy_deployed_bytecode,
                                   get_proxy_factory_contract,
-                                  get_safe_contract)
+                                  get_safe_contract, get_old_safe_contract)
 from gnosis.eth.ethereum_service import (EthereumService,
                                          EthereumServiceProvider)
 from gnosis.eth.utils import get_eth_address_with_key
@@ -104,6 +104,7 @@ class SafeServiceProvider:
             ethereum_service = EthereumServiceProvider()
             cls.instance = SafeService(ethereum_service,
                                        settings.SAFE_CONTRACT_ADDRESS,
+                                       settings.SAFE_OLD_CONTRACT_ADDRESS,
                                        settings.SAFE_PROXY_FACTORY_ADDRESS,
                                        settings.SAFE_VALID_CONTRACT_ADDRESSES,
                                        settings.SAFE_TX_SENDER_PRIVATE_KEY,
@@ -119,29 +120,33 @@ class SafeServiceProvider:
 class SafeService:
     def __init__(self, ethereum_service: EthereumService,
                  master_copy_address: str,
+                 master_copy_old_address: str,
                  proxy_factory_address: str,
                  valid_master_copy_addresses: Set[str],
                  tx_sender_private_key: str=None,
                  funder_private_key: str=None):
+
         self.ethereum_service = ethereum_service
         self.w3 = self.ethereum_service.w3
+        self.master_copy_address = master_copy_address
+        self.master_copy_old_address = master_copy_old_address
+        self.proxy_factory_address = proxy_factory_address
+        self.provided_valid_master_copy_addresses = set(valid_master_copy_addresses)
 
-        for address in [master_copy_address] + list(valid_master_copy_addresses):
+        for address in self.valid_master_copy_addresses:
             if address and not check_checksum(address):
                 raise InvalidChecksumAddress('Master copy %s has invalid checksum' % address)
 
-        self.master_copy_address = master_copy_address
-
         if not check_checksum(proxy_factory_address):
             raise InvalidChecksumAddress('Proxy factory %s has invalid checksum' % proxy_factory_address)
-        self.proxy_factory_address = proxy_factory_address
 
-        self.valid_master_copy_addresses = set(valid_master_copy_addresses)
-        if master_copy_address:
-            self.valid_master_copy_addresses.add(master_copy_address)
-        else:
+        if not master_copy_address:
             logger.warning('Master copy address for SafeService is None')
 
+        if not master_copy_old_address:
+            logger.warning('Old Master copy address for SafeService is None')
+
+        # TODO Use `Account` class
         self.tx_sender_private_key = tx_sender_private_key
         if self.tx_sender_private_key:
             self.tx_sender_address = self.ethereum_service.private_key_to_address(self.tx_sender_private_key)
@@ -153,6 +158,11 @@ class SafeService:
             self.funder_address = self.ethereum_service.private_key_to_address(self.funder_private_key)
         else:
             self.funder_address = None
+
+    @property
+    def valid_master_copy_addresses(self):
+        return self.provided_valid_master_copy_addresses.union([self.master_copy_address,
+                                                                self.master_copy_old_address]) - set([None])
 
     def get_contract(self, safe_address=None):
         if safe_address:
@@ -168,7 +178,7 @@ class SafeService:
                                               owners=owners,
                                               threshold=threshold,
                                               signature_s=s,
-                                              master_copy=self.master_copy_address,
+                                              master_copy=self.master_copy_old_address,
                                               gas_price=gas_price,
                                               funder=self.funder_address,
                                               payment_token=payment_token,
@@ -240,6 +250,45 @@ class SafeService:
         assert tx_receipt.status
 
         logger.info("Deployed and initialized Safe Master Contract=%s by %s", contract_address, deployer_address)
+        return contract_address
+
+    def deploy_old_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:
+        """
+        Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+        :param deployer_account: Unlocked ethereum account
+        :param deployer_private_key: Private key of an ethereum account
+        :return: deployed contract address
+        """
+        assert deployer_account or deployer_private_key
+        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+
+        safe_contract = get_old_safe_contract(self.w3)
+        tx = safe_contract.constructor().buildTransaction({'from': deployer_address})
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
+
+        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        assert tx_receipt.status
+
+        contract_address = tx_receipt.contractAddress
+
+        # Init master copy
+        master_safe = get_old_safe_contract(self.w3, contract_address)
+        tx = master_safe.functions.setup(
+            # We use 2 owners that nobody controls for the master copy
+            ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"],
+            2,             # Threshold. Maximum security
+            NULL_ADDRESS,  # Address for optional DELEGATE CALL
+            b''            # Data for optional DELEGATE CALL
+        ).buildTransaction({'from': deployer_address})
+
+        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+                                                                  public_key=deployer_account)
+
+        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        assert tx_receipt.status
+
+        logger.info("Deployed and initialized Old Safe Master Contract=%s by %s", contract_address, deployer_address)
         return contract_address
 
     def deploy_paying_proxy_contract(self, initializer=b'', deployer_account=None, deployer_private_key=None) -> str:

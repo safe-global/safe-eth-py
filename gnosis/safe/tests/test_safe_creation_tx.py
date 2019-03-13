@@ -38,7 +38,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_contract_address,
+                                          master_copy=self.safe_old_contract_address,
                                           gas_price=gas_price,
                                           funder=NULL_ADDRESS)
 
@@ -77,7 +77,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_contract_address,
+                                          master_copy=self.safe_old_contract_address,
                                           gas_price=gas_price,
                                           funder=NULL_ADDRESS)
 
@@ -107,7 +107,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_contract_address,
+                                          master_copy=self.safe_old_contract_address,
                                           gas_price=gas_price,
                                           funder=funder_account.address)
 
@@ -180,7 +180,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_contract_address,
+                                          master_copy=self.safe_old_contract_address,
                                           gas_price=gas_price,
                                           payment_token=erc20_contract.address,
                                           funder=funder)
@@ -226,7 +226,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                             owners=owners,
                                             threshold=threshold,
                                             signature_s=s,
-                                            master_copy=self.safe_contract_address,
+                                            master_copy=self.safe_old_contract_address,
                                             gas_price=gas_price,
                                             payment_token=erc20_contract.address,
                                             payment_token_eth_value=1.0,
@@ -238,7 +238,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                             owners=owners,
                                             threshold=threshold,
                                             signature_s=s,
-                                            master_copy=self.safe_contract_address,
+                                            master_copy=self.safe_old_contract_address,
                                             gas_price=gas_price,
                                             payment_token=erc20_contract.address,
                                             payment_token_eth_value=1.0,
@@ -250,7 +250,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                             owners=owners,
                                             threshold=threshold,
                                             signature_s=s,
-                                            master_copy=self.safe_contract_address,
+                                            master_copy=self.safe_old_contract_address,
                                             gas_price=gas_price,
                                             payment_token=erc20_contract.address,
                                             payment_token_eth_value=1.1,
@@ -262,7 +262,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                             owners=owners,
                                             threshold=threshold,
                                             signature_s=s,
-                                            master_copy=self.safe_contract_address,
+                                            master_copy=self.safe_old_contract_address,
                                             gas_price=gas_price,
                                             payment_token=erc20_contract.address,
                                             payment_token_eth_value=0.1,
@@ -285,7 +285,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_contract_address,
+                                          master_copy=self.safe_old_contract_address,
                                           gas_price=gas_price,
                                           payment_token=None,
                                           funder=funder_account.address,
@@ -346,7 +346,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                               owners=owners,
                                               threshold=threshold,
                                               signature_s=s,
-                                              master_copy=self.safe_contract_address,
+                                              master_copy=self.safe_old_contract_address,
                                               gas_price=gas_price,
                                               funder=None)
 
@@ -378,7 +378,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                                           owners=owners,
                                           threshold=threshold,
                                           signature_s=s,
-                                          master_copy=self.safe_contract_address,
+                                          master_copy=self.safe_old_contract_address,
                                           gas_price=gas_price,
                                           funder=funder_account.address)
 

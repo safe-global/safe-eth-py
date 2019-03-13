@@ -19,6 +19,7 @@ MultiSend: 0xe74d6af1670fb6560dd61ee29eb57c7bc027ce4e
 """
 
 GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
+OLD_GNOSIS_SAFE_INTERFACE = load_contract_interface('OldGnosisSafe.json')
 ERC20_INTERFACE = load_contract_interface('ERC20.json')
 ERC20_EXAMPLE_INTERFACE = load_contract_interface('ERC20TestToken.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
@@ -35,6 +36,18 @@ def get_safe_contract(w3: Web3, address=None):
     return w3.eth.contract(address,
                            abi=GNOSIS_SAFE_INTERFACE['abi'],
                            bytecode=GNOSIS_SAFE_INTERFACE['bytecode'])
+
+
+def get_old_safe_contract(w3: Web3, address=None):
+    """
+    Get Old Gnosis Safe Master contract. It should be used to access Safe methods on Proxy contracts.
+    :param w3: Web3 instance
+    :param address: address of the safe contract/proxy contract
+    :return: Safe Contract
+    """
+    return w3.eth.contract(address,
+                           abi=OLD_GNOSIS_SAFE_INTERFACE['abi'],
+                           bytecode=OLD_GNOSIS_SAFE_INTERFACE['bytecode'])
 
 
 def get_paying_proxy_contract(w3: Web3, address=None):
