@@ -165,6 +165,103 @@ class SafeService:
         return self.provided_valid_master_copy_addresses.union([self.master_copy_address,
                                                                 self.master_copy_old_address]) - set([None])
 
+    @staticmethod
+    def get_hash_for_safe_tx(safe_address: str, to: str, value: int, data: bytes,
+                             operation: int, safe_tx_gas: int, data_gas: int, gas_price: int,
+                             gas_token: str, refund_receiver: str, nonce: int, safe_version: str = '1.0.0') -> HexBytes:
+
+        data = data.hex() if data else ''
+        gas_token = gas_token or NULL_ADDRESS
+        refund_receiver = refund_receiver or NULL_ADDRESS
+        to = to or NULL_ADDRESS
+
+        data_gas_name = 'baseGas' if Version(safe_version) >= Version('1.0.0') else 'dataGas'
+
+        data = {
+            'types': {
+                'EIP712Domain': [
+                    {'name': 'verifyingContract', 'type': 'address'},
+                ],
+                'SafeTx': [
+                    {'name': 'to', 'type': 'address'},
+                    {'name': 'value', 'type': 'uint256'},
+                    {'name': 'data', 'type': 'bytes'},
+                    {'name': 'operation', 'type': 'uint8'},
+                    {'name': 'safeTxGas', 'type': 'uint256'},
+                    {'name': data_gas_name, 'type': 'uint256'},
+                    {'name': 'gasPrice', 'type': 'uint256'},
+                    {'name': 'gasToken', 'type': 'address'},
+                    {'name': 'refundReceiver', 'type': 'address'},
+                    {'name': 'nonce', 'type': 'uint256'}
+                ]
+            },
+            'primaryType': 'SafeTx',
+            'domain': {
+                'verifyingContract': safe_address,
+            },
+            'message': {
+                'to': to,
+                'value': value,
+                'data': data,
+                'operation': operation,
+                'safeTxGas': safe_tx_gas,
+                data_gas_name: data_gas,
+                'gasPrice': gas_price,
+                'gasToken': gas_token,
+                'refundReceiver': refund_receiver,
+                'nonce': nonce,
+            },
+        }
+
+        return HexBytes(encode_typed_data(data))
+
+    @classmethod
+    def check_hash(cls, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
+        for i, owner in enumerate(sorted(owners, key=lambda x: x.lower())):
+            v, r, s = cls.signature_split(signatures, i)
+            if EthereumService.get_signing_address(tx_hash, v, r, s) != owner:
+                return False
+        return True
+
+    @staticmethod
+    def signature_split(signatures: bytes, pos: int) -> Tuple[int, int, int]:
+        """
+        :param signatures: signatures in form of {bytes32 r}{bytes32 s}{uint8 v}
+        :param pos: position of the signature
+        :return: Tuple with v, r, s
+        """
+        signature_pos = 65 * pos
+        v = signatures[64 + signature_pos]
+        r = int.from_bytes(signatures[signature_pos:32 + signature_pos], 'big')
+        s = int.from_bytes(signatures[32 + signature_pos:64 + signature_pos], 'big')
+
+        return v, r, s
+
+    @classmethod
+    def signatures_to_bytes(cls, signatures: List[Tuple[int, int, int]]) -> bytes:
+        """
+        Convert signatures to bytes
+        :param signatures: list of tuples(v, r, s)
+        :return: 65 bytes per signature
+        """
+        return b''.join([cls.signature_to_bytes(vrs) for vrs in signatures])
+
+    @staticmethod
+    def signature_to_bytes(vrs: Tuple[int, int, int]) -> bytes:
+        """
+        Convert signature to bytes
+        :param vrs: tuple of v, r, s
+        :return: signature in form of {bytes32 r}{bytes32 s}{uint8 v}
+        """
+
+        byte_order = 'big'
+
+        v, r, s = vrs
+
+        return (r.to_bytes(32, byteorder=byte_order) +
+                s.to_bytes(32, byteorder=byte_order) +
+                v.to_bytes(1, byteorder=byte_order))
+
     def get_contract(self, safe_address=None):
         if safe_address:
             return get_safe_contract(self.w3, address=safe_address)
@@ -210,6 +307,51 @@ class SafeService:
             raise InvalidPaymentToken('Invalid payment token %s' % payment_token) from exc
 
         return safe_creation_tx
+
+    def check_master_copy(self, address) -> bool:
+        return self.retrieve_master_copy_address(address) in self.valid_master_copy_addresses
+
+    def check_proxy_code(self, address) -> bool:
+        """
+        Check if proxy is valid
+        :param address: address of the proxy
+        :return: True if proxy is valid, False otherwise
+        """
+        deployed_proxy_code = self.w3.eth.getCode(address)
+        proxy_code_fns = (get_paying_proxy_deployed_bytecode,
+                          get_proxy_factory_contract(self.w3,
+                                                     self.proxy_factory_address).functions.proxyRuntimeCode().call)
+        for proxy_code_fn in proxy_code_fns:
+            if deployed_proxy_code == proxy_code_fn():
+                return True
+        return False
+
+    def check_funds_for_tx_gas(self, safe_address: str, safe_tx_gas: int, data_gas: int, gas_price: int,
+                               gas_token: str) -> bool:
+        """
+        Check safe has enough funds to pay for a tx
+        :param safe_address: Address of the safe
+        :param safe_tx_gas: Start gas
+        :param data_gas: Data gas
+        :param gas_price: Gas Price
+        :param gas_token: Gas Token, to use token instead of ether for the gas
+        :return: True if enough funds, False, otherwise
+        """
+        if gas_token == NULL_ADDRESS:
+            balance = self.ethereum_service.get_balance(safe_address)
+        else:
+            balance = self.ethereum_service.erc20.get_balance(safe_address, gas_token)
+        return balance >= (safe_tx_gas + data_gas) * gas_price
+
+    def check_refund_receiver(self, refund_receiver: str) -> bool:
+        """
+        We only support tx.origin as refund receiver right now
+        In the future we can also accept transactions where it is set to our service account to receive the payments.
+        This would prevent that anybody can front-run our service
+        """
+        return refund_receiver == NULL_ADDRESS
+
+
 
     def deploy_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:
         """
@@ -398,63 +540,6 @@ class SafeService:
                                                        fixed_creation_cost=fixed_creation_cost)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment)
 
-    def check_master_copy(self, address) -> bool:
-        return self.retrieve_master_copy_address(address) in self.valid_master_copy_addresses
-
-    def check_proxy_code(self, address) -> bool:
-        """
-        Check if proxy is valid
-        :param address: address of the proxy
-        :return: True if proxy is valid, False otherwise
-        """
-        deployed_proxy_code = self.w3.eth.getCode(address)
-        proxy_code_fns = (get_paying_proxy_deployed_bytecode,
-                          get_proxy_factory_contract(self.w3,
-                                                     self.proxy_factory_address).functions.proxyRuntimeCode().call)
-        for proxy_code_fn in proxy_code_fns:
-            if deployed_proxy_code == proxy_code_fn():
-                return True
-        return False
-
-    def get_refund_receiver(self) -> str:
-        return NULL_ADDRESS
-
-    def is_master_copy_deployed(self) -> bool:
-        return self.ethereum_service.is_contract(self.master_copy_address)
-
-    def is_proxy_factory_deployed(self) -> bool:
-        return self.ethereum_service.is_contract(self.proxy_factory_address)
-
-    def is_safe_deployed(self, address: str) -> bool:
-        return self.ethereum_service.is_contract(address)
-
-    def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
-        return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier)[-20:])
-
-    def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes, block_identifier='pending') -> bool:
-        return self.get_contract(safe_address
-                                 ).functions.approvedHashes(owner,
-                                                            safe_hash).call(block_identifier=block_identifier) == 1
-
-    def retrieve_is_message_signed(self, safe_address, message_hash: bytes, block_identifier='pending') -> bool:
-        return self.get_contract(safe_address
-                                 ).functions.signedMessages(message_hash).call(block_identifier=block_identifier)
-
-    def retrieve_is_owner(self, safe_address, owner: str, block_identifier='pending') -> bool:
-        return self.get_contract(safe_address).functions.isOwner(owner).call(block_identifier=block_identifier)
-
-    def retrieve_nonce(self, safe_address, block_identifier='pending') -> int:
-        return self.get_contract(safe_address).functions.nonce().call(block_identifier=block_identifier)
-
-    def retrieve_owners(self, safe_address, block_identifier='pending')-> List[str]:
-        return self.get_contract(safe_address).functions.getOwners().call(block_identifier=block_identifier)
-
-    def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
-        return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
-
-    def retrieve_version(self, safe_address, block_identifier='pending') -> str:
-        return self.get_contract(safe_address).functions.VERSION().call(block_identifier=block_identifier)
-
     def estimate_tx_gas_with_safe(self, safe_address: str, to: str, value: int, data: bytes, operation: int,
                                   block_identifier='pending') -> int:
         """
@@ -616,30 +701,44 @@ class SafeService:
         threshold = self.retrieve_threshold(safe_address)
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    def check_funds_for_tx_gas(self, safe_address: str, safe_tx_gas: int, data_gas: int, gas_price: int,
-                               gas_token: str)-> bool:
-        """
-        Check safe has enough funds to pay for a tx
-        :param safe_address: Address of the safe
-        :param safe_tx_gas: Start gas
-        :param data_gas: Data gas
-        :param gas_price: Gas Price
-        :param gas_token: Gas Token, to use token instead of ether for the gas
-        :return: True if enough funds, False, otherwise
-        """
-        if gas_token == NULL_ADDRESS:
-            balance = self.ethereum_service.get_balance(safe_address)
-        else:
-            balance = self.ethereum_service.erc20.get_balance(safe_address, gas_token)
-        return balance >= (safe_tx_gas + data_gas) * gas_price
+    def get_refund_receiver(self) -> str:
+        return NULL_ADDRESS
 
-    def check_refund_receiver(self, refund_receiver: str) -> bool:
-        """
-        We only support tx.origin as refund receiver right now
-        In the future we can also accept transactions where it is set to our service account to receive the payments.
-        This would prevent that anybody can front-run our service
-        """
-        return refund_receiver == NULL_ADDRESS
+    def is_master_copy_deployed(self) -> bool:
+        return self.ethereum_service.is_contract(self.master_copy_address)
+
+    def is_proxy_factory_deployed(self) -> bool:
+        return self.ethereum_service.is_contract(self.proxy_factory_address)
+
+    def is_safe_deployed(self, address: str) -> bool:
+        return self.ethereum_service.is_contract(address)
+
+    def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
+        return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier)[-20:])
+
+    def retrieve_is_hash_approved(self, safe_address, owner: str, safe_hash: bytes, block_identifier='pending') -> bool:
+        return self.get_contract(safe_address
+                                 ).functions.approvedHashes(owner,
+                                                            safe_hash).call(block_identifier=block_identifier) == 1
+
+    def retrieve_is_message_signed(self, safe_address, message_hash: bytes, block_identifier='pending') -> bool:
+        return self.get_contract(safe_address
+                                 ).functions.signedMessages(message_hash).call(block_identifier=block_identifier)
+
+    def retrieve_is_owner(self, safe_address, owner: str, block_identifier='pending') -> bool:
+        return self.get_contract(safe_address).functions.isOwner(owner).call(block_identifier=block_identifier)
+
+    def retrieve_nonce(self, safe_address, block_identifier='pending') -> int:
+        return self.get_contract(safe_address).functions.nonce().call(block_identifier=block_identifier)
+
+    def retrieve_owners(self, safe_address, block_identifier='pending')-> List[str]:
+        return self.get_contract(safe_address).functions.getOwners().call(block_identifier=block_identifier)
+
+    def retrieve_threshold(self, safe_address, block_identifier='pending') -> int:
+        return self.get_contract(safe_address).functions.getThreshold().call(block_identifier=block_identifier)
+
+    def retrieve_version(self, safe_address, block_identifier='pending') -> str:
+        return self.get_contract(safe_address).functions.VERSION().call(block_identifier=block_identifier)
 
     def send_multisig_tx(self,
                          safe_address: str,
@@ -747,100 +846,3 @@ class SafeService:
                                                                   block_identifier=block_identifier)
 
         return tx_hash, tx
-
-    @staticmethod
-    def get_hash_for_safe_tx(safe_address: str, to: str, value: int, data: bytes,
-                             operation: int, safe_tx_gas: int, data_gas: int, gas_price: int,
-                             gas_token: str, refund_receiver: str, nonce: int, safe_version: str = '1.0.0') -> HexBytes:
-
-        data = data.hex() if data else ''
-        gas_token = gas_token or NULL_ADDRESS
-        refund_receiver = refund_receiver or NULL_ADDRESS
-        to = to or NULL_ADDRESS
-
-        data_gas_name = 'baseGas' if Version(safe_version) >= Version('1.0.0') else 'dataGas'
-
-        data = {
-                'types': {
-                    'EIP712Domain': [
-                        {'name': 'verifyingContract', 'type': 'address'},
-                    ],
-                    'SafeTx': [
-                        {'name': 'to', 'type': 'address'},
-                        {'name': 'value', 'type': 'uint256'},
-                        {'name': 'data', 'type': 'bytes'},
-                        {'name': 'operation', 'type': 'uint8'},
-                        {'name': 'safeTxGas', 'type': 'uint256'},
-                        {'name': data_gas_name, 'type': 'uint256'},
-                        {'name': 'gasPrice', 'type': 'uint256'},
-                        {'name': 'gasToken', 'type': 'address'},
-                        {'name': 'refundReceiver', 'type': 'address'},
-                        {'name': 'nonce', 'type': 'uint256'}
-                    ]
-                },
-                'primaryType': 'SafeTx',
-                'domain': {
-                    'verifyingContract': safe_address,
-                },
-                'message': {
-                    'to': to,
-                    'value': value,
-                    'data': data,
-                    'operation': operation,
-                    'safeTxGas': safe_tx_gas,
-                    data_gas_name: data_gas,
-                    'gasPrice': gas_price,
-                    'gasToken': gas_token,
-                    'refundReceiver': refund_receiver,
-                    'nonce': nonce,
-                },
-            }
-
-        return HexBytes(encode_typed_data(data))
-
-    @classmethod
-    def check_hash(cls, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
-        for i, owner in enumerate(sorted(owners, key=lambda x: x.lower())):
-            v, r, s = cls.signature_split(signatures, i)
-            if EthereumService.get_signing_address(tx_hash, v, r, s) != owner:
-                return False
-        return True
-
-    @staticmethod
-    def signature_split(signatures: bytes, pos: int) -> Tuple[int, int, int]:
-        """
-        :param signatures: signatures in form of {bytes32 r}{bytes32 s}{uint8 v}
-        :param pos: position of the signature
-        :return: Tuple with v, r, s
-        """
-        signature_pos = 65 * pos
-        v = signatures[64 + signature_pos]
-        r = int.from_bytes(signatures[signature_pos:32 + signature_pos], 'big')
-        s = int.from_bytes(signatures[32 + signature_pos:64 + signature_pos], 'big')
-
-        return v, r, s
-
-    @classmethod
-    def signatures_to_bytes(cls, signatures: List[Tuple[int, int, int]]) -> bytes:
-        """
-        Convert signatures to bytes
-        :param signatures: list of tuples(v, r, s)
-        :return: 65 bytes per signature
-        """
-        return b''.join([cls.signature_to_bytes(vrs) for vrs in signatures])
-
-    @staticmethod
-    def signature_to_bytes(vrs: Tuple[int, int, int]) -> bytes:
-        """
-        Convert signature to bytes
-        :param vrs: tuple of v, r, s
-        :return: signature in form of {bytes32 r}{bytes32 s}{uint8 v}
-        """
-
-        byte_order = 'big'
-
-        v, r, s = vrs
-
-        return (r.to_bytes(32, byteorder=byte_order) +
-                s.to_bytes(32, byteorder=byte_order) +
-                v.to_bytes(1, byteorder=byte_order))
