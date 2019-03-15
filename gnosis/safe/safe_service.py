@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, NamedTuple, Set, Tuple, Union
+from typing import Dict, List, NamedTuple, Set, Tuple, Union
 
 from eth_account import Account
 from ethereum.utils import check_checksum, checksum_encode
@@ -163,7 +163,7 @@ class SafeService:
     @property
     def valid_master_copy_addresses(self):
         return self.provided_valid_master_copy_addresses.union([self.master_copy_address,
-                                                                self.master_copy_old_address]) - set([None])
+                                                                self.master_copy_old_address]) - {None}
 
     @staticmethod
     def get_hash_for_safe_tx(safe_address: str, to: str, value: int, data: bytes,
@@ -262,12 +262,6 @@ class SafeService:
                 s.to_bytes(32, byteorder=byte_order) +
                 v.to_bytes(1, byteorder=byte_order))
 
-    def get_contract(self, safe_address=None):
-        if safe_address:
-            return get_safe_contract(self.w3, address=safe_address)
-        else:
-            return get_safe_contract(self.w3)
-
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int,
                                payment_token: Union[str, None], payment_token_eth_value: float=1.0,
                                fixed_creation_cost: Union[int, None]=None) -> SafeCreationTx:
@@ -350,8 +344,6 @@ class SafeService:
         This would prevent that anybody can front-run our service
         """
         return refund_receiver == NULL_ADDRESS
-
-
 
     def deploy_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:
         """
@@ -540,6 +532,58 @@ class SafeService:
                                                        fixed_creation_cost=fixed_creation_cost)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment)
 
+    def estimate_tx_data_gas(self, safe_address: str, to: str, value: int, data: bytes,
+                             operation: int, gas_token: str, estimate_tx_gas: int) -> int:
+        data = data or b''
+        paying_proxy_contract = self.get_contract(safe_address)
+        threshold = self.retrieve_threshold(safe_address)
+
+        # Every byte == 0 -> 4  Gas
+        # Every byte != 0 -> 68 Gas
+        # numbers < 256 (0x00(31*2)..ff) are 192 -> 31 * 4 + 1 * 68
+        # numbers < 65535 (0x(30*2)..ffff) are 256 -> 30 * 4 + 2 * 68
+
+        # Calculate gas for signatures
+        # (array count (3 -> r, s, v) + ecrecover costs) * signature count
+        signature_gas = threshold * (1 * 68 + 2 * 32 * 68 + 6000)
+
+        safe_tx_gas = estimate_tx_gas
+        data_gas = 0
+        gas_price = 1
+        gas_token = gas_token or NULL_ADDRESS
+        signatures = b''
+        refund_receiver = NULL_ADDRESS
+        data = HexBytes(paying_proxy_contract.functions.execTransaction(
+            to,
+            value,
+            data,
+            operation,
+            safe_tx_gas,
+            data_gas,
+            gas_price,
+            gas_token,
+            refund_receiver,
+            signatures,
+        ).buildTransaction({
+            'gas': 1,
+            'gasPrice': 1
+        })['data'])
+
+        # TODO If nonce>0 add 5000, else 20000
+        nonce_gas = 20000
+        hash_generation_gas = 1500
+        data_gas = signature_gas + self.ethereum_service.estimate_data_gas(data) + nonce_gas + hash_generation_gas
+
+        # Add aditional gas costs
+        if data_gas > 65536:
+            data_gas += 64
+        else:
+            data_gas += 128
+
+        data_gas += 32000  # Base tx costs, transfer costs...
+
+        return data_gas
+
     def estimate_tx_gas_with_safe(self, safe_address: str, to: str, value: int, data: bytes, operation: int,
                                   block_identifier='pending') -> int:
         """
@@ -644,49 +688,6 @@ class SafeService:
         else:
             return safe_gas_estimation
 
-    def estimate_tx_data_gas(self, safe_address: str, to: str, value: int, data: bytes,
-                             operation: int, gas_token: str, estimate_tx_gas: int) -> int:
-        data = data or b''
-        paying_proxy_contract = self.get_contract(safe_address)
-        threshold = self.retrieve_threshold(safe_address)
-
-        # Calculate gas for signatures
-        signature_gas = threshold * (1 * 68 + 2 * 32 * 68)
-
-        safe_tx_gas = estimate_tx_gas
-        data_gas = 0
-        gas_price = 1
-        gas_token = gas_token or NULL_ADDRESS
-        signatures = b''
-        refund_receiver = NULL_ADDRESS
-        data = HexBytes(paying_proxy_contract.functions.execTransaction(
-            to,
-            value,
-            data,
-            operation,
-            safe_tx_gas,
-            data_gas,
-            gas_price,
-            gas_token,
-            refund_receiver,
-            signatures,
-        ).buildTransaction({
-            'gas': 1,
-            'gasPrice': 1
-        })['data'])
-
-        data_gas = signature_gas + self.ethereum_service.estimate_data_gas(data)
-
-        # Add aditional gas costs
-        if data_gas > 65536:
-            data_gas += 64
-        else:
-            data_gas += 128
-
-        data_gas += 32000  # Base tx costs, transfer costs...
-
-        return data_gas
-
     def estimate_tx_operational_gas(self, safe_address: str, data_bytes_length: int):
         """
         Estimates the gas for the verification of the signatures and other safe related tasks
@@ -700,6 +701,12 @@ class SafeService:
         """
         threshold = self.retrieve_threshold(safe_address)
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
+
+    def get_contract(self, safe_address=None):
+        if safe_address:
+            return get_safe_contract(self.w3, address=safe_address)
+        else:
+            return get_safe_contract(self.w3)
 
     def get_refund_receiver(self) -> str:
         return NULL_ADDRESS
@@ -755,7 +762,7 @@ class SafeService:
                          tx_sender_private_key=None,
                          tx_gas=None,
                          tx_gas_price=None,
-                         block_identifier='pending') -> Tuple[str, any]:
+                         block_identifier='pending') -> Tuple[bytes, Dict[str, any]]:
         """
         Send multisig tx to the Safe
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + data_gas) * 2` will be used
