@@ -81,7 +81,8 @@ class SafeCreate2TxBuilder:
         # address paymentToken, uint256 payment, address payable paymentReceiver)`
         # This initializer will be passed to the ProxyFactory to be called right after proxy is deployed
         # We use `payment=0` as safe has no ether yet and estimation will fail
-        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token)
+        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token=payment_token,
+                                                                   payment_receiver=payment_receiver)
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
         estimated_gas: int = self._estimate_gas(safe_setup_data,
@@ -96,7 +97,8 @@ class SafeCreate2TxBuilder:
                                                  payment_token_eth_value)
 
         # Now we have a estimate for `payment` so we get initialization data again
-        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token, payment=payment)
+        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token=payment_token,
+                                                                   payment=payment, payment_receiver=payment_receiver)
 
         safe_address = self.calculate_create2_address(safe_setup_data, salt_nonce)
         assert int(safe_address, 16), 'Calculated Safe address cannot be the NULL ADDRESS'

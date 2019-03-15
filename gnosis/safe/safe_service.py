@@ -493,8 +493,9 @@ class SafeService:
         deployer_account = Account.privateKeyToAccount(deployer_private_key)
         nonce = self.ethereum_service.get_nonce_for_account(deployer_account.address, 'pending')
         # Auto estimation of gas does not work
+        # We use a little more gas just in case
         tx = create_proxy_fn.buildTransaction({'from': deployer_account.address, 'gasPrice': gas_price,
-                                               'nonce': nonce, 'gas': gas})
+                                               'nonce': nonce, 'gas': gas + 50000})
         signed_tx = deployer_account.signTransaction(tx)
         tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
         return tx_hash, contract_address
