@@ -14,8 +14,8 @@ from web3 import Web3
 from web3.contract import ContractConstructor
 
 from gnosis.eth.constants import NULL_ADDRESS
-from gnosis.eth.contracts import (get_erc20_contract,
-                                  get_paying_proxy_contract, get_old_safe_contract)
+from gnosis.eth.contracts import (get_erc20_contract, get_old_safe_contract,
+                                  get_paying_proxy_contract)
 
 logger = getLogger(__name__)
 

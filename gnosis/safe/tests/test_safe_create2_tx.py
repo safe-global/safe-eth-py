@@ -1,6 +1,7 @@
 import logging
 
 from django.test import TestCase
+
 from eth_account import Account
 
 from gnosis.eth.constants import NULL_ADDRESS

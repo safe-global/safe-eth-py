@@ -3,7 +3,9 @@ from typing import List
 
 from eth_account import Account
 
-from gnosis.eth.contracts import get_proxy_factory_contract, get_safe_contract, get_old_safe_contract
+from gnosis.eth.contracts import (get_old_safe_contract,
+                                  get_proxy_factory_contract,
+                                  get_safe_contract)
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx

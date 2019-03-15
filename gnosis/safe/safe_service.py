@@ -11,10 +11,11 @@ from web3.exceptions import BadFunctionCallOutput
 from py_eth_sig_utils.eip712 import encode_typed_data
 
 from gnosis.eth.constants import NULL_ADDRESS
-from gnosis.eth.contracts import (get_paying_proxy_contract,
+from gnosis.eth.contracts import (get_old_safe_contract,
+                                  get_paying_proxy_contract,
                                   get_paying_proxy_deployed_bytecode,
                                   get_proxy_factory_contract,
-                                  get_safe_contract, get_old_safe_contract)
+                                  get_safe_contract)
 from gnosis.eth.ethereum_service import (EthereumService,
                                          EthereumServiceProvider)
 from gnosis.eth.utils import get_eth_address_with_key
@@ -201,7 +202,7 @@ class SafeService:
                                                             threshold=threshold,
                                                             salt_nonce=salt_nonce,
                                                             gas_price=gas_price,
-                                                            payment_receiver=self.funder_address,
+                                                            payment_receiver=None,  # It will be `tx.origin`
                                                             payment_token=payment_token,
                                                             payment_token_eth_value=payment_token_eth_value,
                                                             fixed_creation_cost=fixed_creation_cost)

@@ -7,8 +7,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
-from gnosis.eth.contracts import (get_proxy_factory_contract,
-                                  get_safe_contract)
+from gnosis.eth.contracts import get_proxy_factory_contract, get_safe_contract
 from gnosis.eth.utils import generate_address_2
 
 logger = getLogger(__name__)
