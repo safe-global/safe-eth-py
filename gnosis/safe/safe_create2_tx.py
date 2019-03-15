@@ -7,8 +7,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
-from gnosis.eth.contracts import (get_erc20_contract,
-                                  get_proxy_factory_contract,
+from gnosis.eth.contracts import (get_proxy_factory_contract,
                                   get_safe_contract)
 from gnosis.eth.utils import generate_address_2
 
@@ -88,6 +87,7 @@ class SafeCreate2TxBuilder:
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
         estimated_gas: int = self._estimate_gas(safe_setup_data,
                                                 salt_nonce, payment_token, payment_receiver)
+        logger.debug('Magic gas %d - Estimated gas %d' % (magic_gas, estimated_gas))
         gas = max(magic_gas, estimated_gas)
 
         # Payment will be safe deploy cost
@@ -115,17 +115,17 @@ class SafeCreate2TxBuilder:
         :param payment_token: If payment token, we will need more gas to transfer and maybe storage if first time
         :return: total gas needed for deployment
         """
-        base_gas = 180000  # Transaction base gas
+        base_gas = 205000  # Transaction base gas
 
         # If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
         # The other 1K is for overhead of making the call
         if payment_token != NULL_ADDRESS:
-            payment_token_gas = 21000
+            payment_token_gas = 55000
         else:
             payment_token_gas = 0
 
         data_gas = 68 * len(safe_setup_data)  # Data gas
-        gas_per_owner = 30000  # Magic number calculated by testing and averaging owners
+        gas_per_owner = 20000  # Magic number calculated by testing and averaging owners
         return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
 
     @staticmethod
@@ -172,13 +172,14 @@ class SafeCreate2TxBuilder:
             # Top should be around 52000 when storage is needed (funder no previous owner of token),
             # we use value 1 as we are simulating an internal call, and in that calls you don't pay for the data.
             # If it was a new tx sending 5000 tokens would be more expensive than sending 1 because of data costs
-            try:
-                gas += get_erc20_contract(self.w3,
-                                          payment_token).functions.transfer(payment_receiver,
-                                                                            payment).estimateGas({'from':
-                                                                                                 payment_token})
-            except ValueError as exc:
-                raise InvalidERC20Token from exc
+            gas += 55000
+            # try:
+            #     gas += get_erc20_contract(self.w3,
+            #                               payment_token).functions.transfer(payment_receiver,
+            #                                                                 payment).estimateGas({'from':
+            #                                                                                      payment_token})
+            # except ValueError as exc:
+            #     raise InvalidERC20Token from exc
 
         return gas
 
