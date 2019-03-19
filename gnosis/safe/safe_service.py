@@ -628,11 +628,7 @@ class SafeService:
             # Ganache 6.3.0 and Geth are working like this
             result: HexBytes = self.w3.eth.call(tx, block_identifier=block_identifier)
             return parse_revert_data(result)
-        except ValueError as e:
-            error_dict = e.args[0]
-            data = error_dict.get('data')
-            if not data:
-                raise e
+        except ValueError as exc:
             """
             Parity throws a ValueError, e.g.
             {'code': -32015,
@@ -641,7 +637,11 @@ class SafeService:
                       000000000000000000000000000000000000000000000002c4d6574686f642063616e206f6e6c792062652063616c6c656
                       42066726f6d207468697320636f6e74726163740000000000000000000000000000000000000000'}
             """
-            if isinstance(data, str) and 'Reverted ' in data:
+            error_dict = exc.args[0]
+            data = error_dict.get('data')
+            if not data:
+                raise exc
+            elif isinstance(data, str) and 'Reverted ' in data:
                 # Parity
                 result = HexBytes(data.replace('Reverted ', ''))
                 return parse_revert_data(result)
@@ -649,7 +649,7 @@ class SafeService:
             key = list(data.keys())[0]
             result = data[key]['return']
             if result == '0x0':
-                raise e
+                raise exc
             else:
                 # Ganache-Cli with no `--noVMErrorsOnRPCResponse` flag enabled
                 logger.warning('You should use `--noVMErrorsOnRPCResponse` flag with Ganache-cli')
@@ -772,6 +772,16 @@ class SafeService:
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
+        def parse_vm_exception(message: str):
+            if 'Signature not provided by owner' in message:
+                raise SignatureNotProvidedByOwner(message)
+            elif 'Invalid signatures provided' in message:
+                raise InvalidSignaturesProvided(message)
+            elif 'Could not pay gas costs with ether' in message:
+                raise CannotPayGasWithEther(message)
+            else:
+                raise InvalidMultisigTx(message)
+
         data = data or b''
         gas_token = gas_token or NULL_ADDRESS
         refund_receiver = refund_receiver or NULL_ADDRESS
@@ -821,15 +831,26 @@ class SafeService:
             if not success:
                 raise InvalidInternalTx
         except BadFunctionCallOutput as exc:
-            str_exc = str(exc)
-            if 'Signature not provided by owner' in str_exc:
-                raise SignatureNotProvidedByOwner(str_exc)
-            elif 'Invalid signatures provided' in str_exc:
-                raise InvalidSignaturesProvided(str_exc)
-            elif 'Could not pay gas costs with ether' in str_exc:
-                raise CannotPayGasWithEther(str_exc)
-            else:
-                raise InvalidMultisigTx(str_exc)
+            parse_vm_exception(str(exc))
+
+        except ValueError as exc:
+            """
+            Parity throws a ValueError, e.g.
+            {'code': -32015,
+             'message': 'VM execution error.',
+             'data': 'Reverted 0x08c379a0000000000000000000000000000000000000000000000000000000000000020000000000000000
+                      000000000000000000000000000000000000000000000001b496e76616c6964207369676e6174757265732070726f7669
+                      6465640000000000'
+            }
+            """
+            error_dict = exc.args[0]
+            data = error_dict.get('data')
+            if not data:
+                raise exc
+            elif isinstance(data, str) and 'Reverted ' in data:
+                # Parity
+                result = HexBytes(data.replace('Reverted ', ''))
+                return parse_vm_exception(str(result))
 
         tx = safe_contract.functions.execTransaction(
             to,
