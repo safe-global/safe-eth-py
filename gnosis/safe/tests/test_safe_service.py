@@ -9,8 +9,8 @@ from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
-from ..safe_service import (InvalidMasterCopyAddress,
-                            NotEnoughFundsForMultisigTx, SafeServiceProvider)
+from ..exceptions import CouldNotPayGasWithEther, CouldNotPayGasWithToken
+from ..safe_service import SafeServiceProvider
 from .safe_test_case import SafeTestCaseMixin
 from .utils import generate_salt_nonce
 
@@ -139,28 +139,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(set(contract_owners), set(owners))
         self.assertEqual(w3.eth.getBalance(owners[0]), owner0_balance)
 
-        master_copy_address = self.safe_service.master_copy_address
-        self.safe_service.master_copy_address = NULL_ADDRESS
-        with self.assertRaises(InvalidMasterCopyAddress):
-            self.safe_service.send_multisig_tx(
-                my_safe_address,
-                to,
-                value,
-                data,
-                operation,
-                safe_tx_gas,
-                data_gas,
-                gas_price,
-                gas_token,
-                refund_receiver,
-                signatures_packed,
-                tx_sender_private_key=keys[0],
-                tx_gas_price=self.gas_price,
-            )
-
-        self.safe_service.master_copy_address = master_copy_address
-
-        with self.assertRaises(NotEnoughFundsForMultisigTx):
+        with self.assertRaises(CouldNotPayGasWithEther):
             self.safe_service.send_multisig_tx(
                 my_safe_address,
                 to,
@@ -226,11 +205,10 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         safe_creation = self.deploy_test_safe(threshold=threshold, owners=[owner], initial_funding_wei=safe_balance)
         my_safe_address = safe_creation.safe_address
 
-        # Give erc20 tokens to the safe
+        # Give erc20 tokens to the funder
         amount_token = int(1e18)
-        erc20_contract = self.deploy_example_erc20(amount_token, my_safe_address)
-        safe_token_balance = self.ethereum_service.erc20.get_balance(my_safe_address, erc20_contract.address)
-        self.assertEqual(safe_token_balance, amount_token)
+        erc20_contract = self.deploy_example_erc20(amount_token, funder)
+        self.assertEqual(self.ethereum_service.erc20.get_balance(funder, erc20_contract.address), amount_token)
 
         signature_packed = self.safe_service.signature_to_bytes((1, int(owner, 16), 0))
 
@@ -243,6 +221,27 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         gas_price = 2
         gas_token = erc20_contract.address
         refund_receiver = NULL_ADDRESS
+
+        with self.assertRaises(CouldNotPayGasWithToken):
+            self.safe_service.send_multisig_tx(
+                my_safe_address,
+                to,
+                value,
+                data,
+                operation,
+                safe_tx_gas,
+                data_gas,
+                gas_price,
+                gas_token,
+                refund_receiver,
+                signature_packed,
+                tx_sender_private_key=owner_account.privateKey,
+                tx_gas_price=self.gas_price,
+            )
+
+        # Give erc20 tokens to the safe
+        self.ethereum_service.erc20.send_tokens(my_safe_address, amount_token, erc20_contract.address,
+                                                funder_account.privateKey)
 
         self.safe_service.send_multisig_tx(
             my_safe_address,
@@ -522,7 +521,8 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         signature_bytes = self.safe_service.signatures_to_bytes(signatures)
 
         self.safe_service.send_multisig_tx(safe_address, to, value, data, operation, safe_tx_gas,
-                                           data_gas, gas_price, gas_token, refund_receiver, signature_bytes)
+                                           data_gas, gas_price, gas_token, refund_receiver, signature_bytes,
+                                           self.ethereum_test_account.privateKey)
 
         balance = self.w3.eth.getBalance(to)
         self.assertEqual(value, balance)

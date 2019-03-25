@@ -6,7 +6,6 @@ from eth_account import Account
 from ethereum.utils import check_checksum, checksum_encode
 from hexbytes import HexBytes
 from packaging.version import Version
-from web3.exceptions import BadFunctionCallOutput
 
 from py_eth_sig_utils.eip712 import encode_typed_data
 
@@ -19,71 +18,14 @@ from gnosis.eth.contracts import (get_old_safe_contract,
 from gnosis.eth.ethereum_service import (EthereumService,
                                          EthereumServiceProvider)
 from gnosis.eth.utils import get_eth_address_with_key
-from gnosis.safe.safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 
+from .exceptions import (CannotEstimateGas, InvalidChecksumAddress,
+                         InvalidPaymentToken)
+from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
+from .safe_tx import SafeTx
 
 logger = getLogger(__name__)
-
-
-class SafeServiceException(Exception):
-    pass
-
-
-class GasPriceTooLow(SafeServiceException):
-    pass
-
-
-class CannotEstimateGas(SafeServiceException):
-    pass
-
-
-class NotEnoughFundsForMultisigTx(SafeServiceException):
-    pass
-
-
-class InvalidRefundReceiver(SafeServiceException):
-    pass
-
-
-class InvalidProxyContract(SafeServiceException):
-    pass
-
-
-class InvalidMasterCopyAddress(SafeServiceException):
-    pass
-
-
-class InvalidChecksumAddress(SafeServiceException):
-    pass
-
-
-class InvalidPaymentToken(SafeServiceException):
-    pass
-
-
-class InvalidMultisigTx(SafeServiceException):
-    pass
-
-
-class InvalidInternalTx(InvalidMultisigTx):
-    pass
-
-
-class InvalidGasEstimation(InvalidMultisigTx):
-    pass
-
-
-class SignatureNotProvidedByOwner(InvalidMultisigTx):
-    pass
-
-
-class InvalidSignaturesProvided(InvalidMultisigTx):
-    pass
-
-
-class CannotPayGasWithEther(InvalidMultisigTx):
-    pass
 
 
 class SafeCreationEstimate(NamedTuple):
@@ -107,9 +49,7 @@ class SafeServiceProvider:
                                        settings.SAFE_CONTRACT_ADDRESS,
                                        settings.SAFE_OLD_CONTRACT_ADDRESS,
                                        settings.SAFE_PROXY_FACTORY_ADDRESS,
-                                       settings.SAFE_VALID_CONTRACT_ADDRESSES,
-                                       settings.SAFE_TX_SENDER_PRIVATE_KEY,
-                                       settings.SAFE_FUNDER_PRIVATE_KEY)
+                                       settings.SAFE_VALID_CONTRACT_ADDRESSES)
         return cls.instance
 
     @classmethod
@@ -123,9 +63,7 @@ class SafeService:
                  master_copy_address: str,
                  master_copy_old_address: str,
                  proxy_factory_address: str,
-                 valid_master_copy_addresses: Set[str],
-                 tx_sender_private_key: str=None,
-                 funder_private_key: str=None):
+                 valid_master_copy_addresses: Set[str]):
 
         self.ethereum_service = ethereum_service
         self.w3 = self.ethereum_service.w3
@@ -147,24 +85,12 @@ class SafeService:
         if not master_copy_old_address:
             logger.warning('Old Master copy address for SafeService is None')
 
-        # TODO Use `Account` class
-        self.tx_sender_private_key = tx_sender_private_key
-        if self.tx_sender_private_key:
-            self.tx_sender_address = self.ethereum_service.private_key_to_address(self.tx_sender_private_key)
-        else:
-            self.tx_sender_address = None
-
-        self.funder_private_key = funder_private_key
-        if self.funder_private_key:
-            self.funder_address = self.ethereum_service.private_key_to_address(self.funder_private_key)
-        else:
-            self.funder_address = None
-
     @property
     def valid_master_copy_addresses(self):
         return self.provided_valid_master_copy_addresses.union([self.master_copy_address,
                                                                 self.master_copy_old_address]) - {None}
 
+    #FIXME Use Safe_tx hash method
     @staticmethod
     def get_hash_for_safe_tx(safe_address: str, to: str, value: int, data: bytes,
                              operation: int, safe_tx_gas: int, data_gas: int, gas_price: int,
@@ -263,8 +189,9 @@ class SafeService:
                 v.to_bytes(1, byteorder=byte_order))
 
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int,
-                               payment_token: Union[str, None], payment_token_eth_value: float=1.0,
-                               fixed_creation_cost: Union[int, None]=None) -> SafeCreationTx:
+                               payment_token: Union[str, None], payment_receiver: str,
+                               payment_token_eth_value: float = 1.0,
+                               fixed_creation_cost: Union[int, None] = None) -> SafeCreationTx:
         try:
             safe_creation_tx = SafeCreationTx(w3=self.w3,
                                               owners=owners,
@@ -272,7 +199,7 @@ class SafeService:
                                               signature_s=s,
                                               master_copy=self.master_copy_old_address,
                                               gas_price=gas_price,
-                                              funder=self.funder_address,
+                                              funder=payment_receiver,
                                               payment_token=payment_token,
                                               payment_token_eth_value=payment_token_eth_value,
                                               fixed_creation_cost=fixed_creation_cost)
@@ -283,7 +210,9 @@ class SafeService:
         return safe_creation_tx
 
     def build_safe_create2_tx(self, salt_nonce: int, owners: List[str], threshold: int, gas_price: int,
-                              payment_token: Union[str, None], payment_token_eth_value: float = 1.0,
+                              payment_token: Union[str, None],
+                              payment_receiver: Union[str, None] = None,  # If none, it will be `tx.origin`
+                              payment_token_eth_value: float = 1.0,
                               fixed_creation_cost: Union[int, None] = None) -> SafeCreate2Tx:
         try:
             safe_creation_tx = SafeCreate2TxBuilder(w3=self.w3,
@@ -293,7 +222,7 @@ class SafeService:
                                                             threshold=threshold,
                                                             salt_nonce=salt_nonce,
                                                             gas_price=gas_price,
-                                                            payment_receiver=None,  # It will be `tx.origin`
+                                                            payment_receiver=payment_receiver,
                                                             payment_token=payment_token,
                                                             payment_token_eth_value=payment_token_eth_value,
                                                             fixed_creation_cost=fixed_creation_cost)
@@ -336,14 +265,6 @@ class SafeService:
         else:
             balance = self.ethereum_service.erc20.get_balance(safe_address, gas_token)
         return balance >= (safe_tx_gas + data_gas) * gas_price
-
-    def check_refund_receiver(self, refund_receiver: str) -> bool:
-        """
-        We only support tx.origin as refund receiver right now
-        In the future we can also accept transactions where it is set to our service account to receive the payments.
-        This would prevent that anybody can front-run our service
-        """
-        return refund_receiver == NULL_ADDRESS
 
     def deploy_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:
         """
@@ -523,12 +444,14 @@ class SafeService:
         return contract_address
 
     def estimate_safe_creation(self, number_owners: int, gas_price: int, payment_token: Union[str, None],
+                               payment_receiver: str = NULL_ADDRESS,
                                payment_token_eth_value: float = 1.0,
                                fixed_creation_cost: Union[int, None] = None) -> SafeCreationEstimate:
         s = 15
         owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
         threshold = number_owners
         safe_creation_tx = self.build_safe_creation_tx(s, owners, threshold, gas_price, payment_token,
+                                                       payment_receiver,
                                                        payment_token_eth_value=payment_token_eth_value,
                                                        fixed_creation_cost=fixed_creation_cost)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment)
@@ -536,7 +459,7 @@ class SafeService:
     def estimate_tx_data_gas(self, safe_address: str, to: str, value: int, data: bytes,
                              operation: int, gas_token: str, estimate_tx_gas: int) -> int:
         data = data or b''
-        paying_proxy_contract = self.get_contract(safe_address)
+        safe_contract = self.get_contract(safe_address)
         threshold = self.retrieve_threshold(safe_address)
 
         # Every byte == 0 -> 4  Gas
@@ -554,7 +477,7 @@ class SafeService:
         gas_token = gas_token or NULL_ADDRESS
         signatures = b''
         refund_receiver = NULL_ADDRESS
-        data = HexBytes(paying_proxy_contract.functions.execTransaction(
+        data = HexBytes(safe_contract.functions.execTransaction(
             to,
             value,
             data,
@@ -628,7 +551,7 @@ class SafeService:
             # Ganache 6.3.0 and Geth are working like this
             result: HexBytes = self.w3.eth.call(tx, block_identifier=block_identifier)
             return parse_revert_data(result)
-        except ValueError as exc:
+        except ValueError as exc:  # Parity
             """
             Parity throws a ValueError, e.g.
             {'code': -32015,
@@ -748,6 +671,22 @@ class SafeService:
     def retrieve_version(self, safe_address, block_identifier='pending') -> str:
         return self.get_contract(safe_address).functions.VERSION().call(block_identifier=block_identifier)
 
+    def build_multisig_tx(self,
+                          safe_address: str,
+                          to: str,
+                          value: int,
+                          data: bytes,
+                          operation: int,
+                          safe_tx_gas: int,
+                          data_gas: int,
+                          gas_price: int,
+                          gas_token: str,
+                          refund_receiver: str,
+                          signatures: bytes) -> SafeTx:
+
+        return SafeTx(self, safe_address, to, value, data, operation, safe_tx_gas, data_gas, gas_price, gas_token,
+                      refund_receiver, signatures=signatures)
+
     def send_multisig_tx(self,
                          safe_address: str,
                          to: str,
@@ -760,7 +699,7 @@ class SafeService:
                          gas_token: str,
                          refund_receiver: str,
                          signatures: bytes,
-                         tx_sender_private_key=None,
+                         tx_sender_private_key: str,
                          tx_gas=None,
                          tx_gas_price=None,
                          block_identifier='pending') -> Tuple[bytes, Dict[str, any]]:
@@ -772,106 +711,22 @@ class SafeService:
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
-        def parse_vm_exception(message: str):
-            if 'Signature not provided by owner' in message:
-                raise SignatureNotProvidedByOwner(message)
-            elif 'Invalid signatures provided' in message:
-                raise InvalidSignaturesProvided(message)
-            elif 'Could not pay gas costs with ether' in message:
-                raise CannotPayGasWithEther(message)
-            else:
-                raise InvalidMultisigTx(message)
+        safe_tx = self.build_multisig_tx(safe_address,
+                                         to,
+                                         value,
+                                         data,
+                                         operation,
+                                         safe_tx_gas,
+                                         data_gas,
+                                         gas_price,
+                                         gas_token,
+                                         refund_receiver,
+                                         signatures)
 
-        data = data or b''
-        gas_token = gas_token or NULL_ADDRESS
-        refund_receiver = refund_receiver or NULL_ADDRESS
-        to = to or NULL_ADDRESS
-        tx_gas_price = tx_gas_price or gas_price  # Use wrapped tx gas_price if not provided
+        tx_sender_address = Account.privateKeyToAccount(tx_sender_private_key).address
+        safe_tx.call(tx_sender_address=tx_sender_address)
 
-        # Make sure proxy contract is ours
-        if not self.check_proxy_code(safe_address):
-            raise InvalidProxyContract(safe_address)
-
-        # Make sure master copy is valid
-        if not self.check_master_copy(safe_address):
-            raise InvalidMasterCopyAddress
-
-        # Check enough funds to pay for the gas
-        if not self.check_funds_for_tx_gas(safe_address, safe_tx_gas, data_gas, gas_price, gas_token):
-            raise NotEnoughFundsForMultisigTx
-
-        safe_tx_gas_estimation = self.estimate_tx_gas(safe_address, to, value, data, operation)
-        safe_data_gas_estimation = self.estimate_tx_data_gas(safe_address, to, value, data, operation,
-                                                             gas_token, safe_tx_gas_estimation)
-        if safe_tx_gas < safe_tx_gas_estimation or data_gas < safe_data_gas_estimation:
-            raise InvalidGasEstimation("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d. Current is "
-                                       "safe-tx-gas=%d and data-gas=%d" %
-                                       (safe_tx_gas_estimation, safe_data_gas_estimation, safe_tx_gas, data_gas))
-
-        tx_gas = tx_gas or (safe_tx_gas + data_gas) * 2
-        tx_sender_private_key = tx_sender_private_key or self.tx_sender_private_key
-        # TODO Use EthereumService, as it's a static method
-        tx_sender_address = self.ethereum_service.private_key_to_address(tx_sender_private_key)
-
-        safe_contract = get_safe_contract(self.w3, address=safe_address)
-        try:
-            success = safe_contract.functions.execTransaction(
-                to,
-                value,
-                data,
-                operation,
-                safe_tx_gas,
-                data_gas,
-                gas_price,
-                gas_token,
-                refund_receiver,
-                signatures,
-            ).call({'from': tx_sender_address}, block_identifier=block_identifier)
-
-            if not success:
-                raise InvalidInternalTx
-        except BadFunctionCallOutput as exc:
-            parse_vm_exception(str(exc))
-
-        except ValueError as exc:
-            """
-            Parity throws a ValueError, e.g.
-            {'code': -32015,
-             'message': 'VM execution error.',
-             'data': 'Reverted 0x08c379a0000000000000000000000000000000000000000000000000000000000000020000000000000000
-                      000000000000000000000000000000000000000000000001b496e76616c6964207369676e6174757265732070726f7669
-                      6465640000000000'
-            }
-            """
-            error_dict = exc.args[0]
-            data = error_dict.get('data')
-            if not data:
-                raise exc
-            elif isinstance(data, str) and 'Reverted ' in data:
-                # Parity
-                result = HexBytes(data.replace('Reverted ', ''))
-                return parse_vm_exception(str(result))
-
-        tx = safe_contract.functions.execTransaction(
-            to,
-            value,
-            data,
-            operation,
-            safe_tx_gas,
-            data_gas,
-            gas_price,
-            gas_token,
-            refund_receiver,
-            signatures,
-        ).buildTransaction({
-            'from': tx_sender_address,
-            'gas': tx_gas,
-            'gasPrice': tx_gas_price,
-        })
-
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx,
-                                                                  private_key=tx_sender_private_key,
-                                                                  retry=True,
-                                                                  block_identifier=block_identifier)
-
-        return tx_hash, tx
+        return safe_tx.execute(tx_sender_private_key=tx_sender_private_key,
+                               tx_gas=tx_gas,
+                               tx_gas_price=tx_gas_price,
+                               block_identifier=block_identifier)

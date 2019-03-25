@@ -3,6 +3,7 @@ from logging import getLogger
 from typing import Dict, List, NamedTuple, Union
 
 import requests
+from eth_account import Account
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
                             privtoaddr, sha3)
 from hexbytes import HexBytes
@@ -46,6 +47,10 @@ class SenderAccountNotFoundInNode(ValueError):
     pass
 
 
+class UnknownAccount(ValueError):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
@@ -55,6 +60,7 @@ def tx_with_exception_handling(func):
         'insufficient funds': InsufficientFunds,
         "doesn't have enough funds": InsufficientFunds,
         'sender account not recognized': SenderAccountNotFoundInNode,
+        'unknown account': UnknownAccount,
     }
 
     @wraps(func)
@@ -174,14 +180,19 @@ class Erc20Manager:
                                                   address=token_address if token_address else None,
                                                   argument_filters=argument_filters).get_all_entries()
 
-    def send_tokens(self, to: str, amount: int, erc20_address: str):
+    def send_tokens(self, to: str, amount: int, erc20_address: str, private_key: str) -> bytes:
         """
         Send tokens to address
         :param to:
         :param amount:
         :param erc20_address:
-        :return:
+        :param private_key:
+        :return: tx_hash
         """
+        erc20 = get_erc20_contract(self.w3, erc20_address)
+        account = Account.privateKeyToAccount(private_key)
+        tx = erc20.functions.transfer(to, amount).buildTransaction({'from': account.address})
+        return self.ethereum_service.send_unsigned_transaction(tx, private_key=private_key)
 
 
 class EthereumService:
@@ -401,7 +412,7 @@ class EthereumService:
         return checksum_encode(privtoaddr(private_key))
 
     @staticmethod
-    def get_signing_address(hash, v, r, s) -> str:
+    def get_signing_address(hash: Union[bytes, str], v: int, r: int, s: int) -> str:
         """
         :return: checksum encoded address starting by 0x, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
         :rtype: str

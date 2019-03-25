@@ -3,9 +3,10 @@ from django.test import TestCase
 from eth_account import Account
 from hexbytes import HexBytes
 
-from ..ethereum_service import (EthereumServiceProvider, EtherLimitExceeded,
-                                FromAddressNotFound, InsufficientFunds,
-                                InvalidNonce, SenderAccountNotFoundInNode)
+from ..ethereum_service import (EthereumService, EthereumServiceProvider,
+                                EtherLimitExceeded, FromAddressNotFound,
+                                InsufficientFunds, InvalidNonce,
+                                SenderAccountNotFoundInNode, UnknownAccount)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 
@@ -90,9 +91,21 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
     def test_get_info(self):
         amount = 1
         owner = Account.create().address
-        erc20_contract = self.deploy_example_erc20(1, owner)
+        erc20_contract = self.deploy_example_erc20(amount, owner)
         erc20_info = self.ethereum_service.erc20.get_info(erc20_contract.address)
         self.assertEqual(erc20_info.decimals, 18)
+
+    def test_send_tokens(self):
+        amount = 5
+        owner = self.ethereum_test_account
+        owner_2 = Account.create()
+        erc20 = self.deploy_example_erc20(amount, owner.address)
+        self.assertEqual(self.ethereum_service.erc20.get_balance(owner.address, erc20.address), amount)
+
+        amount_2 = 3
+        self.ethereum_service.erc20.send_tokens(owner_2.address, amount_2, erc20.address, owner.privateKey)
+        self.assertEqual(self.ethereum_service.erc20.get_balance(owner.address, erc20.address), amount - amount_2)
+        self.assertEqual(self.ethereum_service.erc20.get_balance(owner_2.address, erc20.address), amount_2)
 
 
 class TestEthereumService(EthereumTestCaseMixin, TestCase):
