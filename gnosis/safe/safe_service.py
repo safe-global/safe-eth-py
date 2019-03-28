@@ -582,6 +582,7 @@ class SafeService:
           - 100 of gas per word of `data_bytes`
           - Validate the signatures 5000 * threshold (ecrecover for ecdsa ~= 4K gas)
         :param safe_address: Address of the safe
+        :param data_bytes_length: Length of the data (in bytes, so `len(HexBytes('0x12'))` would be `1`
         :return: gas costs per signature * threshold of Safe
         """
         threshold = self.retrieve_threshold(safe_address)

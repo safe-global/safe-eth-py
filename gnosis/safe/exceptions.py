@@ -2,10 +2,6 @@ class SafeServiceException(Exception):
     pass
 
 
-class GasPriceTooLow(SafeServiceException):
-    pass
-
-
 class CannotEstimateGas(SafeServiceException):
     pass
 

@@ -4,7 +4,6 @@ from .safe_service import SafeService, SafeServiceProvider, SafeOperation
 from .exceptions import (
     CannotEstimateGas,
     CouldNotPayGasWithEther,
-    GasPriceTooLow,
     InvalidChecksumAddress,
     InvalidInternalTx,
     InvalidMultisigTx,
