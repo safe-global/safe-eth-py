@@ -1,6 +1,6 @@
 import math
 from logging import getLogger
-from typing import List, NamedTuple, Union
+from typing import List, NamedTuple, Optional
 
 from eth_abi2.packed import encode_abi_packed
 from hexbytes import HexBytes
@@ -29,7 +29,7 @@ class SafeCreate2Tx(NamedTuple):
     gas: int
     gas_price: int
     payment_token_eth_value: float
-    fixed_creation_cost: Union[int, None]
+    fixed_creation_cost: Optional[int]
     safe_address: str
     safe_setup_data: bytes
 
@@ -56,9 +56,9 @@ class SafeCreate2TxBuilder:
         self.proxy_factory_contract = get_proxy_factory_contract(w3, proxy_factory_address)
 
     def build(self, owners: List[str], threshold: int, salt_nonce: int,
-              gas_price: int, payment_receiver: Union[str, None] = None,
-              payment_token: Union[str, None] = None,
-              payment_token_eth_value: float = 1.0, fixed_creation_cost: Union[int, None] = None):
+              gas_price: int, payment_receiver: Optional[str] = None,
+              payment_token: Optional[str] = None,
+              payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None):
         """
         Prepare Safe creation
         :param owners: Owners of the Safe

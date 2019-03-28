@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import Dict, List, NamedTuple, Set, Tuple, Union
+from typing import Dict, List, NamedTuple, Optional, Set, Tuple
 
 from eth_account import Account
 from ethereum.utils import check_checksum, checksum_encode
@@ -23,6 +23,7 @@ from .exceptions import (CannotEstimateGas, InvalidChecksumAddress,
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
+from .signatures import signature_split
 
 logger = getLogger(__name__)
 
@@ -143,54 +144,15 @@ class SafeService:
     @classmethod
     def check_hash(cls, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
         for i, owner in enumerate(sorted(owners, key=lambda x: x.lower())):
-            v, r, s = cls.signature_split(signatures, i)
+            v, r, s = signature_split(signatures, i)
             if EthereumClient.get_signing_address(tx_hash, v, r, s) != owner:
                 return False
         return True
 
-    @staticmethod
-    def signature_split(signatures: bytes, pos: int) -> Tuple[int, int, int]:
-        """
-        :param signatures: signatures in form of {bytes32 r}{bytes32 s}{uint8 v}
-        :param pos: position of the signature
-        :return: Tuple with v, r, s
-        """
-        signature_pos = 65 * pos
-        v = signatures[64 + signature_pos]
-        r = int.from_bytes(signatures[signature_pos:32 + signature_pos], 'big')
-        s = int.from_bytes(signatures[32 + signature_pos:64 + signature_pos], 'big')
-
-        return v, r, s
-
-    @classmethod
-    def signatures_to_bytes(cls, signatures: List[Tuple[int, int, int]]) -> bytes:
-        """
-        Convert signatures to bytes
-        :param signatures: list of tuples(v, r, s)
-        :return: 65 bytes per signature
-        """
-        return b''.join([cls.signature_to_bytes(vrs) for vrs in signatures])
-
-    @staticmethod
-    def signature_to_bytes(vrs: Tuple[int, int, int]) -> bytes:
-        """
-        Convert signature to bytes
-        :param vrs: tuple of v, r, s
-        :return: signature in form of {bytes32 r}{bytes32 s}{uint8 v}
-        """
-
-        byte_order = 'big'
-
-        v, r, s = vrs
-
-        return (r.to_bytes(32, byteorder=byte_order) +
-                s.to_bytes(32, byteorder=byte_order) +
-                v.to_bytes(1, byteorder=byte_order))
-
     def build_safe_creation_tx(self, s: int, owners: List[str], threshold: int, gas_price: int,
-                               payment_token: Union[str, None], payment_receiver: str,
+                               payment_token: Optional[str], payment_receiver: str,
                                payment_token_eth_value: float = 1.0,
-                               fixed_creation_cost: Union[int, None] = None) -> SafeCreationTx:
+                               fixed_creation_cost: Optional[int] = None) -> SafeCreationTx:
         try:
             safe_creation_tx = SafeCreationTx(w3=self.w3,
                                               owners=owners,
@@ -209,10 +171,10 @@ class SafeService:
         return safe_creation_tx
 
     def build_safe_create2_tx(self, salt_nonce: int, owners: List[str], threshold: int, gas_price: int,
-                              payment_token: Union[str, None],
-                              payment_receiver: Union[str, None] = None,  # If none, it will be `tx.origin`
+                              payment_token: Optional[str],
+                              payment_receiver: Optional[str] = None,  # If none, it will be `tx.origin`
                               payment_token_eth_value: float = 1.0,
-                              fixed_creation_cost: Union[int, None] = None) -> SafeCreate2Tx:
+                              fixed_creation_cost: Optional[int] = None) -> SafeCreate2Tx:
         try:
             safe_creation_tx = SafeCreate2TxBuilder(w3=self.w3,
                                                     master_copy_address=self.master_copy_address,
@@ -442,10 +404,10 @@ class SafeService:
         logger.info("Deployed and initialized Proxy Factory Contract=%s by %s", contract_address, deployer_address)
         return contract_address
 
-    def estimate_safe_creation(self, number_owners: int, gas_price: int, payment_token: Union[str, None],
+    def estimate_safe_creation(self, number_owners: int, gas_price: int, payment_token: Optional[str],
                                payment_receiver: str = NULL_ADDRESS,
                                payment_token_eth_value: float = 1.0,
-                               fixed_creation_cost: Union[int, None] = None) -> SafeCreationEstimate:
+                               fixed_creation_cost: Optional[int] = None) -> SafeCreationEstimate:
         s = 15
         owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
         threshold = number_owners

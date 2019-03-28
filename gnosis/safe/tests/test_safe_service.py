@@ -11,6 +11,7 @@ from gnosis.eth.utils import get_eth_address_with_key
 
 from ..exceptions import CouldNotPayGasWithEther, CouldNotPayGasWithToken
 from ..safe_service import SafeServiceProvider
+from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 from .utils import generate_salt_nonce
 
@@ -121,7 +122,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
 
         signatures = [w3.eth.account.signHash(safe_multisig_tx_hash, private_key) for private_key in keys]
         signature_pairs = [(s['v'], s['r'], s['s']) for s in signatures]
-        signatures_packed = self.safe_service.signatures_to_bytes(signature_pairs)
+        signatures_packed = signatures_to_bytes(signature_pairs)
 
         # {bytes32 r}{bytes32 s}{uint8 v} = 65 bytes
         self.assertEqual(len(signatures_packed), 65 * len(owners))
@@ -210,7 +211,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         erc20_contract = self.deploy_example_erc20(amount_token, funder)
         self.assertEqual(self.ethereum_client.erc20.get_balance(funder, erc20_contract.address), amount_token)
 
-        signature_packed = self.safe_service.signature_to_bytes((1, int(owner, 16), 0))
+        signature_packed = signature_to_bytes((1, int(owner, 16), 0))
 
         to = receiver
         value = safe_balance
@@ -518,7 +519,7 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
 
         # Prepare signatures. v must be 1 for previously signed and r the owner
         signatures = (1, int(owners[0], 16), 0), (1, int(owners[1], 16), 0)
-        signature_bytes = self.safe_service.signatures_to_bytes(signatures)
+        signature_bytes = signatures_to_bytes(signatures)
 
         self.safe_service.send_multisig_tx(safe_address, to, value, data, operation, safe_tx_gas,
                                            data_gas, gas_price, gas_token, refund_receiver, signature_bytes,

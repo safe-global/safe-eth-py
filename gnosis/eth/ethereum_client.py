@@ -1,6 +1,6 @@
 from functools import wraps
 from logging import getLogger
-from typing import Dict, List, NamedTuple, Union
+from typing import Dict, List, NamedTuple, Optional, Union
 
 import requests
 from eth_account import Account
@@ -309,9 +309,9 @@ class EthereumClient:
     def send_raw_transaction(self, raw_transaction) -> bytes:
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
-    def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Union[None, str] = None,
-                                  public_key: Union[None, str] = None, retry: bool = False,
-                                  block_identifier: Union[None, str] = None) -> bytes:
+    def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Optional[str] = None,
+                                  public_key: Optional[str] = None, retry: bool = False,
+                                  block_identifier: Optional[str] = None) -> bytes:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
         `private_key` cannot be `None`

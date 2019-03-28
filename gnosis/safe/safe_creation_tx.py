@@ -1,7 +1,7 @@
 import math
 import os
 from logging import getLogger
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import rlp
 from eth_account.internal.transactions import (encode_transaction,
@@ -26,8 +26,8 @@ class InvalidERC20Token(Exception):
 
 class SafeCreationTx:
     def __init__(self, w3: Web3, owners: List[str], threshold: int, signature_s: int, master_copy: str,
-                 gas_price: int, funder: Union[str, None], payment_token: Union[str, None] = None,
-                 payment_token_eth_value: float = 1.0, fixed_creation_cost: Union[int, None] = None):
+                 gas_price: int, funder: Optional[str], payment_token: Optional[str] = None,
+                 payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None):
         """
         Prepare Safe creation
         :param w3: Web3 instance

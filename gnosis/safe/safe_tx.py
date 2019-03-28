@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 from eth_account import Account
 from hexbytes import HexBytes
@@ -16,6 +16,7 @@ from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
                          InvalidInternalTx, InvalidMultisigTx,
                          InvalidSignaturesProvided,
                          SignatureNotProvidedByOwner, SignaturesDataTooShort)
+from .signatures import signature_split, signature_to_bytes
 
 
 class SafeTx:
@@ -35,7 +36,7 @@ class SafeTx:
                  gas_token: str,
                  refund_receiver: str,
                  signatures: bytes = b'',
-                 safe_nonce: Union[int, None] = None,
+                 safe_nonce: Optional[int] = None,
                  safe_version: str = '1.0.0'):
 
         self.w3 = safe_service.w3
@@ -103,7 +104,7 @@ class SafeTx:
     def signers(self) -> List[str]:
         owners = []
         for i in range(len(self.signatures) // 65):
-            v, r, s = self.safe_service.signature_split(self.signatures, i)
+            v, r, s = signature_split(self.signatures, i)
             owners.append(EthereumClient.get_signing_address(self.safe_tx_hash, v, r, s))
         return owners
 
@@ -181,9 +182,9 @@ class SafeTx:
 
     def execute(self,
                 tx_sender_private_key: str,
-                tx_gas: Union[None, int] = None,
-                tx_gas_price: Union[None, int] = None,
-                tx_nonce: Union[None, int] = None,
+                tx_gas: Optional[int] = None,
+                tx_gas_price: Optional[int] = None,
+                tx_nonce: Optional[int] = None,
                 block_identifier='pending') -> Tuple[bytes, Dict[str, any]]:
         """
         Send multisig tx to the Safe
@@ -222,17 +223,17 @@ class SafeTx:
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
         self.tx_hash = self.safe_service.ethereum_client.send_unsigned_transaction(self.tx,
-                                                                                    private_key=tx_sender_private_key,
-                                                                                    retry=True,
-                                                                                    block_identifier=block_identifier)
+                                                                                   private_key=tx_sender_private_key,
+                                                                                   retry=True,
+                                                                                   block_identifier=block_identifier)
         return self.tx_hash, self.tx
 
     def sign(self, private_key: str) -> bytes:
         account = Account.privateKeyToAccount(private_key)
         signature_dict = account.signHash(self.safe_tx_hash)
-        signature = self.safe_service.signature_to_bytes((signature_dict['v'],
-                                                          signature_dict['r'],
-                                                          signature_dict['s']))
+        signature = signature_to_bytes((signature_dict['v'],
+                                        signature_dict['r'],
+                                        signature_dict['s']))
 
         # Insert signature sorted
         if account.address not in self.signers:
