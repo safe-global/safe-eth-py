@@ -158,7 +158,6 @@ class SafeTx:
             parameters['from'] = tx_sender_address
         if tx_gas:
             parameters['gas'] = tx_gas
-        print(parameters)
         try:
             success = self.w3_tx.call(parameters, block_identifier=block_identifier)
 
