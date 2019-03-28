@@ -26,10 +26,6 @@ class InvalidInternalTx(InvalidMultisigTx):
     pass
 
 
-class InvalidGasEstimation(InvalidMultisigTx):
-    pass
-
-
 class SignatureNotProvidedByOwner(InvalidMultisigTx):
     pass
 
@@ -51,4 +47,8 @@ class CouldNotPayGasWithToken(InvalidMultisigTx):
 
 
 class HashHasNotBeenApproved(InvalidMultisigTx):
+    pass
+
+
+class NotEnoughSafeTransactionGas(InvalidMultisigTx):
     pass

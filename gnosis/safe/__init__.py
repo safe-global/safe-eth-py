@@ -6,7 +6,6 @@ from .exceptions import (
     CouldNotPayGasWithEther,
     GasPriceTooLow,
     InvalidChecksumAddress,
-    InvalidGasEstimation,
     InvalidInternalTx,
     InvalidMultisigTx,
     InvalidPaymentToken,

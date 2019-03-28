@@ -645,8 +645,8 @@ class SafeService:
                           refund_receiver: str,
                           signatures: bytes) -> SafeTx:
 
-        return SafeTx(self, safe_address, to, value, data, operation, safe_tx_gas, data_gas, gas_price, gas_token,
-                      refund_receiver, signatures=signatures)
+        return SafeTx(self.ethereum_client, safe_address, to, value, data, operation, safe_tx_gas, data_gas, gas_price,
+                      gas_token, refund_receiver, signatures=signatures)
 
     def send_multisig_tx(self,
                          safe_address: str,

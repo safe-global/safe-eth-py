@@ -12,10 +12,10 @@ from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
 from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
-                         HashHasNotBeenApproved, InvalidGasEstimation,
+                         HashHasNotBeenApproved,
                          InvalidInternalTx, InvalidMultisigTx,
                          InvalidSignaturesProvided,
-                         SignatureNotProvidedByOwner, SignaturesDataTooShort)
+                         SignatureNotProvidedByOwner, SignaturesDataTooShort, NotEnoughSafeTransactionGas)
 from .signatures import signature_split, signature_to_bytes
 
 
@@ -24,7 +24,7 @@ class SafeTx:
     tx_hash: bytes  # If executed, `tx_hash` is set
 
     def __init__(self,
-                 safe_service,
+                 ethereum_client: EthereumClient,
                  safe_address: str,
                  to: str,
                  value: int,
@@ -39,8 +39,8 @@ class SafeTx:
                  safe_nonce: Optional[int] = None,
                  safe_version: str = '1.0.0'):
 
-        self.w3 = safe_service.w3
-        self.safe_service = safe_service
+        self.w3 = ethereum_client.w3
+        self.ethereum_client = ethereum_client
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
         self.value = value
@@ -132,27 +132,33 @@ class SafeTx:
 
     def _parse_vm_exception(self, message: str):
         error_with_exception: Dict[str, Exception] = {
-            'Signature not provided by owner': SignatureNotProvidedByOwner,
-            'Invalid signatures provided': InvalidSignaturesProvided,
             'Could not pay gas costs with ether': CouldNotPayGasWithEther,
             'Could not pay gas costs with token': CouldNotPayGasWithToken,
-            'Signatures data too short': SignaturesDataTooShort,
             'Hash has not been approved': HashHasNotBeenApproved,
+            'Invalid signatures provided': InvalidSignaturesProvided,
+            'Not enough gas to execute safe transaction': NotEnoughSafeTransactionGas,
+            'Signature not provided by owner': SignatureNotProvidedByOwner,
+            'Signatures data too short': SignaturesDataTooShort,
         }
         for reason, custom_exception in error_with_exception.items():
             if reason in message:
                 raise custom_exception(message)
         raise InvalidMultisigTx(message)
 
-    def call(self, tx_sender_address=None, block_identifier='pending') -> int:
+    def call(self, tx_sender_address: Optional[str] = None, tx_gas: Optional[int] = None,
+             block_identifier='pending') -> int:
         """
         :param tx_sender_address:
+        :param tx_gas: Force a gas limit
         :param block_identifier:
         :return: `1` if everything ok
         """
         parameters = {}
         if tx_sender_address:
             parameters['from'] = tx_sender_address
+        if tx_gas:
+            parameters['gas'] = tx_gas
+        print(parameters)
         try:
             success = self.w3_tx.call(parameters, block_identifier=block_identifier)
 
@@ -198,34 +204,22 @@ class SafeTx:
         """
 
         tx_gas_price = tx_gas_price or self.gas_price  # Use wrapped tx gas_price if not provided
-
-        safe_tx_gas_estimation = self.safe_service.estimate_tx_gas(self.safe_address, self.to, self.value, self.data,
-                                                                   self.operation)
-        safe_data_gas_estimation = self.safe_service.estimate_tx_data_gas(self.safe_address, self.to, self.value,
-                                                                          self.data, self.operation,
-                                                                          self.gas_token, safe_tx_gas_estimation)
-        if self.safe_tx_gas < safe_tx_gas_estimation or self.data_gas < safe_data_gas_estimation:
-            raise InvalidGasEstimation("Gas should be at least equal to safe-tx-gas=%d and data-gas=%d. Current is "
-                                       "safe-tx-gas=%d and data-gas=%d" %
-                                       (safe_tx_gas_estimation, safe_data_gas_estimation,
-                                        self.safe_tx_gas, self.data_gas))
-
         tx_gas = tx_gas or (self.safe_tx_gas + self.data_gas) * 2
         tx_sender_address = Account.privateKeyToAccount(tx_sender_private_key).address
 
         tx_parameters = {
-                'from': tx_sender_address,
-                'gas': tx_gas,
-                'gasPrice': tx_gas_price,
-            }
+            'from': tx_sender_address,
+            'gas': tx_gas,
+            'gasPrice': tx_gas_price,
+        }
         if tx_nonce is not None:
             tx_parameters['nonce'] = tx_nonce
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
-        self.tx_hash = self.safe_service.ethereum_client.send_unsigned_transaction(self.tx,
-                                                                                   private_key=tx_sender_private_key,
-                                                                                   retry=True,
-                                                                                   block_identifier=block_identifier)
+        self.tx_hash = self.ethereum_client.send_unsigned_transaction(self.tx,
+                                                                      private_key=tx_sender_private_key,
+                                                                      retry=True,
+                                                                      block_identifier=block_identifier)
         return self.tx_hash, self.tx
 
     def sign(self, private_key: str) -> bytes:

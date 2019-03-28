@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 
-from ..exceptions import SignaturesDataTooShort
+from ..exceptions import SignaturesDataTooShort, NotEnoughSafeTransactionGas
 from ..safe_tx import SafeTx
 from .safe_test_case import SafeTestCaseMixin
 
@@ -16,7 +16,7 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
     def setUpTestData(cls):
         cls.prepare_tests()
 
-    def test_send_tx(self):
+    def test_send_safe_tx(self):
         owners = [Account.create() for _ in range(2)]
         owner_addresses = [owner.address for owner in owners]
         threshold = 1
@@ -25,8 +25,10 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
         safe_address = safe_creation.safe_address
         to = Account().create().address
         value = self.w3.toWei(0.01, 'ether')
+        safe_tx_gas = 200000
+        data_gas = 100000
 
-        safe_tx = SafeTx(self.safe_service, safe_address, to, value, b'', 0, 200000, 100000, self.gas_price,
+        safe_tx = SafeTx(self.ethereum_client, safe_address, to, value, b'', 0, safe_tx_gas, data_gas, self.gas_price,
                          None, None, safe_nonce=0)
 
         with self.assertRaises(SignaturesDataTooShort):
@@ -37,6 +39,9 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
         safe_tx.sign(owners[0].privateKey)
         self.assertIn(owners[0].address, safe_tx.signers)
 
+        with self.assertRaises(NotEnoughSafeTransactionGas):
+            safe_tx.call(tx_sender_address=self.ethereum_test_account.address, tx_gas=safe_tx_gas // 2)
+
         self.assertEqual(safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1)
         tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
         self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
@@ -45,7 +50,7 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
         safe_tx.unsign(owners[0].address)
         self.assertFalse(safe_tx.signers)
 
-    def test_sign(self):
+    def test_sign_safe_tx(self):
         owners = [Account.create() for _ in range(3)]
         owners_unsorted = sorted(owners, key=lambda x: x.address.lower(), reverse=True)
         owner_addresses = [owner.address for owner in owners_unsorted]
@@ -56,7 +61,7 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
         to = Account().create().address
         value = self.w3.toWei(0.01, 'ether')
 
-        safe_tx = SafeTx(self.safe_service, safe_address, to, value, b'', 0, 200000, 100000, self.gas_price,
+        safe_tx = SafeTx(self.ethereum_client, safe_address, to, value, b'', 0, 200000, 100000, self.gas_price,
                          None, None, safe_nonce=0)
 
         safe_tx.sign(owners_unsorted[0].privateKey)
