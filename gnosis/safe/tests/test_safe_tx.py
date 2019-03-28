@@ -39,8 +39,8 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
 
         self.assertEqual(safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1)
         tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
-        self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
-        self.assertEqual(self.ethereum_service.get_balance(to), value)
+        self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        self.assertEqual(self.ethereum_client.get_balance(to), value)
 
         safe_tx.unsign(owners[0].address)
         self.assertFalse(safe_tx.signers)

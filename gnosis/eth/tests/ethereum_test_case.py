@@ -5,7 +5,7 @@ from django.conf import settings
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 
-from ..ethereum_service import EthereumServiceProvider
+from ..ethereum_client import EthereumClientProvider
 from .utils import deploy_example_erc20, send_tx
 
 logger = logging.getLogger(__name__)
@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 class EthereumTestCaseMixin:
     @classmethod
     def prepare_tests(cls):
-        cls.ethereum_service = EthereumServiceProvider()
-        cls.w3 = cls.ethereum_service.w3
+        cls.ethereum_client = EthereumClientProvider()
+        cls.w3 = cls.ethereum_client.w3
         cls.ethereum_test_account: LocalAccount = Account.privateKeyToAccount(settings.ETHEREUM_TEST_PRIVATE_KEY)
 
     @property

@@ -52,7 +52,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         owners = owners if owners else [Account.create().address for _ in range(number_owners)]
         threshold = threshold if threshold else len(owners) - 1
 
-        gas_price = self.ethereum_service.w3.eth.gasPrice
+        gas_price = self.ethereum_client.w3.eth.gasPrice
         return self.safe_service.build_safe_create2_tx(salt_nonce, owners, threshold, gas_price=gas_price,
                                                        payment_token=None,
                                                        fixed_creation_cost=0)

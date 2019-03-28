@@ -7,7 +7,7 @@ from web3.exceptions import BadFunctionCallOutput
 
 from py_eth_sig_utils.eip712 import encode_typed_data
 
-from gnosis.eth import EthereumService
+from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
@@ -104,7 +104,7 @@ class SafeTx:
         owners = []
         for i in range(len(self.signatures) // 65):
             v, r, s = self.safe_service.signature_split(self.signatures, i)
-            owners.append(EthereumService.get_signing_address(self.safe_tx_hash, v, r, s))
+            owners.append(EthereumClient.get_signing_address(self.safe_tx_hash, v, r, s))
         return owners
 
     @property
@@ -221,7 +221,7 @@ class SafeTx:
             tx_parameters['nonce'] = tx_nonce
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
-        self.tx_hash = self.safe_service.ethereum_service.send_unsigned_transaction(self.tx,
+        self.tx_hash = self.safe_service.ethereum_client.send_unsigned_transaction(self.tx,
                                                                                     private_key=tx_sender_private_key,
                                                                                     retry=True,
                                                                                     block_identifier=block_identifier)

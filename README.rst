@@ -17,7 +17,7 @@ Ethereum utils
 --------------
 gnosis.eth
 ~~~~~~~~~~~~~~~~~~~~
-- ``class EthereumService (ethereum_node_url: str)``: Class to connect and do operations
+- ``class EthereumClient (ethereum_node_url: str)``: Class to connect and do operations
   with a ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
   Only ``http/https`` urls are suppored for the node url.
 

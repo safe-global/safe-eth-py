@@ -15,8 +15,7 @@ from gnosis.eth.contracts import (get_old_safe_contract,
                                   get_paying_proxy_deployed_bytecode,
                                   get_proxy_factory_contract,
                                   get_safe_contract)
-from gnosis.eth.ethereum_service import (EthereumService,
-                                         EthereumServiceProvider)
+from gnosis.eth.ethereum_client import EthereumClient, EthereumClientProvider
 from gnosis.eth.utils import get_eth_address_with_key
 
 from .exceptions import (CannotEstimateGas, InvalidChecksumAddress,
@@ -44,8 +43,8 @@ class SafeServiceProvider:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             from django.conf import settings
-            ethereum_service = EthereumServiceProvider()
-            cls.instance = SafeService(ethereum_service,
+            ethereum_client = EthereumClientProvider()
+            cls.instance = SafeService(ethereum_client,
                                        settings.SAFE_CONTRACT_ADDRESS,
                                        settings.SAFE_OLD_CONTRACT_ADDRESS,
                                        settings.SAFE_PROXY_FACTORY_ADDRESS,
@@ -59,14 +58,14 @@ class SafeServiceProvider:
 
 
 class SafeService:
-    def __init__(self, ethereum_service: EthereumService,
+    def __init__(self, ethereum_client: EthereumClient,
                  master_copy_address: str,
                  master_copy_old_address: str,
                  proxy_factory_address: str,
                  valid_master_copy_addresses: Set[str]):
 
-        self.ethereum_service = ethereum_service
-        self.w3 = self.ethereum_service.w3
+        self.ethereum_client = ethereum_client
+        self.w3 = self.ethereum_client.w3
         self.master_copy_address = master_copy_address
         self.master_copy_old_address = master_copy_old_address
         self.proxy_factory_address = proxy_factory_address
@@ -145,7 +144,7 @@ class SafeService:
     def check_hash(cls, tx_hash: str, signatures: bytes, owners: List[str]) -> bool:
         for i, owner in enumerate(sorted(owners, key=lambda x: x.lower())):
             v, r, s = cls.signature_split(signatures, i)
-            if EthereumService.get_signing_address(tx_hash, v, r, s) != owner:
+            if EthereumClient.get_signing_address(tx_hash, v, r, s) != owner:
                 return False
         return True
 
@@ -261,9 +260,9 @@ class SafeService:
         :return: True if enough funds, False, otherwise
         """
         if gas_token == NULL_ADDRESS:
-            balance = self.ethereum_service.get_balance(safe_address)
+            balance = self.ethereum_client.get_balance(safe_address)
         else:
-            balance = self.ethereum_service.erc20.get_balance(safe_address, gas_token)
+            balance = self.ethereum_client.erc20.get_balance(safe_address, gas_token)
         return balance >= (safe_tx_gas + data_gas) * gas_price
 
     def deploy_master_contract(self, deployer_account=None, deployer_private_key=None) -> str:
@@ -274,14 +273,14 @@ class SafeService:
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
-        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+        deployer_address = deployer_account or self.ethereum_client.private_key_to_address(deployer_private_key)
 
         safe_contract = self.get_contract()
         tx = safe_contract.constructor().buildTransaction({'from': deployer_address})
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
 
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
         contract_address = tx_receipt.contractAddress
@@ -299,10 +298,10 @@ class SafeService:
             NULL_ADDRESS   # Refund receiver
         ).buildTransaction({'from': deployer_address})
 
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
 
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
         logger.info("Deployed and initialized Safe Master Contract=%s by %s", contract_address, deployer_address)
@@ -316,14 +315,14 @@ class SafeService:
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
-        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+        deployer_address = deployer_account or self.ethereum_client.private_key_to_address(deployer_private_key)
 
         safe_contract = get_old_safe_contract(self.w3)
         tx = safe_contract.constructor().buildTransaction({'from': deployer_address})
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
 
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
         contract_address = tx_receipt.contractAddress
@@ -338,10 +337,10 @@ class SafeService:
             b''            # Data for optional DELEGATE CALL
         ).buildTransaction({'from': deployer_address})
 
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
 
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
         logger.info("Deployed and initialized Old Safe Master Contract=%s by %s", contract_address, deployer_address)
@@ -356,16 +355,16 @@ class SafeService:
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
-        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+        deployer_address = deployer_account or self.ethereum_client.private_key_to_address(deployer_private_key)
 
         safe_proxy_contract = get_paying_proxy_contract(self.w3)
         tx = safe_proxy_contract.constructor(self.master_copy_address, initializer,
                                              NULL_ADDRESS,
                                              NULL_ADDRESS, 0).buildTransaction({'from': deployer_address})
 
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=60)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
         return tx_receipt.contractAddress
 
@@ -379,16 +378,16 @@ class SafeService:
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
-        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+        deployer_address = deployer_account or self.ethereum_client.private_key_to_address(deployer_private_key)
 
         proxy_factory_contract = get_proxy_factory_contract(self.w3, self.proxy_factory_address)
         create_proxy_fn = proxy_factory_contract.functions.createProxy(self.master_copy_address, initializer)
         contract_address = create_proxy_fn.call()
         tx = create_proxy_fn.buildTransaction({'from': deployer_address})
 
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=120)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
         assert tx_receipt.status
         return contract_address
 
@@ -412,13 +411,13 @@ class SafeService:
         contract_address = create_proxy_fn.call()
 
         deployer_account = Account.privateKeyToAccount(deployer_private_key)
-        nonce = self.ethereum_service.get_nonce_for_account(deployer_account.address, 'pending')
+        nonce = self.ethereum_client.get_nonce_for_account(deployer_account.address, 'pending')
         # Auto estimation of gas does not work
         # We use a little more gas just in case
         tx = create_proxy_fn.buildTransaction({'from': deployer_account.address, 'gasPrice': gas_price,
                                                'nonce': nonce, 'gas': gas + 50000})
         signed_tx = deployer_account.signTransaction(tx)
-        tx_hash = self.ethereum_service.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = self.ethereum_client.send_raw_transaction(signed_tx.rawTransaction)
         return tx_hash, contract_address
 
     def deploy_proxy_factory_contract(self, deployer_account=None, deployer_private_key=None) -> str:
@@ -429,15 +428,15 @@ class SafeService:
         :return: deployed contract address
         """
         assert deployer_account or deployer_private_key
-        deployer_address = deployer_account or self.ethereum_service.private_key_to_address(deployer_private_key)
+        deployer_address = deployer_account or self.ethereum_client.private_key_to_address(deployer_private_key)
 
         proxy_factory_contract = get_proxy_factory_contract(self.w3)
         tx = proxy_factory_contract.constructor().buildTransaction({'from': deployer_address})
 
-        tx_hash = self.ethereum_service.send_unsigned_transaction(tx, private_key=deployer_private_key,
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_private_key,
                                                                   public_key=deployer_account)
 
-        tx_receipt = self.ethereum_service.get_transaction_receipt(tx_hash, timeout=120)
+        tx_receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
         assert tx_receipt.status
         contract_address = tx_receipt.contractAddress
         logger.info("Deployed and initialized Proxy Factory Contract=%s by %s", contract_address, deployer_address)
@@ -496,7 +495,7 @@ class SafeService:
         # TODO If nonce>0 add 5000, else 20000
         nonce_gas = 20000
         hash_generation_gas = 1500
-        data_gas = signature_gas + self.ethereum_service.estimate_data_gas(data) + nonce_gas + hash_generation_gas
+        data_gas = signature_gas + self.ethereum_client.estimate_data_gas(data) + nonce_gas + hash_generation_gas
 
         # Add aditional gas costs
         if data_gas > 65536:
@@ -585,7 +584,7 @@ class SafeService:
         """
         Estimate tx gas using web3
         """
-        return self.ethereum_service.estimate_gas(safe_address, to, value, data, block_identifier='pending')
+        return self.ethereum_client.estimate_gas(safe_address, to, value, data, block_identifier='pending')
 
     def estimate_tx_gas(self, safe_address: str, to: str, value: int, data: bytes, operation: int) -> int:
         """
@@ -636,13 +635,13 @@ class SafeService:
         return NULL_ADDRESS
 
     def is_master_copy_deployed(self) -> bool:
-        return self.ethereum_service.is_contract(self.master_copy_address)
+        return self.ethereum_client.is_contract(self.master_copy_address)
 
     def is_proxy_factory_deployed(self) -> bool:
-        return self.ethereum_service.is_contract(self.proxy_factory_address)
+        return self.ethereum_client.is_contract(self.proxy_factory_address)
 
     def is_safe_deployed(self, address: str) -> bool:
-        return self.ethereum_service.is_contract(address)
+        return self.ethereum_client.is_contract(address)
 
     def retrieve_master_copy_address(self, safe_address, block_identifier='pending') -> str:
         return checksum_encode(self.w3.eth.getStorageAt(safe_address, 0, block_identifier=block_identifier)[-20:])

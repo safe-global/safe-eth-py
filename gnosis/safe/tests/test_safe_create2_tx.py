@@ -45,7 +45,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
             'value': safe_creation_tx.payment,
         }, funder_account)
 
-        funder_balance = self.ethereum_service.get_balance(funder_account.address)
+        funder_balance = self.ethereum_client.get_balance(funder_account.address)
         funder_pkey = funder_account.privateKey
         tx_hash, contract_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
                                                                                        safe_creation_tx.safe_setup_data,
@@ -56,7 +56,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         self.assertEqual(tx_receipt.status, 1)
 
         # Funder balance must be bigger after a Safe deployment, as Safe deployment is a little overpriced
-        self.assertGreater(self.ethereum_service.get_balance(funder_account.address), funder_balance)
+        self.assertGreater(self.ethereum_client.get_balance(funder_account.address), funder_balance)
         logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
         log = logs[0]
         self.assertIsNone(tx_receipt.contractAddress)
@@ -68,7 +68,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         deployed_safe_proxy_contract = get_safe_contract(w3, proxy_address)
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
-        self.assertEqual(self.ethereum_service.get_balance(proxy_address), 0)
+        self.assertEqual(self.ethereum_client.get_balance(proxy_address), 0)
 
     def test_safe_create2_tx_builder_with_payment_receiver(self):
         w3 = self.w3
@@ -114,9 +114,9 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         deployed_safe_proxy_contract = get_safe_contract(w3, proxy_address)
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
-        self.assertEqual(self.ethereum_service.get_balance(proxy_address), 0)
+        self.assertEqual(self.ethereum_client.get_balance(proxy_address), 0)
 
-        self.assertEqual(self.ethereum_service.get_balance(payment_receiver), safe_creation_tx.payment)
+        self.assertEqual(self.ethereum_client.get_balance(payment_receiver), safe_creation_tx.payment)
 
     def test_safe_create2_tx_builder_with_fixed_cost(self):
         w3 = self.w3
@@ -164,7 +164,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         deployed_safe_proxy_contract = get_safe_contract(w3, proxy_address)
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
-        self.assertEqual(self.ethereum_service.get_balance(proxy_address), 0)
+        self.assertEqual(self.ethereum_client.get_balance(proxy_address), 0)
 
     def test_safe_create2_tx_builder_with_token_payment(self):
         w3 = self.w3
@@ -223,7 +223,7 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         deployed_safe_proxy_contract = get_safe_contract(w3, proxy_address)
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
-        self.assertEqual(self.ethereum_service.get_balance(proxy_address), 0)
+        self.assertEqual(self.ethereum_client.get_balance(proxy_address), 0)
 
     def test_safe_gas_with_multiple_owners(self):
         logger.info("Test Safe Proxy create2 gas with multiple owners".center(LOG_TITLE_WIDTH, '-'))

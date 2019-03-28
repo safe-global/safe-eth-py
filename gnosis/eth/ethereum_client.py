@@ -12,8 +12,7 @@ from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider, BaseProvider
 from web3.utils.threads import Timeout
 
-from gnosis.eth.constants import NULL_ADDRESS
-
+from .constants import NULL_ADDRESS
 from .contracts import get_erc20_contract, get_example_erc20_contract
 
 logger = getLogger(__name__)
@@ -82,18 +81,18 @@ class Erc20_Info(NamedTuple):
     decimals: int
 
 
-class EthereumServiceProvider:
+class EthereumClientProvider:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             from django.conf import settings
-            cls.instance = EthereumService(settings.ETHEREUM_NODE_URL)
+            cls.instance = EthereumClient(settings.ETHEREUM_NODE_URL)
         return cls.instance
 
 
 class Erc20Manager:
-    def __init__(self, ethereum_service, slow_provider_timeout: int = 30):
-        self.ethereum_service = ethereum_service
-        self.w3 = ethereum_service.w3
+    def __init__(self, ethereum_client, slow_provider_timeout: int = 30):
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.get_slow_provider(self.w3.providers[0],
                                                    timeout=slow_provider_timeout))
 
@@ -192,10 +191,10 @@ class Erc20Manager:
         erc20 = get_erc20_contract(self.w3, erc20_address)
         account = Account.privateKeyToAccount(private_key)
         tx = erc20.functions.transfer(to, amount).buildTransaction({'from': account.address})
-        return self.ethereum_service.send_unsigned_transaction(tx, private_key=private_key)
+        return self.ethereum_client.send_unsigned_transaction(tx, private_key=private_key)
 
 
-class EthereumService:
+class EthereumClient:
     """
     Manage ethereum operations. Uses web3 for the most part, but some other stuff is implemented from scratch.
     Note: If you want to use `pending` state with `Parity`, it must be run with `--pruning=archive` or `--force-sealing`
