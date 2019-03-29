@@ -644,10 +644,15 @@ class SafeService:
                           gas_price: int,
                           gas_token: str,
                           refund_receiver: str,
-                          signatures: bytes) -> SafeTx:
+                          signatures: bytes,
+                          safe_nonce: Optional[int] = None,
+                          safe_version: Optional[str] = None) -> SafeTx:
 
+        safe_nonce = safe_nonce or self.retrieve_nonce(safe_address)
+        safe_version = safe_version or self.retrieve_version(safe_address)
         return SafeTx(self.ethereum_client, safe_address, to, value, data, operation, safe_tx_gas, data_gas, gas_price,
-                      gas_token, refund_receiver, signatures=signatures)
+                      gas_token, refund_receiver, signatures=signatures, safe_nonce=safe_nonce,
+                      safe_version=safe_version)
 
     def send_multisig_tx(self,
                          safe_address: str,

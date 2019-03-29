@@ -12,10 +12,10 @@ from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
 from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
-                         HashHasNotBeenApproved,
-                         InvalidInternalTx, InvalidMultisigTx,
-                         InvalidSignaturesProvided,
-                         SignatureNotProvidedByOwner, SignaturesDataTooShort, NotEnoughSafeTransactionGas)
+                         HashHasNotBeenApproved, InvalidInternalTx,
+                         InvalidMultisigTx, InvalidSignaturesProvided,
+                         NotEnoughSafeTransactionGas,
+                         SignatureNotProvidedByOwner, SignaturesDataTooShort)
 from .signatures import signature_split, signature_to_bytes
 
 
@@ -39,6 +39,7 @@ class SafeTx:
                  safe_nonce: Optional[int] = None,
                  safe_version: str = '1.0.0'):
 
+        assert isinstance(signatures, bytes), "Signatures must be bytes"
         self.w3 = ethereum_client.w3
         self.ethereum_client = ethereum_client
         self.safe_address = safe_address

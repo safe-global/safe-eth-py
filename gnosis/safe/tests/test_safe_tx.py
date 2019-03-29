@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 
-from ..exceptions import SignaturesDataTooShort, NotEnoughSafeTransactionGas
+from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
 from ..safe_tx import SafeTx
 from .safe_test_case import SafeTestCaseMixin
 
