@@ -1,3 +1,5 @@
+import os
+
 from .base import *
 
 INSTALLED_APPS += (
@@ -27,6 +29,8 @@ CACHES = {
 
 ETHEREUM_NODE_URL = 'http://localhost:8545'
 ETHEREUM_TEST_PRIVATE_KEY = 'b0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773'  # Ganache account 9
+ETHEREUM_TEST_NODES_URLS = os.environ.get('ETHEREUM_TEST_NODES_URLS')
+ETHEREUM_TEST_NODES_URLS = ETHEREUM_TEST_NODES_URLS.split(',') if ETHEREUM_TEST_NODES_URLS else []
 
 # Ganache fixed seed keys (run ganache with -d)
 SAFE_FUNDER_PRIVATE_KEY = '4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'  # Ganache 0

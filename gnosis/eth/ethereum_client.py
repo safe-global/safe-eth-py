@@ -34,6 +34,10 @@ class InvalidNonce(ValueError):
     pass
 
 
+class NonceTooLow(ValueError):
+    pass
+
+
 class InsufficientFunds(ValueError):
     pass
 
@@ -56,6 +60,7 @@ def tx_with_exception_handling(func):
         'replacement transaction underpriced': ReplacementTransactionUnderpriced,
         'from not found': FromAddressNotFound,
         'correct nonce': InvalidNonce,
+        'nonce too low': NonceTooLow,
         'insufficient funds': InsufficientFunds,
         "doesn't have enough funds": InsufficientFunds,
         'sender account not recognized': SenderAccountNotFoundInNode,
