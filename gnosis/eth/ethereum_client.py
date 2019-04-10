@@ -182,6 +182,9 @@ class Erc20Manager:
 
 
 class ParityManager:
+    class TraceDecodeException(Exception):
+        pass
+
     def __init__(self, ethereum_client, slow_provider_timeout: int = 100):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
@@ -227,6 +230,8 @@ class ParityManager:
     def _decode_traces(self, traces: List[Dict[str, any]]) -> List[Dict[str, any]]:
         new_traces = []
         for trace in traces:
+            if not isinstance(trace, dict):
+                raise ParityTraceDecodeException('Expected dictionary, but found unexpected trace %s' % trace)
             trace_copy = trace.copy()
             new_traces.append(trace_copy)
             trace_copy['result'] = self._decode_trace_result(trace['result'])
@@ -304,7 +309,11 @@ class ParityManager:
         if count:
             parameters['count'] = count
 
-        return self._decode_traces(self.slow_w3.parity.traceFilter(parameters))
+        try:
+            return self._decode_traces(self.slow_w3.parity.traceFilter(parameters))
+        except ParityTraceDecodeException as exc:
+            logger.warning('Problem decoding trace: %s - Retrying', exc)
+            return self._decode_traces(self.slow_w3.parity.traceFilter(parameters))
 
 
 class EthereumClient:
