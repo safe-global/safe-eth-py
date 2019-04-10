@@ -54,6 +54,10 @@ class UnknownAccount(ValueError):
     pass
 
 
+class ParityTraceDecodeException(Exception):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
@@ -182,9 +186,6 @@ class Erc20Manager:
 
 
 class ParityManager:
-    class TraceDecodeException(Exception):
-        pass
-
     def __init__(self, ethereum_client, slow_provider_timeout: int = 100):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
