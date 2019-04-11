@@ -4,9 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 
-from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
-from gnosis.eth.utils import get_eth_address_with_key
 
 from ..safe_create2_tx import SafeCreate2TxBuilder
 from .test_safe_service import SafeTestCaseMixin
@@ -47,11 +45,12 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
 
         funder_balance = self.ethereum_client.get_balance(funder_account.address)
         funder_pkey = funder_account.privateKey
-        tx_hash, contract_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                       safe_creation_tx.safe_setup_data,
-                                                                                       safe_creation_tx.gas,
-                                                                                       safe_creation_tx.gas_price,
-                                                                                       deployer_private_key=funder_pkey)
+        (tx_hash, _,
+         contract_address) = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                safe_creation_tx.safe_setup_data,
+                                                                                safe_creation_tx.gas,
+                                                                                safe_creation_tx.gas_price,
+                                                                                deployer_private_key=funder_pkey)
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
         self.assertEqual(tx_receipt.status, 1)
 
@@ -96,11 +95,12 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         }, funder_account)
 
         funder_pkey = funder_account.privateKey
-        tx_hash, contract_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                       safe_creation_tx.safe_setup_data,
-                                                                                       safe_creation_tx.gas,
-                                                                                       safe_creation_tx.gas_price,
-                                                                                       deployer_private_key=funder_pkey)
+        (tx_hash, _,
+         contract_address) = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                safe_creation_tx.safe_setup_data,
+                                                                                safe_creation_tx.gas,
+                                                                                safe_creation_tx.gas_price,
+                                                                                deployer_private_key=funder_pkey)
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
         self.assertEqual(tx_receipt.status, 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
@@ -146,11 +146,12 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
         }, funder_account)
 
         funder_pkey = funder_account.privateKey
-        tx_hash, contract_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                       safe_creation_tx.safe_setup_data,
-                                                                                       safe_creation_tx.gas,
-                                                                                       safe_creation_tx.gas_price,
-                                                                                       deployer_private_key=funder_pkey)
+        (tx_hash, _,
+         contract_address) = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                safe_creation_tx.safe_setup_data,
+                                                                                safe_creation_tx.gas,
+                                                                                safe_creation_tx.gas_price,
+                                                                                deployer_private_key=funder_pkey)
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
         self.assertEqual(tx_receipt.status, 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
@@ -205,11 +206,12 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
                          safe_creation_tx.payment)
 
         funder_pkey = funder_account.privateKey
-        tx_hash, contract_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                       safe_creation_tx.safe_setup_data,
-                                                                                       safe_creation_tx.gas,
-                                                                                       safe_creation_tx.gas_price,
-                                                                                       deployer_private_key=funder_pkey)
+        (tx_hash, _,
+         contract_address) = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                safe_creation_tx.safe_setup_data,
+                                                                                safe_creation_tx.gas,
+                                                                                safe_creation_tx.gas_price,
+                                                                                deployer_private_key=funder_pkey)
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
         self.assertEqual(tx_receipt.status, 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
@@ -250,11 +252,12 @@ class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
             }, funder_account)
 
             funder_pkey = funder_account.privateKey
-            tx_hash, contract_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                           safe_creation_tx.safe_setup_data,
-                                                                                           safe_creation_tx.gas,
-                                                                                           safe_creation_tx.gas_price,
-                                                                                           deployer_private_key=funder_pkey)
+            (tx_hash, _,
+             contract_address) = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                    safe_creation_tx.safe_setup_data,
+                                                                                    safe_creation_tx.gas,
+                                                                                    safe_creation_tx.gas_price,
+                                                                                    deployer_private_key=funder_pkey)
             tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             self.assertEqual(tx_receipt.status, 1)
             logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)

@@ -46,11 +46,11 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
             'value': safe_create2_tx.payment
         }, self.ethereum_test_account)
 
-        tx_hash, safe_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                   safe_create2_tx.safe_setup_data,
-                                                                                   safe_create2_tx.gas,
-                                                                                   self.gas_price,
-                                                                                   deployer_private_key=private_key)
+        tx_hash, _, safe_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
+                                                                                      safe_create2_tx.safe_setup_data,
+                                                                                      safe_create2_tx.gas,
+                                                                                      self.gas_price,
+                                                                                      deployer_private_key=private_key)
         receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
         self.assertEqual(receipt.status, 1)
         self.assertEqual(safe_address, safe_create2_tx.safe_address)

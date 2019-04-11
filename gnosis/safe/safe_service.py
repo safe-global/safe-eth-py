@@ -354,7 +354,7 @@ class SafeService:
         return contract_address
 
     def deploy_proxy_contract_with_nonce(self, salt_nonce: int, initializer: bytes, gas: int, gas_price: int,
-                                         deployer_private_key=None) -> Tuple[bytes, str]:
+                                         deployer_private_key=None) -> Tuple[bytes, Dict[str, any], str]:
         """
         Deploy proxy contract using `create2` withthe `Proxy Factory Contract`.
         Takes `deployer_account` (if unlocked in the node) or the `deployer_private_key`
@@ -363,7 +363,7 @@ class SafeService:
         :param gas: Gas
         :param gas_price: Gas Price
         :param deployer_private_key: Private key of an ethereum account
-        :return: Tuple(tx-hash, deployed contract address)
+        :return: Tuple(tx-hash, tx, deployed contract address)
         """
         assert deployer_private_key
 
@@ -374,13 +374,12 @@ class SafeService:
 
         deployer_account = Account.privateKeyToAccount(deployer_private_key)
         nonce = self.ethereum_client.get_nonce_for_account(deployer_account.address, 'pending')
-        # Auto estimation of gas does not work
-        # We use a little more gas just in case
+        # Auto estimation of gas does not work. We use a little more gas just in case
         tx = create_proxy_fn.buildTransaction({'from': deployer_account.address, 'gasPrice': gas_price,
                                                'nonce': nonce, 'gas': gas + 50000})
         signed_tx = deployer_account.signTransaction(tx)
         tx_hash = self.ethereum_client.send_raw_transaction(signed_tx.rawTransaction)
-        return tx_hash, contract_address
+        return tx_hash, tx, contract_address
 
     def deploy_proxy_factory_contract(self, deployer_account=None, deployer_private_key=None) -> str:
         """

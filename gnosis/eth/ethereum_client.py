@@ -62,6 +62,7 @@ def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
         'replacement transaction underpriced': ReplacementTransactionUnderpriced,
+        'There is another transaction with same nonce in the queue': ReplacementTransactionUnderpriced,  # Parity
         'from not found': FromAddressNotFound,
         'correct nonce': InvalidNonce,
         'nonce too low': NonceTooLow,

@@ -64,7 +64,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         safe_creation_tx = self.build_test_safe(threshold=threshold, owners=owners)
         funder_account = self.ethereum_test_account
 
-        (tx_hash,
+        (tx_hash, _,
          safe_address) = self.safe_service.deploy_proxy_contract_with_nonce(safe_creation_tx.salt_nonce,
                                                                             safe_creation_tx.safe_setup_data,
                                                                             safe_creation_tx.gas,
