@@ -236,7 +236,9 @@ class ParityManager:
                 raise ParityTraceDecodeException('Expected dictionary, but found unexpected trace %s' % trace)
             trace_copy = trace.copy()
             new_traces.append(trace_copy)
-            trace_copy['result'] = self._decode_trace_result(trace['result'])
+            # Txs with `error` field don't have `result` field
+            if 'result' in trace:
+                trace_copy['result'] = self._decode_trace_result(trace['result'])
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
 
