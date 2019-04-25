@@ -242,9 +242,16 @@ class ParityManager:
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
 
+    def trace_transaction(self, tx_hash: str) -> Dict[str, any]:
+        try:
+            return self._decode_traces(self.slow_w3.parity.traceTransaction(parameters))
+        except ParityTraceDecodeException as exc:
+            logger.warning('Problem decoding trace: %s - Retrying', exc)
+            return self._decode_traces(self.slow_w3.parity.traceTransaction(parameters))
+
     def trace_filter(self, from_block: int = 1, to_block: Optional[int] = None,
                      from_address: Optional[List[str]] = None, to_address: Optional[List[str]] = None,
-                     after: Optional[int] = None, count: Optional[int] = None):
+                     after: Optional[int] = None, count: Optional[int] = None) -> List[Dict[str, any]]:
         """
         :param from_block: Quantity or Tag - (optional) From this block. `0` is not working, it needs to be `>= 1`
         :param to_block: Quantity or Tag - (optional) To this block.
