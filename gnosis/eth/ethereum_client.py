@@ -244,10 +244,10 @@ class ParityManager:
 
     def trace_transaction(self, tx_hash: str) -> Dict[str, any]:
         try:
-            return self._decode_traces(self.slow_w3.parity.traceTransaction(parameters))
+            return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
         except ParityTraceDecodeException as exc:
             logger.warning('Problem decoding trace: %s - Retrying', exc)
-            return self._decode_traces(self.slow_w3.parity.traceTransaction(parameters))
+            return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
 
     def trace_filter(self, from_block: int = 1, to_block: Optional[int] = None,
                      from_address: Optional[List[str]] = None, to_address: Optional[List[str]] = None,
