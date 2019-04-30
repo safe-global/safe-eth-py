@@ -4,8 +4,9 @@ from typing import Dict, List, NamedTuple, Optional, Union
 
 import requests
 from eth_account import Account
+from eth_account.signers.local import LocalAccount
 from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
-                            privtoaddr, sha3)
+                            mk_contract_address, privtoaddr, sha3)
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
@@ -14,7 +15,6 @@ from web3.utils.threads import Timeout
 
 from .constants import NULL_ADDRESS
 from .contracts import get_erc20_contract, get_example_erc20_contract
-
 
 logger = getLogger(__name__)
 
@@ -88,6 +88,12 @@ def tx_with_exception_handling(func):
                     raise custom_exception(str(exc)) from exc
             raise exc
     return with_exception_handling
+
+
+class EthereumTxSent(NamedTuple):
+    tx_hash: bytes
+    tx: Dict[str, any]
+    contract_address: Optional[str]
 
 
 class Erc20_Info(NamedTuple):
@@ -339,7 +345,7 @@ class EthereumClient:
     """
     NULL_ADDRESS = NULL_ADDRESS
 
-    def __init__(self, ethereum_node_url: str, slow_provider_timeout: int = 200):
+    def __init__(self, ethereum_node_url: str = 'http://localhost:8545', slow_provider_timeout: int = 200):
         self.ethereum_node_url: str = ethereum_node_url
         self.w3_provider = HTTPProvider(self.ethereum_node_url)
         self.w3: Web3 = Web3(self.w3_provider)
@@ -351,6 +357,27 @@ class EthereumClient:
             # For tests using dummy connections (like IPC)
         except (ConnectionError, FileNotFoundError):
             self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
+
+    def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
+                                       constructor_data: bytes, initializer_data: bytes = b'',
+                                       check_receipt: bool = True):
+        contract_address = None
+        for data in (constructor_data, initializer_data):
+            tx = {'from': deployer_account.address,
+                  'data': data,
+                  'gasPrice': self.w3.eth.gasPrice,
+                  'value': 0,
+                  'to': contract_address if contract_address else b''}
+            tx['gas'] = self.w3.eth.estimateGas(tx)
+            tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+            if check_receipt:
+                tx_receipt = self.get_transaction_receipt(tx_hash, timeout=60)
+                assert tx_receipt.status
+
+            if not contract_address:
+                contract_address = checksum_encode(mk_contract_address(tx['from'], tx['nonce']))
+
+        return EthereumTxSent(tx_hash, tx, contract_address)
 
     def get_slow_provider(self, timeout: int):
         """

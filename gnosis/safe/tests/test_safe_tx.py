@@ -3,6 +3,7 @@ import logging
 from django.test import TestCase
 
 from eth_account import Account
+from hexbytes import HexBytes
 
 from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
 from ..safe_tx import SafeTx
@@ -89,3 +90,87 @@ class TestSafeTx(TestCase, SafeTestCaseMixin):
         signers = [owner_addresses[0], owner_addresses[2]]
         self.assertEqual(set(signers), set(safe_tx.signers))
         self.assertEqual(len(safe_tx.signers), 2)
+
+    def test_hash_safe_multisig_tx(self):
+        # -------- Old version of the contract --------------------------
+        expected_hash = HexBytes('0xc9d69a2350aede7978fdee58e702647e4bbdc82168577aa4a43b66ad815c6d1a')
+        tx_hash = SafeTx(self.ethereum_client, '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+                         '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+                         5000000,
+                         HexBytes('0x00'),
+                         0,
+                         50000,
+                         100,
+                         10000,
+                         '0x' + '0' * 40,
+                         '0x' + '0' * 40,
+                         safe_nonce=67, safe_version='0.1.0').safe_tx_hash
+        self.assertEqual(expected_hash, tx_hash)
+
+        expected_hash = HexBytes('0x8ca8db91d72b379193f6e229eb2dff0d0621b6ef452d90638ee3206e9b7349b3')
+        tx_hash = SafeTx(self.ethereum_client, '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+                         '0x' + '0' * 40,
+                         80000000,
+                         HexBytes('0x562944'),
+                         2,
+                         54522,
+                         773,
+                         22000000,
+                         '0x' + '0' * 40,
+                         '0x' + '0' * 40,
+                         safe_nonce=257000, safe_version='0.1.0').safe_tx_hash
+        self.assertEqual(expected_hash, tx_hash)
+
+        # -------- New version of the contract --------------------------
+        expected_hash = HexBytes('0x7c60341f3e1b4483575f38e84e97d6b332a2dd55b9290f39e6e26eef29a04fe7')
+        tx_hash = SafeTx(self.ethereum_client, '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+                         '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+                         5000000,
+                         HexBytes('0x00'),
+                         0,
+                         50000,
+                         100,
+                         10000,
+                         '0x' + '0' * 40,
+                         '0x' + '0' * 40,
+                         safe_nonce=67).safe_tx_hash
+        self.assertEqual(expected_hash, tx_hash)
+
+        expected_hash = HexBytes('0xf585279fd867c94738096f4eab964e9e202014d2f0d5155d751099ad85cbe504')
+        tx_hash = SafeTx(self.ethereum_client, '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+                         '0x' + '0' * 40,
+                         80000000,
+                         HexBytes('0x562944'),
+                         2,
+                         54522,
+                         773,
+                         22000000,
+                         '0x' + '0' * 40,
+                         '0x' + '0' * 40,
+                         safe_nonce=257000).safe_tx_hash
+        self.assertEqual(expected_hash, tx_hash)
+
+        # Expected hash must be the same calculated by `getTransactionHash` of the contract
+        expected_hash = self.safe_contract.functions.getTransactionHash(
+            '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+            5212459,
+            HexBytes(0x00),
+            1,
+            123456,
+            122,
+            12345,
+            '0x' + '2' * 40,
+            '0x' + '2' * 40,
+            10789).call()
+        tx_hash = SafeTx(self.ethereum_client, self.safe_contract_address,
+                         '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+                         5212459,
+                         HexBytes(0x00),
+                         1,
+                         123456,
+                         122,
+                         12345,
+                         '0x' + '2' * 40,
+                         '0x' + '2' * 40,
+                         safe_nonce=10789).safe_tx_hash
+        self.assertEqual(HexBytes(expected_hash), tx_hash)

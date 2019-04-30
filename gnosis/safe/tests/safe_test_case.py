@@ -1,3 +1,4 @@
+from django.conf import settings
 import logging
 from typing import List
 
@@ -8,42 +9,52 @@ from gnosis.eth.contracts import (get_old_safe_contract,
                                   get_safe_contract)
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_eth_address_with_key
+from gnosis.safe import Safe
+from gnosis.safe.proxy_factory import ProxyFactory
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
-from ..safe_service import SafeServiceProvider
+from ..safe_service import SafeService, SafeServiceProvider
 from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
+
+
+contract_addresses = {
+    'safe': None,
+    'old_safe': None,
+    'proxy_factory': None,
+}
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
     @classmethod
     def prepare_tests(cls):
         super().prepare_tests()
-        cls.safe_service = SafeServiceProvider()
 
-        # If safe master copy not deployed we do
-        cls.safe_contract_address = cls.safe_service.master_copy_address
-        if not cls.w3.eth.getCode(cls.safe_service.master_copy_address):
-            cls.safe_contract_address = cls.safe_service.deploy_master_contract(deployer_private_key=
-                                                                                cls.ethereum_test_account.privateKey)
-            cls.safe_service.master_copy_address = cls.safe_contract_address
+        for key, value in contract_addresses.items():
+            if not value:
+                if key == 'safe':
+                    fn = Safe.deploy_master_contract
+                elif key == 'old_safe':
+                    fn = Safe.deploy_old_master_contract
+                elif key == 'proxy_factory':
+                    fn = ProxyFactory.deploy_proxy_factory_contract
+                contract_addresses[key] = fn(cls.ethereum_client, cls.ethereum_test_account).contract_address
 
+        settings.SAFE_CONTRACT_ADDRESS = contract_addresses['safe']
+        settings.SAFE_OLD_CONTRACT_ADDRESS = contract_addresses['old_safe']
+        settings.SAFE_PROXY_FACTORY_ADDRESS = contract_addresses['proxy_factory']
+        settings.SAFE_VALID_CONTRACT_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS, settings.SAFE_OLD_CONTRACT_ADDRESS}
+        cls.safe_contract_address = contract_addresses['safe']
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
-
-        cls.safe_old_contract_address = cls.safe_service.master_copy_old_address
-        if not cls.w3.eth.getCode(cls.safe_old_contract_address):
-            cls.safe_old_contract_address = cls.safe_service.deploy_old_master_contract(deployer_private_key=
-                                                                                        cls.ethereum_test_account.privateKey)
-            cls.safe_service.master_copy_old_address = cls.safe_old_contract_address
+        cls.safe_old_contract_address = contract_addresses['old_safe']
         cls.safe_old_contract = get_old_safe_contract(cls.w3, cls.safe_old_contract_address)
-
-        cls.proxy_factory_contract_address = cls.safe_service.proxy_factory_address
-        if not cls.w3.eth.getCode(cls.safe_service.proxy_factory_address):
-            cls.proxy_factory_contract_address = cls.safe_service.deploy_proxy_factory_contract(deployer_private_key=
-                                                                                                cls.ethereum_test_account.privateKey)
-            cls.safe_service.proxy_factory_address = cls.proxy_factory_contract_address
+        cls.proxy_factory_contract_address = contract_addresses['proxy_factory']
         cls.proxy_factory_contract = get_proxy_factory_contract(cls.w3, cls.proxy_factory_contract_address)
+
+        cls.safe_service = SafeService(cls.ethereum_client, cls.safe_contract_address, cls.safe_old_contract_address,
+                                       cls.proxy_factory_contract_address, {})
+        SafeServiceProvider.instance = cls.safe_service
 
     def build_test_safe(self, number_owners: int = 3, threshold: int = None,
                         owners: List[str] = None)-> SafeCreate2Tx:

@@ -8,22 +8,24 @@ Safe Addresses. Should be the same for every chain. Check:
 https://github.com/gnosis/safe-contracts/blob/development/zos.mainnet.json
 https://github.com/gnosis/safe-contracts/blob/development/zos.rinkeby.json
 
-GnosisSafe: 0x8942595a2dc5181df0465af0d7be08c8f23c93af
+GnosisSafe: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
 
 Factories
-ProxyFactory: 0x88cd603a5dc47857d02865bbc7941b588c533263
+ProxyFactory: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
 
 Libraries
-CreateAndAddModules: 0xcbf223ccb3264e447167d4772c312df403ab87f0
-MultiSend: 0xe74d6af1670fb6560dd61ee29eb57c7bc027ce4e
+CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
+MultiSend: 0xD4B7B161E4779629C2717385114Bf78D612aEa72
 """
 
 GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 OLD_GNOSIS_SAFE_INTERFACE = load_contract_interface('OldGnosisSafe.json')
 ERC20_INTERFACE = load_contract_interface('ERC20.json')
 ERC20_EXAMPLE_INTERFACE = load_contract_interface('ERC20TestToken.json')
+DELEGATE_CONSTRUCTOR_PROXY_INTERFACE = load_contract_interface('DelegateConstructorProxy.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
 PROXY_FACTORY_INTERFACE = load_contract_interface('ProxyFactory2.json')
+PROXY_INTERFACE = load_contract_interface('Proxy.json')
 
 
 def get_safe_contract(w3: Web3, address=None):
@@ -82,11 +84,23 @@ def get_example_erc20_contract(w3: Web3, address=None):
                            bytecode=ERC20_EXAMPLE_INTERFACE['bytecode'])
 
 
-def get_proxy_factory_contract(w3: Web3, address=None):
+def get_delegate_constructor_proxy_contract(w3: Web3, address=None):
     return w3.eth.contract(address,
-                           abi=PROXY_FACTORY_INTERFACE['abi'],
-                           bytecode=PROXY_FACTORY_INTERFACE['bytecode'])
+                           abi=DELEGATE_CONSTRUCTOR_PROXY_INTERFACE['abi'],
+                           bytecode=DELEGATE_CONSTRUCTOR_PROXY_INTERFACE['bytecode'])
 
 
 def get_paying_proxy_deployed_bytecode() -> bytes:
     return HexBytes(PAYING_PROXY_INTERFACE['deployedBytecode'])
+
+
+def get_proxy_contract(w3: Web3, address=None):
+    return w3.eth.contract(address,
+                           abi=PROXY_INTERFACE['abi'],
+                           bytecode=PROXY_INTERFACE['bytecode'])
+
+
+def get_proxy_factory_contract(w3: Web3, address=None):
+    return w3.eth.contract(address,
+                           abi=PROXY_FACTORY_INTERFACE['abi'],
+                           bytecode=PROXY_FACTORY_INTERFACE['bytecode'])

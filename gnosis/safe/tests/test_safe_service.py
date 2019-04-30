@@ -32,29 +32,14 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertGreater(safe_creation_estimate.gas, 0)
         self.assertGreater(safe_creation_estimate.payment, 0)
 
-    def test_deploy_proxy_contract_with_nonce(self):
-        salt_nonce = generate_salt_nonce()
-        owners = [Account.create().address for _ in range(2)]
-        threshold = 2
-        payment_token = None
-        private_key = self.ethereum_test_account.privateKey
-        safe_create2_tx = self.safe_service.build_safe_create2_tx(salt_nonce, owners, threshold, self.gas_price,
-                                                                  payment_token)
-        # Send ether for safe deploying costs
-        self.send_tx({
-            'to': safe_create2_tx.safe_address,
-            'value': safe_create2_tx.payment
-        }, self.ethereum_test_account)
-
-        tx_hash, _, safe_address = self.safe_service.deploy_proxy_contract_with_nonce(salt_nonce,
-                                                                                      safe_create2_tx.safe_setup_data,
-                                                                                      safe_create2_tx.gas,
-                                                                                      self.gas_price,
-                                                                                      deployer_private_key=private_key)
-        receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
-        self.assertEqual(receipt.status, 1)
-        self.assertEqual(safe_address, safe_create2_tx.safe_address)
-        self.assertEqual(set(self.safe_service.retrieve_owners(safe_address)), set(owners))
+    def test_estimate_safe_creation_2(self):
+        number_owners = 4
+        gas_price = self.gas_price
+        payment_token = NULL_ADDRESS
+        safe_creation_estimate = self.safe_service.estimate_safe_creation_2(number_owners, gas_price, payment_token)
+        self.assertGreater(safe_creation_estimate.gas_price, 0)
+        self.assertGreater(safe_creation_estimate.gas, 0)
+        self.assertGreater(safe_creation_estimate.payment, 0)
 
     def test_send_multisig_tx(self):
         # Create Safe

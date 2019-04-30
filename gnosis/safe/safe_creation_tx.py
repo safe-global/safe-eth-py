@@ -4,8 +4,8 @@ from logging import getLogger
 from typing import Dict, List, Optional, Tuple
 
 import rlp
-from eth_account.internal.transactions import (encode_transaction,
-                                               serializable_unsigned_transaction_from_dict)
+from eth_account.internal.transactions import (
+    encode_transaction, serializable_unsigned_transaction_from_dict)
 from ethereum.exceptions import InvalidTransaction
 from ethereum.transactions import Transaction, secpk1n
 from ethereum.utils import checksum_encode, mk_contract_address
@@ -92,6 +92,8 @@ class SafeCreationTx:
 
         self.v = self.tx_pyethereum.v
         self.r = self.tx_pyethereum.r
+        self.safe_setup_data = safe_setup_data
+
         assert checksum_encode(mk_contract_address(self.deployer_address, nonce=0)) == self.safe_address
 
     @property
