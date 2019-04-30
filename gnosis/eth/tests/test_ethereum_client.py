@@ -80,8 +80,8 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
             self.assertEqual(event.args.to, receiver3_account.address)
 
         events = self.ethereum_client.erc20.get_transfer_history(block_number,
-                                                                  from_address=receiver2_account.address,
-                                                                  to_address=receiver3_account.address)
+                                                                 from_address=receiver2_account.address,
+                                                                 to_address=receiver3_account.address)
         self.assertEqual(len(events), 1)
         event = events[0]
         self.assertEqual(event.args.value, amount // 4)
@@ -156,18 +156,41 @@ class TestParityModule(EthereumTestCaseMixin, TestCase):
                 "transactionPosition": 1,
                 "type": "create"
             },
+            {
+                "action": {
+                    "callType": "call",
+                    "from": "0xed85033a23027439fb20f381f5930ba67f1ebee0",
+                    "gas": "0x0",
+                    "input": "0x",
+                    "to": "0x0affccd762f0a7fa1bca40c51afe1a806a74a6f9",
+                    "value": "0x11c290633b7000"
+                },
+                "blockHash": "0xbf3a508137e72b20399852becdee1752c7b9986184f835014d12b10c01746f39",
+                "blockNumber": 7556887,
+                "error": "Out of gas",
+                "subtraces": 0,
+                "traceAddress": [],
+                "transactionHash": "0xec7e447ce8eef033a8c85442a281bd34436e576553c7d98fbe859af7754a9064",
+                "transactionPosition": 117,
+                "type": "call"
+            },
         ]
         decoded_traces = self.ethereum_client.parity._decode_traces(example_traces)
         for example_trace, decoded_trace in zip(example_traces, decoded_traces):
             self.assertEqual(decoded_trace['action']['gas'], int(example_trace['action']['gas'], 16))
             self.assertEqual(decoded_trace['action']['value'], int(example_trace['action']['value'], 16))
-            self.assertEqual(decoded_trace['result']['gasUsed'], int(example_trace['result']['gasUsed'], 16))
+            if 'error' in decoded_trace:
+                self.assertNotIn('result', decoded_trace)
+            else:
+                self.assertEqual(decoded_trace['result']['gasUsed'], int(example_trace['result']['gasUsed'], 16))
 
         self.assertEqual(decoded_traces[0]['result']['output'], HexBytes(''))
         self.assertEqual(decoded_traces[1]['result']['address'],
                          self.w3.toChecksumAddress(example_traces[1]['result']['address']))
         self.assertEqual(decoded_traces[1]['result']['code'],
                          HexBytes(example_traces[1]['result']['code']))
+
+        self.assertEqual(decoded_traces[2]['error'], 'Out of gas')
 
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
@@ -180,15 +203,15 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         to, _ = get_eth_address_with_key()
 
         tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
-                                                    to=to, gas_price=self.gas_price, value=value)
+                                                   to=to, gas_price=self.gas_price, value=value)
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
         _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
-                                              to=to, gas_price=self.gas_price, value=value)
+                                             to=to, gas_price=self.gas_price, value=value)
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
         _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
-                                              to=to, gas_price=self.gas_price, value=value)
+                                             to=to, gas_price=self.gas_price, value=value)
         self.assertTrue(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
     def test_estimate_gas(self):
@@ -270,7 +293,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             max_eth_to_send = 1
             value = self.w3.toWei(max_eth_to_send, 'ether') + 1
             self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey, address, self.gas_price, value,
-                                              max_eth_to_send=max_eth_to_send)
+                                             max_eth_to_send=max_eth_to_send)
 
     def test_send_eth_without_key(self):
         with self.settings(SAFE_FUNDER_PRIVATE_KEY=None):
@@ -380,7 +403,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         to = Account.create().address
 
         tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
-                                                    to=to, gas_price=self.gas_price, value=value)
+                                                   to=to, gas_price=self.gas_price, value=value)
         receipt1 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None)
         receipt2 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
         self.assertIsNotNone(receipt1)

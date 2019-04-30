@@ -9,52 +9,57 @@ from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
-from web3.providers import AutoProvider, BaseProvider
+from web3.providers import AutoProvider
 from web3.utils.threads import Timeout
 
 from .constants import NULL_ADDRESS
 from .contracts import get_erc20_contract, get_example_erc20_contract
 
+
 logger = getLogger(__name__)
 
 
-class TransactionAlreadyImported(ValueError):
+class EthereumClientException(ValueError):
     pass
 
 
-class ReplacementTransactionUnderpriced(ValueError):
+class TransactionAlreadyImported(EthereumClientException):
     pass
 
 
-class FromAddressNotFound(ValueError):
+class ReplacementTransactionUnderpriced(EthereumClientException):
     pass
 
 
-class InvalidNonce(ValueError):
+class FromAddressNotFound(EthereumClientException):
     pass
 
 
-class NonceTooLow(ValueError):
+class InvalidNonce(EthereumClientException):
     pass
 
 
-class InsufficientFunds(ValueError):
+class NonceTooLow(EthereumClientException):
     pass
 
 
-class EtherLimitExceeded(ValueError):
+class InsufficientFunds(EthereumClientException):
     pass
 
 
-class SenderAccountNotFoundInNode(ValueError):
+class EtherLimitExceeded(EthereumClientException):
     pass
 
 
-class UnknownAccount(ValueError):
+class SenderAccountNotFoundInNode(EthereumClientException):
     pass
 
 
-class ParityTraceDecodeException(Exception):
+class UnknownAccount(EthereumClientException):
+    pass
+
+
+class ParityTraceDecodeException(EthereumClientException):
     pass
 
 
@@ -100,7 +105,7 @@ class EthereumClientProvider:
 
 
 class Erc20Manager:
-    def __init__(self, ethereum_client, slow_provider_timeout: int = 30):
+    def __init__(self, ethereum_client, slow_provider_timeout: int):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
@@ -187,7 +192,7 @@ class Erc20Manager:
 
 
 class ParityManager:
-    def __init__(self, ethereum_client, slow_provider_timeout: int = 100):
+    def __init__(self, ethereum_client, slow_provider_timeout: int):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
@@ -242,7 +247,7 @@ class ParityManager:
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
 
-    def trace_transaction(self, tx_hash: str) -> Dict[str, any]:
+    def trace_transaction(self, tx_hash: str) -> List[Dict[str, any]]:
         try:
             return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
         except ParityTraceDecodeException as exc:
@@ -334,12 +339,12 @@ class EthereumClient:
     """
     NULL_ADDRESS = NULL_ADDRESS
 
-    def __init__(self, ethereum_node_url: str):
+    def __init__(self, ethereum_node_url: str, slow_provider_timeout: int = 200):
         self.ethereum_node_url: str = ethereum_node_url
         self.w3_provider = HTTPProvider(self.ethereum_node_url)
         self.w3: Web3 = Web3(self.w3_provider)
-        self.erc20: Erc20Manager = Erc20Manager(self)
-        self.parity: ParityManager = ParityManager(self)
+        self.erc20: Erc20Manager = Erc20Manager(self, slow_provider_timeout)
+        self.parity: ParityManager = ParityManager(self, slow_provider_timeout)
         try:
             if int(self.w3.net.version) != 1:
                 self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
@@ -350,8 +355,7 @@ class EthereumClient:
     def get_slow_provider(self, timeout: int):
         """
         Get web3 provider for slow queries. Default `HTTPProvider` timeouts after 10 seconds
-        :param provider: Configured Web3 provider
-        :param timeout: Timeout to configure for internal requests (default is 10)
+        :param timeout: Timeout to configure for internal requests
         :return: A new web3 provider with the `slow_provider_timeout`
         """
         if isinstance(self.w3_provider, AutoProvider):
@@ -545,7 +549,6 @@ class EthereumClient:
     def check_tx_with_confirmations(self, tx_hash: str, confirmations: int) -> bool:
         """
         Check tx hash and make sure it has the confirmations required
-        :param w3: Web3 instance
         :param tx_hash: Hash of the tx
         :param confirmations: Minimum number of confirmations required
         :return: True if tx was mined with the number of confirmations required, False otherwise
@@ -562,11 +565,11 @@ class EthereumClient:
         return checksum_encode(privtoaddr(private_key))
 
     @staticmethod
-    def get_signing_address(hash: Union[bytes, str], v: int, r: int, s: int) -> str:
+    def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
         """
         :return: checksum encoded address starting by 0x, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
         :rtype: str
         """
-        encoded_64_address = ecrecover_to_pub(hash, v, r, s)
+        encoded_64_address = ecrecover_to_pub(signed_hash, v, r, s)
         address_bytes = sha3(encoded_64_address)[-20:]
         return checksum_encode(address_bytes)

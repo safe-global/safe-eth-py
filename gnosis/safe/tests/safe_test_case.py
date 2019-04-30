@@ -10,7 +10,6 @@ from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
-from ..safe_creation_tx import SafeCreationTx
 from ..safe_service import SafeServiceProvider
 from .utils import generate_salt_nonce
 
