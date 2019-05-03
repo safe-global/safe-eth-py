@@ -11,7 +11,6 @@ from gnosis.eth.utils import get_eth_address_with_key
 
 from ..exceptions import CouldNotPayGasWithEther, CouldNotPayGasWithToken
 from ..safe import Safe
-from ..safe_tx import SafeTx
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -70,7 +69,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         }, funder_account)
 
         my_safe_contract = get_safe_contract(w3, my_safe_address)
-        safe = Safe(my_safe_address)
+        safe = Safe(my_safe_address, self.ethereum_client)
 
         to = funder
         value = safe_balance // 2
@@ -263,7 +262,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
 
     def test_estimate_tx_base_gas(self):
         safe_address = self.deploy_test_safe().safe_address
-        safe = Safe(safe_address)
+        safe = Safe(safe_address, self.ethereum_client)
         to = Account().create().address
         value = int('abc', 16)
         data = HexBytes('0xabcdef')
@@ -279,7 +278,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
 
     def test_estimate_tx_gas(self):
         safe_address = self.deploy_test_safe().safe_address
-        safe = Safe(safe_address)
+        safe = Safe(safe_address, self.ethereum_client)
         to = Account().create().address
         value = int('abc', 16)
         data = HexBytes('0xabcdef')
@@ -289,7 +288,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
 
     def test_retrieve_info(self):
         safe_creation = self.deploy_test_safe()
-        safe = Safe(safe_creation.safe_address)
+        safe = Safe(safe_creation.safe_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_master_copy_address(), self.safe_service.master_copy_address)
         self.assertEqual(safe.retrieve_nonce(), 0)
         self.assertEqual(set(safe.retrieve_owners()), set(safe_creation.owners))
@@ -329,7 +328,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         safe_creation = self.deploy_test_safe(threshold=2, owners=owners,
                                               initial_funding_wei=self.w3.toWei(0.01, 'ether'))
         safe_address = safe_creation.safe_address
-        safe = Safe(safe_address)
+        safe = Safe(safe_address, self.ethereum_client)
         safe_instance = get_safe_contract(self.w3, safe_address)
 
         to, _ = get_eth_address_with_key()
