@@ -4,6 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
+from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
@@ -21,6 +22,27 @@ class TestSafe(TestCase, SafeTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()
+
+    def test_create(self):
+        owners = [self.ethereum_test_account.address]
+        threshold = 1
+        master_copy_address = self.safe_contract_address
+
+        ethereum_tx_sent = Safe.create(self.ethereum_client, self.ethereum_test_account, master_copy_address,
+                                       owners, threshold, proxy_factory_address=self.proxy_factory_contract_address)
+        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
+        self.assertEqual(safe.retrieve_master_copy_address(), master_copy_address)
+        self.assertEqual(safe.retrieve_owners(), owners)
+        self.assertEqual(safe.retrieve_threshold(), threshold)
+
+    def test_check_funds_for_tx_gas(self):
+        safe = Safe(self.deploy_test_safe().safe_address, self.ethereum_client)
+        safe_tx_gas = 2
+        base_gas = 4
+        gas_price = 10
+        self.assertFalse(safe.check_funds_for_tx_gas(safe_tx_gas, base_gas, gas_price, NULL_ADDRESS))
+        self.send_ether(safe.address, (safe_tx_gas + base_gas) * gas_price)
+        self.assertTrue(safe.check_funds_for_tx_gas(safe_tx_gas, base_gas, gas_price, NULL_ADDRESS))
 
     def test_estimate_safe_creation(self):
         number_owners = 4
@@ -277,14 +299,22 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         self.assertEqual(data_gas2, base_gas + 68 - 4)
 
     def test_estimate_tx_gas(self):
-        safe_address = self.deploy_test_safe().safe_address
-        safe = Safe(safe_address, self.ethereum_client)
         to = Account().create().address
-        value = int('abc', 16)
+        value = 123
         data = HexBytes('0xabcdef')
         operation = 1
-        data_gas = safe.estimate_tx_gas(to, value, data, operation)
-        self.assertGreater(data_gas, 0)
+        safe = Safe(self.deploy_test_safe(initial_funding_wei=value + 23000).safe_address, self.ethereum_client)
+
+        safe_tx_gas = safe.estimate_tx_gas(to, value, data, operation)
+        self.assertGreater(safe_tx_gas, 0)
+        operation = 0
+        safe_tx_gas = safe.estimate_tx_gas(to, value, data, operation)
+        self.assertGreater(safe_tx_gas, 0)
+
+    def test_retrieve_code(self):
+        self.assertEqual(Safe(NULL_ADDRESS, self.ethereum_client).retrieve_code(), HexBytes('0x'))
+        self.assertIsNotNone(Safe(self.deploy_test_safe().safe_address,
+                                  self.ethereum_client).retrieve_code())
 
     def test_retrieve_info(self):
         safe_creation = self.deploy_test_safe()
@@ -299,6 +329,31 @@ class TestSafe(TestCase, SafeTestCaseMixin):
 
         for owner in safe_creation.owners:
             self.assertTrue(safe.retrieve_is_owner(owner))
+
+    def test_retrieve_is_hash_approved(self):
+        safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
+        safe = Safe(safe_creation.safe_address, self.ethereum_client)
+        safe_contract = safe.get_contract()
+        fake_tx_hash = Web3.sha3(text='Knopfler')
+        another_tx_hash = Web3.sha3(text='Marc')
+        tx = safe_contract.functions.approveHash(fake_tx_hash).buildTransaction()
+        tx['gas'] = tx['gas'] * 2
+
+        self.ethereum_client.send_unsigned_transaction(tx, private_key=self.ethereum_test_account.privateKey)
+        self.assertTrue(safe.retrieve_is_hash_approved(self.ethereum_test_account.address, fake_tx_hash))
+        self.assertFalse(safe.retrieve_is_hash_approved(self.ethereum_test_account.address, another_tx_hash))
+
+    def test_retrieve_is_message_signed(self):
+        safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
+        safe = Safe(safe_creation.safe_address, self.ethereum_client)
+        safe_contract = safe.get_contract()
+        message = b'12345'
+        message_hash = safe_contract.functions.getMessageHash(message).call()
+        sign_message_data = HexBytes(safe_contract.functions.signMessage(message).buildTransaction()['data'])
+        safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
+        safe_tx.sign(self.ethereum_test_account.privateKey)
+        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
+        self.assertTrue(safe.retrieve_is_message_signed(message_hash))
 
     def test_token_balance(self):
         funder_account = self.ethereum_test_account

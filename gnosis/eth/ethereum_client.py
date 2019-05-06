@@ -510,7 +510,7 @@ class EthereumClient:
             address = public_key
         else:
             logger.error('No ethereum account provided. Need a public_key or private_key')
-            raise ValueError("Ethereum account was not configured or unlocked in the node")
+            raise ValueError('Ethereum account was not configured or unlocked in the node')
 
         if tx.get('nonce') is None:
             tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)

@@ -191,11 +191,31 @@ class TestParityModule(EthereumTestCaseMixin, TestCase):
 
         self.assertEqual(decoded_traces[2]['error'], 'Out of gas')
 
+    def test_trace_filter(self):
+        with self.assertRaisesMessage(AssertionError, 'at least'):
+            self.ethereum_client.parity.trace_filter()
+
+        with self.assertRaisesMessage(ValueError, 'Method trace_filter not supported'):
+            self.ethereum_client.parity.trace_filter(from_address=Account.create().address)
+
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()
+
+    def test_current_block_number(self):
+        self.assertGreaterEqual(self.ethereum_client.current_block_number, 0)
+
+    def test_get_transaction(self):
+        to = Account.create().address
+        value = 123
+        tx_hash = self.send_ether(to, value)
+        tx = self.ethereum_client.get_transaction(tx_hash)
+        self.assertEqual(tx.to, to)
+        self.assertEqual(tx.value, value)
+        block = self.ethereum_client.get_block(tx.blockNumber)
+        self.assertEqual(block.number, tx.blockNumber)
 
     def test_check_tx_with_confirmations(self):
         value = 1
@@ -343,6 +363,9 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             'gas': 23000,
             'gasPrice': 1,
         }
+
+        with self.assertRaisesMessage(ValueError, 'Ethereum account was not configured'):
+            self.ethereum_client.send_unsigned_transaction(tx)
 
         self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
         self.assertEqual(self.ethereum_client.get_balance(to), value)

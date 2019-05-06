@@ -229,11 +229,11 @@ class Safe:
 
         return safe_creation_tx
 
-    def check_funds_for_tx_gas(self, safe_tx_gas: int, data_gas: int, gas_price: int, gas_token: str) -> bool:
+    def check_funds_for_tx_gas(self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str) -> bool:
         """
         Check safe has enough funds to pay for a tx
         :param safe_tx_gas: Safe tx gas
-        :param data_gas: Data gas
+        :param base_gas: Data gas
         :param gas_price: Gas Price
         :param gas_token: Gas Token, to use token instead of ether for the gas
         :return: `True` if enough funds, `False` otherwise
@@ -242,7 +242,7 @@ class Safe:
             balance = self.ethereum_client.get_balance(self.address)
         else:
             balance = self.ethereum_client.erc20.get_balance(self.address, gas_token)
-        return balance >= (safe_tx_gas + data_gas) * gas_price
+        return balance >= (safe_tx_gas + base_gas) * gas_price
 
     def estimate_tx_base_gas(self, to: str, value: int, data: bytes,
                              operation: int, gas_token: str, estimate_tx_gas: int) -> int:
