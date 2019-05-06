@@ -36,7 +36,7 @@ class SafeOperation(Enum):
 
 
 class Safe:
-    def __init__(self, address: str, ethereum_client: EthereumClient = EthereumClient()):
+    def __init__(self, address: str, ethereum_client: EthereumClient):
         assert Web3.isChecksumAddress(address), '%s is not a valid address' % address
 
         self.ethereum_client = ethereum_client

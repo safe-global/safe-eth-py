@@ -15,7 +15,7 @@ logger = getLogger(__name__)
 class ProxyFactory:
     proxy_runtime_code: bytes = None  # Cache runtime code
 
-    def __init__(self, address: str, ethereum_client: EthereumClient = EthereumClient()):
+    def __init__(self, address: str, ethereum_client: EthereumClient):
         assert Web3.isChecksumAddress(address), \
             '%s proxy factory address not valid' % address
 
