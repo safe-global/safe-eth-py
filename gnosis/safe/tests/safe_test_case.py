@@ -1,6 +1,7 @@
-from django.conf import settings
 import logging
 from typing import List
+
+from django.conf import settings
 
 from eth_account import Account
 

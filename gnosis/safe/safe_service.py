@@ -15,10 +15,10 @@ from gnosis.eth.contracts import (get_old_safe_contract,
                                   get_safe_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumClientProvider
 from gnosis.eth.utils import get_eth_address_with_key
-from .safe import SafeCreationEstimate, SafeOperation
 
 from .exceptions import (CannotEstimateGas, InvalidChecksumAddress,
                          InvalidPaymentToken)
+from .safe import SafeCreationEstimate, SafeOperation
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx

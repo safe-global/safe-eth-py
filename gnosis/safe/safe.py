@@ -13,12 +13,12 @@ from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
                                   get_old_safe_contract, get_safe_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
+from gnosis.safe.proxy_factory import ProxyFactory
 
 from .exceptions import CannotEstimateGas, InvalidPaymentToken
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
-
 
 logger = getLogger(__name__)
 
@@ -45,9 +45,19 @@ class Safe:
 
     @staticmethod
     def create(ethereum_client: EthereumClient, deployer_account: LocalAccount,
-               master_copy: str, owners: List[str], threshold: int,
+               master_copy_address: str, owners: List[str], threshold: int,
+               proxy_factory_address: Optional[str] = None,
                payment_token: str = NULL_ADDRESS, payment: int = 0,
                payment_receiver: str = NULL_ADDRESS) -> EthereumTxSent:
+
+        """
+        Deploy new Safe proxy pointing to the specified `master_copy` address and configured
+        with the provided `owners` and `threshold`. By default, payment for the deployer of the tx will be `0`.
+        If `proxy_factory_address` is set deployment will be done using the proxy factory instead of calling
+        the `constructor` of a new `DelegatedProxy`
+        Using `proxy_factory_address` is recommended, as it takes less gas.
+        (Testing with `Ganache` and 1 owner 261534 without proxy vs 229022 with Proxy)
+        """
 
         assert owners, 'At least one owner must be set'
         assert threshold >= len(owners), 'Threshold=%d must be >= %d' % (threshold, len(owners))
@@ -62,8 +72,14 @@ class Safe:
             payment_receiver
         ).buildTransaction({'gas': 1, 'gasPrice': 1})['data']
 
+        if proxy_factory_address:
+            proxy_factory = ProxyFactory(proxy_factory_address, ethereum_client)
+            return proxy_factory.deploy_proxy_contract(deployer_account, master_copy_address, initializer=initializer)
+
         proxy_contract = get_delegate_constructor_proxy_contract(ethereum_client.w3)
-        tx = proxy_contract.constructor(master_copy, initializer).buildTransaction({'from': deployer_account.address})
+        tx = proxy_contract.constructor(master_copy_address,
+                                        initializer).buildTransaction({'from': deployer_account.address})
+        tx['gas'] = tx['gas'] * 100000
         tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
@@ -192,6 +208,10 @@ class Safe:
                               payment_receiver: Optional[str] = None,  # If none, it will be `tx.origin`
                               payment_token_eth_value: float = 1.0,
                               fixed_creation_cost: Optional[int] = None) -> SafeCreate2Tx:
+        """
+        Prepare safe proxy deployment for being relayed. It calculates and sets the costs of deployment to be returned
+        to the sender of the tx. If you are an advanced user you may prefer to use `create` function
+        """
         try:
             safe_creation_tx = SafeCreate2TxBuilder(w3=ethereum_client.w3,
                                                     master_copy_address=master_copy_address,
@@ -209,15 +229,14 @@ class Safe:
 
         return safe_creation_tx
 
-    def check_funds_for_tx_gas(self, safe_tx_gas: int, data_gas: int, gas_price: int,
-                               gas_token: str) -> bool:
+    def check_funds_for_tx_gas(self, safe_tx_gas: int, data_gas: int, gas_price: int, gas_token: str) -> bool:
         """
         Check safe has enough funds to pay for a tx
-        :param safe_tx_gas: Start gas
+        :param safe_tx_gas: Safe tx gas
         :param data_gas: Data gas
         :param gas_price: Gas Price
         :param gas_token: Gas Token, to use token instead of ether for the gas
-        :return: True if enough funds, False, otherwise
+        :return: `True` if enough funds, `False` otherwise
         """
         if gas_token == NULL_ADDRESS:
             balance = self.ethereum_client.get_balance(self.address)
@@ -255,7 +274,7 @@ class Safe:
         signature_gas = threshold * (1 * 68 + 2 * 32 * 68 + ecrecover_gas)
 
         safe_tx_gas = estimate_tx_gas
-        data_gas = 0
+        base_gas = 0
         gas_price = 1
         gas_token = gas_token or NULL_ADDRESS
         signatures = b''
@@ -266,7 +285,7 @@ class Safe:
             data,
             operation,
             safe_tx_gas,
-            data_gas,
+            base_gas,
             gas_price,
             gas_token,
             refund_receiver,
@@ -282,18 +301,19 @@ class Safe:
         else:
             nonce_gas = 5000
 
+        # Keccak costs for the hash of the safe tx
         hash_generation_gas = 1500
-        data_gas = signature_gas + self.ethereum_client.estimate_data_gas(data) + nonce_gas + hash_generation_gas
+
+        base_gas = signature_gas + self.ethereum_client.estimate_data_gas(data) + nonce_gas + hash_generation_gas
 
         # Add additional gas costs
-        if data_gas > 65536:
-            data_gas += 64
+        if base_gas > 65536:
+            base_gas += 64
         else:
-            data_gas += 128
+            base_gas += 128
 
-        data_gas += 32000  # Base tx costs, transfer costs...
-
-        return data_gas
+        base_gas += 32000  # Base tx costs, transfer costs...
+        return base_gas
 
     def estimate_tx_gas_with_safe(self, to: str, value: int, data: bytes, operation: int,
                                   block_identifier='pending') -> int:
@@ -313,15 +333,15 @@ class Safe:
             # 32 bytes - length
             # Last 32 bytes - value of revert (if everything went right)
             gas_estimation_offset = 4 + 32 + 32
-            estimated_gas = result[gas_estimation_offset:]
+            gas_estimation = result[gas_estimation_offset:]
 
             # Estimated gas must be 32 bytes
-            if len(estimated_gas) != 32:
+            if len(gas_estimation) != 32:
                 logger.warning('Safe=%s Problem estimating gas, returned value is %s for tx=%s',
                                safe_address, result.hex(), tx)
                 raise CannotEstimateGas('Received %s for tx=%s' % (result.hex(), tx))
 
-            return int(estimated_gas.hex(), 16)
+            return int(gas_estimation.hex(), 16)
 
         # Add 10k, else we will fail in case of nested calls
         try:
@@ -335,8 +355,8 @@ class Safe:
                 'gas': int(1e7),
                 'gasPrice': 0,
             })
-            # If we build the tx web3 will not try to decode it for us
-            # Ganache 6.3.0 and Geth are working like this
+            # If we build the tx Web3 will not try to decode it for us
+            # Ganache >= 6.3.0 and Geth are working like this
             result: HexBytes = self.w3.eth.call(tx, block_identifier=block_identifier)
             return parse_revert_data(result)
         except ValueError as exc:  # Parity
@@ -418,9 +438,6 @@ class Safe:
 
     def get_contract(self):
         return get_safe_contract(self.w3, address=self.address)
-
-    def get_refund_receiver(self) -> str:
-        return NULL_ADDRESS
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)
