@@ -15,7 +15,7 @@ from web3.providers import AutoProvider
 from web3.utils.threads import Timeout
 
 from .constants import NULL_ADDRESS
-from .contracts import get_erc20_contract, get_example_erc20_contract
+from .contracts import get_erc20_contract
 
 logger = getLogger(__name__)
 
@@ -133,7 +133,7 @@ class Erc20Manager:
         :return: Erc20_Info
         """
         # We use the `example erc20` as the `erc20 interface` doesn't have `name`, `symbol` nor `decimals`
-        erc20 = get_example_erc20_contract(self.w3, erc20_address)
+        erc20 = get_erc20_contract(self.w3, erc20_address)
         name = erc20.functions.name().call()
         symbol = erc20.functions.symbol().call()
         decimals = erc20.functions.decimals().call()
