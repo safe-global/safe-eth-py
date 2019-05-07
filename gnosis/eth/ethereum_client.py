@@ -2,6 +2,7 @@ from functools import wraps
 from logging import getLogger
 from typing import Dict, List, NamedTuple, Optional, Union
 
+import eth_abi
 import requests
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -138,13 +139,66 @@ class Erc20Manager:
         decimals = erc20.functions.decimals().call()
         return Erc20_Info(name, symbol, decimals)
 
+    def get_total_transfer_history(self, address: str, from_block: int = 0,
+                                   to_block: Optional[int] = None,
+                                   token_address: Optional[str] = None) -> List[Dict[str, any]]:
+        """
+        Get events for erc20 transfers from and to an `address`. We decode it manually
+        An example of an event:
+        {'logIndex': 0,
+         'transactionIndex': 0,
+         'transactionHash': HexBytes('0x4d0f25313603e554e3b040667f7f391982babbd195c7ae57a8c84048189f7794'),
+         'blockHash': HexBytes('0x90fa67d848a0eaf3be625235dae28815389f5292d4465c48d1139f0c207f8d42'),
+         'blockNumber': 791,
+         'address': '0xf7d0Bd47BF3214494E7F5B40E392A25cb4788620',
+         'data': '0x000000000000000000000000000000000000000000000000002001f716742000',
+         'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+          HexBytes('0x000000000000000000000000f5984365fca2e3bc7d2e020abb2c701df9070eb7'),
+          HexBytes('0x0000000000000000000000001df62f291b2e969fb0849d99d9ce41e2f137006e')],
+         'type': 'mined'
+         'args': {'from': '0xf5984365FcA2e3bc7D2E020AbB2c701DF9070eB7',
+                  'to': '0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e',
+                  'value': 9009360000000000
+                 }
+        }
+        :param address: Search events from and to this address
+        :param from_block: Block to start querying from
+        :param to_block: Block to stop querying from
+        :param token_address: Address of the token
+        :return: List of events sorted by blockNumber
+        """
+        # keccak('Transfer(address,address,uint256)')
+        # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        address_encoded = HexBytes(eth_abi.encode_single('address', address)).hex()
+        # Topics for transfer `to` and `from` an address
+        topics_from = [topic_0, address_encoded]
+        topics_to = [topic_0, None, address_encoded]
+        parameters = {'fromBlock': from_block}
+        if to_block:
+            parameters['toBlock'] = to_block
+        if token_address:
+            parameters['address'] = token_address
+
+        all_events = []
+        for topics in (topics_to, topics_from):
+            parameters['topics'] = topics
+            all_events.extend(self.slow_w3.eth.getLogs(parameters))
+        for event in all_events:
+            value = eth_abi.decode_single('uint256', HexBytes(event['data']))
+            _from, to = [Web3.toChecksumAddress(address) for address
+                         in eth_abi.decode_abi(['address', 'address'], b''.join(event['topics'][1:]))]
+            event['args'] = {'from': _from, 'to': to, 'value': value}
+        all_events.sort(key=lambda x: x['blockNumber'])
+        return all_events
+
     def get_transfer_history(self, from_block: int, to_block: Optional[int] = None,
                              from_address: Optional[str] = None, to_address: Optional[str] = None,
                              token_address: Optional[str] = None) -> List[Dict[str, any]]:
         """
         Get events for erc20 transfers. At least one of `from_address`, `to_address` or `token_address` must be
         defined
-        An example of event:
+        An example of decoded event:
         {
             "args": {
                 "from": "0x1Ce67Ea59377A163D47DFFc9BaAB99423BE6EcF1",
@@ -164,12 +218,12 @@ class Erc20Manager:
         :param from_address: Address sending the erc20 transfer
         :param to_address: Address receiving the erc20 transfer
         :param token_address: Address of the token
-        :return: List of events
+        :return: List of events (decoded)
         :throws: ReadTimeout
         """
         assert from_address or to_address or token_address, 'At least one parameter must be provided'
 
-        erc20 = get_erc20_contract(self.w3)
+        erc20 = get_erc20_contract(self.slow_w3)
 
         argument_filters = {}
         if from_address:
