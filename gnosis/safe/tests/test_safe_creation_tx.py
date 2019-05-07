@@ -10,7 +10,7 @@ from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
 from ..safe_creation_tx import SafeCreationTx
-from .test_safe_service import SafeTestCaseMixin
+from .safe_test_case import SafeTestCaseMixin
 from .utils import generate_valid_s
 
 logger = logging.getLogger(__name__)

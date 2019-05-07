@@ -13,7 +13,7 @@ from .utils import generate_salt_nonce
 logger = logging.getLogger(__name__)
 
 
-class TestSafeService(TestCase, SafeTestCaseMixin):
+class TestProxyFactory(TestCase, SafeTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()
@@ -23,13 +23,12 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         proxy_contract_address = self.deploy_test_safe().safe_address
         self.assertTrue(self.proxy_factory.check_proxy_code(proxy_contract_address))
 
-        safe_contract_address = self.safe_service.deploy_master_contract(deployer_private_key=
-                                                                         self.ethereum_test_account.privateKey)
-        self.assertFalse(self.proxy_factory.check_proxy_code(safe_contract_address))
+        ethereum_tx_sent = Safe.deploy_master_contract(self.ethereum_client, self.ethereum_test_account)
+        self.assertFalse(self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address))
 
-        proxy_contract_address = self.safe_service.deploy_proxy_contract(deployer_private_key=
-                                                                         self.ethereum_test_account.privateKey)
-        self.assertTrue(self.proxy_factory.check_proxy_code(proxy_contract_address))
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(self.ethereum_test_account,
+                                                                    Account.create().address)
+        self.assertTrue(self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address))
 
     def test_deploy_proxy_contract(self):
         s = 15
@@ -84,3 +83,6 @@ class TestSafeService(TestCase, SafeTestCaseMixin):
         self.assertEqual(ethereum_tx_sent.contract_address, safe_create2_tx.safe_address)
         self.assertEqual(set(safe.retrieve_owners()), set(owners))
         self.assertEqual(safe.retrieve_master_copy_address(), safe_create2_tx.master_copy_address)
+
+    def test_get_proxy_runtime_code(self):
+        self.assertGreater(len(self.proxy_factory.get_proxy_runtime_code()), 4)

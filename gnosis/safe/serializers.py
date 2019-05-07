@@ -5,7 +5,7 @@ from gnosis.eth.constants import *
 from gnosis.eth.django.serializers import (EthereumAddressField,
                                            HexadecimalField)
 
-from .safe_service import SafeOperation
+from .safe import SafeOperation
 
 
 class SafeSignatureSerializer(serializers.Serializer):

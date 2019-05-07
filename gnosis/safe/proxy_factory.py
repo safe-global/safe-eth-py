@@ -69,7 +69,7 @@ class ProxyFactory:
         :param gas_price: Gas Price
         :return: EthereumTxSent
         """
-        proxy_factory_contract = get_proxy_factory_contract(self.w3, self.address)
+        proxy_factory_contract = self.get_contract()
         create_proxy_fn = proxy_factory_contract.functions.createProxy(master_copy, initializer)
         contract_address = create_proxy_fn.call()
 
@@ -102,7 +102,7 @@ class ProxyFactory:
         :param gas_price: Gas Price
         :return: Tuple(tx-hash, tx, deployed contract address)
         """
-        proxy_factory_contract = get_proxy_factory_contract(self.w3, self.address)
+        proxy_factory_contract = self.get_contract()
         create_proxy_fn = proxy_factory_contract.functions.createProxyWithNonce(master_copy, initializer, salt_nonce)
         contract_address = create_proxy_fn.call()
 
@@ -121,9 +121,10 @@ class ProxyFactory:
         tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
         return EthereumTxSent(tx_hash, tx, contract_address)
 
+    def get_contract(self):
+        return get_proxy_factory_contract(self.ethereum_client.w3, self.address)
+
     def get_proxy_runtime_code(self):
         if not self.proxy_runtime_code:
-            self.proxy_runtime_code = get_proxy_factory_contract(self.w3,
-                                                                 self.address
-                                                                 ).functions.proxyRuntimeCode().call()
+            self.proxy_runtime_code = self.get_contract().functions.proxyRuntimeCode().call()
         return self.proxy_runtime_code

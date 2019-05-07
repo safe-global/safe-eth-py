@@ -174,8 +174,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
             'value': safe_balance
         }, funder_account)
 
-        sent_tx_hash, tx = self.safe_service.send_multisig_tx(
-            my_safe_address,
+        ethereum_tx_sent = safe.send_multisig_tx(
             to,
             value,
             data,
@@ -190,7 +189,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
             tx_gas_price=self.gas_price,
         )
 
-        tx_receipt = w3.eth.waitForTransactionReceipt(sent_tx_hash)
+        tx_receipt = w3.eth.waitForTransactionReceipt(ethereum_tx_sent.tx_hash)
         self.assertTrue(tx_receipt['status'])
         owner0_new_balance = w3.eth.getBalance(owners[0])
         gas_used = tx_receipt['gasUsed']
@@ -200,7 +199,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         # Estimated payment will be bigger, because it uses all the tx gas. Real payment only uses gas left
         # in the point of calculation of the payment, so it will be slightly lower
         self.assertTrue(estimated_payment > real_payment > 0)
-        self.assertTrue(owner0_new_balance > owner0_balance - tx['gas'] * self.gas_price)
+        self.assertTrue(owner0_new_balance > owner0_balance - ethereum_tx_sent.tx['gas'] * self.gas_price)
         self.assertEqual(safe.retrieve_nonce(), 1)
 
     def test_send_multisig_tx_gas_token(self):
@@ -216,6 +215,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
 
         safe_creation = self.deploy_test_safe(threshold=threshold, owners=[owner], initial_funding_wei=safe_balance)
         my_safe_address = safe_creation.safe_address
+        safe = Safe(my_safe_address, self.ethereum_client)
 
         # Give erc20 tokens to the funder
         amount_token = int(1e18)
@@ -235,8 +235,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         refund_receiver = NULL_ADDRESS
 
         with self.assertRaises(CouldNotPayGasWithToken):
-            self.safe_service.send_multisig_tx(
-                my_safe_address,
+            safe.send_multisig_tx(
                 to,
                 value,
                 data,
@@ -255,8 +254,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         self.ethereum_client.erc20.send_tokens(my_safe_address, amount_token, erc20_contract.address,
                                                funder_account.privateKey)
 
-        self.safe_service.send_multisig_tx(
-            my_safe_address,
+        safe.send_multisig_tx(
             to,
             value,
             data,
@@ -311,6 +309,13 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         safe_tx_gas = safe.estimate_tx_gas(to, value, data, operation)
         self.assertGreater(safe_tx_gas, 0)
 
+    def test_estimate_tx_operational_gas(self):
+        for threshold in range(2, 5):
+            safe_creation = self.deploy_test_safe(threshold=threshold, number_owners=6)
+            safe = Safe(safe_creation.safe_address, self.ethereum_client)
+            tx_signature_gas_estimation = safe.estimate_tx_operational_gas(0)
+            self.assertGreaterEqual(tx_signature_gas_estimation, 20000)
+
     def test_retrieve_code(self):
         self.assertEqual(Safe(NULL_ADDRESS, self.ethereum_client).retrieve_code(), HexBytes('0x'))
         self.assertIsNotNone(Safe(self.deploy_test_safe().safe_address,
@@ -319,7 +324,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
     def test_retrieve_info(self):
         safe_creation = self.deploy_test_safe()
         safe = Safe(safe_creation.safe_address, self.ethereum_client)
-        self.assertEqual(safe.retrieve_master_copy_address(), self.safe_service.master_copy_address)
+        self.assertEqual(safe.retrieve_master_copy_address(), self.safe_contract_address)
         self.assertEqual(safe.retrieve_nonce(), 0)
         self.assertEqual(set(safe.retrieve_owners()), set(safe_creation.owners))
         self.assertEqual(safe.retrieve_threshold(), safe_creation.threshold)
@@ -354,6 +359,12 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         safe_tx.sign(self.ethereum_test_account.privateKey)
         safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
         self.assertTrue(safe.retrieve_is_message_signed(message_hash))
+
+    def test_retrieve_is_owner(self):
+        safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
+        safe = Safe(safe_creation.safe_address, self.ethereum_client)
+        self.assertTrue(safe.retrieve_is_owner(self.ethereum_test_account.address))
+        self.assertFalse(safe.retrieve_is_owner(Account.create().address))
 
     def test_token_balance(self):
         funder_account = self.ethereum_test_account

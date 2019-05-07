@@ -5,5 +5,4 @@ from .exceptions import (CannotEstimateGas, CouldNotPayGasWithEther,
                          InvalidSignaturesProvided, SafeServiceException,
                          SignatureNotProvidedByOwner)
 from .proxy_factory import ProxyFactory
-from .safe import Safe, SafeTx
-from .safe_service import SafeOperation, SafeService, SafeServiceProvider
+from .safe import Safe, SafeOperation, SafeTx
