@@ -66,10 +66,10 @@ Contributors
     :alt: Coveralls
 
 .. |python| image:: https://img.shields.io/badge/Python-3.6-blue.svg
-    :alt: Python 3.6
+    :alt: Python 3.7
 
 .. |django| image:: https://img.shields.io/badge/Django-2-blue.svg
-    :alt: Django 2
+    :alt: Django 2.2
 
 .. |pipy| image:: https://badge.fury.io/py/gnosis-py.svg
     :target: https://badge.fury.io/py/gnosis-py
