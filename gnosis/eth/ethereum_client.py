@@ -139,7 +139,7 @@ class Erc20Manager:
         decimals = erc20.functions.decimals().call()
         return Erc20_Info(name, symbol, decimals)
 
-    def get_total_transfer_history(self, address: str, from_block: int = 0,
+    def get_total_transfer_history(self, addresses: List[str], from_block: int = 0,
                                    to_block: Optional[int] = None,
                                    token_address: Optional[str] = None) -> List[Dict[str, any]]:
         """
@@ -170,10 +170,10 @@ class Erc20Manager:
         # keccak('Transfer(address,address,uint256)')
         # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
         topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-        address_encoded = HexBytes(eth_abi.encode_single('address', address)).hex()
+        addresses_encoded = [HexBytes(eth_abi.encode_single('address', address)).hex() for address in addresses]
         # Topics for transfer `to` and `from` an address
-        topics_from = [topic_0, address_encoded]
-        topics_to = [topic_0, None, address_encoded]
+        topics_from = [topic_0, addresses_encoded]
+        topics_to = [topic_0, None, addresses_encoded]
         parameters = {'fromBlock': from_block}
         if to_block:
             parameters['toBlock'] = to_block

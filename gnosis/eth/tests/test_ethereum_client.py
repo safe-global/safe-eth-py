@@ -31,26 +31,41 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         owner_account = self.create_account(initial_ether=0.01)
         account_1 = self.create_account(initial_ether=0.01)
         account_2 = self.create_account(initial_ether=0.01)
+        account_3 = self.create_account(initial_ether=0.01)
         erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
+        # `owner` sends `amount // 2` to `account_1` and `account_3`
         self.send_tx(erc20_contract.functions.transfer(account_1.address,
                                                        amount // 2).buildTransaction({'from': owner_account.address}),
                      owner_account)
-        logs = self.ethereum_client.erc20.get_total_transfer_history(account_1.address)
+        self.send_tx(erc20_contract.functions.transfer(account_3.address,
+                                                       amount // 2).buildTransaction({'from': owner_account.address}),
+                     owner_account)
+        logs = self.ethereum_client.erc20.get_total_transfer_history([account_1.address])
         self.assertEqual(len(logs), 1)
         self.assertEqual(logs[0]['args']['from'], owner_account.address)
         self.assertEqual(logs[0]['args']['to'], account_1.address)
         self.assertEqual(logs[0]['args']['value'], amount // 2)
         log_0_block_number = logs[0]['blockNumber']
 
+        # `account1` sends `amount // 2` (all) to `account_2`
         self.send_tx(erc20_contract.functions.transfer(account_2.address,
                                                        amount // 2).buildTransaction({'from': account_1.address}),
                      account_1)
-        logs = self.ethereum_client.erc20.get_total_transfer_history(account_1.address)
+        logs = self.ethereum_client.erc20.get_total_transfer_history([account_1.address])
         self.assertEqual(len(logs), 2)
         self.assertEqual(logs[1]['args']['from'], account_1.address)
         self.assertEqual(logs[1]['args']['to'], account_2.address)
         self.assertEqual(logs[1]['args']['value'], amount // 2)
         self.assertGreaterEqual(logs[1]['blockNumber'], log_0_block_number)
+
+        logs = self.ethereum_client.erc20.get_total_transfer_history([account_3.address])
+        self.assertEqual(len(logs), 1)
+        self.assertEqual(logs[0]['args']['from'], owner_account.address)
+        self.assertEqual(logs[0]['args']['to'], account_3.address)
+        self.assertEqual(logs[0]['args']['value'], amount // 2)
+
+        logs = self.ethereum_client.erc20.get_total_transfer_history([account_2.address, account_3.address])
+        self.assertEqual(len(logs), 2)
 
     def test_get_transfer_history(self):
         amount = 1000
