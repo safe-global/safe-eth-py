@@ -185,6 +185,10 @@ class Erc20Manager:
             parameters['topics'] = topics
             all_events.extend(self.slow_w3.eth.getLogs(parameters))
         for event in all_events:
+            if len(topics) != 2:
+                # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
+                # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+                continue
             value = eth_abi.decode_single('uint256', HexBytes(event['data']))
             _from, to = [Web3.toChecksumAddress(address) for address
                          in eth_abi.decode_abi(['address', 'address'], b''.join(event['topics'][1:]))]

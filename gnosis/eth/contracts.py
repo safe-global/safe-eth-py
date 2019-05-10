@@ -22,6 +22,7 @@ GNOSIS_SAFE_INTERFACE = load_contract_interface('GnosisSafe.json')
 OLD_GNOSIS_SAFE_INTERFACE = load_contract_interface('OldGnosisSafe.json')
 ERC20_INTERFACE = load_contract_interface('ERC20.json')
 ERC20_EXAMPLE_INTERFACE = load_contract_interface('ERC20TestToken.json')
+ERC721_INTERFACE = load_contract_interface('ERC721.json')
 DELEGATE_CONSTRUCTOR_PROXY_INTERFACE = load_contract_interface('DelegateConstructorProxy.json')
 PAYING_PROXY_INTERFACE = load_contract_interface('PayingProxy.json')
 PROXY_FACTORY_INTERFACE = load_contract_interface('ProxyFactory2.json')
@@ -82,6 +83,12 @@ def get_example_erc20_contract(w3: Web3, address=None):
     return w3.eth.contract(address,
                            abi=ERC20_EXAMPLE_INTERFACE['abi'],
                            bytecode=ERC20_EXAMPLE_INTERFACE['bytecode'])
+
+
+def get_erc721_contract(w3: Web3, address=None):
+    return w3.eth.contract(address,
+                           abi=ERC721_INTERFACE['abi'],
+                           bytecode=ERC721_INTERFACE['bytecode'])
 
 
 def get_delegate_constructor_proxy_contract(w3: Web3, address=None):
