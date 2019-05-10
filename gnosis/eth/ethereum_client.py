@@ -117,6 +117,16 @@ class Erc20Manager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
 
+    def decode_erc20_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, any]]:
+        if len(topics) != 3:
+            # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
+            # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+            return
+        value = eth_abi.decode_single('uint256', HexBytes(data))
+        _from, to = [Web3.toChecksumAddress(address) for address
+                     in eth_abi.decode_abi(['address', 'address'], b''.join(topics[1:]))]
+        return {'from': _from, 'to': to, 'value': value}
+
     def get_balance(self, address: str, erc20_address: str) -> int:
         """
         Get balance of address for `erc20_address`
@@ -161,7 +171,7 @@ class Erc20Manager:
                   'value': 9009360000000000
                  }
         }
-        :param address: Search events from and to this address
+        :param addresses: Search events `from` and `to` these `addresses`
         :param from_block: Block to start querying from
         :param to_block: Block to stop querying from
         :param token_address: Address of the token
@@ -181,25 +191,25 @@ class Erc20Manager:
             parameters['address'] = token_address
 
         all_events = []
+        # Do the request to `eth_getLogs`
         for topics in (topics_to, topics_from):
             parameters['topics'] = topics
             all_events.extend(self.slow_w3.eth.getLogs(parameters))
+
+        # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
+        erc20_events = []
         for event in all_events:
-            if len(topics) != 2:
-                # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
-                # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-                continue
-            value = eth_abi.decode_single('uint256', HexBytes(event['data']))
-            _from, to = [Web3.toChecksumAddress(address) for address
-                         in eth_abi.decode_abi(['address', 'address'], b''.join(event['topics'][1:]))]
-            event['args'] = {'from': _from, 'to': to, 'value': value}
-        all_events.sort(key=lambda x: x['blockNumber'])
-        return all_events
+            event['args'] = self.decode_erc20_log(event['data'], event['topics'])
+            if event['args']:
+                erc20_events.append(event)
+        erc20_events.sort(key=lambda x: x['blockNumber'])
+        return erc20_events
 
     def get_transfer_history(self, from_block: int, to_block: Optional[int] = None,
                              from_address: Optional[str] = None, to_address: Optional[str] = None,
                              token_address: Optional[str] = None) -> List[Dict[str, any]]:
         """
+        DON'T USE, it will fail in some cases until they fix https://github.com/ethereum/web3.py/issues/1351
         Get events for erc20 transfers. At least one of `from_address`, `to_address` or `token_address` must be
         defined
         An example of decoded event:
