@@ -112,20 +112,51 @@ class EthereumClientProvider:
 
 
 class Erc20Manager:
+    # keccak('Transfer(address,address,uint256)')
+    # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+    TRANSFER_TOPIC = HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')
+
     def __init__(self, ethereum_client, slow_provider_timeout: int):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
 
-    def decode_erc20_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, any]]:
-        if len(topics) != 3:
+    def decode_logs(self, logs: Dict[str, any]):
+        decoded_logs = []
+        for log in logs:
+            decoded = self._decode_erc20_or_erc721_log(log.data, log.topics)
+            if decoded:
+                log_copy = dict(log)
+                log_copy['args'] = decoded
+                decoded_logs.append(log_copy)
+        return decoded_logs
+
+    def _decode_erc20_or_erc721_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, any]]:
+        decoded = self._decode_erc20_log(data, topics)
+        if not decoded:
+            decoded = self._decode_erc721_log(topics)
+        return decoded
+
+    def _decode_erc20_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, any]]:
+        if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 3:
+            value = eth_abi.decode_single('uint256', HexBytes(data))
+            _from, to = [Web3.toChecksumAddress(address) for address
+                         in eth_abi.decode_abi(['address', 'address'], b''.join(topics[1:]))]
+            return {'from': _from, 'to': to, 'value': value}
+        else:
             # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
             # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
             return
-        value = eth_abi.decode_single('uint256', HexBytes(data))
-        _from, to = [Web3.toChecksumAddress(address) for address
-                     in eth_abi.decode_abi(['address', 'address'], b''.join(topics[1:]))]
-        return {'from': _from, 'to': to, 'value': value}
+
+    def _decode_erc721_log(self, topics: List[bytes]) -> Optional[Dict[str, any]]:
+        if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 4:
+            _from, to, token_id = eth_abi.decode_abi(['address', 'address', 'uint256'], b''.join(topics[1:]))
+            _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
+            return {'from': _from, 'to': to, 'tokenId': token_id}
+        else:
+            # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
+            # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+            return
 
     def get_balance(self, address: str, erc20_address: str) -> int:
         """
@@ -153,7 +184,7 @@ class Erc20Manager:
                                    to_block: Optional[int] = None,
                                    token_address: Optional[str] = None) -> List[Dict[str, any]]:
         """
-        Get events for erc20 transfers from and to an `address`. We decode it manually
+        Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually
         An example of an event:
         {'logIndex': 0,
          'transactionIndex': 0,
@@ -177,9 +208,7 @@ class Erc20Manager:
         :param token_address: Address of the token
         :return: List of events sorted by blockNumber
         """
-        # keccak('Transfer(address,address,uint256)')
-        # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
-        topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        topic_0 = self.TRANSFER_TOPIC.hex()
         addresses_encoded = [HexBytes(eth_abi.encode_single('address', address)).hex() for address in addresses]
         # Topics for transfer `to` and `from` an address
         topics_from = [topic_0, addresses_encoded]
@@ -199,7 +228,7 @@ class Erc20Manager:
         # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
         erc20_events = []
         for event in all_events:
-            event['args'] = self.decode_erc20_log(event['data'], event['topics'])
+            event['args'] = self._decode_erc20_or_erc721_log(event['data'], event['topics'])
             if event['args']:
                 erc20_events.append(event)
         erc20_events.sort(key=lambda x: x['blockNumber'])

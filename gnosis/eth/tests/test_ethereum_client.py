@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
+from web3.datastructures import AttributeDict
 
 from ..ethereum_client import (EthereumClientProvider, EtherLimitExceeded,
                                FromAddressNotFound, InsufficientFunds,
@@ -14,6 +15,123 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()
+
+    def test_decode_erc20_or_erc721_log(self):
+        logs = [AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
+                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27')],
+                               'data': '0x000000000000000000000000000000000000000000000003aa2371d700680000',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 13,
+                               'removed': False}),
+                AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
+                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                          HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e')],
+                               'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 14,
+                               'removed': False}),
+                AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
+                               'topics': [HexBytes('0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'),
+                                          HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e'),
+                                          HexBytes('0x00000000000000000000000080cdad25de6b439e866805b2dc6808d23ff57b5d')],
+                               'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 15,
+                               'removed': False}),
+                AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
+                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                          HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e'),
+                                          HexBytes('0x00000000000000000000000080cdad25de6b439e866805b2dc6808d23ff57b5d')],
+                               'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 16,
+                               'removed': False}),
+                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
+                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                          HexBytes('0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335')],
+                               'data': '0x',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 17,
+                               'removed': False}),
+                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
+                               'topics': [HexBytes('0x2114851a3e2a54429989f46c1ab0743e37ded205d9bbdfd85635aed5bd595a06'),
+                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                          HexBytes('0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335')],
+                               'data': '0x0000000000000000000000000000000000000000000000000000000000000001',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 18,
+                               'removed': False}),
+                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
+                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                          HexBytes('0xe37edda38a308a6fae15178579aab28bc7f9e46e52fde30c3a46b82b7461aa08')],
+                               'data': '0x',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 19,
+                               'removed': False}),
+                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
+                               'topics': [HexBytes('0x2114851a3e2a54429989f46c1ab0743e37ded205d9bbdfd85635aed5bd595a06'),
+                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
+                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                          HexBytes('0xe37edda38a308a6fae15178579aab28bc7f9e46e52fde30c3a46b82b7461aa08')],
+                               'data': '0x0000000000000000000000000000000000000000000000000000000000000001',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 20,
+                               'removed': False}),
+                AttributeDict({'address': '0x64DA772DD84965f0Ee58174941d78a9DfBccca2e',
+                               'topics': [HexBytes('0x3c8fbbba495ddb1296f967c80627bcca81b77be0b349ed8ae5f604365c22e9c7')],
+                               'data': '0x6e4f8d9f6517dfa28f202b2e2582943d1bd567dfb0c4a774989715c29e4aed180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000039c4bfa00b6edeccdd00fa9589e1be76de63e862000000000000000000000000000000000000000000000003aa2371d7006800000000000000000000000000000000000000000000000000000000000000000001',
+                               'blockNumber': 4357126,
+                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                               'transactionIndex': 14,
+                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                               'logIndex': 21,
+                               'removed': False})]
+
+        # TODO Test with ganache
+        decoded_logs = self.ethereum_client.erc20.decode_logs(logs)
+        self.assertEqual(len(decoded_logs), 5)
+        self.assertEqual(len([event for event in decoded_logs if 'tokenId' in event['args']]), 2)
+        self.assertEqual(len([event for event in decoded_logs if 'value' in event['args']]), 3)
+        self.assertEqual(decoded_logs[1]['args']['value'], 30000000000000000000)
+        self.assertEqual(decoded_logs[1]['args']['from'], '0x94E01661eBaef430fE862f958c03200b0F483f27')
+        self.assertEqual(decoded_logs[1]['args']['to'], '0x64DA772DD84965f0Ee58174941d78a9DfBccca2e')
+        self.assertEqual(decoded_logs[3]['args']['tokenId'],
+                         92344574081811136966607054691835999266725413506859602442775390826469350798133)
+        self.assertEqual(decoded_logs[3]['args']['from'], '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47')
+        self.assertEqual(decoded_logs[3]['args']['to'], '0x94E01661eBaef430fE862f958c03200b0F483f27')
+        self.assertEqual(decoded_logs[1]['blockNumber'], 4357126)
 
     def test_get_balance(self):
         amount = 1000
