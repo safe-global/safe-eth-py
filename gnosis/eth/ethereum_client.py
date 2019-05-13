@@ -239,7 +239,7 @@ class Erc20Manager:
                              token_address: Optional[str] = None) -> List[Dict[str, any]]:
         """
         DON'T USE, it will fail in some cases until they fix https://github.com/ethereum/web3.py/issues/1351
-        Get events for erc20 transfers. At least one of `from_address`, `to_address` or `token_address` must be
+        Get events for erc20/erc721 transfers. At least one of `from_address`, `to_address` or `token_address` must be
         defined
         An example of decoded event:
         {
