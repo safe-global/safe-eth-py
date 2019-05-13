@@ -14,7 +14,7 @@ from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
 from web3.utils.threads import Timeout
 
-from .constants import NULL_ADDRESS
+from .constants import NULL_ADDRESS, ERC20_721_TRANSFER_TOPIC
 from .contracts import get_erc20_contract
 
 logger = getLogger(__name__)
@@ -114,7 +114,7 @@ class EthereumClientProvider:
 class Erc20Manager:
     # keccak('Transfer(address,address,uint256)')
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
-    TRANSFER_TOPIC = HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')
+    TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
 
     def __init__(self, ethereum_client, slow_provider_timeout: int):
         self.ethereum_client = ethereum_client
