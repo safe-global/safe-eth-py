@@ -155,7 +155,7 @@ class Safe:
                                           payment_token_eth_value=payment_token_eth_value,
                                           fixed_creation_cost=fixed_creation_cost)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment,
-                                    None if payment_token == NULL_ADDRESS else payment_token)
+                                    safe_creation_tx.payment_token)
 
     @staticmethod
     def estimate_safe_creation_2(ethereum_client: EthereumClient,
@@ -179,7 +179,7 @@ class Safe:
                                                         payment_token_eth_value=payment_token_eth_value,
                                                         fixed_creation_cost=fixed_creation_cost)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment,
-                                    None if payment_token == NULL_ADDRESS else payment_token)
+                                    safe_creation_tx.payment_token)
 
     @staticmethod
     def build_safe_creation_tx(ethereum_client: EthereumClient, master_copy_old_address: str, s: int, owners: List[str],

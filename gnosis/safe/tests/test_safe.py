@@ -53,7 +53,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         self.assertGreater(safe_creation_estimate.gas_price, 0)
         self.assertGreater(safe_creation_estimate.gas, 0)
         self.assertGreater(safe_creation_estimate.payment, 0)
-        self.assertIsNone(safe_creation_estimate.payment_token)
+        self.assertEqual(safe_creation_estimate.payment_token, payment_token)
 
     def test_estimate_safe_creation_2(self):
         number_owners = 4
@@ -65,7 +65,7 @@ class TestSafe(TestCase, SafeTestCaseMixin):
         self.assertGreater(safe_creation_estimate.gas_price, 0)
         self.assertGreater(safe_creation_estimate.gas, 0)
         self.assertGreater(safe_creation_estimate.payment, 0)
-        self.assertIsNone(safe_creation_estimate.payment_token)
+        self.assertEqual(safe_creation_estimate.payment_token, payment_token)
 
     def test_send_multisig_tx(self):
         # Create Safe
