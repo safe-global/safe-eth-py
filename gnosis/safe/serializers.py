@@ -57,12 +57,10 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
     value = serializers.IntegerField(min_value=0)
     data = HexadecimalField(default=None, allow_null=True, allow_blank=True)
     operation = serializers.IntegerField(min_value=0)
-    gas_token = EthereumAddressField(default=None, allow_null=True, allow_zero_address=True)
 
     def validate_operation(self, value):
         try:
-            SafeOperation(value)
-            return value
+            return SafeOperation(value).value
         except ValueError:
             raise ValidationError('Unknown operation')
 
@@ -86,7 +84,11 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
         return data
 
 
-class SafeMultisigTxSerializer(SafeMultisigEstimateTxSerializer):
+class SafeMultisigEstimateTxSerializerWithGasToken(SafeMultisigEstimateTxSerializer):
+    gas_token = EthereumAddressField(default=None, allow_null=True, allow_zero_address=True)
+
+
+class SafeMultisigTxSerializer(SafeMultisigEstimateTxSerializerWithGasToken):
     safe_tx_gas = serializers.IntegerField(min_value=0)
     data_gas = serializers.IntegerField(min_value=0)
     gas_price = serializers.IntegerField(min_value=0)
