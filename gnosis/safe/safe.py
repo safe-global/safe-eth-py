@@ -502,7 +502,8 @@ class Safe:
         :return:
         """
 
-        safe_nonce = safe_nonce or self.retrieve_nonce()
+        if safe_nonce is None:
+            safe_nonce = self.retrieve_nonce()
         safe_version = safe_version or self.retrieve_version()
         return SafeTx(self.ethereum_client, self.address, to, value, data, operation, safe_tx_gas, base_gas, gas_price,
                       gas_token, refund_receiver, signatures=signatures, safe_nonce=safe_nonce,
