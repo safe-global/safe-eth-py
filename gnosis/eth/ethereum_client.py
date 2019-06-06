@@ -303,10 +303,16 @@ class ParityManager:
     #TODO Test with mock
     def _decode_trace_action(self, action: Dict[str, any]) -> Dict[str, any]:
         decoded = {
-            'from': self.w3.toChecksumAddress(action['from']),
-            'gas': int(action['gas'], 16),
-            'value': int(action['value'], 16),
         }
+
+        # CALL, DELEGATECALL, CREATE or CREATE2
+        if 'from' in action:
+            decoded['from'] = self.w3.toChecksumAddress(action['from'])
+        if 'gas' in action:
+            decoded['gas'] = int(action['gas'], 16)
+        if 'value' in action:
+            decoded['value'] = int(action['value'], 16)
+
         # CALL or DELEGATECALL
         if 'callType' in action:
             decoded['callType'] = action['callType']
@@ -318,6 +324,15 @@ class ParityManager:
         # CREATE or CREATE2
         if 'init' in action:
             decoded['init'] = HexBytes(action['init'])
+
+        # SELF-DESTRUCT
+        if 'address' in action:
+            decoded['address'] = self.w3.toChecksumAddress(action['address'])
+        if 'balance' in action:
+            decoded['balance'] = int(action['balance'], 16)
+        if 'refundAddress' in action:
+            decoded['refundAddress'] = self.w3.toChecksumAddress(action['refundAddress'])
+
         return decoded
 
     def _decode_trace_result(self, result: Dict[str, any]) -> Dict[str, any]:
@@ -345,7 +360,8 @@ class ParityManager:
             trace_copy = trace.copy()
             new_traces.append(trace_copy)
             # Txs with `error` field don't have `result` field
-            if 'result' in trace:
+            # Txs with `type=suicide` have `result` field but is `None`
+            if 'result' in trace and trace['result']:
                 trace_copy['result'] = self._decode_trace_result(trace['result'])
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
@@ -410,6 +426,21 @@ class ParityManager:
             "transactionPosition": 1,
             "type": "create"
           },
+          {
+            'action': {
+              'address': '0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac',
+              'balance': '0x0',
+              'refundAddress': '0x0000000000000000000000000000000000000000'
+            },
+            'blockHash': '0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c',
+            'blockNumber': 7829689,
+            'result': None,
+            'subtraces': 0,
+            'traceAddress': [0, 0, 0, 0, 0, 0],
+            'transactionHash': '0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d',
+            'transactionPosition': 35,
+            'type': 'suicide'
+          }
           ...
         ]
         """

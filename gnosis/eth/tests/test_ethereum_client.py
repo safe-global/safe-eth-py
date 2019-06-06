@@ -332,15 +332,38 @@ class TestParityModule(EthereumTestCaseMixin, TestCase):
                 "transactionPosition": 117,
                 "type": "call"
             },
+            {'action': {'address': '0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac',
+                        'balance': '0xa',
+                        'refundAddress': '0x1240adafbc6c4e45c299451c0eedc7c8b98c2222'},
+             'blockHash': '0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c',
+             'blockNumber': 7829689,
+             'result': None,
+             'subtraces': 0,
+             'traceAddress': [0, 0, 0, 0, 0, 0],
+             'transactionHash': '0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d',
+             'transactionPosition': 35,
+             'type': 'suicide'},
         ]
+        at_least_one_error = False
+        at_least_one_self_destruct = False
         decoded_traces = self.ethereum_client.parity._decode_traces(example_traces)
         for example_trace, decoded_trace in zip(example_traces, decoded_traces):
-            self.assertEqual(decoded_trace['action']['gas'], int(example_trace['action']['gas'], 16))
-            self.assertEqual(decoded_trace['action']['value'], int(example_trace['action']['value'], 16))
-            if 'error' in decoded_trace:
-                self.assertNotIn('result', decoded_trace)
+            if decoded_trace['type'] == 'suicide':
+                self.assertEqual(decoded_trace['action']['address'], '0x4440AdaFBc6c4E45C299451C0eEdC7C8B98c14Ac')
+                self.assertEqual(decoded_trace['action']['balance'], 10)
+                self.assertEqual(decoded_trace['action']['refundAddress'], '0x1240aDafBC6C4e45C299451C0eEdC7c8B98C2222')
+                at_least_one_self_destruct = True
             else:
-                self.assertEqual(decoded_trace['result']['gasUsed'], int(example_trace['result']['gasUsed'], 16))
+                self.assertEqual(decoded_trace['action']['gas'], int(example_trace['action']['gas'], 16))
+                self.assertEqual(decoded_trace['action']['value'], int(example_trace['action']['value'], 16))
+                if 'error' in decoded_trace:
+                    self.assertNotIn('result', decoded_trace)
+                    at_least_one_error = True
+                else:
+                    self.assertEqual(decoded_trace['result']['gasUsed'], int(example_trace['result']['gasUsed'], 16))
+
+        self.assertTrue(at_least_one_error)
+        self.assertTrue(at_least_one_self_destruct)
 
         self.assertEqual(decoded_traces[0]['result']['output'], HexBytes(''))
         self.assertEqual(decoded_traces[1]['result']['address'],
