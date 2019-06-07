@@ -90,8 +90,9 @@ class ProxyFactory:
         return EthereumTxSent(tx_hash, tx, contract_address)
 
     def deploy_proxy_contract_with_nonce(self, deployer_account: LocalAccount, master_copy: str,
-                                         initializer: bytes, salt_nonce: int, gas: Optional[int] = None,
-                                         gas_price: Optional[int] = None) -> EthereumTxSent:
+                                         initializer: bytes, salt_nonce: int,
+                                         gas: Optional[int] = None, gas_price: Optional[int] = None,
+                                         nonce: Optional[int] = None) -> EthereumTxSent:
         """
         Deploy proxy contract via Proxy Factory using `createProxyWithNonce` (create2)
         :param deployer_account: Ethereum account
@@ -114,6 +115,9 @@ class ProxyFactory:
 
         if gas is not None:
             tx_parameters['gas'] = gas
+
+        if nonce is not None:
+            tx_parameters['nonce'] = nonce
 
         tx = create_proxy_fn.buildTransaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case

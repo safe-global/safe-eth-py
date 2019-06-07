@@ -663,9 +663,11 @@ class EthereumClient:
             except ReplacementTransactionUnderpriced as e:
                 if not retry or not number_errors:
                     raise e
-                logger.error('address=%s Tx with nonce=%d was already sent, retrying with nonce + 1',
-                             address, tx['nonce'])
-                tx['nonce'] += 1
+                current_nonce = tx['nonce']
+                tx['nonce'] = max(current_nonce + 1, self.get_nonce_for_account(address,
+                                                                                block_identifier=block_identifier))
+                logger.error('Tx with nonce=%d was already sent for address=%s, retrying with nonce=%s',
+                             current_nonce, address, tx['nonce'])
             except InvalidNonce as e:
                 if not retry or not number_errors:
                     raise e
@@ -674,7 +676,8 @@ class EthereumClient:
                 tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
                 number_errors -= 1
 
-    def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int=22000,
+    def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int = 22000,
+                    nonce: Optional[int] = None,
                     retry: bool = False, block_identifier=None, max_eth_to_send: int = 0) -> bytes:
         """
         Send ether using configured account
@@ -697,6 +700,9 @@ class EthereumClient:
             'gas': gas,
             'gasPrice': gas_price,
         }
+
+        if nonce is not None:
+            tx['nonce'] = nonce
 
         return self.send_unsigned_transaction(tx, private_key=private_key, retry=retry,
                                               block_identifier=block_identifier)
