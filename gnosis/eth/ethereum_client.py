@@ -48,10 +48,6 @@ class InsufficientFunds(EthereumClientException):
     pass
 
 
-class EtherLimitExceeded(EthereumClientException):
-    pass
-
-
 class SenderAccountNotFoundInNode(EthereumClientException):
     pass
 
@@ -678,7 +674,7 @@ class EthereumClient:
 
     def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int = 22000,
                     nonce: Optional[int] = None,
-                    retry: bool = False, block_identifier=None, max_eth_to_send: int = 0) -> bytes:
+                    retry: bool = False, block_identifier=None) -> bytes:
         """
         Send ether using configured account
         :param to: to
@@ -691,8 +687,6 @@ class EthereumClient:
         """
 
         assert check_checksum(to)
-        if max_eth_to_send and value > self.w3.toWei(max_eth_to_send, 'ether'):
-            raise EtherLimitExceeded('%d is bigger than %f' % (value, max_eth_to_send))
 
         tx = {
             'to': to,

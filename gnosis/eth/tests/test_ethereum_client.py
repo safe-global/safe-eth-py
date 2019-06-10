@@ -4,7 +4,7 @@ from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 
-from ..ethereum_client import (EthereumClientProvider, EtherLimitExceeded,
+from ..ethereum_client import (EthereumClientProvider,
                                FromAddressNotFound, InsufficientFunds,
                                InvalidNonce, SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
@@ -489,12 +489,6 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         value = 1
         self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey, address, self.gas_price, value)
         self.assertEqual(self.ethereum_client.get_balance(address), value)
-
-        with self.assertRaises(EtherLimitExceeded):
-            max_eth_to_send = 1
-            value = self.w3.toWei(max_eth_to_send, 'ether') + 1
-            self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey, address, self.gas_price, value,
-                                             max_eth_to_send=max_eth_to_send)
 
     def test_send_eth_without_key(self):
         with self.settings(SAFE_FUNDER_PRIVATE_KEY=None):
