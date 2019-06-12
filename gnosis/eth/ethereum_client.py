@@ -14,7 +14,7 @@ from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
 from web3.utils.threads import Timeout
 
-from .constants import NULL_ADDRESS, ERC20_721_TRANSFER_TOPIC
+from .constants import ERC20_721_TRANSFER_TOPIC, NULL_ADDRESS
 from .contracts import get_erc20_contract
 
 logger = getLogger(__name__)

@@ -4,9 +4,9 @@ from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 
-from ..ethereum_client import (EthereumClientProvider,
-                               FromAddressNotFound, InsufficientFunds,
-                               InvalidNonce, SenderAccountNotFoundInNode)
+from ..ethereum_client import (EthereumClientProvider, FromAddressNotFound,
+                               InsufficientFunds, InvalidNonce,
+                               SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 
