@@ -13,7 +13,7 @@ from .utils import generate_salt_nonce
 logger = logging.getLogger(__name__)
 
 
-class TestProxyFactory(TestCase, SafeTestCaseMixin):
+class TestProxyFactory(SafeTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()

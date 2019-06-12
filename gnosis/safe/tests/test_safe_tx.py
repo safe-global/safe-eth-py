@@ -12,7 +12,7 @@ from .safe_test_case import SafeTestCaseMixin
 logger = logging.getLogger(__name__)
 
 
-class TestSafeTx(TestCase, SafeTestCaseMixin):
+class TestSafeTx(SafeTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()

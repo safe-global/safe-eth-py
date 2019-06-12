@@ -18,7 +18,7 @@ from .safe_test_case import SafeTestCaseMixin
 logger = logging.getLogger(__name__)
 
 
-class TestSafe(TestCase, SafeTestCaseMixin):
+class TestSafe(SafeTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()

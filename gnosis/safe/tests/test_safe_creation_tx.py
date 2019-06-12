@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 LOG_TITLE_WIDTH = 100
 
 
-class TestSafeCreationTx(TestCase, SafeTestCaseMixin):
+class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.prepare_tests()
