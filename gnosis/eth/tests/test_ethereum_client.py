@@ -12,10 +12,6 @@ from .ethereum_test_case import EthereumTestCaseMixin
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_decode_erc20_or_erc721_log(self):
         logs = [AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
                                'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
@@ -267,10 +263,6 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
 
 
 class TestParityModule(EthereumTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_decode_trace(self):
         example_traces = [
             {
@@ -382,10 +374,6 @@ class TestParityModule(EthereumTestCaseMixin, TestCase):
 
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_current_block_number(self):
         self.assertGreaterEqual(self.ethereum_client.current_block_number, 0)
 

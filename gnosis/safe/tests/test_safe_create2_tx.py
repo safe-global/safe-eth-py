@@ -16,10 +16,6 @@ LOG_TITLE_WIDTH = 100
 
 
 class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_safe_create2_tx_builder(self):
         w3 = self.w3
 

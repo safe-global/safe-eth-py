@@ -10,10 +10,6 @@ from .ethereum_test_case import EthereumTestCaseMixin
 
 
 class TestUtils(EthereumTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_generate_address_2(self):
         from_ = '0x8942595A2dC5181Df0465AF0D7be08c8f23C93af'
         salt = self.w3.sha3(text='aloha')

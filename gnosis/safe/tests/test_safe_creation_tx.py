@@ -19,10 +19,6 @@ LOG_TITLE_WIDTH = 100
 
 
 class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_safe_creation_tx_builder(self):
         logger.info("Test Safe Proxy creation without payment".center(LOG_TITLE_WIDTH, '-'))
         w3 = self.w3

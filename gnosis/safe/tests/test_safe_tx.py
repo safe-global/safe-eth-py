@@ -13,10 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestSafeTx(SafeTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_send_safe_tx(self):
         owners = [Account.create() for _ in range(2)]
         owner_addresses = [owner.address for owner in owners]

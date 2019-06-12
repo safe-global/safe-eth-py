@@ -19,10 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestSafe(SafeTestCaseMixin, TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.prepare_tests()
-
     def test_create(self):
         owners = [self.ethereum_test_account.address]
         threshold = 1

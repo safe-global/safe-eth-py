@@ -28,8 +28,8 @@ contract_addresses = {
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
     @classmethod
-    def prepare_tests(cls):
-        super().prepare_tests()
+    def setUpTestData(cls):
+        super().setUpTestData()
 
         for key, value in contract_addresses.items():
             if not value:
