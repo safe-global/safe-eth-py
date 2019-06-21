@@ -44,7 +44,7 @@ class SafeTx:
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
         self.value = value
-        self.data = data or b''
+        self.data = HexBytes(data) or b''
         self.operation = operation
         self.safe_tx_gas = safe_tx_gas
         self.base_gas = base_gas
@@ -206,7 +206,7 @@ class SafeTx:
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
-        tx_gas_price = tx_gas_price or self.gas_price  # Use wrapped tx gas_price if not provided
+        tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gasPrice
         safe_total_gas = self.safe_tx_gas + self.base_gas
         tx_gas = tx_gas or (safe_total_gas * 2) or (self.w3_tx.estimateGas() + 25000)
         tx_sender_address = Account.privateKeyToAccount(tx_sender_private_key).address
