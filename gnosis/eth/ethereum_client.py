@@ -518,7 +518,7 @@ class EthereumClient:
         else:
             return self.w3_provider
 
-    def get_nonce_for_account(self, address, block_identifier=None):
+    def get_nonce_for_account(self, address, block_identifier='pending'):
         return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
     @property
