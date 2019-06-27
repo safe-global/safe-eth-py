@@ -319,7 +319,7 @@ class Safe:
         return base_gas
 
     def estimate_tx_gas_with_safe(self, to: str, value: int, data: bytes, operation: int,
-                                  block_identifier='pending') -> int:
+                                  block_identifier: Optional[str] = 'latest') -> int:
         """
         Estimate tx gas using safe `requiredTxGas` method
         :return: int: Estimated gas
@@ -396,7 +396,7 @@ class Safe:
         """
         Estimate tx gas using web3
         """
-        return self.ethereum_client.estimate_gas(self.address, to, value, data, block_identifier='pending')
+        return self.ethereum_client.estimate_gas(self.address, to, value, data)
 
     def estimate_tx_gas(self, to: str, value: int, data: bytes, operation: int) -> int:
         """
@@ -445,29 +445,29 @@ class Safe:
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)
 
-    def retrieve_master_copy_address(self, block_identifier='pending') -> str:
+    def retrieve_master_copy_address(self, block_identifier: Optional[str] = 'latest') -> str:
         return checksum_encode(self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:])
 
-    def retrieve_is_hash_approved(self, owner: str, safe_hash: bytes, block_identifier='pending') -> bool:
+    def retrieve_is_hash_approved(self, owner: str, safe_hash: bytes, block_identifier: Optional[str] = 'latest') -> bool:
         return self.get_contract().functions.approvedHashes(owner,
                                                             safe_hash).call(block_identifier=block_identifier) == 1
 
-    def retrieve_is_message_signed(self, message_hash: bytes, block_identifier='pending') -> bool:
+    def retrieve_is_message_signed(self, message_hash: bytes, block_identifier: Optional[str] = 'latest') -> bool:
         return self.get_contract().functions.signedMessages(message_hash).call(block_identifier=block_identifier)
 
-    def retrieve_is_owner(self, owner: str, block_identifier='pending') -> bool:
+    def retrieve_is_owner(self, owner: str, block_identifier: Optional[str] = 'latest') -> bool:
         return self.get_contract().functions.isOwner(owner).call(block_identifier=block_identifier)
 
-    def retrieve_nonce(self, block_identifier='pending') -> int:
+    def retrieve_nonce(self, block_identifier: Optional[str] = 'latest') -> int:
         return self.get_contract().functions.nonce().call(block_identifier=block_identifier)
 
-    def retrieve_owners(self, block_identifier='pending')-> List[str]:
+    def retrieve_owners(self, block_identifier: Optional[str] = 'latest')-> List[str]:
         return self.get_contract().functions.getOwners().call(block_identifier=block_identifier)
 
-    def retrieve_threshold(self, block_identifier='pending') -> int:
+    def retrieve_threshold(self, block_identifier: Optional[str] = 'latest') -> int:
         return self.get_contract().functions.getThreshold().call(block_identifier=block_identifier)
 
-    def retrieve_version(self, block_identifier='pending') -> str:
+    def retrieve_version(self, block_identifier: Optional[str] = 'latest') -> str:
         return self.get_contract().functions.VERSION().call(block_identifier=block_identifier)
 
     def build_multisig_tx(self,
@@ -523,7 +523,7 @@ class Safe:
                          tx_sender_private_key: str,
                          tx_gas=None,
                          tx_gas_price=None,
-                         block_identifier='pending') -> EthereumTxSent:
+                         block_identifier: Optional[str] = 'latest') -> EthereumTxSent:
         """
         Build and send Safe tx
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + data_gas) * 2` will be used
@@ -544,7 +544,7 @@ class Safe:
                                          signatures)
 
         tx_sender_address = Account.privateKeyToAccount(tx_sender_private_key).address
-        safe_tx.call(tx_sender_address=tx_sender_address)
+        safe_tx.call(tx_sender_address=tx_sender_address, block_identifier=block_identifier)
 
         tx_hash, tx = safe_tx.execute(tx_sender_private_key=tx_sender_private_key,
                                       tx_gas=tx_gas,

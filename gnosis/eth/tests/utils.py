@@ -29,7 +29,7 @@ def deploy_example_erc20(w3, amount: int, owner: str, deployer: str=None, accoun
         erc20_contract = get_example_erc20_contract(w3)
         tx = erc20_contract.constructor(amount, owner).buildTransaction()
         if 'nonce' not in tx:
-            tx['nonce'] = w3.eth.getTransactionCount(account.address, 'pending')
+            tx['nonce'] = w3.eth.getTransactionCount(account.address, block_identifier='pending')
         signed_tx = account.signTransaction(tx)
         tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)

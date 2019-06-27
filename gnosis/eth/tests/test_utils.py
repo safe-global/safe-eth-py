@@ -28,7 +28,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
     def test_generate_address2_with_proxy(self):
         deployer_account = self.ethereum_test_account
         proxy_factory_contract = get_proxy_factory_contract(self.w3)
-        nonce = self.w3.eth.getTransactionCount(deployer_account.address, 'pending')
+        nonce = self.w3.eth.getTransactionCount(deployer_account.address, block_identifier='pending')
         tx = proxy_factory_contract.constructor().buildTransaction({'nonce': nonce,
                                                                     'from': deployer_account.address})
         signed_tx = deployer_account.signTransaction(tx)

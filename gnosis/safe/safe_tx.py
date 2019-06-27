@@ -150,7 +150,7 @@ class SafeTx:
         raise InvalidMultisigTx(message)
 
     def call(self, tx_sender_address: Optional[str] = None, tx_gas: Optional[int] = None,
-             block_identifier='pending') -> int:
+             block_identifier: Optional[str] = 'latest') -> int:
         """
         :param tx_sender_address:
         :param tx_gas: Force a gas limit
@@ -194,7 +194,7 @@ class SafeTx:
                 tx_gas: Optional[int] = None,
                 tx_gas_price: Optional[int] = None,
                 tx_nonce: Optional[int] = None,
-                block_identifier='pending') -> Tuple[bytes, Dict[str, any]]:
+                block_identifier: Optional[str] = 'latest') -> Tuple[bytes, Dict[str, any]]:
         """
         Send multisig tx to the Safe
         :param tx_sender_private_key: Sender private key

@@ -518,14 +518,21 @@ class EthereumClient:
         else:
             return self.w3_provider
 
-    def get_nonce_for_account(self, address, block_identifier='pending'):
+    def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
+        """
+        Get nonce for account. `getTransactionCount` is the only method for what `pending` is currently working
+        (Geth and Parity)
+        :param address:
+        :param block_identifier:
+        :return:
+        """
         return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
     @property
     def current_block_number(self):
         return self.w3.eth.blockNumber
 
-    def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier=None):
+    def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier: Optional[str] = 'latest'):
         data = data or b''
         params = [
             {"from": from_,
@@ -617,7 +624,7 @@ class EthereumClient:
 
     def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Optional[str] = None,
                                   public_key: Optional[str] = None, retry: bool = False,
-                                  block_identifier: Optional[str] = None) -> bytes:
+                                  block_identifier: Optional[str] = 'pending') -> bytes:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
         `private_key` cannot be `None`
@@ -625,7 +632,7 @@ class EthereumClient:
         :param private_key:
         :param public_key:
         :param retry: Retry if a problem with nonce is found
-        :param block_identifier:
+        :param block_identifier: For nonce calculation, recommended is `pending`
         :return: tx hash
         """
         if private_key:
@@ -673,8 +680,8 @@ class EthereumClient:
                 number_errors -= 1
 
     def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int = 22000,
-                    nonce: Optional[int] = None,
-                    retry: bool = False, block_identifier=None) -> bytes:
+                    nonce: Optional[int] = None, retry: bool = False,
+                    block_identifier: Optional[str] = 'pending') -> bytes:
         """
         Send ether using configured account
         :param to: to
@@ -682,7 +689,8 @@ class EthereumClient:
         :param value: value(wei)
         :param gas: gas, defaults to 22000
         :param retry: Retry if a problem is found
-        :param block_identifier: None default, 'pending' not confirmed txs
+        :param nonce: Nonce of sender account
+        :param block_identifier: Block identifier for nonce calculation
         :return: tx_hash
         """
 
@@ -710,7 +718,7 @@ class EthereumClient:
         """
         tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
         if not tx_receipt or tx_receipt['blockNumber'] is None:
-            # If tx_receipt exists but blockNumber is None, tx is still pending (just Parity)
+            # If `tx_receipt` exists but `blockNumber` is `None`, tx is still pending (just Parity)
             return False
         else:
             return (self.w3.eth.blockNumber - tx_receipt['blockNumber']) >= confirmations
