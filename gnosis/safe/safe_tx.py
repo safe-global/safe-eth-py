@@ -44,7 +44,7 @@ class SafeTx:
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
         self.value = value
-        self.data = HexBytes(data) or b''
+        self.data = HexBytes(data) if data else b''
         self.operation = operation
         self.safe_tx_gas = safe_tx_gas
         self.base_gas = base_gas
