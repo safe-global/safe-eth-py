@@ -446,7 +446,9 @@ class Safe:
         return self.w3.eth.getCode(self.address)
 
     def retrieve_master_copy_address(self, block_identifier: Optional[str] = 'latest') -> str:
-        return checksum_encode(self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:])
+        bytes_address = self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:]
+        int_address = int.from_bytes(bytes_address, byteorder='big')
+        return Web3.toChecksumAddress('{:#042x}'.format(int_address))
 
     def retrieve_is_hash_approved(self, owner: str, safe_hash: bytes, block_identifier: Optional[str] = 'latest') -> bool:
         return self.get_contract().functions.approvedHashes(owner,

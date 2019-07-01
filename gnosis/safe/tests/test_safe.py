@@ -63,6 +63,13 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertGreater(safe_creation_estimate.payment, 0)
         self.assertEqual(safe_creation_estimate.payment_token, payment_token)
 
+    def test_retrieve_master_copy_address(self):
+        # Test with master copy starting by 0x00
+        master_copy_address = '0x004e2e9E6D637b8138B022D16083093Cb2Ee76aa'
+        ethereum_tx_send = self.proxy_factory.deploy_proxy_contract(self.ethereum_test_account, master_copy_address)
+        safe = Safe(ethereum_tx_send.contract_address, self.ethereum_client)
+        self.assertEqual(safe.retrieve_master_copy_address(), master_copy_address)
+
     def test_send_multisig_tx(self):
         # Create Safe
         w3 = self.w3
