@@ -134,7 +134,7 @@ class SafeTx:
             self.refund_receiver,
             self.signatures)
 
-    def _parse_vm_exception(self, message: str):
+    def _raise_safe_vm_exception(self, message: str):
         error_with_exception: Dict[str, Exception] = {
             'Could not pay gas costs with ether': CouldNotPayGasWithEther,
             'Could not pay gas costs with token': CouldNotPayGasWithToken,
@@ -169,7 +169,7 @@ class SafeTx:
                 raise InvalidInternalTx('Success bit is %d, should be equal to 1' % success)
             return success
         except BadFunctionCallOutput as exc:  # Geth
-            return self._parse_vm_exception(str(exc))
+            return self._raise_safe_vm_exception(str(exc))
         except ValueError as exc:  # Parity
             """
             Parity throws a ValueError, e.g.
@@ -187,7 +187,7 @@ class SafeTx:
             elif isinstance(data, str) and 'Reverted ' in data:
                 # Parity
                 result = HexBytes(data.replace('Reverted ', ''))
-                return self._parse_vm_exception(str(result))
+                return self._raise_safe_vm_exception(str(result))
 
     def execute(self,
                 tx_sender_private_key: str,
