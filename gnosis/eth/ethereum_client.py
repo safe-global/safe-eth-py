@@ -56,6 +56,10 @@ class UnknownAccount(EthereumClientException):
     pass
 
 
+class GasLimitExceeded(EthereumClientException):
+    pass
+
+
 class ParityTraceDecodeException(EthereumClientException):
     pass
 
@@ -72,6 +76,8 @@ def tx_with_exception_handling(func):
         "doesn't have enough funds": InsufficientFunds,
         'sender account not recognized': SenderAccountNotFoundInNode,
         'unknown account': UnknownAccount,
+        'Transaction cost exceeds current gas limit': GasLimitExceeded,  # Parity
+        'exceeds block gas limit': GasLimitExceeded,  # Geth
     }
 
     @wraps(func)
