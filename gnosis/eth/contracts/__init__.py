@@ -1,10 +1,24 @@
+import json
+import os
 import sys
 from typing import Dict, Optional
 
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth.abis import load_contract_interface
+
+def load_contract_interface(file_name):
+    return _load_json_file(_abi_file_path(file_name))
+
+
+def _abi_file_path(file):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), file))
+
+
+def _load_json_file(path):
+    with open(path) as f:
+        return json.load(f)
+
 
 current_module = sys.modules[__name__]
 
@@ -30,6 +44,7 @@ contracts = {
     'erc721': 'ERC721.json',
     'example_erc20': 'ERC20TestToken.json',
     'delegate_constructor_proxy': 'DelegateConstructorProxy.json',
+    'multi_send': 'MultiSend.json',
     'paying_proxy': 'PayingProxy.json',
     'proxy_factory': 'ProxyFactory.json',
     'proxy': 'Proxy.json',
