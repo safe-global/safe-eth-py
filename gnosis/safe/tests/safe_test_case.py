@@ -5,12 +5,14 @@ from django.conf import settings
 
 from eth_account import Account
 
-from gnosis.eth.contracts import (get_old_safe_contract,
+from gnosis.eth.contracts import (get_multi_send_contract,
+                                  get_old_safe_contract,
                                   get_proxy_factory_contract,
                                   get_safe_contract)
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe import Safe
+from gnosis.safe.multi_send import MultiSend
 from gnosis.safe.proxy_factory import ProxyFactory
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
@@ -23,6 +25,7 @@ contract_addresses = {
     'safe': None,
     'old_safe': None,
     'proxy_factory': None,
+    'multi_send': None,
 }
 
 
@@ -39,9 +42,13 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                     fn = Safe.deploy_old_master_contract
                 elif key == 'proxy_factory':
                     fn = ProxyFactory.deploy_proxy_factory_contract
+                elif key == 'multi_send':
+                    fn = MultiSend.deploy_contract
+
                 contract_addresses[key] = fn(cls.ethereum_client, cls.ethereum_test_account).contract_address
 
         settings.SAFE_CONTRACT_ADDRESS = contract_addresses['safe']
+        settings.SAFE_MULTISEND_ADDRESS = contract_addresses['multi_send']
         settings.SAFE_OLD_CONTRACT_ADDRESS = contract_addresses['old_safe']
         settings.SAFE_PROXY_FACTORY_ADDRESS = contract_addresses['proxy_factory']
         settings.SAFE_VALID_CONTRACT_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS, settings.SAFE_OLD_CONTRACT_ADDRESS}
@@ -52,6 +59,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.proxy_factory_contract_address = contract_addresses['proxy_factory']
         cls.proxy_factory_contract = get_proxy_factory_contract(cls.w3, cls.proxy_factory_contract_address)
         cls.proxy_factory = ProxyFactory(cls.proxy_factory_contract_address, cls.ethereum_client)
+        cls.multi_send_contract = get_multi_send_contract(cls.w3, contract_addresses['multi_send'])
+        cls.multi_send = MultiSend(cls.multi_send_contract.address, cls.ethereum_client)
 
     def build_test_safe(self, number_owners: int = 3, threshold: int = None,
                         owners: List[str] = None) -> SafeCreate2Tx:

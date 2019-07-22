@@ -2,10 +2,12 @@ import logging
 
 from django.test import TestCase
 
+import eth_abi
 from eth_account import Account
 from hexbytes import HexBytes
 
 from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
+from ..safe import Safe, SafeOperation
 from ..safe_tx import SafeTx
 from .safe_test_case import SafeTestCaseMixin
 
@@ -13,6 +15,52 @@ logger = logging.getLogger(__name__)
 
 
 class TestSafeTx(SafeTestCaseMixin, TestCase):
+    def test_multi_send_safe_tx(self):
+        owners = [Account.create() for _ in range(2)]
+        owner_addresses = [owner.address for owner in owners]
+        threshold = 1
+        safe_creation = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
+                                              initial_funding_wei=self.w3.toWei(0.1, 'ether'))
+        safe_address = safe_creation.safe_address
+        safe = Safe(safe_address, self.ethereum_client)
+        safe_contract = safe.get_contract()
+        to = self.multi_send_contract.address
+        value = 0
+        safe_tx_gas = 600000
+        data_gas = 200000
+
+        # Atomic swap the owner of a Safe
+        new_owner = Account.create()
+        owner_to_remove = owners[-1]
+        prev_owner = owners[-2]
+        owners_expected = [x.address for x in owners[:-1]] + [new_owner.address]
+        data = HexBytes(safe_contract.functions.addOwnerWithThreshold(new_owner.address,
+                                                                      threshold + 1).buildTransaction()['data'])
+        data_2 = HexBytes(safe_contract.functions.removeOwner(prev_owner.address, owner_to_remove.address,
+                                                              threshold).buildTransaction()['data'])
+
+        multisend_operation = HexBytes('{:0>2x}'.format(SafeOperation.DELEGATE_CALL.value))  # DelegateCall 1 byte
+        multisend_address = HexBytes('{:0>40x}'.format(int(safe_address, 16)))  # Address 20 bytes
+        multisend_value = HexBytes('{:0>64x}'.format(0))  # Value 32 bytes
+
+        encoded_multisend_data = b''
+        for d in (data, data_2):
+            data_lenght = HexBytes('{:0>64x}'.format(len(d)))  # Data length 32 bytes
+            encoded_multisend_data += multisend_operation + multisend_address + multisend_value + data_lenght + d
+            break
+
+        multisend_data = HexBytes(self.multi_send_contract.functions.multiSend(encoded_multisend_data
+                                                                               ).buildTransaction()['data'])
+        safe_tx = SafeTx(self.ethereum_client, safe_address, to,
+                         0, multisend_data, SafeOperation.DELEGATE_CALL.value,
+                         safe_tx_gas, data_gas, self.gas_price, None, None, safe_nonce=0)
+        safe_tx.sign(owners[0].privateKey)
+
+        self.assertEqual(safe_tx.call(), 1)
+        tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
+        print(self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60))
+        self.assertEqual(safe.retrieve_owners(), owners_expected)
+
     def test_send_safe_tx(self):
         owners = [Account.create() for _ in range(2)]
         owner_addresses = [owner.address for owner in owners]
