@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 contract_addresses = {
-    'safe': None,
-    'old_safe': None,
-    'proxy_factory': None,
-    'multi_send': None,
+    'safe': Safe.deploy_master_contract,
+    'old_safe': Safe.deploy_old_master_contract,
+    'proxy_factory': ProxyFactory.deploy_proxy_factory_contract,
+    'multi_send': MultiSend.deploy_contract,
 }
 
 
@@ -35,17 +35,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         super().setUpTestData()
 
         for key, value in contract_addresses.items():
-            if not value:
-                if key == 'safe':
-                    fn = Safe.deploy_master_contract
-                elif key == 'old_safe':
-                    fn = Safe.deploy_old_master_contract
-                elif key == 'proxy_factory':
-                    fn = ProxyFactory.deploy_proxy_factory_contract
-                elif key == 'multi_send':
-                    fn = MultiSend.deploy_contract
-
-                contract_addresses[key] = fn(cls.ethereum_client, cls.ethereum_test_account).contract_address
+            if callable(value):
+                contract_addresses[key] = value(cls.ethereum_client, cls.ethereum_test_account).contract_address
 
         settings.SAFE_CONTRACT_ADDRESS = contract_addresses['safe']
         settings.SAFE_MULTISEND_ADDRESS = contract_addresses['multi_send']

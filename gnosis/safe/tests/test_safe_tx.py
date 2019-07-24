@@ -2,11 +2,11 @@ import logging
 
 from django.test import TestCase
 
-import eth_abi
 from eth_account import Account
 from hexbytes import HexBytes
 
 from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
+from ..multi_send import MultiSendOperation, MultiSendTx
 from ..safe import Safe, SafeOperation
 from ..safe_tx import SafeTx
 from .safe_test_case import SafeTestCaseMixin
@@ -40,19 +40,11 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         data_2 = HexBytes(safe_contract.functions.removeOwner(prev_owner.address, owner_to_remove.address,
                                                               new_threshold).buildTransaction()['data'])
 
-        multisend_operation = HexBytes('{:0>2x}'.format(SafeOperation.CALL.value))  # CALL 1 byte
-        multisend_address = HexBytes('{:0>40x}'.format(int(safe_address, 16)))  # Address 20 bytes
-        multisend_value = HexBytes('{:0>64x}'.format(0))  # Value 32 bytes
-
-        encoded_multisend_data = b''
-        for d in (data, data_2):
-            data_lenght = HexBytes('{:0>64x}'.format(len(d)))  # Data length 32 bytes
-            encoded_multisend_data += multisend_operation + multisend_address + multisend_value + data_lenght + d
-
-        multisend_data = HexBytes(self.multi_send_contract.functions.multiSend(encoded_multisend_data
-                                                                               ).buildTransaction()['data'])
+        multisend_txs = [MultiSendTx(MultiSendOperation.CALL, safe_address,
+                                              value, d) for d in (data, data_2)]
+        safe_multisend_data = self.multi_send.prepare_tx(multisend_txs)['data']
         safe_tx = SafeTx(self.ethereum_client, safe_address, to,
-                         0, multisend_data, SafeOperation.DELEGATE_CALL.value,
+                         0, safe_multisend_data, SafeOperation.DELEGATE_CALL.value,
                          safe_tx_gas, data_gas, self.gas_price, None, None, safe_nonce=0)
         safe_tx.sign(owners[0].privateKey)
 
