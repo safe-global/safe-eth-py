@@ -34,12 +34,13 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         owner_to_remove = owners[-1]
         prev_owner = owners[-2]
         owners_expected = [x.address for x in owners[:-1]] + [new_owner.address]
+        new_threshold = threshold + 1
         data = HexBytes(safe_contract.functions.addOwnerWithThreshold(new_owner.address,
-                                                                      threshold + 1).buildTransaction()['data'])
+                                                                      new_threshold).buildTransaction()['data'])
         data_2 = HexBytes(safe_contract.functions.removeOwner(prev_owner.address, owner_to_remove.address,
-                                                              threshold).buildTransaction()['data'])
+                                                              new_threshold).buildTransaction()['data'])
 
-        multisend_operation = HexBytes('{:0>2x}'.format(SafeOperation.DELEGATE_CALL.value))  # DelegateCall 1 byte
+        multisend_operation = HexBytes('{:0>2x}'.format(SafeOperation.CALL.value))  # CALL 1 byte
         multisend_address = HexBytes('{:0>40x}'.format(int(safe_address, 16)))  # Address 20 bytes
         multisend_value = HexBytes('{:0>64x}'.format(0))  # Value 32 bytes
 
@@ -47,7 +48,6 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         for d in (data, data_2):
             data_lenght = HexBytes('{:0>64x}'.format(len(d)))  # Data length 32 bytes
             encoded_multisend_data += multisend_operation + multisend_address + multisend_value + data_lenght + d
-            break
 
         multisend_data = HexBytes(self.multi_send_contract.functions.multiSend(encoded_multisend_data
                                                                                ).buildTransaction()['data'])
@@ -58,8 +58,10 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
         self.assertEqual(safe_tx.call(), 1)
         tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
-        print(self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60))
-        self.assertEqual(safe.retrieve_owners(), owners_expected)
+        self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        self.assertEqual(safe.retrieve_nonce(), 1)
+        self.assertEqual(safe.retrieve_threshold(), new_threshold)
+        self.assertCountEqual(safe.retrieve_owners(), owners_expected)
 
     def test_send_safe_tx(self):
         owners = [Account.create() for _ in range(2)]
