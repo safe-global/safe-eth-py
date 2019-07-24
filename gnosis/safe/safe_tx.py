@@ -157,9 +157,10 @@ class SafeTx:
         :param block_identifier:
         :return: `1` if everything ok
         """
-        parameters = {}
-        if tx_sender_address:
-            parameters['from'] = tx_sender_address
+        parameters = {
+            'from': tx_sender_address if tx_sender_address else self.safe_address
+        }
+
         if tx_gas:
             parameters['gas'] = tx_gas
         try:
