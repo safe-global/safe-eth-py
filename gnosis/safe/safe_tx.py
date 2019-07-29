@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
 from eth_account import Account
 from hexbytes import HexBytes
@@ -134,8 +134,8 @@ class SafeTx:
             self.refund_receiver,
             self.signatures)
 
-    def _raise_safe_vm_exception(self, message: str):
-        error_with_exception: Dict[str, Exception] = {
+    def _raise_safe_vm_exception(self, message: str) -> NoReturn:
+        error_with_exception: Dict[str, Type[InvalidMultisigTx]] = {
             'Could not pay gas costs with ether': CouldNotPayGasWithEther,
             'Could not pay gas costs with token': CouldNotPayGasWithToken,
             'Hash has not been approved': HashHasNotBeenApproved,
@@ -157,7 +157,7 @@ class SafeTx:
         :param block_identifier:
         :return: `1` if everything ok
         """
-        parameters = {
+        parameters: Dict[str, Any] = {
             'from': tx_sender_address if tx_sender_address else self.safe_address
         }
 

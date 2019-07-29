@@ -123,7 +123,7 @@ class Erc20Manager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
 
-    def decode_logs(self, logs: Dict[str, Any]):
+    def decode_logs(self, logs: List[Dict[str, Any]]):
         decoded_logs = []
         for log in logs:
             decoded = self._decode_erc20_or_erc721_log(log.data, log.topics)
@@ -148,7 +148,7 @@ class Erc20Manager:
         else:
             # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
             # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-            return
+            return None
 
     def _decode_erc721_log(self, topics: List[bytes]) -> Optional[Dict[str, Any]]:
         if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 4:
@@ -158,7 +158,7 @@ class Erc20Manager:
         else:
             # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
             # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-            return
+            return None
 
     def get_balance(self, address: str, erc20_address: str) -> int:
         """
@@ -215,13 +215,13 @@ class Erc20Manager:
         # Topics for transfer `to` and `from` an address
         topics_from = [topic_0, addresses_encoded]
         topics_to = [topic_0, None, addresses_encoded]
-        parameters = {'fromBlock': from_block}
+        parameters: Dict[str, Any] = {'fromBlock': from_block}
         if to_block:
             parameters['toBlock'] = to_block
         if token_address:
             parameters['address'] = token_address
 
-        all_events = []
+        all_events: List[Dict] = []
         # Do the request to `eth_getLogs`
         for topics in (topics_to, topics_from):
             parameters['topics'] = topics
@@ -338,7 +338,7 @@ class ParityManager:
         return decoded
 
     def _decode_trace_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        decoded = {
+        decoded: Dict[str, Any] = {
             'gasUsed': int(result['gasUsed'], 16),
         }
 
@@ -447,7 +447,7 @@ class ParityManager:
         ]
         """
         assert from_address or to_address, 'You must provide at least `from_address` or `to_address`'
-        parameters = {}
+        parameters: Dict[str, Any] = {}
         if from_block:
             parameters['fromBlock'] = '0x%x' % from_block
         if to_block:
@@ -540,13 +540,14 @@ class EthereumClient:
 
     def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier: Optional[str] = 'latest'):
         data = data or b''
-        params = [
+        params: List[Union[Dict[str, Any], str]] = [
             {"from": from_,
              "to": to,
              "data": HexBytes(data).hex(),
              "value": "0x{:x}".format(value),  # No leading zeroes
              },
         ]
+
         if block_identifier:
             params.append(block_identifier)
 

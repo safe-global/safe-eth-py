@@ -97,15 +97,16 @@ class SafeCreate2TxBuilder:
                                                  payment_token_eth_value)
 
         # Now we have a estimate for `payment` so we get initialization data again
-        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token=payment_token,
-                                                                   payment=payment, payment_receiver=payment_receiver)
+        final_safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold,
+                                                                         payment_token=payment_token, payment=payment,
+                                                                         payment_receiver=payment_receiver)
 
-        safe_address = self.calculate_create2_address(safe_setup_data, salt_nonce)
+        safe_address = self.calculate_create2_address(final_safe_setup_data, salt_nonce)
         assert int(safe_address, 16), 'Calculated Safe address cannot be the NULL ADDRESS'
 
         return SafeCreate2Tx(salt_nonce, owners, threshold, self.master_copy_address, self.proxy_factory_address,
                              payment_receiver, payment_token, payment, gas, gas_price, payment_token_eth_value,
-                             fixed_creation_cost, safe_address, safe_setup_data)
+                             fixed_creation_cost, safe_address, final_safe_setup_data)
 
     @staticmethod
     def _calculate_gas(owners: List[str], safe_setup_data: bytes, payment_token: str) -> int:
@@ -130,7 +131,7 @@ class SafeCreate2TxBuilder:
         return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
 
     @staticmethod
-    def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: int,
+    def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: Optional[int],
                                   payment_token_eth_value: float) -> int:
         if fixed_creation_cost is None:
             # Payment will be safe deploy cost + transfer fees for sending ether to the deployer

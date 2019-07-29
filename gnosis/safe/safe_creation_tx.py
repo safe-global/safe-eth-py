@@ -145,8 +145,8 @@ class SafeCreationTx:
         return base_gas + data_gas + payment_token_gas + 270000 + len(owners) * gas_per_owner
 
     @staticmethod
-    def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: int,
-                                  payment_token_eth_value: float) -> Tuple[int]:
+    def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: Optional[int],
+                                  payment_token_eth_value: float) -> int:
         if fixed_creation_cost is None:
             # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
             base_payment: int = (gas + 23000) * gas_price
@@ -209,7 +209,7 @@ class SafeCreationTx:
             'nonce': nonce,
         })
 
-    def _build_contract_creation_tx_with_valid_signature(self, tx_dict: Dict[str, None], s: int) -> Transaction:
+    def _build_contract_creation_tx_with_valid_signature(self, tx_dict: Dict[str, Any], s: int) -> Transaction:
         """
         Use pyethereum `Transaction` to generate valid tx using a random signature
         :param tx_dict: Web3 tx dictionary
@@ -289,7 +289,7 @@ class SafeCreationTx:
         })['data']
 
     @staticmethod
-    def _sign_web3_transaction(tx: Dict[str, Any], v: int, r: int, s: int) -> (bytes, HexBytes):
+    def _sign_web3_transaction(tx: Dict[str, Any], v: int, r: int, s: int) -> Tuple[bytes, HexBytes]:
         """
         Signed transaction that compatible with `w3.eth.sendRawTransaction`
         Is not used because `pyEthereum` implementation of Transaction was found to be more
