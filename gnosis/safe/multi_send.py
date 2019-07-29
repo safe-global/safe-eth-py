@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
@@ -81,6 +81,6 @@ class MultiSend:
     def get_contract(self):
         return get_multi_send_contract(self.ethereum_client.w3, self.address)
 
-    def prepare_tx(self, multi_send_txs: List[MultiSendTx]) -> Dict[str, any]:
+    def prepare_tx(self, multi_send_txs: List[MultiSendTx]) -> Dict[str, Any]:
         encoded_multisend_data = b''.join([x.encoded_data for x in multi_send_txs])
         return self.get_contract().functions.multiSend(encoded_multisend_data).buildTransaction()

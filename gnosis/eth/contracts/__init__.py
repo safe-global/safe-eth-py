@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from hexbytes import HexBytes
 from web3 import Web3
@@ -51,7 +51,7 @@ contracts = {
 }
 
 
-def generate_contract_fn(contract: Dict[str, any]):
+def generate_contract_fn(contract: Dict[str, Any]):
     """
     Dynamically generate functions to work with the contracts
     :param json_contract_filename:

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from eth_account import Account
 from hexbytes import HexBytes
@@ -20,7 +20,7 @@ from .signatures import signature_split, signature_to_bytes
 
 
 class SafeTx:
-    tx: Dict[str, any]  # If executed, `tx` is set
+    tx: Dict[str, Any]  # If executed, `tx` is set
     tx_hash: bytes  # If executed, `tx_hash` is set
 
     def __init__(self,
@@ -195,7 +195,7 @@ class SafeTx:
                 tx_gas: Optional[int] = None,
                 tx_gas_price: Optional[int] = None,
                 tx_nonce: Optional[int] = None,
-                block_identifier: Optional[str] = 'latest') -> Tuple[bytes, Dict[str, any]]:
+                block_identifier: Optional[str] = 'latest') -> Tuple[bytes, Dict[str, Any]]:
         """
         Send multisig tx to the Safe
         :param tx_sender_private_key: Sender private key

@@ -1,6 +1,6 @@
 from functools import wraps
 from logging import getLogger
-from typing import Dict, List, NamedTuple, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import eth_abi
 import requests
@@ -95,7 +95,7 @@ def tx_with_exception_handling(func):
 
 class EthereumTxSent(NamedTuple):
     tx_hash: bytes
-    tx: Dict[str, any]
+    tx: Dict[str, Any]
     contract_address: Optional[str]
 
 
@@ -123,7 +123,7 @@ class Erc20Manager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
 
-    def decode_logs(self, logs: Dict[str, any]):
+    def decode_logs(self, logs: Dict[str, Any]):
         decoded_logs = []
         for log in logs:
             decoded = self._decode_erc20_or_erc721_log(log.data, log.topics)
@@ -133,13 +133,13 @@ class Erc20Manager:
                 decoded_logs.append(log_copy)
         return decoded_logs
 
-    def _decode_erc20_or_erc721_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, any]]:
+    def _decode_erc20_or_erc721_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, Any]]:
         decoded = self._decode_erc20_log(data, topics)
         if not decoded:
             decoded = self._decode_erc721_log(topics)
         return decoded
 
-    def _decode_erc20_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, any]]:
+    def _decode_erc20_log(self, data: bytes, topics: List[bytes]) -> Optional[Dict[str, Any]]:
         if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 3:
             value = eth_abi.decode_single('uint256', HexBytes(data))
             _from, to = [Web3.toChecksumAddress(address) for address
@@ -150,7 +150,7 @@ class Erc20Manager:
             # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
             return
 
-    def _decode_erc721_log(self, topics: List[bytes]) -> Optional[Dict[str, any]]:
+    def _decode_erc721_log(self, topics: List[bytes]) -> Optional[Dict[str, Any]]:
         if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 4:
             _from, to, token_id = eth_abi.decode_abi(['address', 'address', 'uint256'], b''.join(topics[1:]))
             _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
@@ -184,7 +184,7 @@ class Erc20Manager:
 
     def get_total_transfer_history(self, addresses: List[str], from_block: int = 0,
                                    to_block: Optional[int] = None,
-                                   token_address: Optional[str] = None) -> List[Dict[str, any]]:
+                                   token_address: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually
         An example of an event:
@@ -238,7 +238,7 @@ class Erc20Manager:
 
     def get_transfer_history(self, from_block: int, to_block: Optional[int] = None,
                              from_address: Optional[str] = None, to_address: Optional[str] = None,
-                             token_address: Optional[str] = None) -> List[Dict[str, any]]:
+                             token_address: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         DON'T USE, it will fail in some cases until they fix https://github.com/ethereum/web3.py/issues/1351
         Get events for erc20/erc721 transfers. At least one of `from_address`, `to_address` or `token_address` must be
@@ -303,7 +303,7 @@ class ParityManager:
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
 
     #TODO Test with mock
-    def _decode_trace_action(self, action: Dict[str, any]) -> Dict[str, any]:
+    def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
         decoded = {
         }
 
@@ -337,7 +337,7 @@ class ParityManager:
 
         return decoded
 
-    def _decode_trace_result(self, result: Dict[str, any]) -> Dict[str, any]:
+    def _decode_trace_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
         decoded = {
             'gasUsed': int(result['gasUsed'], 16),
         }
@@ -354,7 +354,7 @@ class ParityManager:
 
         return decoded
 
-    def _decode_traces(self, traces: List[Dict[str, any]]) -> List[Dict[str, any]]:
+    def _decode_traces(self, traces: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         new_traces = []
         for trace in traces:
             if not isinstance(trace, dict):
@@ -368,7 +368,7 @@ class ParityManager:
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
 
-    def trace_transaction(self, tx_hash: str) -> List[Dict[str, any]]:
+    def trace_transaction(self, tx_hash: str) -> List[Dict[str, Any]]:
         try:
             return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
         except ParityTraceDecodeException as exc:
@@ -377,7 +377,7 @@ class ParityManager:
 
     def trace_filter(self, from_block: int = 1, to_block: Optional[int] = None,
                      from_address: Optional[List[str]] = None, to_address: Optional[List[str]] = None,
-                     after: Optional[int] = None, count: Optional[int] = None) -> List[Dict[str, any]]:
+                     after: Optional[int] = None, count: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         :param from_block: Quantity or Tag - (optional) From this block. `0` is not working, it needs to be `>= 1`
         :param to_block: Quantity or Tag - (optional) To this block.
@@ -621,14 +621,14 @@ class EthereumClient:
         return bool(self.w3.eth.getCode(contract_address))
 
     @tx_with_exception_handling
-    def send_transaction(self, transaction_dict: Dict[str, any]) -> bytes:
+    def send_transaction(self, transaction_dict: Dict[str, Any]) -> bytes:
         return self.w3.eth.sendTransaction(transaction_dict)
 
     @tx_with_exception_handling
     def send_raw_transaction(self, raw_transaction) -> bytes:
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
-    def send_unsigned_transaction(self, tx: Dict[str, any], private_key: Optional[str] = None,
+    def send_unsigned_transaction(self, tx: Dict[str, Any], private_key: Optional[str] = None,
                                   public_key: Optional[str] = None, retry: bool = False,
                                   block_identifier: Optional[str] = 'pending') -> bytes:
         """

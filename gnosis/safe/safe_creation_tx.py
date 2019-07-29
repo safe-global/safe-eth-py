@@ -1,7 +1,7 @@
 import math
 import os
 from logging import getLogger
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
 from eth_account.internal.transactions import (
@@ -76,7 +76,7 @@ class SafeCreationTx:
                                                       fixed_creation_cost,
                                                       payment_token_eth_value)
 
-        self.tx_dict: Dict[str, any] = self._build_proxy_contract_creation_tx(master_copy=master_copy,
+        self.tx_dict: Dict[str, Any] = self._build_proxy_contract_creation_tx(master_copy=master_copy,
                                                                               initializer=safe_setup_data,
                                                                               funder=funder,
                                                                               payment_token=payment_token,
@@ -289,7 +289,7 @@ class SafeCreationTx:
         })['data']
 
     @staticmethod
-    def _sign_web3_transaction(tx: Dict[str, any], v: int, r: int, s: int) -> (bytes, HexBytes):
+    def _sign_web3_transaction(tx: Dict[str, Any], v: int, r: int, s: int) -> (bytes, HexBytes):
         """
         Signed transaction that compatible with `w3.eth.sendRawTransaction`
         Is not used because `pyEthereum` implementation of Transaction was found to be more
