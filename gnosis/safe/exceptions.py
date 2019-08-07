@@ -30,6 +30,10 @@ class SignaturesDataTooShort(InvalidMultisigTx):
     pass
 
 
+class InvalidOwnerProvided(InvalidMultisigTx):
+    pass
+
+
 class InvalidSignaturesProvided(InvalidMultisigTx):
     pass
 
@@ -47,4 +51,20 @@ class HashHasNotBeenApproved(InvalidMultisigTx):
 
 
 class NotEnoughSafeTransactionGas(InvalidMultisigTx):
+    pass
+
+
+class InvalidContractSignatureLocation(InvalidMultisigTx):
+    pass
+
+
+class OnlyOwnersCanApproveAHash(InvalidMultisigTx):
+    pass
+
+
+class OwnerManagerException(InvalidMultisigTx):
+    pass
+
+
+class ModuleManagerException(InvalidMultisigTx):
     pass

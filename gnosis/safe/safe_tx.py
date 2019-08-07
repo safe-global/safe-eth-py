@@ -12,9 +12,12 @@ from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
 from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
-                         HashHasNotBeenApproved, InvalidInternalTx,
-                         InvalidMultisigTx, InvalidSignaturesProvided,
+                         HashHasNotBeenApproved,
+                         InvalidContractSignatureLocation, InvalidInternalTx,
+                         InvalidMultisigTx, InvalidOwnerProvided,
+                         InvalidSignaturesProvided, ModuleManagerException,
                          NotEnoughSafeTransactionGas,
+                         OnlyOwnersCanApproveAHash, OwnerManagerException,
                          SignatureNotProvidedByOwner, SignaturesDataTooShort)
 from .signatures import signature_split, signature_to_bytes
 
@@ -139,11 +142,32 @@ class SafeTx:
             'Could not pay gas costs with ether': CouldNotPayGasWithEther,
             'Could not pay gas costs with token': CouldNotPayGasWithToken,
             'Hash has not been approved': HashHasNotBeenApproved,
+            'Hash not approved': HashHasNotBeenApproved,
+            'Invalid contract signature location: data not complete': InvalidContractSignatureLocation,
+            'Invalid contract signature location: inside static part': InvalidContractSignatureLocation,
+            'Invalid contract signature location: length not present': InvalidContractSignatureLocation,
+            'Invalid contract signature provided': InvalidContractSignatureLocation,
+            'Invalid owner provided': InvalidOwnerProvided,
+            'Invalid owner address provided': InvalidOwnerProvided,
             'Invalid signatures provided': InvalidSignaturesProvided,
             'Not enough gas to execute safe transaction': NotEnoughSafeTransactionGas,
+            'Only owners can approve a hash': OnlyOwnersCanApproveAHash,
             'Signature not provided by owner': SignatureNotProvidedByOwner,
             'Signatures data too short': SignaturesDataTooShort,
+            # OwnerManager
+            'Address is already an owner': OwnerManagerException,
+            'Invalid owner address provided': OwnerManagerException,
+            'Invalid prevOwner, owner pair provided': OwnerManagerException,
+            'New owner count needs to be larger than new threshold': OwnerManagerException,
+            'Threshold cannot exceed owner count': OwnerManagerException,
+            'Threshold needs to be greater than 0': OwnerManagerException,
+            # ModuleManager
+            'Invalid module address provided': ModuleManagerException,
+            'Invalid prevModule, module pair provided': ModuleManagerException,
+            'Method can only be called from an enabled module': ModuleManagerException,
+            'Module has already been added': ModuleManagerException,
         }
+
         for reason, custom_exception in error_with_exception.items():
             if reason in message:
                 raise custom_exception(message)
