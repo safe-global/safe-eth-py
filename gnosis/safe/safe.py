@@ -110,8 +110,11 @@ class Safe:
             NULL_ADDRESS  # Refund receiver
         ).buildTransaction({'to': NULL_ADDRESS})['data']
 
-        return ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
-                                                              initializer_data)
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
+                                                                          initializer_data)
+        logger.info("Deployed and initialized Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
+                    deployer_account.address)
+        return ethereum_tx_sent
 
     @staticmethod
     def deploy_old_master_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
@@ -132,8 +135,11 @@ class Safe:
             b''  # Data for optional DELEGATE CALL
         ).buildTransaction({'to': NULL_ADDRESS})['data']
 
-        return ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
-                                                              initializer_data)
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
+                                                                          initializer_data)
+        logger.info("Deployed and initialized Old Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
+                    deployer_account.address)
+        return ethereum_tx_sent
 
     @staticmethod
     def estimate_safe_creation(ethereum_client: EthereumClient, old_master_copy_address: str,
