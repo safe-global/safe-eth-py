@@ -493,19 +493,21 @@ class EthereumClient:
                                        check_receipt: bool = True):
         contract_address = None
         for data in (constructor_data, initializer_data):
-            tx = {'from': deployer_account.address,
-                  'data': data,
-                  'gasPrice': self.w3.eth.gasPrice,
-                  'value': 0,
-                  'to': contract_address if contract_address else b''}
-            tx['gas'] = self.w3.eth.estimateGas(tx)
-            tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
-            if check_receipt:
-                tx_receipt = self.get_transaction_receipt(tx_hash, timeout=60)
-                assert tx_receipt.status
+            # Because initializer_data is not mandatory
+            if data:
+                tx = {'from': deployer_account.address,
+                      'data': data,
+                      'gasPrice': self.w3.eth.gasPrice,
+                      'value': 0,
+                      'to': contract_address if contract_address else b''}
+                tx['gas'] = self.w3.eth.estimateGas(tx)
+                tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+                if check_receipt:
+                    tx_receipt = self.get_transaction_receipt(tx_hash, timeout=60)
+                    assert tx_receipt.status
 
-            if not contract_address:
-                contract_address = checksum_encode(mk_contract_address(tx['from'], tx['nonce']))
+                if not contract_address:
+                    contract_address = checksum_encode(mk_contract_address(tx['from'], tx['nonce']))
 
         return EthereumTxSent(tx_hash, tx, contract_address)
 
