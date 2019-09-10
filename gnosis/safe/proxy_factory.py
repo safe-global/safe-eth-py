@@ -71,11 +71,11 @@ class ProxyFactory:
         """
         proxy_factory_contract = self.get_contract()
         create_proxy_fn = proxy_factory_contract.functions.createProxy(master_copy, initializer)
-        contract_address = create_proxy_fn.call()
 
         tx_parameters = {
             'from': deployer_account.address
         }
+        contract_address = create_proxy_fn.call(tx_parameters)
 
         if gas_price is not None:
             tx_parameters['gasPrice'] = gas_price
@@ -101,15 +101,17 @@ class ProxyFactory:
         :param salt_nonce: Uint256 for `create2` salt
         :param gas: Gas
         :param gas_price: Gas Price
+        :param nonce: Nonce
         :return: Tuple(tx-hash, tx, deployed contract address)
         """
         proxy_factory_contract = self.get_contract()
         create_proxy_fn = proxy_factory_contract.functions.createProxyWithNonce(master_copy, initializer, salt_nonce)
-        contract_address = create_proxy_fn.call()
 
         tx_parameters = {
             'from': deployer_account.address
         }
+        contract_address = create_proxy_fn.call(tx_parameters)
+
         if gas_price is not None:
             tx_parameters['gasPrice'] = gas_price
 
