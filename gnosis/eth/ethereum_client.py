@@ -11,6 +11,8 @@ from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
+from web3.middleware.pythonic import (block_formatter, receipt_formatter,
+                                      transaction_formatter)
 from web3.providers import AutoProvider
 from web3.utils.threads import Timeout
 
@@ -18,6 +20,9 @@ from .constants import ERC20_721_TRANSFER_TOPIC, NULL_ADDRESS
 from .contracts import get_erc20_contract
 
 logger = getLogger(__name__)
+
+
+EthereumHash = Union[bytes, str]
 
 
 class EthereumClientException(ValueError):
@@ -602,10 +607,24 @@ class EthereumClient:
     def get_balance(self, address: str, block_identifier=None):
         return self.w3.eth.getBalance(address, block_identifier)
 
-    def get_transaction(self, tx_hash):
+    def get_transaction(self, tx_hash: EthereumHash) -> Optional[Dict[str, Any]]:
         return self.w3.eth.getTransaction(tx_hash)
 
-    def get_transaction_receipt(self, tx_hash, timeout=None):
+    def get_transactions(self, tx_hashes: List[EthereumHash]) -> List[Optional[Dict[str, Any]]]:
+        payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionByHash',
+                    'params': [HexBytes(tx_hash).hex()]}
+                   for i, tx_hash in enumerate(tx_hashes)]
+        results = requests.post(self.ethereum_node_url, json=payload).json()
+        txs = []
+        for result in results:
+            raw_tx = result['result']
+            if raw_tx:
+                txs.append(transaction_formatter(raw_tx))
+            else:
+                txs.append(None)
+        return txs
+
+    def get_transaction_receipt(self, tx_hash: EthereumHash, timeout=None) -> Optional[Dict[str, Any]]:
         if not timeout:
             tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
         else:
@@ -617,8 +636,38 @@ class EthereumClient:
         # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
         return tx_receipt if tx_receipt and tx_receipt['blockNumber'] is not None else None
 
-    def get_block(self, block_number: int, full_transactions=False):
+    def get_transaction_receipts(self, tx_hashes: EthereumHash) -> List[Optional[Dict[str, Any]]]:
+        payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionReceipt',
+                    'params': [HexBytes(tx_hash).hex()]}
+                   for i, tx_hash in enumerate(tx_hashes)]
+        results = requests.post(self.ethereum_node_url, json=payload).json()
+        receipts = []
+        for result in results:
+            tx_receipt = result['result']
+            # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
+            if tx_receipt and tx_receipt['blockNumber'] is not None:
+                receipts.append(receipt_formatter(tx_receipt))
+            else:
+                receipts.append(None)
+        return receipts
+
+    def get_block(self, block_number: int, full_transactions=False) -> Optional[Dict[str, Any]]:
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
+
+    def get_blocks(self, block_numbers: List[int], full_transactions=False) -> List[Optional[Dict[str, Any]]]:
+        payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getBlockByNumber',
+                    'params': [hex(block_number), full_transactions]}
+                   for i, block_number in enumerate(block_numbers)]
+        results = requests.post(self.ethereum_node_url, json=payload).json()
+        blocks = []
+        for result in results:
+            raw_block = result['result']
+            del raw_block['extraData']  # Remove extraData, raises some problems on parsing
+            if raw_block:
+                blocks.append(block_formatter(raw_block))
+            else:
+                blocks.append(None)
+        return blocks
 
     def is_contract(self, contract_address: str):
         return bool(self.w3.eth.getCode(contract_address))
@@ -737,7 +786,7 @@ class EthereumClient:
         return checksum_encode(privtoaddr(private_key))
 
     @staticmethod
-    def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
+    def get_signing_address(signed_hash: EthereumHash, v: int, r: int, s: int) -> str:
         """
         :return: checksum encoded address starting by 0x, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
         :rtype: str
