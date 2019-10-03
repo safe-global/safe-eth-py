@@ -141,6 +141,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.assertEqual(token_balance, 0)
 
     def test_get_blocks(self):
+        self.assertEqual(self.ethereum_client.get_blocks([]), [])
         # Generate 3 blocks
         to = Account.create().address
         value = 345
@@ -403,6 +404,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertEqual(block.number, tx.blockNumber)
 
     def test_get_transactions(self):
+        self.assertEqual(self.ethereum_client.get_transactions([]), [])
         to = Account.create().address
         values = [123, 234, 567]
         tx_hashes = [self.send_ether(to, values[i]) for i in range(3)]
@@ -411,6 +413,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(tx['to'], to)
             self.assertEqual(tx['value'], values[i])
 
+        self.assertEqual(self.ethereum_client.get_transaction_receipts([]), [])
         receipts = self.ethereum_client.get_transaction_receipts(tx_hashes)
         for i, receipt in enumerate(receipts):
             self.assertEqual(receipt['status'], 1)

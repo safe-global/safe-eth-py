@@ -611,6 +611,8 @@ class EthereumClient:
         return self.w3.eth.getTransaction(tx_hash)
 
     def get_transactions(self, tx_hashes: List[EthereumHash]) -> List[Optional[Dict[str, Any]]]:
+        if not tx_hashes:
+            return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionByHash',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
@@ -637,6 +639,8 @@ class EthereumClient:
         return tx_receipt if tx_receipt and tx_receipt['blockNumber'] is not None else None
 
     def get_transaction_receipts(self, tx_hashes: EthereumHash) -> List[Optional[Dict[str, Any]]]:
+        if not tx_hashes:
+            return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionReceipt',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
@@ -655,6 +659,8 @@ class EthereumClient:
         return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
 
     def get_blocks(self, block_numbers: List[int], full_transactions=False) -> List[Optional[Dict[str, Any]]]:
+        if not block_numbers:
+            return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getBlockByNumber',
                     'params': [hex(block_number), full_transactions]}
                    for i, block_number in enumerate(block_numbers)]
