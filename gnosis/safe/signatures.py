@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 
-def signature_split(signatures: bytes, pos: int) -> Tuple[int, int, int]:
+def signature_split(signatures: bytes, pos: int = 0) -> Tuple[int, int, int]:
     """
     :param signatures: signatures in form of {bytes32 r}{bytes32 s}{uint8 v}
     :param pos: position of the signature

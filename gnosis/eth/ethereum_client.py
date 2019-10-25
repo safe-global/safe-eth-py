@@ -816,7 +816,7 @@ class EthereumClient:
     @staticmethod
     def get_signing_address(signed_hash: EthereumHash, v: int, r: int, s: int) -> str:
         """
-        :return: checksum encoded address starting by 0x, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
+        :return: checksummed ethereum address, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
         :rtype: str
         """
         encoded_64_address = ecrecover_to_pub(signed_hash, v, r, s)
