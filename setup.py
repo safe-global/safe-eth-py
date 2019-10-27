@@ -15,7 +15,7 @@ requirements = [
     "hexbytes>=0.1.0",
     "packaging",
     "py-eth-sig-utils>=0.3.0",
-    "web3>=4",
+    "web3>=4<5",
 ]
 
 setup(
