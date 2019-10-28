@@ -1,12 +1,11 @@
 from logging import getLogger
-from typing import Union, Iterable
+from typing import Iterable, Union
 
 from eth_account.messages import defunct_hash_message
 from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
 
-from gnosis.eth import EthereumClient
-from gnosis.safe.signatures import signature_split
+from gnosis.safe.signatures import get_signing_address, signature_split
 
 logger = getLogger(__name__)
 
@@ -27,15 +26,15 @@ class SafeSignature:
             yield cls(signatures[i: i + signature_size], safe_tx_hash)
 
     def decode_owner(self, v: int, r: int, s: int, safe_tx_hash: EthereumBytes):
-        # TODO End contract signatures
         if v == 0:  # Contract signature
-            raise NotImplemented
+            # We don't need further checks
+            contract_address = checksum_encode(r)
+            return contract_address
         elif v == 1:  # Approved hash
             return checksum_encode(r)
         elif v > 30:  # Support eth_sign
             # defunct_hash_message preprends `\x19Ethereum Signed Message:\n32`
             message_hash = defunct_hash_message(primitive=safe_tx_hash)
-            return EthereumClient.get_signing_address(message_hash, v - 4, r, s)
+            return get_signing_address(message_hash, v - 4, r, s)
         else:  # EOA signature
-            return EthereumClient.get_signing_address(safe_tx_hash, v, r, s)
-
+            return get_signing_address(safe_tx_hash, v, r, s)

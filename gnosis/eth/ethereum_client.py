@@ -812,13 +812,3 @@ class EthereumClient:
     @staticmethod
     def private_key_to_address(private_key):
         return checksum_encode(privtoaddr(private_key))
-
-    @staticmethod
-    def get_signing_address(signed_hash: EthereumHash, v: int, r: int, s: int) -> str:
-        """
-        :return: checksummed ethereum address, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
-        :rtype: str
-        """
-        encoded_64_address = ecrecover_to_pub(signed_hash, v, r, s)
-        address_bytes = sha3(encoded_64_address)[-20:]
-        return checksum_encode(address_bytes)

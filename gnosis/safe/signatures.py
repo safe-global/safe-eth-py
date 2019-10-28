@@ -1,4 +1,6 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
+
+from ethereum.utils import checksum_encode, ecrecover_to_pub, sha3
 
 
 def signature_split(signatures: bytes, pos: int = 0) -> Tuple[int, int, int]:
@@ -37,3 +39,13 @@ def signatures_to_bytes(signatures: List[Tuple[int, int, int]]) -> bytes:
     :return: 65 bytes per signature
     """
     return b''.join([signature_to_bytes(vrs) for vrs in signatures])
+
+
+def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
+    """
+    :return: checksummed ethereum address, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
+    :rtype: str
+    """
+    encoded_64_address = ecrecover_to_pub(signed_hash, v, r, s)
+    address_bytes = sha3(encoded_64_address)[-20:]
+    return checksum_encode(address_bytes)

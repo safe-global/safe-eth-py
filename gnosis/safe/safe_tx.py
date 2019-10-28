@@ -19,7 +19,8 @@ from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
                          NotEnoughSafeTransactionGas,
                          OnlyOwnersCanApproveAHash, OwnerManagerException,
                          SignatureNotProvidedByOwner, SignaturesDataTooShort)
-from .signatures import signature_split, signature_to_bytes
+from .signatures import (get_signing_address, signature_split,
+                         signature_to_bytes)
 
 
 class SafeTx:
@@ -112,7 +113,7 @@ class SafeTx:
         owners = []
         for i in range(len(self.signatures) // 65):
             v, r, s = signature_split(self.signatures, i)
-            owners.append(EthereumClient.get_signing_address(self.safe_tx_hash, v, r, s))
+            owners.append(get_signing_address(self.safe_tx_hash, v, r, s))
         return owners
 
     @property

@@ -1,6 +1,7 @@
 import logging
 
 from django.test import TestCase
+
 from eth_abi2.packed import encode_single_packed
 from eth_account import Account
 from eth_account.messages import defunct_hash_message
@@ -14,13 +15,12 @@ logger = logging.getLogger(__name__)
 
 class TestSignature(TestCase):
     def test_contract_signature(self):
-        #owner = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
-        #safe_tx_hash = HexBytes('0x4c9577d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf196')
-        #signature = HexBytes('0x00000000000000000000000005c85ab5b09eb8a55020d72daf6091e04e264af900000000000000000000000'
-        #                     '0000000000000000000000000000000000000000000')
-        #safe_signature = SafeSignature(signature, safe_tx_hash)
-        #self.assertEqual(safe_signature.owner, owner)
-        pass
+        owner = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
+        safe_tx_hash = HexBytes('0x4c9577d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf196')
+        signature = HexBytes('0x00000000000000000000000005c85ab5b09eb8a55020d72daf6091e04e264af900000000000000000000000'
+                             '0000000000000000000000000000000000000000000')
+        safe_signature = SafeSignature(signature, safe_tx_hash)
+        self.assertEqual(safe_signature.owner, owner)
 
     def test_approved_hash_signature(self):
         owner = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
