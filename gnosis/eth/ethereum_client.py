@@ -192,7 +192,7 @@ class Erc20Manager:
                                    token_address: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually
-        An example of an event:
+        An example of an erc20 event:
         {'logIndex': 0,
          'transactionIndex': 0,
          'transactionHash': HexBytes('0x4d0f25313603e554e3b040667f7f391982babbd195c7ae57a8c84048189f7794'),
@@ -209,6 +209,26 @@ class Erc20Manager:
                   'value': 9009360000000000
                  }
         }
+        An example of an erc721 event
+        {'address': '0x6631FcbB50677DfC6c02CCDcc03a8f68Db427a64',
+         'blockHash': HexBytes('0x95c71c6c9373e9a8ca2c767dda1cd5083eb6addcce36fc216c9e1f458d6970f9'),
+         'blockNumber': 5341681,
+         'data': '0x',
+         'logIndex': 0,
+         'removed': False,
+         'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+          HexBytes('0x000000000000000000000000b5239c032ab9fb5abfc3903e770a4b6a9095542c'),
+          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000063')],
+         'transactionHash': HexBytes('0xce8c8af0503e6f8a421345c10cdf92834c95186916a3f5b1437d2bba63d2db9e'),
+         'transactionIndex': 0,
+         'transactionLogIndex': '0x0',
+         'type': 'mined',
+         'args': {'from': '0x0000000000000000000000000000000000000000',
+                  'to': '0xb5239C032AB9fB5aBFc3903e770A4B6a9095542C',
+                  'tokenId': 99
+                 }
+         }
         :param addresses: Search events `from` and `to` these `addresses`
         :param from_block: Block to start querying from
         :param to_block: Block to stop querying from
