@@ -15,12 +15,12 @@ requirements = [
     "hexbytes>=0.1.0",
     "packaging",
     "py-eth-sig-utils>=0.3.0",
-    "web3>=4",
+    "web3>=4,<5",
 ]
 
 setup(
     name='gnosis-py',
-    version='1.6.1',
+    version='1.6.2',
     packages=find_packages(),
     install_requires=requirements,
     include_package_data=True,
