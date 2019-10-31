@@ -21,6 +21,8 @@ class SafeSignatureSerializer(serializers.Serializer):
             return v
         elif v == 1:  # Approved hash
             return v
+        #elif v > 30:  # TODO Support eth_sign
+        #    return v
         elif self.check_v(v):
             return v
         else:
