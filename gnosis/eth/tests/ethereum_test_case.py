@@ -25,7 +25,7 @@ class EthereumTestCaseMixin:
     def send_tx(self, tx, account: LocalAccount) -> bytes:
         return send_tx(self.w3, tx, account)
 
-    def send_ether(self, to: str, value: int):
+    def send_ether(self, to: str, value: int) -> bytes:
         return send_tx(self.w3, {'to': to, 'value': value}, self.ethereum_test_account)
 
     def create_account(self, initial_ether: float = 0, initial_wei: int = 0) -> LocalAccount:

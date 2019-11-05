@@ -174,6 +174,31 @@ class Erc20Manager:
         """
         return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
 
+    def get_balances(self, address: str, erc20_addresses: List[str]) -> List[Dict[str, Union[str, int]]]:
+        # Build ether `eth_getBalance` query
+        balance_query = {"jsonrpc": "2.0",
+                         "method": "eth_getBalance",
+                         "params": [address, "latest"],
+                         "id": 0}
+        queries = [balance_query]
+
+        # Build tokens `balanceOf` query
+        for i, erc20_address in enumerate(erc20_addresses):
+            queries.append({"jsonrpc": "2.0",
+                            "method": "eth_call",
+                            "params": [{"to": erc20_address,  # Balance of
+                                        "data": "0x70a08231" + '{:0>64}'.format(address.replace('0x', '').lower())
+                                        }, "latest"],
+                            "id": i + 1})
+        response = requests.post(self.ethereum_client.ethereum_node_url, json=queries)
+        balances = []
+        for token_address, data in zip([None] + erc20_addresses, response.json()):
+            balances.append({
+                'token_address': token_address,
+                'balance': 0 if data['result'] == '0x' else int(data['result'], 16)
+            })
+        return balances
+
     def get_info(self, erc20_address: str) -> Erc20_Info:
         """
         Get erc20 information (`name`, `symbol` and `decimals`)

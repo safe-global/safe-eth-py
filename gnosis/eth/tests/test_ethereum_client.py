@@ -140,6 +140,31 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         token_balance = self.ethereum_client.erc20.get_balance(another_account, erc20_contract.address)
         self.assertEqual(token_balance, 0)
 
+    def test_get_balances(self):
+        account_address = Account.create().address
+        self.assertEqual(self.ethereum_client.erc20.get_balances(account_address, []),
+                         [{'token_address': None, 'balance': 0}])
+
+        value = 7
+        self.send_ether(account_address, 7)
+        self.assertEqual(self.ethereum_client.erc20.get_balances(account_address, []),
+                         [{'token_address': None, 'balance': value}])
+
+        tokens_value = 12
+        erc20 = self.deploy_example_erc20(tokens_value, account_address)
+        self.assertCountEqual(self.ethereum_client.erc20.get_balances(account_address, [erc20.address]),
+                              [{'token_address': None, 'balance': value},
+                               {'token_address': erc20.address, 'balance': tokens_value}])
+
+        tokens_value_2 = 19
+        erc20_2 = self.deploy_example_erc20(tokens_value_2, account_address)
+        self.assertCountEqual(self.ethereum_client.erc20.get_balances(account_address, [erc20.address,
+                                                                                        erc20_2.address]),
+                              [{'token_address': None, 'balance': value},
+                               {'token_address': erc20.address, 'balance': tokens_value},
+                               {'token_address': erc20_2.address, 'balance': tokens_value_2}
+                               ])
+
     def test_get_blocks(self):
         self.assertEqual(self.ethereum_client.get_blocks([]), [])
         # Generate 3 blocks
