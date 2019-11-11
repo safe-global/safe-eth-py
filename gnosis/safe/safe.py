@@ -169,7 +169,9 @@ class Safe:
                                  number_owners: int, gas_price: int,
                                  payment_token: Optional[str], payment_receiver: str = NULL_ADDRESS,
                                  payment_token_eth_value: float = 1.0,
-                                 fixed_creation_cost: Optional[int] = None) -> SafeCreationEstimate:
+                                 fixed_creation_cost: Optional[int] = None,
+                                 setup_data: bytes = b''
+                                 ) -> SafeCreationEstimate:
         salt_nonce = 15
         owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
         threshold = number_owners
@@ -183,7 +185,8 @@ class Safe:
                                                         payment_receiver=payment_receiver,
                                                         payment_token=payment_token,
                                                         payment_token_eth_value=payment_token_eth_value,
-                                                        fixed_creation_cost=fixed_creation_cost)
+                                                        fixed_creation_cost=fixed_creation_cost,
+                                                        setup_data=setup_data)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment,
                                     safe_creation_tx.payment_token)
 
@@ -216,7 +219,8 @@ class Safe:
                               payment_token: Optional[str],
                               payment_receiver: Optional[str] = None,  # If none, it will be `tx.origin`
                               payment_token_eth_value: float = 1.0,
-                              fixed_creation_cost: Optional[int] = None) -> SafeCreate2Tx:
+                              fixed_creation_cost: Optional[int] = None,
+                              setup_data: Optional[str] = '') -> SafeCreate2Tx:
         """
         Prepare safe proxy deployment for being relayed. It calculates and sets the costs of deployment to be returned
         to the sender of the tx. If you are an advanced user you may prefer to use `create` function
@@ -232,7 +236,8 @@ class Safe:
                                                             payment_receiver=payment_receiver,
                                                             payment_token=payment_token,
                                                             payment_token_eth_value=payment_token_eth_value,
-                                                            fixed_creation_cost=fixed_creation_cost)
+                                                            fixed_creation_cost=fixed_creation_cost,
+                                                            setup_data=setup_data)
         except InvalidERC20Token as exc:
             raise InvalidPaymentToken('Invalid payment token %s' % payment_token) from exc
 

@@ -58,7 +58,8 @@ class SafeCreate2TxBuilder:
     def build(self, owners: List[str], threshold: int, salt_nonce: int,
               gas_price: int, payment_receiver: Optional[str] = None,
               payment_token: Optional[str] = None,
-              payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None):
+              payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None,
+              setup_data: bytes = b''):
         """
         Prepare Safe creation
         :param owners: Owners of the Safe
@@ -82,7 +83,8 @@ class SafeCreate2TxBuilder:
         # This initializer will be passed to the ProxyFactory to be called right after proxy is deployed
         # We use `payment=0` as safe has no ether yet and estimation will fail
         safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token=payment_token,
-                                                                   payment_receiver=payment_receiver)
+                                                                   payment_receiver=payment_receiver,
+                                                                   setup_data=HexBytes(setup_data))
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
         estimated_gas: int = self._estimate_gas(safe_setup_data,
@@ -99,7 +101,8 @@ class SafeCreate2TxBuilder:
         # Now we have a estimate for `payment` so we get initialization data again
         final_safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold,
                                                                          payment_token=payment_token, payment=payment,
-                                                                         payment_receiver=payment_receiver)
+                                                                         payment_receiver=payment_receiver,
+                                                                         setup_data=setup_data)
 
         safe_address = self.calculate_create2_address(final_safe_setup_data, salt_nonce)
         assert int(safe_address, 16), 'Calculated Safe address cannot be the NULL ADDRESS'
@@ -188,12 +191,14 @@ class SafeCreate2TxBuilder:
     def _get_initial_setup_safe_data(self, owners: List[str], threshold: int,
                                      payment_token: str = NULL_ADDRESS,
                                      payment: int = 0,
-                                     payment_receiver: str = NULL_ADDRESS) -> bytes:
+                                     payment_receiver: str = NULL_ADDRESS,
+                                     setup_data: bytes = b'',
+                                     ) -> bytes:
         return HexBytes(self.master_copy_contract.functions.setup(
             owners,
             threshold,
             NULL_ADDRESS,  # Contract address for optional delegate call
-            b'',            # Data payload for optional delegate call
+            setup_data,  # Data payload for optional delegate call
             payment_token,
             payment,
             payment_receiver
