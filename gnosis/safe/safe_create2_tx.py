@@ -55,11 +55,34 @@ class SafeCreate2TxBuilder:
         self.master_copy_contract = get_safe_contract(w3, master_copy_address)
         self.proxy_factory_contract = get_proxy_factory_contract(w3, proxy_factory_address)
 
+    @staticmethod
+    def _calculate_gas(owners: List[str], safe_setup_data: bytes, payment_token: str) -> int:
+        """
+        Calculate gas manually, based on tests of previosly deployed safes
+        :param owners: Safe owners
+        :param safe_setup_data: Data for proxy setup
+        :param payment_token: If payment token, we will need more gas to transfer and maybe storage if first time
+        :return: total gas needed for deployment
+        """
+        base_gas = 205000  # Transaction base gas
+
+        # If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
+        # The other 1K is for overhead of making the call
+        if payment_token != NULL_ADDRESS:
+            payment_token_gas = 55000
+        else:
+            payment_token_gas = 0
+
+        data_gas = 68 * len(safe_setup_data)  # Data gas
+        gas_per_owner = 20000  # Magic number calculated by testing and averaging owners
+        return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
+
     def build(self, owners: List[str], threshold: int, salt_nonce: int,
               gas_price: int, payment_receiver: Optional[str] = None,
               payment_token: Optional[str] = None,
               payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None,
-              setup_data: bytes = b''):
+              setup_data: bytes = b'',
+              to: str = NULL_ADDRESS):
         """
         Prepare Safe creation
         :param owners: Owners of the Safe
@@ -82,8 +105,10 @@ class SafeCreate2TxBuilder:
         # address paymentToken, uint256 payment, address payable paymentReceiver)`
         # This initializer will be passed to the ProxyFactory to be called right after proxy is deployed
         # We use `payment=0` as safe has no ether yet and estimation will fail
-        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, payment_token=payment_token,
+        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold,
+                                                                   payment_token=payment_token,
                                                                    payment_receiver=payment_receiver,
+                                                                   to=to,
                                                                    setup_data=HexBytes(setup_data))
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
@@ -102,6 +127,7 @@ class SafeCreate2TxBuilder:
         final_safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold,
                                                                          payment_token=payment_token, payment=payment,
                                                                          payment_receiver=payment_receiver,
+                                                                         to=to,
                                                                          setup_data=setup_data)
 
         safe_address = self.calculate_create2_address(final_safe_setup_data, salt_nonce)
@@ -110,28 +136,6 @@ class SafeCreate2TxBuilder:
         return SafeCreate2Tx(salt_nonce, owners, threshold, self.master_copy_address, self.proxy_factory_address,
                              payment_receiver, payment_token, payment, gas, gas_price, payment_token_eth_value,
                              fixed_creation_cost, safe_address, final_safe_setup_data)
-
-    @staticmethod
-    def _calculate_gas(owners: List[str], safe_setup_data: bytes, payment_token: str) -> int:
-        """
-        Calculate gas manually, based on tests of previosly deployed safes
-        :param owners: Safe owners
-        :param safe_setup_data: Data for proxy setup
-        :param payment_token: If payment token, we will need more gas to transfer and maybe storage if first time
-        :return: total gas needed for deployment
-        """
-        base_gas = 205000  # Transaction base gas
-
-        # If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
-        # The other 1K is for overhead of making the call
-        if payment_token != NULL_ADDRESS:
-            payment_token_gas = 55000
-        else:
-            payment_token_gas = 0
-
-        data_gas = 68 * len(safe_setup_data)  # Data gas
-        gas_per_owner = 20000  # Magic number calculated by testing and averaging owners
-        return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
 
     @staticmethod
     def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: Optional[int],
@@ -192,12 +196,13 @@ class SafeCreate2TxBuilder:
                                      payment_token: str = NULL_ADDRESS,
                                      payment: int = 0,
                                      payment_receiver: str = NULL_ADDRESS,
+                                     to: str = NULL_ADDRESS,
                                      setup_data: bytes = b'',
                                      ) -> bytes:
         return HexBytes(self.master_copy_contract.functions.setup(
             owners,
             threshold,
-            NULL_ADDRESS,  # Contract address for optional delegate call
+            to,  # Contract address for optional delegate call
             setup_data,  # Data payload for optional delegate call
             payment_token,
             payment,

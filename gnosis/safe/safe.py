@@ -170,7 +170,8 @@ class Safe:
                                  payment_token: Optional[str], payment_receiver: str = NULL_ADDRESS,
                                  payment_token_eth_value: float = 1.0,
                                  fixed_creation_cost: Optional[int] = None,
-                                 setup_data: bytes = b''
+                                 setup_data: Optional[bytes] = b'',
+                                 to: Optional[str] = NULL_ADDRESS
                                  ) -> SafeCreationEstimate:
         salt_nonce = 15
         owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
@@ -186,7 +187,8 @@ class Safe:
                                                         payment_token=payment_token,
                                                         payment_token_eth_value=payment_token_eth_value,
                                                         fixed_creation_cost=fixed_creation_cost,
-                                                        setup_data=setup_data)
+                                                        setup_data=setup_data,
+                                                        to=to)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment,
                                     safe_creation_tx.payment_token)
 
