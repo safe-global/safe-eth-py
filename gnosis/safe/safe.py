@@ -222,7 +222,8 @@ class Safe:
                               payment_receiver: Optional[str] = None,  # If none, it will be `tx.origin`
                               payment_token_eth_value: float = 1.0,
                               fixed_creation_cost: Optional[int] = None,
-                              setup_data: Optional[str] = '') -> SafeCreate2Tx:
+                              setup_data: Optional[str] = '',
+                              to: Optional[str] = NULL_ADDRESS) -> SafeCreate2Tx:
         """
         Prepare safe proxy deployment for being relayed. It calculates and sets the costs of deployment to be returned
         to the sender of the tx. If you are an advanced user you may prefer to use `create` function
@@ -239,7 +240,8 @@ class Safe:
                                                             payment_token=payment_token,
                                                             payment_token_eth_value=payment_token_eth_value,
                                                             fixed_creation_cost=fixed_creation_cost,
-                                                            setup_data=setup_data)
+                                                            setup_data=setup_data,
+                                                            to=to)
         except InvalidERC20Token as exc:
             raise InvalidPaymentToken('Invalid payment token %s' % payment_token) from exc
 

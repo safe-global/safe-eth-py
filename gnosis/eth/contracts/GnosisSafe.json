@@ -492,6 +492,10 @@
           "type": "bytes"
         },
         {
+          "name": "fallbackHandler",
+          "type": "address"
+        },
+        {
           "name": "paymentToken",
           "type": "address"
         },
