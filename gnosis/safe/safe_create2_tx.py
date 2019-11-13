@@ -81,8 +81,8 @@ class SafeCreate2TxBuilder:
               gas_price: int, payment_receiver: Optional[str] = None,
               payment_token: Optional[str] = None,
               payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None,
-              setup_data: bytes = b'',
-              to: str = NULL_ADDRESS):
+              setup_data: Optional[bytes] = b'',
+              to: Optional[str] = NULL_ADDRESS):
         """
         Prepare Safe creation
         :param owners: Owners of the Safe
