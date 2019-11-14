@@ -186,6 +186,28 @@ class SafeCreate2TxBuilder:
         return gas
 
     def _get_initial_setup_safe_data(self, owners: List[str], threshold: int,
+                                     fallback_handler: str = NULL_ADDRESS,
+                                     payment_token: str = NULL_ADDRESS,
+                                     payment: int = 0,
+                                     payment_receiver: str = NULL_ADDRESS) -> bytes:
+        return HexBytes(self.master_copy_contract.functions.setup(
+            owners,
+            threshold,
+            NULL_ADDRESS,  # Contract address for optional delegate call
+            b'',            # Data payload for optional delegate call
+            fallback_handler,  # Handler for fallback calls to this contract
+            payment_token,
+            payment,
+            payment_receiver
+        ).buildTransaction({
+            'gas': 1,
+            'gasPrice': 1,
+        })['data'])
+
+
+class OldSafeCreate2TxBuilder(SafeCreate2TxBuilder):
+    def _get_initial_setup_safe_data(self, owners: List[str], threshold: int,
+                                     fallback_handler: str = NULL_ADDRESS,
                                      payment_token: str = NULL_ADDRESS,
                                      payment: int = 0,
                                      payment_receiver: str = NULL_ADDRESS) -> bytes:

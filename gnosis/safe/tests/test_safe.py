@@ -346,8 +346,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe_contract = safe.get_contract()
         fake_tx_hash = Web3.sha3(text='Knopfler')
         another_tx_hash = Web3.sha3(text='Marc')
-        tx = safe_contract.functions.approveHash(fake_tx_hash).buildTransaction()
-        tx['gas'] = tx['gas'] * 2
+        tx = safe_contract.functions.approveHash(
+            fake_tx_hash
+        ).buildTransaction({'from': self.ethereum_test_account.address})
 
         self.ethereum_client.send_unsigned_transaction(tx, private_key=self.ethereum_test_account.privateKey)
         self.assertTrue(safe.retrieve_is_hash_approved(self.ethereum_test_account.address, fake_tx_hash))
@@ -359,7 +360,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe_contract = safe.get_contract()
         message = b'12345'
         message_hash = safe_contract.functions.getMessageHash(message).call()
-        sign_message_data = HexBytes(safe_contract.functions.signMessage(message).buildTransaction()['data'])
+        sign_message_data = HexBytes(safe_contract.functions.signMessage(message).buildTransaction({'gas': 0})['data'])
         safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
         safe_tx.sign(self.ethereum_test_account.privateKey)
         safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)

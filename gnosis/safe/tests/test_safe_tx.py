@@ -27,7 +27,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         to = self.multi_send_contract.address
         value = 0
         safe_tx_gas = 600000
-        data_gas = 200000
+        base_gas = 200000
 
         # Atomic swap the owner of a Safe
         new_owner = Account.create()
@@ -36,19 +36,18 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         owners_expected = [x.address for x in owners[:-1]] + [new_owner.address]
         new_threshold = threshold + 1
         data = HexBytes(safe_contract.functions.addOwnerWithThreshold(new_owner.address,
-                                                                      new_threshold).buildTransaction()['data'])
+                                                                      new_threshold).buildTransaction({'gas': 0})['data'])
         data_2 = HexBytes(safe_contract.functions.removeOwner(prev_owner.address, owner_to_remove.address,
-                                                              new_threshold).buildTransaction()['data'])
+                                                              new_threshold).buildTransaction({'gas': 0})['data'])
 
-        multisend_txs = [MultiSendTx(MultiSendOperation.CALL, safe_address,
-                                              value, d) for d in (data, data_2)]
+        multisend_txs = [MultiSendTx(MultiSendOperation.CALL, safe_address, value, d) for d in (data, data_2)]
         safe_multisend_data = self.multi_send.prepare_tx(multisend_txs)['data']
         safe_tx = SafeTx(self.ethereum_client, safe_address, to,
                          0, safe_multisend_data, SafeOperation.DELEGATE_CALL.value,
-                         safe_tx_gas, data_gas, self.gas_price, None, None, safe_nonce=0)
+                         safe_tx_gas, base_gas, self.gas_price, None, None, safe_nonce=0)
         safe_tx.sign(owners[0].privateKey)
 
-        self.assertEqual(safe_tx.call(), 1)
+        self.assertEqual(safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1)
         tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
         self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         self.assertEqual(safe.retrieve_nonce(), 1)

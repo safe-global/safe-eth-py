@@ -10,7 +10,7 @@ from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
-                                  get_old_safe_contract, get_safe_contract)
+                                  get_safe_contract, get_safe_V0_0_1_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -47,6 +47,7 @@ class Safe:
     @staticmethod
     def create(ethereum_client: EthereumClient, deployer_account: LocalAccount,
                master_copy_address: str, owners: List[str], threshold: int,
+               fallback_handler: str = NULL_ADDRESS,
                proxy_factory_address: Optional[str] = None,
                payment_token: str = NULL_ADDRESS, payment: int = 0,
                payment_receiver: str = NULL_ADDRESS) -> EthereumTxSent:
@@ -68,6 +69,7 @@ class Safe:
             threshold,
             NULL_ADDRESS,  # Contract address for optional delegate call
             b'',  # Data payload for optional delegate call
+            fallback_handler,  # Handler for fallback calls to this contract,
             payment_token,
             payment,
             payment_receiver
@@ -98,13 +100,14 @@ class Safe:
         """
 
         safe_contract = get_safe_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().buildTransaction()['data']
+        constructor_data = safe_contract.constructor().buildTransaction({'gas': 0})['data']
         initializer_data = safe_contract.functions.setup(
             # We use 2 owners that nobody controls for the master copy
             ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"],
             2,  # Threshold. Maximum security
             NULL_ADDRESS,  # Address for optional DELEGATE CALL
             b'',  # Data for optional DELEGATE CALL
+            NULL_ADDRESS,   # Handler for fallback calls to this contract
             NULL_ADDRESS,  # Payment token
             0,  # Payment
             NULL_ADDRESS  # Refund receiver
@@ -125,8 +128,8 @@ class Safe:
         :return: deployed contract address
         """
 
-        safe_contract = get_old_safe_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().buildTransaction()['data']
+        safe_contract = get_safe_V0_0_1_contract(ethereum_client.w3)
+        constructor_data = safe_contract.constructor().buildTransaction({'gas': 0})['data']
         initializer_data = safe_contract.functions.setup(
             # We use 2 owners that nobody controls for the master copy
             ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"],

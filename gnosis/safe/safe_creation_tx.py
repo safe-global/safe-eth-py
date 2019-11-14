@@ -14,8 +14,9 @@ from web3 import Web3
 from web3.contract import ContractConstructor
 
 from gnosis.eth.constants import NULL_ADDRESS
-from gnosis.eth.contracts import (get_erc20_contract, get_old_safe_contract,
-                                  get_paying_proxy_contract)
+from gnosis.eth.contracts import (get_erc20_contract,
+                                  get_paying_proxy_contract,
+                                  get_safe_V0_0_1_contract)
 
 logger = getLogger(__name__)
 
@@ -278,7 +279,7 @@ class SafeCreationTx:
         return gas
 
     def _get_initial_setup_safe_data(self, owners: List[str], threshold: int) -> bytes:
-        return get_old_safe_contract(self.w3, self.master_copy).functions.setup(
+        return get_safe_V0_0_1_contract(self.w3, self.master_copy).functions.setup(
             owners,
             threshold,
             NULL_ADDRESS,  # Contract address for optional delegate call
