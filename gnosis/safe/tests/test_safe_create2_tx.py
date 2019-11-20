@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 
-from gnosis.eth.contracts import get_safe_contract
+from gnosis.eth.contracts import get_safe_contract, get_safe_V1_0_0_contract
 
 from ..safe_create2_tx import SafeCreate2TxBuilder
 from .safe_test_case import SafeTestCaseMixin
@@ -60,6 +60,59 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         self.assertEqual(ethereum_tx_sent.contract_address, safe_creation_tx.safe_address)
 
         deployed_safe_proxy_contract = get_safe_contract(w3, proxy_address)
+        self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
+        self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
+        self.assertEqual(self.ethereum_client.get_balance(proxy_address), 0)
+
+    def test_safe_create2_tx_builder_v_1_0_0(self):
+        w3 = self.w3
+        tx_hash = get_safe_V1_0_0_contract(self.w3).constructor().transact({
+            'from': self.ethereum_test_account.address})
+        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        master_copy = tx_receipt['contractAddress']
+
+        salt_nonce = generate_salt_nonce()
+        funder_account = self.ethereum_test_account
+        owners = [Account.create().address for _ in range(4)]
+        threshold = len(owners) - 1
+        gas_price = self.gas_price
+
+        safe_creation_tx = SafeCreate2TxBuilder(w3=w3,
+                                                master_copy_address=master_copy,
+                                                proxy_factory_address=self.proxy_factory_contract_address
+                                                ).build(owners=owners,
+                                                        threshold=threshold,
+                                                        salt_nonce=salt_nonce,
+                                                        gas_price=gas_price)
+
+        self.assertEqual(safe_creation_tx.payment, safe_creation_tx.payment_ether)
+        self.send_tx({
+            'to': safe_creation_tx.safe_address,
+            'value': safe_creation_tx.payment,
+        }, funder_account)
+
+        funder_balance = self.ethereum_client.get_balance(funder_account.address)
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(funder_account,
+                                                                               master_copy,
+                                                                               safe_creation_tx.safe_setup_data,
+                                                                               salt_nonce,
+                                                                               safe_creation_tx.gas,
+                                                                               safe_creation_tx.gas_price)
+        tx_receipt = w3.eth.waitForTransactionReceipt(ethereum_tx_sent.tx_hash)
+        self.assertEqual(tx_receipt.status, 1)
+
+        # Funder balance must be bigger after a Safe deployment, as Safe deployment is a little overpriced
+        self.assertGreater(self.ethereum_client.get_balance(funder_account.address), funder_balance)
+        logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
+        log = logs[0]
+        self.assertIsNone(tx_receipt.contractAddress)
+        self.assertEqual(log['event'], 'ProxyCreation')
+        proxy_address = log['args']['proxy']
+        self.assertEqual(proxy_address, safe_creation_tx.safe_address)
+        self.assertEqual(ethereum_tx_sent.contract_address, safe_creation_tx.safe_address)
+
+        deployed_safe_proxy_contract = get_safe_contract(w3, proxy_address)
+        self.assertEqual(deployed_safe_proxy_contract.functions.VERSION().call(), '1.0.0')
         self.assertEqual(deployed_safe_proxy_contract.functions.getThreshold().call(), threshold)
         self.assertEqual(deployed_safe_proxy_contract.functions.getOwners().call(), owners)
         self.assertEqual(self.ethereum_client.get_balance(proxy_address), 0)

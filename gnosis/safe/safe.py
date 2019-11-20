@@ -171,6 +171,7 @@ class Safe:
                                  master_copy_address: str, proxy_factory_address: str,
                                  number_owners: int, gas_price: int,
                                  payment_token: Optional[str], payment_receiver: str = NULL_ADDRESS,
+                                 fallback_handler: Optional[str] = NULL_ADDRESS,
                                  payment_token_eth_value: float = 1.0,
                                  fixed_creation_cost: Optional[int] = None) -> SafeCreationEstimate:
         salt_nonce = 15
@@ -181,6 +182,7 @@ class Safe:
                                                 proxy_factory_address=proxy_factory_address
                                                 ).build(owners=owners,
                                                         threshold=threshold,
+                                                        fallback_handler=fallback_handler,
                                                         salt_nonce=salt_nonce,
                                                         gas_price=gas_price,
                                                         payment_receiver=payment_receiver,
@@ -218,6 +220,7 @@ class Safe:
                               salt_nonce: int, owners: List[str], threshold: int, gas_price: int,
                               payment_token: Optional[str],
                               payment_receiver: Optional[str] = None,  # If none, it will be `tx.origin`
+                              fallback_handler: Optional[str] = NULL_ADDRESS,
                               payment_token_eth_value: float = 1.0,
                               fixed_creation_cost: Optional[int] = None) -> SafeCreate2Tx:
         """
@@ -230,6 +233,7 @@ class Safe:
                                                     proxy_factory_address=proxy_factory_address
                                                     ).build(owners=owners,
                                                             threshold=threshold,
+                                                            fallback_handler=fallback_handler,
                                                             salt_nonce=salt_nonce,
                                                             gas_price=gas_price,
                                                             payment_receiver=payment_receiver,
