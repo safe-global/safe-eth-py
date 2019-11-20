@@ -10,7 +10,7 @@ from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
-                                  get_safe_contract, get_safe_V0_0_1_contract)
+                                  get_safe_contract, get_safe_V0_0_1_contract, get_safe_V1_0_0_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -108,6 +108,34 @@ class Safe:
             NULL_ADDRESS,  # Address for optional DELEGATE CALL
             b'',  # Data for optional DELEGATE CALL
             NULL_ADDRESS,   # Handler for fallback calls to this contract
+            NULL_ADDRESS,  # Payment token
+            0,  # Payment
+            NULL_ADDRESS  # Refund receiver
+        ).buildTransaction({'to': NULL_ADDRESS})['data']
+
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
+                                                                          initializer_data)
+        logger.info("Deployed and initialized Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
+                    deployer_account.address)
+        return ethereum_tx_sent
+
+    @staticmethod
+    def deploy_master_contract_v1_0_0(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        safe_contract = get_safe_V1_0_0_contract(ethereum_client.w3)
+        constructor_data = safe_contract.constructor().buildTransaction({'gas': 0})['data']
+        initializer_data = safe_contract.functions.setup(
+            # We use 2 owners that nobody controls for the master copy
+            ["0x0000000000000000000000000000000000000002", "0x0000000000000000000000000000000000000003"],
+            2,  # Threshold. Maximum security
+            NULL_ADDRESS,  # Address for optional DELEGATE CALL
+            b'',  # Data for optional DELEGATE CALL
             NULL_ADDRESS,  # Payment token
             0,  # Payment
             NULL_ADDRESS  # Refund receiver

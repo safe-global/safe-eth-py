@@ -44,7 +44,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         number_owners = 4
         gas_price = self.gas_price
         payment_token = NULL_ADDRESS
-        safe_creation_estimate = Safe.estimate_safe_creation(self.ethereum_client, self.safe_old_contract_address,
+        safe_creation_estimate = Safe.estimate_safe_creation(self.ethereum_client, self.safe_contract_V0_0_1_address,
                                                              number_owners, gas_price, payment_token)
         self.assertGreater(safe_creation_estimate.gas_price, 0)
         self.assertGreater(safe_creation_estimate.gas, 0)

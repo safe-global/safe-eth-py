@@ -7,7 +7,7 @@ from eth_account import Account
 
 from gnosis.eth.contracts import (get_multi_send_contract,
                                   get_proxy_factory_contract,
-                                  get_safe_contract, get_safe_V0_0_1_contract)
+                                  get_safe_contract, get_safe_V1_0_0_contract)
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe import Safe
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 contract_addresses = {
     'safe': Safe.deploy_master_contract,
     'safe_V0_0_1': Safe.deploy_old_master_contract,
+    'safe_V1_0_0': Safe.deploy_master_contract_v1_0_0,
     'proxy_factory': ProxyFactory.deploy_proxy_factory_contract,
     'multi_send': MultiSend.deploy_contract,
 }
@@ -39,13 +40,18 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
 
         settings.SAFE_CONTRACT_ADDRESS = contract_addresses['safe']
         settings.SAFE_MULTISEND_ADDRESS = contract_addresses['multi_send']
-        settings.SAFE_OLD_CONTRACT_ADDRESS = contract_addresses['safe_V0_0_1']
+        settings.SAFE_V1_0_0_CONTRACT_ADDRESS = contract_addresses['safe_V1_0_0']
+        settings.SAFE_V0_0_1_CONTRACT_ADDRESS = contract_addresses['safe_V0_0_1']
         settings.SAFE_PROXY_FACTORY_ADDRESS = contract_addresses['proxy_factory']
-        settings.SAFE_VALID_CONTRACT_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS, settings.SAFE_OLD_CONTRACT_ADDRESS}
+        settings.SAFE_VALID_CONTRAC1_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS,
+                                                  settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
+                                                  settings.SAFE_V1_0_0_CONTRACT_ADDRESS}
         cls.safe_contract_address = contract_addresses['safe']
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
-        cls.safe_old_contract_address = contract_addresses['safe_V0_0_1']
-        cls.safe_old_contract = get_safe_V0_0_1_contract(cls.w3, cls.safe_old_contract_address)
+        cls.safe_contract_V1_0_0_address = contract_addresses['safe_V1_0_0']
+        cls.safe_contract_V1_0_0 = get_safe_V1_0_0_contract(cls.w3, cls.safe_contract_V1_0_0_address)
+        cls.safe_contract_V0_0_1_address = contract_addresses['safe_V0_0_1']
+        cls.safe_contract_V0_0_1 = get_safe_V1_0_0_contract(cls.w3, cls.safe_contract_V0_0_1_address)
         cls.proxy_factory_contract_address = contract_addresses['proxy_factory']
         cls.proxy_factory_contract = get_proxy_factory_contract(cls.w3, cls.proxy_factory_contract_address)
         cls.proxy_factory = ProxyFactory(cls.proxy_factory_contract_address, cls.ethereum_client)

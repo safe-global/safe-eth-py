@@ -35,7 +35,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         owners = [Account.create().address for _ in range(2)]
         threshold = 2
         payment_token = None
-        safe_creation_tx = Safe.build_safe_creation_tx(self.ethereum_client, self.safe_old_contract_address,
+        safe_creation_tx = Safe.build_safe_creation_tx(self.ethereum_client, self.safe_contract_V0_0_1_address,
                                                        s, owners, threshold, self.gas_price, payment_token,
                                                        payment_receiver=self.ethereum_test_account.address)
         # Send ether for safe deploying costs
