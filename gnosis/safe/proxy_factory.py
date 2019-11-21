@@ -3,10 +3,11 @@ from typing import Optional
 
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
+from web3.contract import Contract
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (get_paying_proxy_deployed_bytecode,
-                                  get_proxy_factory_contract)
+                                  get_proxy_factory_contract, get_proxy_factory_V1_0_0_contract)
 from gnosis.eth.ethereum_client import EthereumTxSent
 
 logger = getLogger(__name__)
@@ -24,16 +25,9 @@ class ProxyFactory:
         self.w3 = ethereum_client.w3
 
     @staticmethod
-    def deploy_proxy_factory_contract(ethereum_client: EthereumClient,
-                                      deployer_account: LocalAccount) -> EthereumTxSent:
-        """
-        Deploy proxy factory contract
-        :param ethereum_client:
-        :param deployer_account: Ethereum Account
-        :return: deployed contract address
-        """
-        proxy_factory_contract = get_proxy_factory_contract(ethereum_client.w3)
-        tx = proxy_factory_contract.constructor().buildTransaction({'from': deployer_account.address})
+    def _deploy_proxy_factory_contract(ethereum_client: EthereumClient,
+                                       deployer_account: LocalAccount, contract: Contract) -> EthereumTxSent:
+        tx = contract.constructor().buildTransaction({'from': deployer_account.address})
 
         tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
@@ -42,6 +36,30 @@ class ProxyFactory:
         logger.info("Deployed and initialized Proxy Factory Contract=%s by %s", contract_address,
                     deployer_account.address)
         return EthereumTxSent(tx_hash, tx, contract_address)
+
+    @classmethod
+    def deploy_proxy_factory_contract(cls, ethereum_client: EthereumClient,
+                                      deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy proxy factory contract
+        :param ethereum_client:
+        :param deployer_account: Ethereum Account
+        :return: deployed contract address
+        """
+        proxy_factory_contract = get_proxy_factory_contract(ethereum_client.w3)
+        return cls._deploy_proxy_factory_contract(ethereum_client, deployer_account, proxy_factory_contract)
+
+    @classmethod
+    def deploy_proxy_factory_contract_v1_0_0(cls, ethereum_client: EthereumClient,
+                                             deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy proxy factory contract
+        :param ethereum_client:
+        :param deployer_account: Ethereum Account
+        :return: deployed contract address
+        """
+        proxy_factory_contract = get_proxy_factory_V1_0_0_contract(ethereum_client.w3)
+        return cls._deploy_proxy_factory_contract(ethereum_client, deployer_account, proxy_factory_contract)
 
     def check_proxy_code(self, address: str) -> bool:
         """

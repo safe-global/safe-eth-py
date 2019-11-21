@@ -50,7 +50,7 @@ contracts = {
     'multi_send': 'MultiSend.json',
     'paying_proxy': 'PayingProxy.json',
     'proxy_factory': 'ProxyFactoryV1.1.0.json',
-    'proxy_factoryV1_0_0': 'ProxyFactoryV1.0.0.json',
+    'proxy_factory_V1_0_0': 'ProxyFactoryV1.0.0.json',
     'proxy': 'Proxy.json',
 }
 

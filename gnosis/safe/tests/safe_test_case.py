@@ -25,6 +25,7 @@ contract_addresses = {
     'safe_V0_0_1': Safe.deploy_old_master_contract,
     'safe_V1_0_0': Safe.deploy_master_contract_v1_0_0,
     'proxy_factory': ProxyFactory.deploy_proxy_factory_contract,
+    'proxy_factory_V1_0_0': ProxyFactory.deploy_proxy_factory_contract_v1_0_0,
     'multi_send': MultiSend.deploy_contract,
 }
 
@@ -43,9 +44,11 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         settings.SAFE_V1_0_0_CONTRACT_ADDRESS = contract_addresses['safe_V1_0_0']
         settings.SAFE_V0_0_1_CONTRACT_ADDRESS = contract_addresses['safe_V0_0_1']
         settings.SAFE_PROXY_FACTORY_ADDRESS = contract_addresses['proxy_factory']
-        settings.SAFE_VALID_CONTRAC1_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS,
+        settings.SAFE_PROXY_FACTORY_V1_0_0_ADDRESS = contract_addresses['proxy_factory_V1_0_0']
+        settings.SAFE_VALID_CONTRACT_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS,
+                                                  settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
                                                   settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
-                                                  settings.SAFE_V1_0_0_CONTRACT_ADDRESS}
+                                                  }
         cls.safe_contract_address = contract_addresses['safe']
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
         cls.safe_contract_V1_0_0_address = contract_addresses['safe_V1_0_0']
