@@ -7,7 +7,8 @@ from web3.contract import Contract
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (get_paying_proxy_deployed_bytecode,
-                                  get_proxy_factory_contract, get_proxy_factory_V1_0_0_contract)
+                                  get_proxy_factory_contract,
+                                  get_proxy_factory_V1_0_0_contract)
 from gnosis.eth.ethereum_client import EthereumTxSent
 
 logger = getLogger(__name__)

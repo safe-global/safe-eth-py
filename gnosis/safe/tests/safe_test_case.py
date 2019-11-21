@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from django.conf import settings
 
@@ -61,8 +61,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.multi_send_contract = get_multi_send_contract(cls.w3, contract_addresses['multi_send'])
         cls.multi_send = MultiSend(cls.multi_send_contract.address, cls.ethereum_client)
 
-    def build_test_safe(self, number_owners: int = 3, threshold: int = None,
-                        owners: List[str] = None) -> SafeCreate2Tx:
+    def build_test_safe(self, number_owners: int = 3, threshold: Optional[int] = None,
+                        owners: Optional[List[str]] = None, fallback_handler: Optional[str] = None) -> SafeCreate2Tx:
         salt_nonce = generate_salt_nonce()
         owners = owners if owners else [Account.create().address for _ in range(number_owners)]
         threshold = threshold if threshold else len(owners) - 1
@@ -70,14 +70,16 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         gas_price = self.ethereum_client.w3.eth.gasPrice
         return Safe.build_safe_create2_tx(self.ethereum_client, self.safe_contract_address,
                                           self.proxy_factory_contract_address, salt_nonce, owners, threshold,
+                                          fallback_handler=fallback_handler,
                                           gas_price=gas_price, payment_token=None, fixed_creation_cost=0)
 
-    def deploy_test_safe(self, number_owners: int = 3, threshold: int = None, owners: List[str] = None,
-                         initial_funding_wei: int = 0) -> SafeCreate2Tx:
+    def deploy_test_safe(self, number_owners: int = 3, threshold: Optional[int] = None,
+                         owners: Optional[List[str]] = None, initial_funding_wei: int = 0,
+                         fallback_handler: Optional[str] = None) -> SafeCreate2Tx:
         owners = owners if owners else [get_eth_address_with_key()[0] for _ in range(number_owners)]
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
-        safe_creation_tx = self.build_test_safe(threshold=threshold, owners=owners)
+        safe_creation_tx = self.build_test_safe(threshold=threshold, owners=owners, fallback_handler=fallback_handler)
         funder_account = self.ethereum_test_account
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(funder_account,

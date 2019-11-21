@@ -326,6 +326,11 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertIsNotNone(Safe(self.deploy_test_safe().safe_address,
                                   self.ethereum_client).retrieve_code())
 
+    def test_retrieve_fallback_handler(self):
+        random_fallback_handler = Account.create().address
+        safe = Safe(self.deploy_test_safe(fallback_handler=random_fallback_handler).safe_address, self.ethereum_client)
+        self.assertEqual(safe.retrieve_fallback_handler(), random_fallback_handler)
+
     def test_retrieve_info(self):
         safe_creation = self.deploy_test_safe()
         safe = Safe(safe_creation.safe_address, self.ethereum_client)

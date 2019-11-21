@@ -4,13 +4,13 @@ from typing import List, NamedTuple, Optional
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
-                                  get_safe_contract, get_safe_V0_0_1_contract, get_safe_V1_0_0_contract)
+                                  get_safe_contract, get_safe_V0_0_1_contract,
+                                  get_safe_V1_0_0_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -37,6 +37,8 @@ class SafeOperation(Enum):
 
 
 class Safe:
+    FALLBACK_HANDLER_STORAGE_SLOT = '0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5'
+
     def __init__(self, address: str, ethereum_client: EthereumClient):
         assert Web3.isChecksumAddress(address), '%s is not a valid address' % address
 
@@ -485,6 +487,13 @@ class Safe:
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)
+
+    def retrieve_fallback_handler(self) -> str:
+        address = self.ethereum_client.w3.eth.getStorageAt(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT)[-20:]
+        if len(address) == 20:
+            return Web3.toChecksumAddress(address)
+        else:
+            return NULL_ADDRESS
 
     def retrieve_master_copy_address(self, block_identifier: Optional[str] = 'latest') -> str:
         bytes_address = self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:]
