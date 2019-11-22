@@ -52,6 +52,8 @@ contracts = {
     'proxy_factory': 'ProxyFactoryV1.1.0.json',
     'proxy_factory_V1_0_0': 'ProxyFactoryV1.0.0.json',
     'proxy': 'Proxy.json',
+    'uniswap_exchange': 'uniswap_exchange.json',
+    'uniswap_factory': 'uniswap_factory.json',
 }
 
 
@@ -64,7 +66,7 @@ def generate_contract_fn(contract: Dict[str, Any]):
     def fn(w3: Web3, address: Optional[str] = None):
         return w3.eth.contract(address,
                                abi=contract['abi'],
-                               bytecode=contract['bytecode'])
+                               bytecode=contract.get('bytecode'))
     return fn
 
 
