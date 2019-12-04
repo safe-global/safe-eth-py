@@ -6,8 +6,8 @@ import eth_abi
 import requests
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from ethereum.utils import (check_checksum, checksum_encode, ecrecover_to_pub,
-                            mk_contract_address, privtoaddr, sha3)
+from ethereum.utils import (check_checksum, checksum_encode,
+                            mk_contract_address, privtoaddr)
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
@@ -331,18 +331,30 @@ class Erc20Manager:
                                                   address=token_address,
                                                   argument_filters=argument_filters).get_all_entries()
 
-    def send_tokens(self, to: str, amount: int, erc20_address: str, private_key: str) -> bytes:
+    def send_tokens(self, to: str, amount: int, erc20_address: str, private_key: str,
+                    nonce: Optional[int] = None, gas_price: Optional[int] = None, gas: Optional[int] = None) -> bytes:
         """
         Send tokens to address
         :param to:
         :param amount:
         :param erc20_address:
         :param private_key:
+        :param nonce:
+        :param gas_price:
+        :param gas:
         :return: tx_hash
         """
         erc20 = get_erc20_contract(self.w3, erc20_address)
         account = Account.privateKeyToAccount(private_key)
-        tx = erc20.functions.transfer(to, amount).buildTransaction({'from': account.address})
+        tx_options = {'from': account.address}
+        if nonce:
+            tx_options['nonce'] = nonce
+        if gas_price:
+            tx_options['gasPrice'] = gas_price
+        if gas:
+            tx_options['gas'] = gas
+
+        tx = erc20.functions.transfer(to, amount).buildTransaction(tx_options)
         return self.ethereum_client.send_unsigned_transaction(tx, private_key=private_key)
 
 
