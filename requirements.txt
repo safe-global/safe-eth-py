@@ -1,4 +1,4 @@
-Django==2.2.8
+Django==3.0
 djangorestframework==3.10.3
 ethereum==2.3.2
 eth-abi2
