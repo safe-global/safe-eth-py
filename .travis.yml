@@ -18,7 +18,7 @@ install:
 script:
   - ganache-cli -d -p 8545 --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --noVMErrorsOnRPCResponse > /dev/null &
   - sleep 5
-  - coverage run --source=$SOURCE_FOLDER manage.py test --settings=config.settings.test
+  - coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
 after_success:
   - coveralls
 deploy:
