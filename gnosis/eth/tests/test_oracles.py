@@ -1,0 +1,39 @@
+import os
+
+from django.test import TestCase
+
+import pytest
+import requests
+
+from .. import EthereumClient
+from ..oracles import Kyber, Uniswap
+
+MAINNET_NODE = os.environ.get('ETHEREUM_MAINNET_NODE')
+
+
+if not MAINNET_NODE:
+    pytest.skip("Mainnet node not defined, cannot test oracles", allow_module_level=True)
+elif requests.get(MAINNET_NODE).status_code == 404:
+    pytest.skip("Cannot connect to mainnet node", allow_module_level=True)
+
+
+class TestOracles(TestCase):
+    gno_token_mainnet_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
+    weth_token_mainnet_address = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+
+    kyber_proxy_mainnet_address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
+    uniswap_proxy_mainnet_address = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95'
+
+    def test_kyber_oracle(self):
+        ethereum_client = EthereumClient(MAINNET_NODE)
+        kyber = Kyber(ethereum_client.w3, self.kyber_proxy_mainnet_address)
+        price = kyber.get_price(self.gno_token_mainnet_address, self.weth_token_mainnet_address)
+        self.assertLess(price, 1)
+        self.assertGreater(price, 0)
+
+    def test_uniswap_oracle(self):
+        ethereum_client = EthereumClient(MAINNET_NODE)
+        uniswap_proxy = Uniswap(ethereum_client.w3, self.uniswap_proxy_mainnet_address)
+        price = uniswap_proxy.get_price('0x6810e776880C02933D47DB1b9fc05908e5386b96')
+        self.assertLess(price, 1)
+        self.assertGreater(price, 0)
