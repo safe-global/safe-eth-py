@@ -54,6 +54,7 @@ contracts = {
     'proxy': 'Proxy.json',
     'uniswap_exchange': 'uniswap_exchange.json',
     'uniswap_factory': 'uniswap_factory.json',
+    'kyber_network_proxy': 'kyber_network_proxy.json',
 }
 
 
