@@ -9,10 +9,11 @@ env:
   global:
   - SOURCE_FOLDER=gnosis
   - PIP_USE_MIRRORS=true
+  - DJANGO_SETTINGS_MODULE=config.settings.test
 addons:
   postgresql: "9.6"
 install:
-  - pip install -r requirements.txt
+  - pip install -r requirements-test.txt
   - pip install coveralls
   - npm install -g ganache-cli@6.6.0
 script:
