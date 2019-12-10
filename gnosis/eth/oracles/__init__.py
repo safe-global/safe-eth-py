@@ -1,2 +1,2 @@
-from .oracles import (CannotGetPriceFromOracle, InvalidPriceFromOracle, Kyber,
-                      OracleException, Uniswap)
+from .oracles import (CannotGetPriceFromOracle, InvalidPriceFromOracle, KyberOracle,
+                      OracleException, UniswapOracle)

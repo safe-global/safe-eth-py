@@ -29,7 +29,7 @@ class PriceOracle(ABC):
         pass
 
 
-class Kyber(PriceOracle):
+class KyberOracle(PriceOracle):
     def __init__(self, w3: Web3, kyber_network_proxy_address: str):
         self.w3 = w3
         self.kyber_network_proxy_address = kyber_network_proxy_address
@@ -55,19 +55,24 @@ class Kyber(PriceOracle):
             raise CannotGetPriceFromOracle(error_message) from e
 
 
-class Uniswap(PriceOracle):
-    def __init__(self, w3: Web3, uniswap_exchange_address: str):
+class UniswapOracle(PriceOracle):
+    def __init__(self, w3: Web3, uniswap_factory_address: str):
         self.w3 = w3
-        self.uniswap_exchange_address = uniswap_exchange_address
+        self.uniswap_factory_address = uniswap_factory_address
+        self.uniswap_exchanges = {}
 
     def get_price(self, token_address: str) -> float:
-        uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_exchange_address)
-        uniswap_exchange_address = uniswap_factory.functions.getExchange(token_address).call()
-        if uniswap_exchange_address == NULL_ADDRESS:
-            error_message = f'Cannot get price from uniswap-factory={uniswap_exchange_address} ' \
-                            f'for token={token_address}'
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message)
+        if token_address in self.uniswap_exchanges:
+            uniswap_exchange_address = self.uniswap_exchanges[token_address]
+        else:
+            uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
+            uniswap_exchange_address = uniswap_factory.functions.getExchange(token_address).call()
+            if uniswap_exchange_address == NULL_ADDRESS:
+                error_message = f'Cannot get price from uniswap-factory={uniswap_exchange_address} ' \
+                                f'for token={token_address}'
+                logger.warning(error_message)
+                raise CannotGetPriceFromOracle(error_message)
+            self.uniswap_exchanges[token_address] = uniswap_exchange_address
 
         uniswap_exchange = get_uniswap_exchange_contract(self.w3, uniswap_exchange_address)
         value = int(1e18)
