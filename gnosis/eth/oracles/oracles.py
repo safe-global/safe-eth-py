@@ -83,5 +83,3 @@ class UniswapOracle(PriceOracle):
             logger.warning(error_message)
             raise InvalidPriceFromOracle(error_message)
         return price
-
-
