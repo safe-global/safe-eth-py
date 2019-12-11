@@ -62,24 +62,28 @@ class UniswapOracle(PriceOracle):
         self.uniswap_exchanges = {}
 
     def get_price(self, token_address: str) -> float:
-        if token_address in self.uniswap_exchanges:
-            uniswap_exchange_address = self.uniswap_exchanges[token_address]
-        else:
+        if token_address not in self.uniswap_exchanges:
             uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
-            uniswap_exchange_address = uniswap_factory.functions.getExchange(token_address).call()
-            if uniswap_exchange_address == NULL_ADDRESS:
-                error_message = f'Cannot get price from uniswap-factory={uniswap_exchange_address} ' \
-                                f'for token={token_address}'
-                logger.warning(error_message)
-                raise CannotGetPriceFromOracle(error_message)
-            self.uniswap_exchanges[token_address] = uniswap_exchange_address
+            self.uniswap_exchanges[token_address] = uniswap_factory.functions.getExchange(token_address).call()
+        uniswap_exchange_address = self.uniswap_exchanges[token_address]
+
+        if uniswap_exchange_address == NULL_ADDRESS:
+            error_message = f'Non existing uniswap exchange for token={token_address}'
+            logger.warning(error_message)
+            raise CannotGetPriceFromOracle(error_message)
 
         uniswap_exchange = get_uniswap_exchange_contract(self.w3, uniswap_exchange_address)
         value = int(1e18)
-        price = uniswap_exchange.functions.getTokenToEthInputPrice(value).call() / value
-        if price <= 0.:
-            error_message = f'price={price} <= 0 from uniswap-factory={uniswap_exchange_address} ' \
+        try:
+            price = uniswap_exchange.functions.getTokenToEthInputPrice(value).call() / value
+            if price <= 0.:
+                error_message = f'price={price} <= 0 from uniswap-factory={uniswap_exchange_address} ' \
+                                f'for token={token_address}'
+                logger.warning(error_message)
+                raise InvalidPriceFromOracle(error_message)
+            return price
+        except ValueError as e:  # VM execution error
+            error_message = f'VM execution error from uniswap-factory={uniswap_exchange_address} ' \
                             f'for token={token_address}'
             logger.warning(error_message)
-            raise InvalidPriceFromOracle(error_message)
-        return price
+            raise CannotGetPriceFromOracle(error_message) from e
