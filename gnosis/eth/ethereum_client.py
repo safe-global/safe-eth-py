@@ -18,6 +18,7 @@ from web3.utils.threads import Timeout
 
 from .constants import ERC20_721_TRANSFER_TOPIC, NULL_ADDRESS
 from .contracts import get_erc20_contract
+from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
 
@@ -199,6 +200,22 @@ class Erc20Manager:
             })
         return balances
 
+    def get_name(self, erc20_address: str) -> str:
+        erc20 = get_erc20_contract(self.w3, erc20_address)
+        data = erc20.functions.name().buildTransaction({'gas': 0, 'gasPrice': 0})['data']
+        result = self.w3.eth.call({'to': erc20_address, 'data': data})
+        return decode_string_or_bytes32(result)
+
+    def get_symbol(self, erc20_address: str) -> str:
+        erc20 = get_erc20_contract(self.w3, erc20_address)
+        data = erc20.functions.symbol().buildTransaction({'gas': 0, 'gasPrice': 0})['data']
+        result = self.w3.eth.call({'to': erc20_address, 'data': data})
+        return decode_string_or_bytes32(result)
+
+    def get_decimals(self, erc20_address: str) -> int:
+        erc20 = get_erc20_contract(self.w3, erc20_address)
+        return erc20.functions.decimals().call()
+
     def get_info(self, erc20_address: str) -> Erc20_Info:
         """
         Get erc20 information (`name`, `symbol` and `decimals`)
@@ -206,10 +223,9 @@ class Erc20Manager:
         :return: Erc20_Info
         """
         # We use the `example erc20` as the `erc20 interface` doesn't have `name`, `symbol` nor `decimals`
-        erc20 = get_erc20_contract(self.w3, erc20_address)
-        name = erc20.functions.name().call()
-        symbol = erc20.functions.symbol().call()
-        decimals = erc20.functions.decimals().call()
+        name = self.get_name(erc20_address)
+        symbol = self.get_symbol(erc20_address)
+        decimals = self.get_decimals(erc20_address)
         return Erc20_Info(name, symbol, decimals)
 
     def get_total_transfer_history(self, addresses: List[str], from_block: int = 0,

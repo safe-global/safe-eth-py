@@ -5,7 +5,7 @@ from eth_account import Account
 from hexbytes import HexBytes
 
 from ..contracts import get_proxy_factory_contract
-from ..utils import generate_address_2
+from ..utils import generate_address_2, decode_string_or_bytes32
 from .ethereum_test_case import EthereumTestCaseMixin
 
 
@@ -59,3 +59,15 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         deployment_data = encode_abi_packed(['bytes', 'uint256'], [proxy_creation_code, int(master_copy, 16)])
         address2 = generate_address_2(proxy_factory_contract.address, salt, deployment_data)
         self.assertEqual(proxy_address, address2)
+
+    def test_decode_string_or_bytes32(self):
+        # Abi encoded string
+        gnosis_hex = HexBytes('0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000'
+                              '00000000000000000000000000000000000000000c476e6f73697320546f6b656e0000000000000000000000'
+                              '000000000000000000')
+
+        # Abi encoded bytes32
+        dai_hex = HexBytes('0x44616920537461626c65636f696e2076312e3000000000000000000000000000')
+
+        self.assertEqual(decode_string_or_bytes32(gnosis_hex), 'Gnosis Token')
+        self.assertEqual(decode_string_or_bytes32(dai_hex), 'Dai Stablecoin v1.0')
