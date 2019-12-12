@@ -5,7 +5,7 @@ from eth_account import Account
 from hexbytes import HexBytes
 
 from ..contracts import get_proxy_factory_contract
-from ..utils import generate_address_2, decode_string_or_bytes32
+from ..utils import decode_string_or_bytes32, generate_address_2
 from .ethereum_test_case import EthereumTestCaseMixin
 
 

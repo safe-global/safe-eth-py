@@ -5,8 +5,8 @@ from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 
 from ..ethereum_client import (EthereumClientProvider, FromAddressNotFound,
-                               InsufficientFunds, InvalidNonce,
-                               SenderAccountNotFoundInNode)
+                               InsufficientFunds, InvalidERC20Info,
+                               InvalidNonce, SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 
@@ -289,6 +289,9 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         erc20_contract = self.deploy_example_erc20(amount, owner)
         erc20_info = self.ethereum_client.erc20.get_info(erc20_contract.address)
         self.assertEqual(erc20_info.decimals, 18)
+
+        with self.assertRaises(InvalidERC20Info):
+            self.ethereum_client.erc20.get_info(Account.create().address)
 
     def test_send_tokens(self):
         amount = 5

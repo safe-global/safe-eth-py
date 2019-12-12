@@ -4,6 +4,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import eth_abi
 import requests
+from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from ethereum.utils import (check_checksum, checksum_encode,
@@ -70,6 +71,10 @@ class ParityTraceDecodeException(EthereumClientException):
     pass
 
 
+class InvalidERC20Info(EthereumClientException):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
@@ -105,7 +110,7 @@ class EthereumTxSent(NamedTuple):
     contract_address: Optional[str]
 
 
-class Erc20_Info(NamedTuple):
+class Erc20Info(NamedTuple):
     name: str
     symbol: str
     decimals: int
@@ -216,17 +221,20 @@ class Erc20Manager:
         erc20 = get_erc20_contract(self.w3, erc20_address)
         return erc20.functions.decimals().call()
 
-    def get_info(self, erc20_address: str) -> Erc20_Info:
+    def get_info(self, erc20_address: str) -> Erc20Info:
         """
         Get erc20 information (`name`, `symbol` and `decimals`)
         :param erc20_address:
-        :return: Erc20_Info
+        :return: Erc20Info
         """
         # We use the `example erc20` as the `erc20 interface` doesn't have `name`, `symbol` nor `decimals`
-        name = self.get_name(erc20_address)
-        symbol = self.get_symbol(erc20_address)
-        decimals = self.get_decimals(erc20_address)
-        return Erc20_Info(name, symbol, decimals)
+        try:
+            name = self.get_name(erc20_address)
+            symbol = self.get_symbol(erc20_address)
+            decimals = self.get_decimals(erc20_address)
+            return Erc20Info(name, symbol, decimals)
+        except InsufficientDataBytes as e:
+            raise InvalidERC20Info from e
 
     def get_total_transfer_history(self, addresses: List[str], from_block: int = 0,
                                    to_block: Optional[int] = None,
