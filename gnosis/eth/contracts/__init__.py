@@ -27,6 +27,7 @@ Safe Addresses. Should be the same for every chain. Check:
 https://github.com/gnosis/safe-contracts/blob/development/zos.mainnet.json
 https://github.com/gnosis/safe-contracts/blob/development/zos.rinkeby.json
 
+GnosisSafeV1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
 GnosisSafeV1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
 GnosisSafeV1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
 
@@ -40,7 +41,7 @@ MultiSend: 0xD4B7B161E4779629C2717385114Bf78D612aEa72
 """
 
 contracts = {
-    'safe': 'GnosisSafeV1.1.0.json',
+    'safe': 'GnosisSafeV1.1.1.json',
     'safe_V1_0_0': 'GnosisSafeV1.0.0.json',
     'safe_V0_0_1': 'GnosisSafeV0.0.1.json',
     'erc20': 'ERC20.json',

@@ -55,12 +55,12 @@ class SafeCreate2TxBuilder:
         self.master_copy_address = master_copy_address
         self.proxy_factory_address = proxy_factory_address
         self.safe_version = get_safe_contract(w3, master_copy_address).functions.VERSION().call()
-        if self.safe_version == '1.1.0':
+        if self.safe_version == '1.1.1':
             self.master_copy_contract = get_safe_contract(w3, master_copy_address)
         elif self.safe_version == '1.0.0':
             self.master_copy_contract = get_safe_V1_0_0_contract(w3, master_copy_address)
         else:
-            raise ValueError('Safe version must be 1.1.0 or 1.0.0')
+            raise ValueError('Safe version must be 1.1.1 or 1.0.0')
         self.proxy_factory_contract = get_proxy_factory_contract(w3, proxy_factory_address)
 
     def build(self, owners: List[str], threshold: int, salt_nonce: int,
@@ -203,7 +203,7 @@ class SafeCreate2TxBuilder:
                                      payment_token: str = NULL_ADDRESS,
                                      payment: int = 0,
                                      payment_receiver: str = NULL_ADDRESS) -> bytes:
-        if self.safe_version == '1.1.0':
+        if self.safe_version == '1.1.1':
             return HexBytes(self.master_copy_contract.functions.setup(
                 owners,
                 threshold,
@@ -231,4 +231,4 @@ class SafeCreate2TxBuilder:
                 'gasPrice': 1,
             })['data'])
         else:
-            raise ValueError('Safe version must be 1.1.0 or 1.0.0')
+            raise ValueError('Safe version must be 1.1.1 or 1.0.0')
