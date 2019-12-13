@@ -70,7 +70,7 @@ class MultiSend:
         contract = get_multi_send_contract(ethereum_client.w3)
         tx = contract.constructor().buildTransaction({'from': deployer_account.address})
 
-        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
         assert tx_receipt.status
         contract_address = tx_receipt.contractAddress

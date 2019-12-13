@@ -4,7 +4,7 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from eth_account.internal.transactions import (
+from eth_account._utils.transactions import (
     encode_transaction, serializable_unsigned_transaction_from_dict)
 from ethereum.exceptions import InvalidTransaction
 from ethereum.transactions import Transaction, secpk1n
@@ -288,16 +288,3 @@ class SafeCreationTx:
             'gas': 1,
             'gasPrice': 1,
         })['data']
-
-    @staticmethod
-    def _sign_web3_transaction(tx: Dict[str, Any], v: int, r: int, s: int) -> Tuple[bytes, HexBytes]:
-        """
-        Signed transaction that compatible with `w3.eth.sendRawTransaction`
-        Is not used because `pyEthereum` implementation of Transaction was found to be more
-        robust regarding invalid signatures
-        """
-        unsigned_transaction = serializable_unsigned_transaction_from_dict(tx)
-        rlp_encoded_transaction = encode_transaction(unsigned_transaction, vrs=(v, r, s))
-
-        # To get the address signing, just do ecrecover_to_pub(unsigned_transaction.hash(), v, r, s)
-        return rlp_encoded_transaction, unsigned_transaction.hash()

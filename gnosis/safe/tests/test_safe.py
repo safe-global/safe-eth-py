@@ -251,13 +251,13 @@ class TestSafe(SafeTestCaseMixin, TestCase):
                 gas_token,
                 refund_receiver,
                 signature_packed,
-                tx_sender_private_key=owner_account.privateKey,
+                tx_sender_private_key=owner_account.key,
                 tx_gas_price=self.gas_price,
             )
 
         # Give erc20 tokens to the safe
         self.ethereum_client.erc20.send_tokens(my_safe_address, amount_token, erc20_contract.address,
-                                               funder_account.privateKey)
+                                               funder_account.key)
 
         safe.send_multisig_tx(
             to,
@@ -270,7 +270,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             gas_token,
             refund_receiver,
             signature_packed,
-            tx_sender_private_key=owner_account.privateKey,
+            tx_sender_private_key=owner_account.key,
             tx_gas_price=self.gas_price,
         )
 
@@ -349,13 +349,13 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
         safe = Safe(safe_creation.safe_address, self.ethereum_client)
         safe_contract = safe.get_contract()
-        fake_tx_hash = Web3.sha3(text='Knopfler')
-        another_tx_hash = Web3.sha3(text='Marc')
+        fake_tx_hash = Web3.keccak(text='Knopfler')
+        another_tx_hash = Web3.keccak(text='Marc')
         tx = safe_contract.functions.approveHash(
             fake_tx_hash
         ).buildTransaction({'from': self.ethereum_test_account.address})
 
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=self.ethereum_test_account.privateKey)
+        self.ethereum_client.send_unsigned_transaction(tx, private_key=self.ethereum_test_account.key)
         self.assertTrue(safe.retrieve_is_hash_approved(self.ethereum_test_account.address, fake_tx_hash))
         self.assertFalse(safe.retrieve_is_hash_approved(self.ethereum_test_account.address, another_tx_hash))
 
@@ -367,8 +367,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         message_hash = safe_contract.functions.getMessageHash(message).call()
         sign_message_data = HexBytes(safe_contract.functions.signMessage(message).buildTransaction({'gas': 0})['data'])
         safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
-        safe_tx.sign(self.ethereum_test_account.privateKey)
-        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
+        safe_tx.sign(self.ethereum_test_account.key)
+        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
         self.assertTrue(safe.retrieve_is_message_signed(message_hash))
 
     def test_retrieve_is_owner(self):
@@ -445,7 +445,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         safe.send_multisig_tx(to, value, data, operation, safe_tx_gas,
                               data_gas, gas_price, gas_token, refund_receiver, signature_bytes,
-                              self.ethereum_test_account.privateKey)
+                              self.ethereum_test_account.key)
 
         balance = self.w3.eth.getBalance(to)
         self.assertEqual(value, balance)

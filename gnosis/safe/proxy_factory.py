@@ -7,8 +7,8 @@ from web3.contract import Contract
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (get_paying_proxy_deployed_bytecode,
-                                  get_proxy_factory_contract,
                                   get_proxy_1_0_0_deployed_bytecode,
+                                  get_proxy_factory_contract,
                                   get_proxy_factory_V1_0_0_contract)
 from gnosis.eth.ethereum_client import EthereumTxSent
 from gnosis.eth.utils import compare_byte_code
@@ -32,7 +32,7 @@ class ProxyFactory:
                                        deployer_account: LocalAccount, contract: Contract) -> EthereumTxSent:
         tx = contract.constructor().buildTransaction({'from': deployer_account.address})
 
-        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
         assert tx_receipt.status
         contract_address = tx_receipt.contractAddress
@@ -108,7 +108,7 @@ class ProxyFactory:
         tx = create_proxy_fn.buildTransaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case
         tx['gas'] = tx['gas'] + 50000
-        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         return EthereumTxSent(tx_hash, tx, contract_address)
 
     def deploy_proxy_contract_with_nonce(self, deployer_account: LocalAccount, master_copy: str,
@@ -146,7 +146,7 @@ class ProxyFactory:
         tx = create_proxy_fn.buildTransaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case
         tx['gas'] = tx['gas'] + 50000
-        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         return EthereumTxSent(tx_hash, tx, contract_address)
 
     def get_contract(self):

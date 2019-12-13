@@ -301,7 +301,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.assertEqual(self.ethereum_client.erc20.get_balance(owner.address, erc20.address), amount)
 
         amount_2 = 3
-        self.ethereum_client.erc20.send_tokens(owner_2.address, amount_2, erc20.address, owner.privateKey)
+        self.ethereum_client.erc20.send_tokens(owner_2.address, amount_2, erc20.address, owner.key)
         self.assertEqual(self.ethereum_client.erc20.get_balance(owner.address, erc20.address), amount - amount_2)
         self.assertEqual(self.ethereum_client.erc20.get_balance(owner_2.address, erc20.address), amount_2)
 
@@ -451,15 +451,15 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         value = 1
         to, _ = get_eth_address_with_key()
 
-        tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
+        tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
                                                    to=to, gas_price=self.gas_price, value=value)
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
+        _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
                                              to=to, gas_price=self.gas_price, value=value)
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
+        _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
                                              to=to, gas_price=self.gas_price, value=value)
         self.assertTrue(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
@@ -535,7 +535,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_eth_to(self):
         address, _ = get_eth_address_with_key()
         value = 1
-        self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey, address, self.gas_price, value)
+        self.ethereum_client.send_eth_to(self.ethereum_test_account.key, address, self.gas_price, value)
         self.assertEqual(self.ethereum_client.get_balance(address), value)
 
     def test_send_eth_without_key(self):
@@ -613,7 +613,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
     def test_send_unsigned_transaction_with_private_key(self):
         account = self.create_account(initial_ether=0.1)
-        key = account.privateKey
+        key = account.key
         to, _ = get_eth_address_with_key()
         value = 4
 
@@ -648,13 +648,13 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         value = 1
         to = Account.create().address
 
-        tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.privateKey,
+        tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
                                                    to=to, gas_price=self.gas_price, value=value)
         receipt1 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None)
         receipt2 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
         self.assertIsNotNone(receipt1)
         self.assertEqual(receipt1, receipt2)
 
-        fake_tx_hash = self.w3.sha3(0)
+        fake_tx_hash = self.w3.keccak(0)
         self.assertIsNone(self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=None))
         self.assertIsNone(self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=1))

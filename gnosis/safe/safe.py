@@ -85,7 +85,7 @@ class Safe:
         tx = proxy_contract.constructor(master_copy_address,
                                         initializer).buildTransaction({'from': deployer_account.address})
         tx['gas'] = tx['gas'] * 100000
-        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
@@ -104,7 +104,7 @@ class Safe:
 
         safe_contract = get_safe_contract(ethereum_client.w3)
         constructor_tx = safe_contract.constructor().buildTransaction()
-        tx_hash = ethereum_client.send_unsigned_transaction(constructor_tx, private_key=deployer_account.privateKey)
+        tx_hash = ethereum_client.send_unsigned_transaction(constructor_tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt.status
 
@@ -587,7 +587,7 @@ class Safe:
                                          refund_receiver,
                                          signatures)
 
-        tx_sender_address = Account.privateKeyToAccount(tx_sender_private_key).address
+        tx_sender_address = Account.from_key(tx_sender_private_key).address
         safe_tx.call(tx_sender_address=tx_sender_address, block_identifier=block_identifier)
 
         tx_hash, tx = safe_tx.execute(tx_sender_private_key=tx_sender_private_key,

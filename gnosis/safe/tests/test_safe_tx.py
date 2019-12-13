@@ -46,10 +46,10 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         safe_tx = SafeTx(self.ethereum_client, safe_address, to,
                          0, safe_multisend_data, SafeOperation.DELEGATE_CALL.value,
                          safe_tx_gas, base_gas, self.gas_price, None, None, safe_nonce=0)
-        safe_tx.sign(owners[0].privateKey)
+        safe_tx.sign(owners[0].key)
 
         self.assertEqual(safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1)
-        tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
+        tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
         self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         self.assertEqual(safe.retrieve_nonce(), 1)
         self.assertEqual(safe.retrieve_threshold(), new_threshold)
@@ -75,14 +75,14 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
         # Check signing
         self.assertFalse(safe_tx.signers)
-        safe_tx.sign(owners[0].privateKey)
+        safe_tx.sign(owners[0].key)
         self.assertIn(owners[0].address, safe_tx.signers)
 
         with self.assertRaises(NotEnoughSafeTransactionGas):
             safe_tx.call(tx_sender_address=self.ethereum_test_account.address, tx_gas=safe_tx_gas // 2)
 
         self.assertEqual(safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1)
-        tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.privateKey)
+        tx_hash, _ = safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
         self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
 
@@ -103,8 +103,8 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         safe_tx = SafeTx(self.ethereum_client, safe_address, to, value, b'', 0, 200000, 100000, self.gas_price,
                          None, None, safe_nonce=0)
 
-        safe_tx.sign(owners_unsorted[0].privateKey)
-        safe_tx.sign(owners_unsorted[2].privateKey)
+        safe_tx.sign(owners_unsorted[0].key)
+        safe_tx.sign(owners_unsorted[2].key)
         signers = [owner_addresses[0], owner_addresses[2]]
 
         self.assertEqual(safe_tx.signers, safe_tx.sorted_signers)
@@ -112,7 +112,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         self.assertEqual(set(signers), set(safe_tx.signers))
         self.assertEqual(len(safe_tx.signers), 2)
 
-        safe_tx.sign(owners_unsorted[1].privateKey)
+        safe_tx.sign(owners_unsorted[1].key)
         signers = owner_addresses
         self.assertEqual(safe_tx.signers, safe_tx.sorted_signers)
         self.assertNotEqual(signers, safe_tx.signers)
@@ -120,7 +120,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         self.assertEqual(len(safe_tx.signers), 3)
 
         # Sign again
-        safe_tx.sign(owners_unsorted[0].privateKey)
+        safe_tx.sign(owners_unsorted[0].key)
         self.assertEqual(len(safe_tx.signers), 3)
 
         # Sign again

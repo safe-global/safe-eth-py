@@ -11,11 +11,11 @@ from ethereum.utils import (check_checksum, checksum_encode,
                             mk_contract_address, privtoaddr)
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
+from web3._utils.method_formatters import (block_formatter, receipt_formatter,
+                                           transaction_formatter)
+from web3.exceptions import BlockNotFound, TimeExhausted, TransactionNotFound
 from web3.middleware import geth_poa_middleware
-from web3.middleware.pythonic import (block_formatter, receipt_formatter,
-                                      transaction_formatter)
 from web3.providers import AutoProvider
-from web3.utils.threads import Timeout
 
 from .constants import ERC20_721_TRANSFER_TOPIC, NULL_ADDRESS
 from .contracts import get_erc20_contract
@@ -369,7 +369,7 @@ class Erc20Manager:
         :return: tx_hash
         """
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        account = Account.privateKeyToAccount(private_key)
+        account = Account.from_key(private_key)
         tx_options = {'from': account.address}
         if nonce:
             tx_options['nonce'] = nonce
@@ -591,10 +591,10 @@ class EthereumClient:
         self.parity: ParityManager = ParityManager(self, slow_provider_timeout)
         try:
             if int(self.w3.net.version) != 1:
-                self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
+                self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             # For tests using dummy connections (like IPC)
         except (ConnectionError, FileNotFoundError):
-            self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
+            self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
@@ -609,7 +609,7 @@ class EthereumClient:
                       'value': 0,
                       'to': contract_address if contract_address else b''}
                 tx['gas'] = self.w3.eth.estimateGas(tx)
-                tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+                tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.key)
                 if check_receipt:
                     tx_receipt = self.get_transaction_receipt(tx_hash, timeout=60)
                     assert tx_receipt.status
@@ -711,7 +711,10 @@ class EthereumClient:
         return self.w3.eth.getBalance(address, block_identifier)
 
     def get_transaction(self, tx_hash: EthereumHash) -> Optional[Dict[str, Any]]:
-        return self.w3.eth.getTransaction(tx_hash)
+        try:
+            return self.w3.eth.getTransaction(tx_hash)
+        except TransactionNotFound:
+            return None
 
     def get_transactions(self, tx_hashes: List[EthereumHash]) -> List[Optional[Dict[str, Any]]]:
         if not tx_hashes:
@@ -730,16 +733,19 @@ class EthereumClient:
         return txs
 
     def get_transaction_receipt(self, tx_hash: EthereumHash, timeout=None) -> Optional[Dict[str, Any]]:
-        if not timeout:
-            tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
-        else:
-            try:
-                tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
-            except Timeout:
-                return None
+        try:
+            if not timeout:
+                tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
+            else:
+                try:
+                    tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
+                except TimeExhausted:
+                    return None
 
-        # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
-        return tx_receipt if tx_receipt and tx_receipt['blockNumber'] is not None else None
+            # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
+            return tx_receipt if tx_receipt and tx_receipt['blockNumber'] is not None else None
+        except TransactionNotFound:
+            return None
 
     def get_transaction_receipts(self, tx_hashes: EthereumHash) -> List[Optional[Dict[str, Any]]]:
         if not tx_hashes:
@@ -759,7 +765,10 @@ class EthereumClient:
         return receipts
 
     def get_block(self, block_number: int, full_transactions=False) -> Optional[Dict[str, Any]]:
-        return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
+        try:
+            return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
+        except BlockNotFound:
+            return None
 
     def get_blocks(self, block_numbers: List[int], full_transactions=False) -> List[Optional[Dict[str, Any]]]:
         if not block_numbers:
@@ -817,7 +826,7 @@ class EthereumClient:
         while number_errors >= 0:
             try:
                 if private_key:
-                    signed_tx = self.w3.eth.account.signTransaction(tx, private_key=private_key)
+                    signed_tx = self.w3.eth.account.sign_transaction(tx, private_key=private_key)
                     logger.debug('Sending %d wei from %s to %s', tx['value'], address, tx['to'])
                     try:
                         return self.send_raw_transaction(signed_tx.rawTransaction)
@@ -883,7 +892,7 @@ class EthereumClient:
         :param confirmations: Minimum number of confirmations required
         :return: True if tx was mined with the number of confirmations required, False otherwise
         """
-        tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
+        tx_receipt = self.get_transaction_receipt(tx_hash)
         if not tx_receipt or tx_receipt['blockNumber'] is None:
             # If `tx_receipt` exists but `blockNumber` is `None`, tx is still pending (just Parity)
             return False

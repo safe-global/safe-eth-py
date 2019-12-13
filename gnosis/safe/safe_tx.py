@@ -235,7 +235,7 @@ class SafeTx:
         tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gasPrice
         safe_total_gas = self.safe_tx_gas + self.base_gas
         tx_gas = tx_gas or (safe_total_gas * 2) or (self.w3_tx.estimateGas() + 25000)
-        tx_sender_address = Account.privateKeyToAccount(tx_sender_private_key).address
+        tx_sender_address = Account.from_key(tx_sender_private_key).address
 
         tx_parameters = {
             'from': tx_sender_address,
@@ -262,7 +262,7 @@ class SafeTx:
         :param private_key:
         :return:
         """
-        account = Account.privateKeyToAccount(private_key)
+        account = Account.from_key(private_key)
         signature_dict = account.signHash(self.safe_tx_hash)
         signature = signature_to_bytes((signature_dict['v'],
                                         signature_dict['r'],

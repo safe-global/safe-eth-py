@@ -17,7 +17,7 @@ def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:
     else:
         tx['gas'] *= 2
 
-    signed_tx = account.signTransaction(tx)
+    signed_tx = account.sign_transaction(tx)
     tx_hash = w3.eth.sendRawTransaction(bytes(signed_tx.rawTransaction))
     tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     assert tx_receipt.status == 1, 'Error with tx %s - %s' % (tx_hash.hex(), tx)
@@ -30,7 +30,7 @@ def deploy_example_erc20(w3, amount: int, owner: str, deployer: str=None, accoun
         tx = erc20_contract.constructor(amount, owner).buildTransaction()
         if 'nonce' not in tx:
             tx['nonce'] = w3.eth.getTransactionCount(account.address, block_identifier='pending')
-        signed_tx = account.signTransaction(tx)
+        signed_tx = account.sign_transaction(tx)
         tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
         erc20_address = tx_receipt.contractAddress

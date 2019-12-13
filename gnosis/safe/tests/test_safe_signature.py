@@ -2,7 +2,7 @@ import logging
 
 from django.test import TestCase
 
-from eth_abi2.packed import encode_single_packed
+from eth_abi.packed import encode_single_packed
 from eth_account import Account
 from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
@@ -60,7 +60,7 @@ class TestSignature(TestCase):
         ethereum_signed_message = '\x19Ethereum Signed Message:\n32'
         encoded_message = encode_single_packed('(string,bytes32)',
                                                (ethereum_signed_message, HexBytes(safe_tx_hash)))
-        encoded_hash = Web3.sha3(encoded_message)
+        encoded_hash = Web3.keccak(encoded_message)
         self.assertEqual(encoded_hash, defunct_hash_message(primitive=safe_tx_hash))
 
     def test_parse_signatures(self):

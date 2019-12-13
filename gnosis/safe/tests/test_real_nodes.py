@@ -16,7 +16,7 @@ class TestRealNodes(TestCase):
             with self.assertRaises(InsufficientFunds):
                 ethereum_service.send_unsigned_transaction({'to': random_address, 'value': 0, 'data': b'',
                                                             'gas': 25000, 'gasPrice': 1},
-                                                           private_key=random_sender_account.privateKey)
+                                                           private_key=random_sender_account.key)
 
     def test_safe_exceptions(self):
         pass

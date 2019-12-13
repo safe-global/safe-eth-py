@@ -40,14 +40,14 @@ def generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_c
     assert len(salt) == 32, "Salt %s is not valid. Must be 32 bytes" % salt
     assert len(init_code) > 0, "Init code %s is not valid" % init_code
 
-    init_code_hash = Web3.sha3(init_code)
-    contract_address = Web3.sha3(HexBytes('ff') + from_ + salt + init_code_hash)
+    init_code_hash = Web3.keccak(init_code)
+    contract_address = Web3.keccak(HexBytes('ff') + from_ + salt + init_code_hash)
     return Web3.toChecksumAddress(contract_address[12:])
 
 
 def decode_string_or_bytes32(data: bytes) -> str:
     try:
-        return eth_abi.decode_abi(['string'], data)[0].decode()
+        return eth_abi.decode_abi(['string'], data)[0]
     except OverflowError:
         name = eth_abi.decode_abi(['bytes32'], data)[0]
         end_position = name.find(b'\x00')

@@ -1,10 +1,9 @@
 Django==2.2.8
 djangorestframework==3.10.3
 ethereum==2.3.2
-eth-abi2
 faker==1.0.7
 hexbytes==0.2.0
 psycopg2-binary==2.8.4
 packaging
 py-eth-sig-utils==0.3.0
-web3[tester]==4.9.2
+web3==5.4.0

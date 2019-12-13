@@ -1,25 +1,27 @@
 from django.test import TestCase
 
-from eth_abi2.packed import encode_abi_packed
+from eth_abi.packed import encode_abi_packed
 from eth_account import Account
 from hexbytes import HexBytes
 
-from ..contracts import get_proxy_factory_contract, get_proxy_1_0_0_deployed_bytecode
-from ..utils import decode_string_or_bytes32, generate_address_2, compare_byte_code
+from ..contracts import (get_proxy_1_0_0_deployed_bytecode,
+                         get_proxy_factory_contract)
+from ..utils import (compare_byte_code, decode_string_or_bytes32,
+                     generate_address_2)
 from .ethereum_test_case import EthereumTestCaseMixin
 
 
 class TestUtils(EthereumTestCaseMixin, TestCase):
     def test_generate_address_2(self):
         from_ = '0x8942595A2dC5181Df0465AF0D7be08c8f23C93af'
-        salt = self.w3.sha3(text='aloha')
+        salt = self.w3.keccak(text='aloha')
         init_code = '0x00abcd'
         expected = '0x8D02C796Dd019916F65EBa1C9D65a7079Ece00E0'
         address2 = generate_address_2(from_, salt, init_code)
         self.assertEqual(address2, expected)
 
         from_ = HexBytes('0x8942595A2dC5181Df0465AF0D7be08c8f23C93af')
-        salt = self.w3.sha3(text='aloha').hex()
+        salt = self.w3.keccak(text='aloha').hex()
         init_code = HexBytes('0x00abcd')
         expected = '0x8D02C796Dd019916F65EBa1C9D65a7079Ece00E0'
         address2 = generate_address_2(from_, salt, init_code)
@@ -31,7 +33,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         nonce = self.w3.eth.getTransactionCount(deployer_account.address, block_identifier='pending')
         tx = proxy_factory_contract.constructor().buildTransaction({'nonce': nonce,
                                                                     'from': deployer_account.address})
-        signed_tx = deployer_account.signTransaction(tx)
+        signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
         tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
         proxy_factory_contract = get_proxy_factory_contract(self.w3, address=tx_receipt['contractAddress'])
@@ -46,7 +48,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                                                                    ).buildTransaction({'nonce': nonce + 1,
                                                                                        'from': deployer_account.address,
                                                                                        })
-        signed_tx = deployer_account.signTransaction(tx)
+        signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
         tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
         logs = proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
@@ -55,7 +57,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         proxy_address = log['args']['proxy']
 
         proxy_creation_code = proxy_factory_contract.functions.proxyCreationCode().call()
-        salt = self.w3.sha3(encode_abi_packed(['bytes', 'uint256'], [self.w3.sha3(initializer), salt_nonce]))
+        salt = self.w3.keccak(encode_abi_packed(['bytes', 'uint256'], [self.w3.keccak(initializer), salt_nonce]))
         deployment_data = encode_abi_packed(['bytes', 'uint256'], [proxy_creation_code, int(master_copy, 16)])
         address2 = generate_address_2(proxy_factory_contract.address, salt, deployment_data)
         self.assertEqual(proxy_address, address2)

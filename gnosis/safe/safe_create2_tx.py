@@ -2,7 +2,7 @@ import math
 from logging import getLogger
 from typing import List, NamedTuple, Optional
 
-from eth_abi2.packed import encode_abi_packed
+from eth_abi.packed import encode_abi_packed
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -156,7 +156,7 @@ class SafeCreate2TxBuilder:
 
     def calculate_create2_address(self, safe_setup_data: bytes, salt_nonce: int):
         proxy_creation_code = self.proxy_factory_contract.functions.proxyCreationCode().call()
-        salt = self.w3.sha3(encode_abi_packed(['bytes', 'uint256'], [self.w3.sha3(safe_setup_data), salt_nonce]))
+        salt = self.w3.keccak(encode_abi_packed(['bytes', 'uint256'], [self.w3.keccak(safe_setup_data), salt_nonce]))
         deployment_data = encode_abi_packed(['bytes', 'uint256'], [proxy_creation_code,
                                                                    int(self.master_copy_address, 16)])
         return generate_address_2(self.proxy_factory_contract.address, salt, deployment_data)
