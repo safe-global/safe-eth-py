@@ -8,8 +8,10 @@ from web3.contract import Contract
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (get_paying_proxy_deployed_bytecode,
                                   get_proxy_factory_contract,
+                                  get_proxy_1_0_0_deployed_bytecode,
                                   get_proxy_factory_V1_0_0_contract)
 from gnosis.eth.ethereum_client import EthereumTxSent
+from gnosis.eth.utils import compare_byte_code
 
 logger = getLogger(__name__)
 
@@ -71,9 +73,10 @@ class ProxyFactory:
 
         deployed_proxy_code = self.w3.eth.getCode(address)
         proxy_code_fns = (get_paying_proxy_deployed_bytecode,
+                          get_proxy_1_0_0_deployed_bytecode,
                           self.get_proxy_runtime_code)
         for proxy_code_fn in proxy_code_fns:
-            if deployed_proxy_code == proxy_code_fn():
+            if compare_byte_code(deployed_proxy_code, proxy_code_fn()):
                 return True
         return False
 

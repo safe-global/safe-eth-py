@@ -4,8 +4,8 @@ from eth_abi2.packed import encode_abi_packed
 from eth_account import Account
 from hexbytes import HexBytes
 
-from ..contracts import get_proxy_factory_contract
-from ..utils import decode_string_or_bytes32, generate_address_2
+from ..contracts import get_proxy_factory_contract, get_proxy_1_0_0_deployed_bytecode
+from ..utils import decode_string_or_bytes32, generate_address_2, compare_byte_code
 from .ethereum_test_case import EthereumTestCaseMixin
 
 
@@ -71,3 +71,11 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
 
         self.assertEqual(decode_string_or_bytes32(gnosis_hex), 'Gnosis Token')
         self.assertEqual(decode_string_or_bytes32(dai_hex), 'Dai Stablecoin v1.0')
+
+    def test_compare_byte_code(self):
+        proxy_with_metadata = get_proxy_1_0_0_deployed_bytecode()
+        proxy_with_different_metadata = HexBytes('0x608060405273ffffffffffffffffffffffffffffffffffffffff60005416366000'
+                                                 '8037600080366000845af43d6000803e6000811415603d573d6000fd5b3d6000f3fe'
+                                                 'a165627a7a72305820b7f4e514a2bdfeb2e729e84f7101233a43b51d677007041e70'
+                                                 '8067e4b88bec480029')
+        self.assertTrue(compare_byte_code(proxy_with_metadata, proxy_with_different_metadata))

@@ -41,18 +41,18 @@ MultiSend: 0xD4B7B161E4779629C2717385114Bf78D612aEa72
 """
 
 contracts = {
-    'safe': 'GnosisSafeV1.1.1.json',
-    'safe_V1_0_0': 'GnosisSafeV1.0.0.json',
-    'safe_V0_0_1': 'GnosisSafeV0.0.1.json',
+    'safe': 'GnosisSafe_V1_1_1.json',
+    'safe_V1_0_0': 'GnosisSafe_V1_0_0.json',
+    'safe_V0_0_1': 'GnosisSafe_V0_0_1.json',
     'erc20': 'ERC20.json',
     'erc721': 'ERC721.json',
     'example_erc20': 'ERC20TestToken.json',
     'delegate_constructor_proxy': 'DelegateConstructorProxy.json',
     'multi_send': 'MultiSend.json',
     'paying_proxy': 'PayingProxy.json',
-    'proxy_factory': 'ProxyFactoryV1.1.0.json',
-    'proxy_factory_V1_0_0': 'ProxyFactoryV1.0.0.json',
-    'proxy': 'Proxy.json',
+    'proxy_factory': 'ProxyFactory_V1_1_1.json',
+    'proxy_factory_V1_0_0': 'ProxyFactory_V1_0_0.json',
+    'proxy': 'Proxy_V1_1_1.json',
     'uniswap_exchange': 'uniswap_exchange.json',
     'uniswap_factory': 'uniswap_factory.json',
     'kyber_network_proxy': 'kyber_network_proxy.json',
@@ -80,3 +80,7 @@ for contract_name, json_contract_filename in contracts.items():
 
 def get_paying_proxy_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface('PayingProxy.json')['deployedBytecode'])
+
+
+def get_proxy_1_0_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface('Proxy_V1_0_0.json')['deployedBytecode'])
