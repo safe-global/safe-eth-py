@@ -87,7 +87,7 @@ class UniswapOracle(PriceOracle):
                 logger.warning(error_message)
                 raise InvalidPriceFromOracle(error_message)
             return price
-        except BadFunctionCallOutput as e:
+        except (BadFunctionCallOutput, ZeroDivisionError) as e:
             error_message = f'Cannot get token balance for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
