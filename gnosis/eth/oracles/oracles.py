@@ -2,7 +2,9 @@ import logging
 from abc import ABC, abstractmethod
 
 from web3 import Web3
+from web3.exceptions import BadFunctionCallOutput
 
+from .. import EthereumClient
 from ..constants import NULL_ADDRESS
 from ..contracts import (get_kyber_network_proxy_contract,
                          get_uniswap_exchange_contract,
@@ -30,8 +32,9 @@ class PriceOracle(ABC):
 
 
 class KyberOracle(PriceOracle):
-    def __init__(self, w3: Web3, kyber_network_proxy_address: str):
-        self.w3 = w3
+    def __init__(self, ethereum_client: EthereumClient, kyber_network_proxy_address: str):
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
         self.kyber_network_proxy_address = kyber_network_proxy_address
 
     def get_price(self, token_address_1: str, token_address_2: str) -> float:
@@ -56,8 +59,9 @@ class KyberOracle(PriceOracle):
 
 
 class UniswapOracle(PriceOracle):
-    def __init__(self, w3: Web3, uniswap_factory_address: str):
-        self.w3 = w3
+    def __init__(self, ethereum_client: EthereumClient, uniswap_factory_address: str):
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
         self.uniswap_factory_address = uniswap_factory_address
         self.uniswap_exchanges = {}
 
@@ -72,18 +76,18 @@ class UniswapOracle(PriceOracle):
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message)
 
-        uniswap_exchange = get_uniswap_exchange_contract(self.w3, uniswap_exchange_address)
-        value = int(1e18)
         try:
-            price = uniswap_exchange.functions.getTokenToEthInputPrice(value).call() / value
+            token_decimals = self.ethereum_client.erc20.get_decimals(token_address)
+            token_balance = self.ethereum_client.erc20.get_balance(uniswap_exchange_address, token_address)
+            balance = self.ethereum_client.get_balance(uniswap_exchange_address)
+            price = balance / token_balance / 10**(18 - token_decimals)
             if price <= 0.:
                 error_message = f'price={price} <= 0 from uniswap-factory={uniswap_exchange_address} ' \
                                 f'for token={token_address}'
                 logger.warning(error_message)
                 raise InvalidPriceFromOracle(error_message)
             return price
-        except ValueError as e:  # VM execution error
-            error_message = f'VM execution error from uniswap-factory={uniswap_exchange_address} ' \
-                            f'for token={token_address}'
+        except BadFunctionCallOutput as e:
+            error_message = f'Cannot get token balance for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
