@@ -171,7 +171,8 @@ class Safe:
                                  payment_token_eth_value: float = 1.0,
                                  fixed_creation_cost: Optional[int] = None,
                                  setup_data: Optional[bytes] = b'',
-                                 to: Optional[str] = NULL_ADDRESS
+                                 to: Optional[str] = NULL_ADDRESS,
+                                 callback: Optional[str] = NULL_ADDRESS,
                                  ) -> SafeCreationEstimate:
         salt_nonce = 15
         owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
@@ -188,7 +189,8 @@ class Safe:
                                                         payment_token_eth_value=payment_token_eth_value,
                                                         fixed_creation_cost=fixed_creation_cost,
                                                         setup_data=setup_data,
-                                                        to=to)
+                                                        to=to,
+                                                        callback=callback)
         return SafeCreationEstimate(safe_creation_tx.gas, safe_creation_tx.gas_price, safe_creation_tx.payment,
                                     safe_creation_tx.payment_token)
 
@@ -223,7 +225,8 @@ class Safe:
                               payment_token_eth_value: float = 1.0,
                               fixed_creation_cost: Optional[int] = None,
                               setup_data: Optional[str] = '',
-                              to: Optional[str] = NULL_ADDRESS) -> SafeCreate2Tx:
+                              to: Optional[str] = NULL_ADDRESS,
+                              callback: Optional[str] = NULL_ADDRESS) -> SafeCreate2Tx:
         """
         Prepare safe proxy deployment for being relayed. It calculates and sets the costs of deployment to be returned
         to the sender of the tx. If you are an advanced user you may prefer to use `create` function
@@ -241,7 +244,8 @@ class Safe:
                                                             payment_token_eth_value=payment_token_eth_value,
                                                             fixed_creation_cost=fixed_creation_cost,
                                                             setup_data=setup_data,
-                                                            to=to)
+                                                            to=to,
+                                                            callback=callback)
         except InvalidERC20Token as exc:
             raise InvalidPaymentToken('Invalid payment token %s' % payment_token) from exc
 

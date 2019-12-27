@@ -8,6 +8,8 @@ from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (get_paying_proxy_deployed_bytecode,
                                   get_proxy_factory_contract)
 from gnosis.eth.ethereum_client import EthereumTxSent
+from gnosis.eth.constants import NULL_ADDRESS
+
 
 logger = getLogger(__name__)
 
@@ -126,6 +128,49 @@ class ProxyFactory:
         tx['gas'] = tx['gas'] + 50000
         tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
         return EthereumTxSent(tx_hash, tx, contract_address)
+
+    def deploy_proxy_contract_with_callback(self, deployer_account: LocalAccount, master_copy: str,
+                                         initializer: bytes, salt_nonce: int,
+                                         gas: Optional[int] = None, gas_price: Optional[int] = None,
+                                         nonce: Optional[int] = None,
+                                         callback: Optional[str] = None) -> EthereumTxSent:
+        """
+        Deploy proxy contract via Proxy Factory using `createProxyWithNonce` (create2)
+        :param deployer_account: Ethereum account
+        :param master_copy: Address the proxy will point at
+        :param initializer: Data for safe creation
+        :param salt_nonce: Uint256 for `create2` salt
+        :param gas: Gas
+        :param gas_price: Gas Price
+        :param nonce: Nonce
+        :param callback: Callback
+        :return: Tuple(tx-hash, tx, deployed contract address)
+        """
+        proxy_factory_contract = self.get_contract()
+        if callback is None:
+            callback = NULL_ADDRESS
+        create_proxy_fn = proxy_factory_contract.functions.createProxyWithCallback(master_copy, initializer, salt_nonce, callback)
+
+        tx_parameters = {
+            'from': deployer_account.address
+        }
+        contract_address = create_proxy_fn.call(tx_parameters)
+
+        if gas_price is not None:
+            tx_parameters['gasPrice'] = gas_price
+
+        if gas is not None:
+            tx_parameters['gas'] = gas
+
+        if nonce is not None:
+            tx_parameters['nonce'] = nonce
+
+        tx = create_proxy_fn.buildTransaction(tx_parameters)
+        # Auto estimation of gas does not work. We use a little more gas just in case
+        tx['gas'] = tx['gas'] + 50000
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.privateKey)
+        return EthereumTxSent(tx_hash, tx, contract_address)
+
 
     def get_contract(self):
         return get_proxy_factory_contract(self.ethereum_client.w3, self.address)

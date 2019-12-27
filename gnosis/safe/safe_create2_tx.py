@@ -32,6 +32,7 @@ class SafeCreate2Tx(NamedTuple):
     fixed_creation_cost: Optional[int]
     safe_address: str
     safe_setup_data: bytes
+    callback: str
 
     @property
     def payment_ether(self):
@@ -82,7 +83,8 @@ class SafeCreate2TxBuilder:
               payment_token: Optional[str] = None,
               payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None,
               setup_data: Optional[bytes] = b'',
-              to: Optional[str] = NULL_ADDRESS):
+              to: Optional[str] = NULL_ADDRESS,
+              callback: Optional[str] = NULL_ADDRESS):
         """
         Prepare Safe creation
         :param owners: Owners of the Safe
@@ -113,7 +115,7 @@ class SafeCreate2TxBuilder:
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
         estimated_gas: int = self._estimate_gas(safe_setup_data,
-                                                salt_nonce, payment_token, payment_receiver)
+                                                salt_nonce, payment_token, payment_receiver, callback)
         logger.debug('Magic gas %d - Estimated gas %d' % (magic_gas, estimated_gas))
         gas = max(magic_gas, estimated_gas)
 
@@ -135,7 +137,7 @@ class SafeCreate2TxBuilder:
 
         return SafeCreate2Tx(salt_nonce, owners, threshold, self.master_copy_address, self.proxy_factory_address,
                              payment_receiver, payment_token, payment, gas, gas_price, payment_token_eth_value,
-                             fixed_creation_cost, safe_address, final_safe_setup_data)
+                             fixed_creation_cost, safe_address, final_safe_setup_data, callback)
 
     @staticmethod
     def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: Optional[int],
@@ -156,7 +158,7 @@ class SafeCreate2TxBuilder:
         return generate_address_2(self.proxy_factory_contract.address, salt, deployment_data)
 
     def _estimate_gas(self, initializer: bytes, salt_nonce: int,
-                      payment_token: str, payment_receiver: str) -> int:
+                      payment_token: str, payment_receiver: str, callback: str) -> int:
         """
         Gas estimation done using web3 and calling the node
         Payment cannot be estimated, as no ether is in the address. So we add some gas later.
@@ -167,8 +169,8 @@ class SafeCreate2TxBuilder:
         """
 
         # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
-        gas: int = self.proxy_factory_contract.functions.createProxyWithNonce(self.master_copy_address,
-                                                                              initializer, salt_nonce).estimateGas()
+        gas: int = self.proxy_factory_contract.functions.createProxyWithCallback(self.master_copy_address,
+                                                                              initializer, salt_nonce, callback).estimateGas()
 
         # It's not very relevant if is 1 or 9999
         payment: int = 1
