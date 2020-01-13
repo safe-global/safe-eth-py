@@ -233,7 +233,7 @@ class Erc20Manager:
             symbol = self.get_symbol(erc20_address)
             decimals = self.get_decimals(erc20_address)
             return Erc20Info(name, symbol, decimals)
-        except InsufficientDataBytes as e:
+        except (InsufficientDataBytes, ValueError) as e:
             raise InvalidERC20Info from e
 
     def get_total_transfer_history(self, addresses: List[str], from_block: int = 0,

@@ -32,12 +32,14 @@ class PriceOracle(ABC):
 
 
 class KyberOracle(PriceOracle):
+    ETH_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+
     def __init__(self, ethereum_client: EthereumClient, kyber_network_proxy_address: str):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.kyber_network_proxy_address = kyber_network_proxy_address
 
-    def get_price(self, token_address_1: str, token_address_2: str) -> float:
+    def get_price(self, token_address_1: str, token_address_2: str = ETH_TOKEN_ADDRESS) -> float:
         kyber_network_proxy_contract = get_kyber_network_proxy_contract(self.w3,
                                                                         self.kyber_network_proxy_address)
         try:
@@ -45,6 +47,14 @@ class KyberOracle(PriceOracle):
                                                                                       token_address_2,
                                                                                       int(1e18)).call()
             price = expected_rate / 1e18
+
+            if price <= 0.:
+                # Try again the opposite
+                expected_rate, _ = kyber_network_proxy_contract.functions.getExpectedRate(token_address_2,
+                                                                                          token_address_1,
+                                                                                          int(1e18)).call()
+                price = 1 / (expected_rate / 1e18)
+
             if price <= 0.:
                 error_message = f'price={price} <= 0 from kyber-network-proxy={self.kyber_network_proxy_address} ' \
                                 f'for token-1={token_address_1} to token-2={token_address_2}'
