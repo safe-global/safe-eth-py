@@ -780,8 +780,9 @@ class EthereumClient:
         blocks = []
         for result in results:
             raw_block = result['result']
-            del raw_block['extraData']  # Remove extraData, raises some problems on parsing
             if raw_block:
+                if 'extraData' in raw_block:
+                    del raw_block['extraData']  # Remove extraData, raises some problems on parsing
                 blocks.append(block_formatter(raw_block))
             else:
                 blocks.append(None)
