@@ -2,13 +2,17 @@ import logging
 
 from django.test import TestCase
 
+from eth_abi import encode_single
 from eth_abi.packed import encode_single_packed
 from eth_account import Account
 from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
 from web3 import Web3
 
-from ..safe_signature import SafeSignature
+from gnosis.eth.contracts import get_safe_contract
+
+from ..safe_signature import SafeContractSignature, SafeSignature
+from .safe_test_case import SafeTestCaseMixin
 
 logger = logging.getLogger(__name__)
 
@@ -74,3 +78,39 @@ class TestSignature(TestCase):
         s1, s2 = SafeSignature.parse_signatures(signatures, safe_tx_hash)
         self.assertEqual(s1.owner, owner_1)
         self.assertEqual(s2.owner, owner_2)
+
+
+class TestContractSignature(SafeTestCaseMixin, TestCase):
+    def test_contract_signature(self):
+        safe_account = self.ethereum_test_account
+        safe = self.deploy_test_safe(owners=[safe_account.address], initial_funding_wei=Web3.toWei(0.01, 'ether'))
+        safe_contract = get_safe_contract(self.ethereum_client.w3, safe.safe_address)
+        safe_tx_hash = Web3.keccak(text='test')
+        signature_r = HexBytes(safe.safe_address.replace('0x', '').rjust(64, '0'))
+        signature_s = HexBytes('0' * 62 + '41')  # Position of end of signature
+        signature_v = HexBytes('00')
+        contract_signature = HexBytes('0' * 64)
+        signature = signature_r + signature_s + signature_v + contract_signature
+
+        safe_signature = SafeContractSignature(signature, safe_tx_hash, self.ethereum_client)
+        self.assertFalse(safe_signature.ok)
+
+        # Approve the hash
+        tx = safe_contract.functions.approveHash(
+            safe_tx_hash
+        ).buildTransaction({'from': safe_account.address})
+        self.ethereum_client.send_unsigned_transaction(tx, private_key=safe_account.key)
+
+        safe_signature = SafeContractSignature(signature, safe_tx_hash, self.ethereum_client)
+        self.assertFalse(safe_signature.ok)
+
+        # Test with an owner signature
+        safe_tx_hash_2 = Web3.keccak(text='test2')
+        safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(safe_tx_hash_2).call()
+        safe_signature = SafeContractSignature(signature, safe_tx_hash_2, self.ethereum_client)
+        self.assertFalse(safe_signature.ok)
+        contract_signature = encode_single('bytes', safe_account.signHash(safe_tx_hash_2_message_hash)['signature'])
+        signature = signature_r + signature_s + signature_v + contract_signature
+
+        safe_signature = SafeContractSignature(signature, safe_tx_hash_2, self.ethereum_client)
+        self.assertTrue(safe_signature.ok)
