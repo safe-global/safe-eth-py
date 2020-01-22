@@ -4,6 +4,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import eth_abi
 import requests
+from enum import Enum
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -25,6 +26,24 @@ logger = getLogger(__name__)
 
 
 EthereumHash = Union[bytes, str]
+
+
+class EthereumNetworkName(Enum):
+    UNKNOWN = -1
+    OLYMPIC = 0
+    MAINNET = 1
+    ROPSTEN = 3
+    RINKEBY = 4
+    GOERLI = 5
+    KOVAN = 42
+    default = UNKNOWN
+
+    @classmethod
+    def _missing_(cls, value):
+        return cls.UNKNOWN
+
+    def __str__(self):
+        return str(self.value)
 
 
 class EthereumClientException(ValueError):
@@ -633,6 +652,16 @@ class EthereumClient:
                                 request_kwargs={'timeout': timeout})
         else:
             return self.w3_provider
+
+    def get_network_name(self):
+        """
+        Get network name based on the network version id
+        :return: The name of the current Ethereum network
+        """
+        if isinstance(self.w3, Web3):
+            return EthereumNetworkName(self.w3.net.version).name
+        else:
+            return EthereumNetworkName.UNKNOWN.name
 
     def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
         """

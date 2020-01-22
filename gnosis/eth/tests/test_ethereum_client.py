@@ -4,7 +4,8 @@ from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 
-from ..ethereum_client import (EthereumClientProvider, FromAddressNotFound,
+from ..ethereum_client import (EthereumNetworkName,
+                               EthereumClientProvider, FromAddressNotFound,
                                InsufficientFunds, InvalidERC20Info,
                                InvalidNonce, SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
@@ -517,6 +518,10 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
         nonce = self.ethereum_client.get_nonce_for_account(address, block_identifier='pending')
         self.assertEqual(nonce, 0)
+
+    def test_get_ethereum_network(self):
+        ethereum_network_name = self.ethereum_client.get_network_name()
+        self.assertEqual(ethereum_network_name, EthereumNetworkName.UNKNOWN.name)
 
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)
