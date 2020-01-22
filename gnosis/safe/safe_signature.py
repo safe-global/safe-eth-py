@@ -1,7 +1,6 @@
 from logging import getLogger
 from typing import Iterable, Union
 
-from eth_account import Account
 from eth_account.messages import defunct_hash_message
 from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
