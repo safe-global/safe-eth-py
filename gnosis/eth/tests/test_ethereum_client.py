@@ -418,6 +418,14 @@ class TestParityModule(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.parity.trace_filter(from_address=Account.create().address)
 
 
+class TestEthereumNetworkName(EthereumTestCaseMixin, TestCase):
+    def test_default_ethereum_network_name(self):
+        self.assertEqual(EthereumNetworkName(EthereumNetworkName.default), EthereumNetworkName.UNKNOWN)
+
+    def test_default_ethereum_network_name(self):
+        self.assertEqual(EthereumNetworkName(2), EthereumNetworkName.UNKNOWN)
+
+
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_current_block_number(self):
         self.assertGreaterEqual(self.ethereum_client.current_block_number, 0)
