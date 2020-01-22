@@ -1,8 +1,10 @@
 from django.test import TestCase
+from unittest import mock
 
 from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
+from web3.net import Net
 
 from ..ethereum_client import (EthereumNetworkName,
                                EthereumClientProvider, FromAddressNotFound,
@@ -425,6 +427,12 @@ class TestEthereumNetworkName(EthereumTestCaseMixin, TestCase):
     def test_default_ethereum_network_name(self):
         self.assertEqual(EthereumNetworkName(2), EthereumNetworkName.UNKNOWN)
 
+    def test_mainnet_ethereum_network_name(self):
+        self.assertEqual(EthereumNetworkName(1), EthereumNetworkName.MAINNET)
+
+    def test_rinkeby_ethereum_network_name(self):
+        self.assertEqual(EthereumNetworkName(4), EthereumNetworkName.RINKEBY)
+
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_current_block_number(self):
@@ -527,9 +535,12 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         nonce = self.ethereum_client.get_nonce_for_account(address, block_identifier='pending')
         self.assertEqual(nonce, 0)
 
-    def test_get_ethereum_network(self):
-        ethereum_network_name = self.ethereum_client.get_network_name()
-        self.assertEqual(ethereum_network_name, EthereumNetworkName.UNKNOWN)
+    def test_get_ethereum_default_network(self):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
+
+    @mock.patch.object(Net, 'version', return_value="1", autospec=True)
+    def test_mock_get_ethereum_mainnet_network(self, version_mock):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
 
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)

@@ -658,7 +658,7 @@ class EthereumClient:
         Get network name based on the network version id
         :return: The EthereumNetworkName enum type
         """
-        return EthereumNetworkName(self.w3.net.version)
+        return EthereumNetworkName(int(self.w3.net.version))
 
     def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
         """
