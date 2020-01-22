@@ -521,7 +521,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
     def test_get_ethereum_network(self):
         ethereum_network_name = self.ethereum_client.get_network_name()
-        self.assertEqual(ethereum_network_name, EthereumNetworkName.UNKNOWN.name)
+        self.assertEqual(ethereum_network_name, EthereumNetworkName.UNKNOWN)
 
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)

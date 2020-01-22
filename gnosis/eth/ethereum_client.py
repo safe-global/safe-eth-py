@@ -653,15 +653,12 @@ class EthereumClient:
         else:
             return self.w3_provider
 
-    def get_network_name(self):
+    def get_network_name(self) -> EthereumNetworkName:
         """
         Get network name based on the network version id
-        :return: The name of the current Ethereum network
+        :return: The EthereumNetworkName enum type
         """
-        if isinstance(self.w3, Web3):
-            return EthereumNetworkName(self.w3.net.version).name
-        else:
-            return EthereumNetworkName.UNKNOWN.name
+        return EthereumNetworkName(self.w3.net.version)
 
     def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
         """
