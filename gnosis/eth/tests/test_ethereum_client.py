@@ -538,9 +538,13 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_get_ethereum_default_network(self):
         self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
 
-    @mock.patch.object(Net, 'version', return_value="1", autospec=True)
+    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
     def test_mock_get_ethereum_mainnet_network(self, version_mock):
         self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
+
+    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
+    def test_mock_get_ethereum_rinkeby_network(self, version_mock):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.RINKEBY)
 
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)
