@@ -538,7 +538,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_get_ethereum_default_network(self):
         self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
 
-    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
+    @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
     def test_mock_get_ethereum_mainnet_network(self, version_mock):
         self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
 
