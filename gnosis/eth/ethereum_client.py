@@ -1,10 +1,10 @@
+from enum import Enum
 from functools import wraps
 from logging import getLogger
 from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import eth_abi
 import requests
-from enum import Enum
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account
 from eth_account.signers.local import LocalAccount

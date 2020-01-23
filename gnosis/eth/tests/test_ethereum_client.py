@@ -1,15 +1,16 @@
-from django.test import TestCase
 from unittest import mock
+
+from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 from web3.net import Net
 
-from ..ethereum_client import (EthereumNetworkName,
-                               EthereumClientProvider, FromAddressNotFound,
-                               InsufficientFunds, InvalidERC20Info,
-                               InvalidNonce, SenderAccountNotFoundInNode)
+from ..ethereum_client import (EthereumClientProvider, EthereumNetworkName,
+                               FromAddressNotFound, InsufficientFunds,
+                               InvalidERC20Info, InvalidNonce,
+                               SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 
