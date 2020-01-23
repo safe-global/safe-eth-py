@@ -528,24 +528,24 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         gas2 = self.ethereum_client.estimate_gas(from_, erc20_contract.address, 0, data, block_identifier='pending')
         self.assertLess(gas2, gas)
 
+    def test_get_ethereum_network_default(self):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
+
+    @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
+    def test_mock_get_ethereum_network_mainnet(self, version_mock):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
+
+    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
+    def test_mock_get_ethereum_network_rinkeby(self, version_mock):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.RINKEBY)
+
     def test_get_nonce(self):
-        address, _ = get_eth_address_with_key()
+        address = Account.create().address
         nonce = self.ethereum_client.get_nonce_for_account(address)
         self.assertEqual(nonce, 0)
 
         nonce = self.ethereum_client.get_nonce_for_account(address, block_identifier='pending')
         self.assertEqual(nonce, 0)
-
-    def test_get_ethereum_default_network(self):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
-
-    @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
-    def test_mock_get_ethereum_mainnet_network(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
-
-    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
-    def test_mock_get_ethereum_rinkeby_network(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.RINKEBY)
 
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)
