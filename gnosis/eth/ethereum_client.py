@@ -1,10 +1,10 @@
+from enum import Enum
 from functools import wraps
 from logging import getLogger
 from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import eth_abi
 import requests
-from enum import Enum
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -658,7 +658,7 @@ class EthereumClient:
         Get network name based on the network version id
         :return: The EthereumNetworkName enum type
         """
-        return EthereumNetworkName(self.w3.net.version)
+        return EthereumNetworkName(int(self.w3.net.version))
 
     def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
         """

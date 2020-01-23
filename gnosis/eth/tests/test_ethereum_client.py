@@ -1,13 +1,16 @@
+from unittest import mock
+
 from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
+from web3.net import Net
 
-from ..ethereum_client import (EthereumNetworkName,
-                               EthereumClientProvider, FromAddressNotFound,
-                               InsufficientFunds, InvalidERC20Info,
-                               InvalidNonce, SenderAccountNotFoundInNode)
+from ..ethereum_client import (EthereumClientProvider, EthereumNetworkName,
+                               FromAddressNotFound, InsufficientFunds,
+                               InvalidERC20Info, InvalidNonce,
+                               SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 
@@ -425,6 +428,12 @@ class TestEthereumNetworkName(EthereumTestCaseMixin, TestCase):
     def test_default_ethereum_network_name(self):
         self.assertEqual(EthereumNetworkName(2), EthereumNetworkName.UNKNOWN)
 
+    def test_mainnet_ethereum_network_name(self):
+        self.assertEqual(EthereumNetworkName(1), EthereumNetworkName.MAINNET)
+
+    def test_rinkeby_ethereum_network_name(self):
+        self.assertEqual(EthereumNetworkName(4), EthereumNetworkName.RINKEBY)
+
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_current_block_number(self):
@@ -519,17 +528,24 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         gas2 = self.ethereum_client.estimate_gas(from_, erc20_contract.address, 0, data, block_identifier='pending')
         self.assertLess(gas2, gas)
 
+    def test_get_ethereum_network_default(self):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
+
+    @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
+    def test_mock_get_ethereum_network_mainnet(self, version_mock):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
+
+    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
+    def test_mock_get_ethereum_network_rinkeby(self, version_mock):
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.RINKEBY)
+
     def test_get_nonce(self):
-        address, _ = get_eth_address_with_key()
+        address = Account.create().address
         nonce = self.ethereum_client.get_nonce_for_account(address)
         self.assertEqual(nonce, 0)
 
         nonce = self.ethereum_client.get_nonce_for_account(address, block_identifier='pending')
         self.assertEqual(nonce, 0)
-
-    def test_get_ethereum_network(self):
-        ethereum_network_name = self.ethereum_client.get_network_name()
-        self.assertEqual(ethereum_network_name, EthereumNetworkName.UNKNOWN)
 
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)
