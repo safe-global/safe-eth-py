@@ -20,7 +20,7 @@ requirements = [
 
 setup(
     name='gnosis-py',
-    version='2.0.6',
+    version='2.0.7',
     packages=find_packages(),
     install_requires=requirements,
     include_package_data=True,
