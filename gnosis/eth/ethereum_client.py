@@ -18,7 +18,8 @@ from web3.exceptions import BlockNotFound, TimeExhausted, TransactionNotFound
 from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
 
-from .constants import ERC20_721_TRANSFER_TOPIC, NULL_ADDRESS
+from .constants import (CALL_DATA_BYTE, CALL_DATA_ZERO_BYTE,
+                        ERC20_721_TRANSFER_TOPIC, NULL_ADDRESS)
 from .contracts import get_erc20_contract
 from .utils import decode_string_or_bytes32
 
@@ -728,9 +729,9 @@ class EthereumClient:
         gas = 0
         for byte in data:
             if not byte:
-                gas += 4  # Byte 0 -> 4 Gas
+                gas += CALL_DATA_ZERO_BYTE
             else:
-                gas += 68  # Any other byte -> 68 Gas
+                gas += CALL_DATA_BYTE
         return gas
 
     def get_balance(self, address: str, block_identifier=None):

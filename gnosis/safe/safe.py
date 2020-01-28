@@ -7,7 +7,7 @@ from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth.constants import NULL_ADDRESS
+from gnosis.eth.constants import CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
                                   get_safe_contract, get_safe_V0_0_1_contract,
                                   get_safe_V1_0_0_contract)
@@ -301,15 +301,15 @@ class Safe:
         nonce = self.retrieve_nonce()
 
         # Every byte == 0 -> 4  Gas
-        # Every byte != 0 -> 68 Gas
-        # numbers < 256 (0x00(31*2)..ff) are 192 -> 31 * 4 + 1 * 68
-        # numbers < 65535 (0x(30*2)..ffff) are 256 -> 30 * 4 + 2 * 68
+        # Every byte != 0 -> 16 Gas (68 before Istanbul)
+        # numbers < 256 (0x00(31*2)..ff) are 192 -> 31 * 4 + 1 * CALL_DATA_BYTE
+        # numbers < 65535 (0x(30*2)..ffff) are 256 -> 30 * 4 + 2 * CALL_DATA_BYTE
 
         # Calculate gas for signatures
         # (array count (3 -> r, s, v) + ecrecover costs) * signature count
         # ecrecover for ecdsa ~= 4K gas, we use 6K
         ecrecover_gas = 6000
-        signature_gas = threshold * (1 * 68 + 2 * 32 * 68 + ecrecover_gas)
+        signature_gas = threshold * (1 * CALL_DATA_BYTE + 2 * 32 * CALL_DATA_BYTE + ecrecover_gas)
 
         safe_tx_gas = estimate_tx_gas
         base_gas = 0

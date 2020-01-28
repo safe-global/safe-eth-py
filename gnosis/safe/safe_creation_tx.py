@@ -4,8 +4,6 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from eth_account._utils.transactions import (
-    encode_transaction, serializable_unsigned_transaction_from_dict)
 from ethereum.exceptions import InvalidTransaction
 from ethereum.transactions import Transaction, secpk1n
 from ethereum.utils import checksum_encode, mk_contract_address
@@ -13,7 +11,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
 
-from gnosis.eth.constants import NULL_ADDRESS
+from gnosis.eth.constants import CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import (get_erc20_contract,
                                   get_paying_proxy_contract,
                                   get_safe_V0_0_1_contract)
@@ -134,14 +132,14 @@ class SafeCreationTx:
 
         base_gas = 60580  # Transaction standard gas
 
-        # TODO If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
+        # If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
         # The other 1K is for overhead of making the call
         if payment_token != NULL_ADDRESS:
-            payment_token_gas = 21000
+            payment_token_gas = 55000
         else:
             payment_token_gas = 0
 
-        data_gas = 68 * len(safe_setup_data)  # Data gas
+        data_gas = CALL_DATA_BYTE * len(safe_setup_data)  # Data gas
         gas_per_owner = 18020  # Magic number calculated by testing and averaging owners
         return base_gas + data_gas + payment_token_gas + 270000 + len(owners) * gas_per_owner
 
