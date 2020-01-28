@@ -11,7 +11,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
 
-from gnosis.eth.constants import CALL_DATA_BYTE, NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import (get_erc20_contract,
                                   get_paying_proxy_contract,
                                   get_safe_V0_0_1_contract)
@@ -139,7 +139,7 @@ class SafeCreationTx:
         else:
             payment_token_gas = 0
 
-        data_gas = CALL_DATA_BYTE * len(safe_setup_data)  # Data gas
+        data_gas = GAS_CALL_DATA_BYTE * len(safe_setup_data)  # Data gas
         gas_per_owner = 18020  # Magic number calculated by testing and averaging owners
         return base_gas + data_gas + payment_token_gas + 270000 + len(owners) * gas_per_owner
 

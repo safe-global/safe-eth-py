@@ -6,7 +6,7 @@ from eth_account import Account
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth.constants import CALL_DATA_BYTE, NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
@@ -297,9 +297,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         base_gas = safe.estimate_tx_base_gas(to, value, data, operation, gas_token, estimate_tx_gas)
         self.assertGreater(base_gas, 0)
 
-        data = HexBytes('0xabcdefbb')  # A byte that was 00 now is bb, so -4 + CALL_DATA_BYTE
+        data = HexBytes('0xabcdefbb')  # A byte that was 00 now is bb, so -4 + GAS_CALL_DATA_BYTE
         data_gas2 = safe.estimate_tx_base_gas(to, value, data, operation, gas_token, estimate_tx_gas)
-        self.assertEqual(data_gas2, base_gas + CALL_DATA_BYTE - 4)
+        self.assertEqual(data_gas2, base_gas + GAS_CALL_DATA_BYTE - 4)
 
     def test_estimate_tx_gas(self):
         to = Account().create().address
