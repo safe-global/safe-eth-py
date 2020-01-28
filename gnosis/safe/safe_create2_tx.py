@@ -6,7 +6,7 @@ from eth_abi.packed import encode_abi_packed
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth.constants import NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import (get_proxy_factory_contract,
                                   get_safe_contract, get_safe_V1_0_0_contract)
 from gnosis.eth.utils import generate_address_2
@@ -139,7 +139,7 @@ class SafeCreate2TxBuilder:
         else:
             payment_token_gas = 0
 
-        data_gas = 68 * len(safe_setup_data)  # Data gas
+        data_gas = GAS_CALL_DATA_BYTE * len(safe_setup_data)  # Data gas
         gas_per_owner = 20000  # Magic number calculated by testing and averaging owners
         return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
 

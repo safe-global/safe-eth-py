@@ -7,6 +7,7 @@ from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 from web3.net import Net
 
+from ..constants import GAS_CALL_DATA_BYTE
 from ..ethereum_client import (EthereumClientProvider, EthereumNetworkName,
                                FromAddressNotFound, InsufficientFunds,
                                InvalidERC20Info, InvalidNonce,
@@ -550,11 +551,12 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_estimate_data_gas(self):
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)
         self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x00')), 4)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x000204')), 4 + 68 * 2)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x050204')), 68 * 3)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x0502040000')), 68 * 3 + 4 * 2)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x050204000001')), 68 * 4 + 4 * 2)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x00050204000001')), 4 + 68 * 4 + 4 * 2)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x000204')), 4 + GAS_CALL_DATA_BYTE * 2)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x050204')), GAS_CALL_DATA_BYTE * 3)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x0502040000')), GAS_CALL_DATA_BYTE * 3 + 4 * 2)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x050204000001')), GAS_CALL_DATA_BYTE * 4 + 4 * 2)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x00050204000001')),
+                         4 + GAS_CALL_DATA_BYTE * 4 + 4 * 2)
 
     def test_provider_singleton(self):
         ethereum_client1 = EthereumClientProvider()
