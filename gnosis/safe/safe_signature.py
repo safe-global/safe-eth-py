@@ -1,3 +1,4 @@
+from enum import Enum
 from logging import getLogger
 from typing import Iterable, Union
 
@@ -15,11 +16,30 @@ logger = getLogger(__name__)
 EthereumBytes = Union[bytes, str]
 
 
+class SafeSignatureType(Enum):
+    CONTRACT_SIGNATURE = 0
+    APPROVED_HASH = 1
+    EOA_SIGNATURE = 2
+    ETH_SIGN = 3
+
+    @staticmethod
+    def from_v(v: int):
+        if v == 0:
+            return SafeSignatureType.CONTRACT_SIGNATURE
+        elif v == 1:
+            return SafeSignatureType.APPROVED_HASH
+        elif v > 30:
+            return SafeSignatureType.ETH_SIGN
+        else:
+            return SafeSignatureType.EOA_SIGNATURE
+
+
 # TODO Refactor
 class SafeSignature:
     def __init__(self, signature: EthereumBytes, safe_tx_hash: EthereumBytes):
         self.signature = HexBytes(signature)
         self.v, self.r, self.s = signature_split(self.signature)
+        self.signature_type = SafeSignatureType.from_v(self.v)
         self.owner = self.decode_owner(self.v, self.r, self.s, safe_tx_hash)
 
     @classmethod
