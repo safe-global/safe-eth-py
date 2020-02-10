@@ -530,15 +530,15 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertLess(gas2, gas)
 
     def test_get_ethereum_network_default(self):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetwork.UNKNOWN)
+        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN)
 
     @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
     def test_mock_get_ethereum_network_mainnet(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetwork.MAINNET)
+        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.MAINNET)
 
     @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
     def test_mock_get_ethereum_network_rinkeby(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetwork.RINKEBY)
+        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.RINKEBY)
 
     def test_get_nonce(self):
         address = Account.create().address

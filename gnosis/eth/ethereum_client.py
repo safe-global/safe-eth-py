@@ -654,7 +654,7 @@ class EthereumClient:
         else:
             return self.w3_provider
 
-    def get_network_name(self) -> EthereumNetwork:
+    def get_network(self) -> EthereumNetwork:
         """
         Get network name based on the network version id
         :return: The EthereumNetwork enum type
