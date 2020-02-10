@@ -29,7 +29,7 @@ logger = getLogger(__name__)
 EthereumHash = Union[bytes, str]
 
 
-class EthereumNetworkName(Enum):
+class EthereumNetwork(Enum):
     UNKNOWN = -1
     OLYMPIC = 0
     MAINNET = 1
@@ -654,12 +654,12 @@ class EthereumClient:
         else:
             return self.w3_provider
 
-    def get_network_name(self) -> EthereumNetworkName:
+    def get_network_name(self) -> EthereumNetwork:
         """
         Get network name based on the network version id
-        :return: The EthereumNetworkName enum type
+        :return: The EthereumNetwork enum type
         """
-        return EthereumNetworkName(int(self.w3.net.version))
+        return EthereumNetwork(int(self.w3.net.version))
 
     def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
         """

@@ -76,7 +76,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     def deploy_test_safe(self, number_owners: int = 3, threshold: Optional[int] = None,
                          owners: Optional[List[str]] = None, initial_funding_wei: int = 0,
                          fallback_handler: Optional[str] = None) -> SafeCreate2Tx:
-        owners = owners if owners else [get_eth_address_with_key()[0] for _ in range(number_owners)]
+        owners = owners if owners else [Account.create().address for _ in range(number_owners)]
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
         safe_creation_tx = self.build_test_safe(threshold=threshold, owners=owners, fallback_handler=fallback_handler)

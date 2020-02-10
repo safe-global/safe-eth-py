@@ -8,7 +8,7 @@ from web3.datastructures import AttributeDict
 from web3.net import Net
 
 from ..constants import GAS_CALL_DATA_BYTE
-from ..ethereum_client import (EthereumClientProvider, EthereumNetworkName,
+from ..ethereum_client import (EthereumClientProvider, EthereumNetwork,
                                FromAddressNotFound, InsufficientFunds,
                                InvalidERC20Info, InvalidNonce,
                                SenderAccountNotFoundInNode)
@@ -422,18 +422,18 @@ class TestParityModule(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.parity.trace_filter(from_address=Account.create().address)
 
 
-class TestEthereumNetworkName(EthereumTestCaseMixin, TestCase):
+class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
     def test_default_ethereum_network_name(self):
-        self.assertEqual(EthereumNetworkName(EthereumNetworkName.default), EthereumNetworkName.UNKNOWN)
+        self.assertEqual(EthereumNetwork(EthereumNetwork.default), EthereumNetwork.UNKNOWN)
 
     def test_default_ethereum_network_name(self):
-        self.assertEqual(EthereumNetworkName(2), EthereumNetworkName.UNKNOWN)
+        self.assertEqual(EthereumNetwork(2), EthereumNetwork.UNKNOWN)
 
     def test_mainnet_ethereum_network_name(self):
-        self.assertEqual(EthereumNetworkName(1), EthereumNetworkName.MAINNET)
+        self.assertEqual(EthereumNetwork(1), EthereumNetwork.MAINNET)
 
     def test_rinkeby_ethereum_network_name(self):
-        self.assertEqual(EthereumNetworkName(4), EthereumNetworkName.RINKEBY)
+        self.assertEqual(EthereumNetwork(4), EthereumNetwork.RINKEBY)
 
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
@@ -530,15 +530,15 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertLess(gas2, gas)
 
     def test_get_ethereum_network_default(self):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.UNKNOWN)
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetwork.UNKNOWN)
 
     @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
     def test_mock_get_ethereum_network_mainnet(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.MAINNET)
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetwork.MAINNET)
 
     @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
     def test_mock_get_ethereum_network_rinkeby(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetworkName.RINKEBY)
+        self.assertEqual(self.ethereum_client.get_network_name(), EthereumNetwork.RINKEBY)
 
     def test_get_nonce(self):
         address = Account.create().address
