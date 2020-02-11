@@ -15,7 +15,7 @@ addons:
 install:
   - pip install -r requirements-test.txt
   - pip install coveralls
-  - npm install -g ganache-cli@6.6.0
+  - npm install -g ganache-cli@6.9.0
 script:
   - ganache-cli -d -p 8545 --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --noVMErrorsOnRPCResponse > /dev/null &
   - sleep 5

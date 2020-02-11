@@ -81,6 +81,14 @@ class MultiSend:
     def get_contract(self):
         return get_multi_send_contract(self.ethereum_client.w3, self.address)
 
-    def prepare_tx(self, multi_send_txs: List[MultiSendTx]) -> Dict[str, Any]:
+    def build_tx_data(self, multi_send_txs: List[MultiSendTx]) -> bytes:
+        """
+        Txs don't need to be valid to get through
+        :param multi_send_txs:
+        :param sender:
+        :return:
+        """
+        multisig_contract = self.get_contract()
         encoded_multisend_data = b''.join([x.encoded_data for x in multi_send_txs])
-        return self.get_contract().functions.multiSend(encoded_multisend_data).buildTransaction()
+        return multisig_contract.functions.multiSend(encoded_multisend_data).buildTransaction({'gas': 1,
+                                                                                               'gasPrice': 1})['data']

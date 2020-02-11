@@ -42,7 +42,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
                                                               new_threshold).buildTransaction({'gas': 0})['data'])
 
         multisend_txs = [MultiSendTx(MultiSendOperation.CALL, safe_address, value, d) for d in (data, data_2)]
-        safe_multisend_data = self.multi_send.prepare_tx(multisend_txs)['data']
+        safe_multisend_data = self.multi_send.build_tx_data(multisend_txs)
         safe_tx = SafeTx(self.ethereum_client, safe_address, to,
                          0, safe_multisend_data, SafeOperation.DELEGATE_CALL.value,
                          safe_tx_gas, base_gas, self.gas_price, None, None, safe_nonce=0)
