@@ -437,6 +437,7 @@ class Safe:
                 self.w3.eth.call({'gas': gas_estimated, 'from': self.address,
                                   'to': to, 'value': value,
                                   'data': data})
+                return gas_estimated
             except ValueError:  # Out of gas
                 # Parity: ValueError: {'code': -32015, 'message': 'Transaction execution error.', 'data': 'NotEnoughBaseGas { required: 21632, got: 16935 }'}
                 # Geth: ValueError: {'code': -32000, 'message': 'out of gas'}
