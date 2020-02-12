@@ -431,7 +431,18 @@ class Safe:
         """
         Estimate tx gas using web3
         """
-        return self.ethereum_client.estimate_gas(self.address, to, value, data)
+        gas_estimated = self.ethereum_client.estimate_gas(self.address, to, value, data)
+        for _ in range(20):  # Test `call()` and increase gas 20 times, 63/64th problem
+            try:
+                self.w3.eth.call({'gas': gas_estimated, 'from': self.address,
+                                  'to': to, 'value': value,
+                                  'data': data})
+                return gas_estimated
+            except ValueError:  # Out of gas
+                # Parity: ValueError: {'code': -32015, 'message': 'Transaction execution error.', 'data': 'NotEnoughBaseGas { required: 21632, got: 16935 }'}
+                # Geth: ValueError: {'code': -32000, 'message': 'out of gas'}
+                gas_estimated += 10000
+        return gas_estimated
 
     def estimate_tx_gas(self, to: str, value: int, data: bytes, operation: int) -> int:
         """
@@ -439,24 +450,22 @@ class Safe:
         use just the safe calculation otherwise
         """
         # Costs to route through the proxy and nested calls
-        proxy_gas = 1000
+        PROXY_GAS = 1000
         # https://github.com/ethereum/solidity/blob/dfe3193c7382c80f1814247a162663a97c3f5e67/libsolidity/codegen/ExpressionCompiler.cpp#L1764
         # This was `false` before solc 0.4.21 -> `m_context.evmVersion().canOverchargeGasForCall()`
         # So gas needed by caller will be around 35k
-        old_call_gas = 35000
-        safe_gas_estimation = (self.estimate_tx_gas_with_safe(to, value, data, operation)
-                               + proxy_gas + old_call_gas)
+        OLD_CALL_GAS = 35000
+
+        safe_gas_estimation = self.estimate_tx_gas_with_safe(to, value, data, operation)
         # We cannot estimate DELEGATECALL (different storage)
         if SafeOperation(operation) == SafeOperation.CALL:
             try:
-                web3_gas_estimation = (self.estimate_tx_gas_with_web3(to, value, data)
-                                       + proxy_gas + old_call_gas)
+                web3_gas_estimation = self.estimate_tx_gas_with_web3(to, value, data)
             except ValueError:
                 web3_gas_estimation = 0
-            return max(safe_gas_estimation, web3_gas_estimation)
+            safe_gas_estimation = max(safe_gas_estimation, web3_gas_estimation)
 
-        else:
-            return safe_gas_estimation
+        return safe_gas_estimation + PROXY_GAS + OLD_CALL_GAS
 
     def estimate_tx_operational_gas(self, data_bytes_length: int):
         """
