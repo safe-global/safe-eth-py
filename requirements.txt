@@ -1,9 +1,10 @@
 Django==2.2.10
-djangorestframework==3.10.3
+django-filter==2.2.0
+djangorestframework==3.11.0
 ethereum==2.3.2
-faker==1.0.7
 hexbytes==0.2.0
-psycopg2-binary==2.8.4
 packaging
+psycopg2-binary==2.8.4
 py-eth-sig-utils==0.3.0
-web3==5.4.0
+requests==2.23.0
+web3==5.5.1

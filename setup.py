@@ -9,10 +9,12 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 requirements = [
-    "Django>=2.0.0",
+    "Django>=2",
+    "django-filter>=2",
     "ethereum>=2.3.2",
     "packaging",
     "py-eth-sig-utils>=0.3.0",
+    "requests>=2",
     "web3>=5",
 ]
 
