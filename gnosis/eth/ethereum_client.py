@@ -243,15 +243,26 @@ class Erc20Manager:
 
     def get_info(self, erc20_address: str) -> Erc20Info:
         """
-        Get erc20 information (`name`, `symbol` and `decimals`)
+        Get erc20 information (`name`, `symbol` and `decimals`). Use batching to get
+        all info in the same request.
         :param erc20_address:
         :return: Erc20Info
         """
-        # We use the `example erc20` as the `erc20 interface` doesn't have `name`, `symbol` nor `decimals`
+        erc20 = get_erc20_contract(self.w3, erc20_address)
+        datas = [erc20.functions.name().buildTransaction({'gas': 0, 'gasPrice': 0})['data'],
+                 erc20.functions.symbol().buildTransaction({'gas': 0, 'gasPrice': 0})['data'],
+                 erc20.functions.decimals().buildTransaction({'gas': 0, 'gasPrice': 0})['data']]
+        payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_call',
+                    'params': [{'to': erc20_address, 'data': data}]}
+                   for i, data in enumerate(datas)]
+        response = requests.post(self.ethereum_client.ethereum_node_url, json=payload)
+        if not response.ok:
+            raise InvalidERC20Info(response.content)
         try:
-            name = self.get_name(erc20_address)
-            symbol = self.get_symbol(erc20_address)
-            decimals = self.get_decimals(erc20_address)
+            results = [HexBytes(r['result']) for r in response.json()]
+            name = decode_string_or_bytes32(results[0])
+            symbol = decode_string_or_bytes32(results[1])
+            decimals = self.ethereum_client.w3.codec.decode_single('uint8', results[2])
             return Erc20Info(name, symbol, decimals)
         except (InsufficientDataBytes, ValueError) as e:
             raise InvalidERC20Info from e
