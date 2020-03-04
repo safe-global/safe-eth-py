@@ -1,3 +1,4 @@
+import math
 from enum import Enum
 from logging import getLogger
 from typing import List, NamedTuple, Optional
@@ -432,7 +433,8 @@ class Safe:
         Estimate tx gas using web3
         """
         gas_estimated = self.ethereum_client.estimate_gas(self.address, to, value, data)
-        for _ in range(20):  # Test `call()` and increase gas 20 times, 63/64th problem
+        block_gas_limit: Optional[int] = None
+        for i in range(40):  # Test `call()` and increase gas 40 times, 63/64th problem
             try:
                 self.w3.eth.call({'gas': gas_estimated, 'from': self.address,
                                   'to': to, 'value': value,
@@ -441,7 +443,12 @@ class Safe:
             except ValueError:  # Out of gas
                 # Parity: ValueError: {'code': -32015, 'message': 'Transaction execution error.', 'data': 'NotEnoughBaseGas { required: 21632, got: 16935 }'}
                 # Geth: ValueError: {'code': -32000, 'message': 'out of gas'}
-                gas_estimated += 10000
+                logger.error('Found 63/64 problem gas-estimated=%d to=%s data=%s', gas_estimated, to, data.hex())
+                block_gas_limit = block_gas_limit or self.w3.eth.getBlock('latest', full_transactions=False)['gasLimit']
+                gas_estimated = math.floor((1 + i * 0.01) * gas_estimated)
+                if gas_estimated >= block_gas_limit:
+                    return block_gas_limit
+
         return gas_estimated
 
     def estimate_tx_gas(self, to: str, value: int, data: bytes, operation: int) -> int:
