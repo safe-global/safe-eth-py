@@ -1,12 +1,14 @@
+import functools
 import logging
 from abc import ABC, abstractmethod
 
-from web3 import Web3
+import requests
+from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
 
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
-from ..contracts import (get_kyber_network_proxy_contract,
+from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_exchange_contract,
                          get_uniswap_factory_contract)
 
@@ -32,9 +34,14 @@ class PriceOracle(ABC):
 
 
 class KyberOracle(PriceOracle):
+    # This is the `tokenAddress` they use for ETH ¯\_(ツ)_/¯
     ETH_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
     def __init__(self, ethereum_client: EthereumClient, kyber_network_proxy_address: str):
+        """
+        :param ethereum_client:
+        :param kyber_network_proxy_address: https://developer.kyber.network/docs/MainnetEnvGuide/#contract-addresses
+        """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.kyber_network_proxy_address = kyber_network_proxy_address
@@ -70,16 +77,52 @@ class KyberOracle(PriceOracle):
 
 class UniswapOracle(PriceOracle):
     def __init__(self, ethereum_client: EthereumClient, uniswap_factory_address: str):
+        """
+        :param ethereum_client:
+        :param uniswap_factory_address: https://docs.uniswap.io/frontend-integration/connect-to-uniswap#factory-contract
+        """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.uniswap_factory_address = uniswap_factory_address
-        self.uniswap_exchanges = {}
+
+    @functools.lru_cache(maxsize=None)
+    def get_uniswap_exchange(self, token_address: str) -> str:
+        uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
+        return uniswap_factory.functions.getExchange(token_address).call()
+
+    def _get_balances_without_batching(self, uniswap_exchange_address: str, token_address: str):
+        balance = self.ethereum_client.get_balance(uniswap_exchange_address)
+        token_decimals = self.ethereum_client.erc20.get_decimals(token_address)
+        token_balance = self.ethereum_client.erc20.get_balance(uniswap_exchange_address, token_address)
+        return balance, token_decimals, token_balance
+
+    def _get_balances_using_batching(self, uniswap_exchange_address: str, token_address: str):
+        # Use batching instead
+        payload_balance = {'jsonrpc': '2.0',
+                           'method': 'eth_getBalance',
+                           'params': [uniswap_exchange_address, 'latest'],
+                           'id': 0}
+        erc20 = get_erc20_contract(self.w3, token_address)
+        params = {'gas': 0, 'gasPrice': 0}
+        decimals_data = erc20.functions.decimals().buildTransaction(params)['data']
+        token_balance_data = erc20.functions.balanceOf(uniswap_exchange_address).buildTransaction(params)['data']
+        datas = [decimals_data, token_balance_data]
+        payload_calls = [{'id': i + 1, 'jsonrpc': '2.0', 'method': 'eth_call',
+                          'params': [{'to': token_address, 'data': data}]}
+                         for i, data in enumerate(datas)]
+        payloads = [payload_balance] + payload_calls
+        r = requests.post(self.ethereum_client.ethereum_node_url, json=payloads)
+        if not r.ok:
+            raise CannotGetPriceFromOracle(f'Error from node with url={self.ethereum_client.ethereum_node_url}')
+        results = [HexBytes(result['result']) for result in r.json()]
+
+        balance = int(results[0].hex(), 16)
+        token_decimals = self.ethereum_client.w3.codec.decode_single('uint8', results[1])
+        token_balance = self.ethereum_client.w3.codec.decode_single('uint256', results[2])
+        return balance, token_decimals, token_balance
 
     def get_price(self, token_address: str) -> float:
-        if token_address not in self.uniswap_exchanges:
-            uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
-            self.uniswap_exchanges[token_address] = uniswap_factory.functions.getExchange(token_address).call()
-        uniswap_exchange_address = self.uniswap_exchanges[token_address]
+        uniswap_exchange_address = self.get_uniswap_exchange(token_address)
 
         if uniswap_exchange_address == NULL_ADDRESS:
             error_message = f'Non existing uniswap exchange for token={token_address}'
@@ -87,9 +130,8 @@ class UniswapOracle(PriceOracle):
             raise CannotGetPriceFromOracle(error_message)
 
         try:
-            token_decimals = self.ethereum_client.erc20.get_decimals(token_address)
-            token_balance = self.ethereum_client.erc20.get_balance(uniswap_exchange_address, token_address)
-            balance = self.ethereum_client.get_balance(uniswap_exchange_address)
+            balance, token_decimals, token_balance = self._get_balances_using_batching(uniswap_exchange_address,
+                                                                                       token_address)
             price = balance / token_balance / 10**(18 - token_decimals)
             if price <= 0.:
                 error_message = f'price={price} <= 0 from uniswap-factory={uniswap_exchange_address} ' \

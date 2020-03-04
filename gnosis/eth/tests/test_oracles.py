@@ -34,6 +34,14 @@ class TestOracles(TestCase):
     def test_uniswap_oracle(self):
         ethereum_client = EthereumClient(MAINNET_NODE)
         uniswap_oracle = UniswapOracle(ethereum_client, self.uniswap_proxy_mainnet_address)
-        price = uniswap_oracle.get_price('0x6810e776880C02933D47DB1b9fc05908e5386b96')
+        token_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
+        price = uniswap_oracle.get_price(token_address)
+        self.assertEqual(uniswap_oracle.get_uniswap_exchange.cache_info().hits, 0)
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
+
+        # Check batching is working
+        uniswap_exchange = uniswap_oracle.get_uniswap_exchange(token_address)
+        self.assertEqual(uniswap_oracle.get_uniswap_exchange.cache_info().hits, 1)
+        self.assertEqual(uniswap_oracle._get_balances_using_batching(uniswap_exchange, token_address),
+                         uniswap_oracle._get_balances_without_batching(uniswap_exchange, token_address))

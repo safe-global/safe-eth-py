@@ -249,9 +249,10 @@ class Erc20Manager:
         :return: Erc20Info
         """
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        datas = [erc20.functions.name().buildTransaction({'gas': 0, 'gasPrice': 0})['data'],
-                 erc20.functions.symbol().buildTransaction({'gas': 0, 'gasPrice': 0})['data'],
-                 erc20.functions.decimals().buildTransaction({'gas': 0, 'gasPrice': 0})['data']]
+        params = {'gas': 0, 'gasPrice': 0}  # Prevent executing tx, we are just interested on `data`
+        datas = [erc20.functions.name().buildTransaction(params)['data'],
+                 erc20.functions.symbol().buildTransaction(params)['data'],
+                 erc20.functions.decimals().buildTransaction(params)['data']]
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_call',
                     'params': [{'to': erc20_address, 'data': data}]}
                    for i, data in enumerate(datas)]
