@@ -1,5 +1,5 @@
 django-filter==2.2.0
-django==2.2.10
+django==3.0.4
 djangorestframework==3.11.0
 ethereum==2.3.2
 hexbytes==0.2.0
@@ -7,4 +7,4 @@ packaging
 psycopg2-binary==2.8.4
 py-eth-sig-utils==0.3.0
 requests==2.23.0
-web3==5.5.1
+web3==5.6.0
