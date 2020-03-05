@@ -202,20 +202,20 @@ class Erc20Manager:
 
     def get_balances(self, address: str, erc20_addresses: List[str]) -> List[Dict[str, Union[str, int]]]:
         # Build ether `eth_getBalance` query
-        balance_query = {"jsonrpc": "2.0",
-                         "method": "eth_getBalance",
-                         "params": [address, "latest"],
-                         "id": 0}
+        balance_query = {'jsonrpc': '2.0',
+                         'method': 'eth_getBalance',
+                         'params': [address, 'latest'],
+                         'id': 0}
         queries = [balance_query]
 
         # Build tokens `balanceOf` query
         for i, erc20_address in enumerate(erc20_addresses):
-            queries.append({"jsonrpc": "2.0",
-                            "method": "eth_call",
-                            "params": [{"to": erc20_address,  # Balance of
-                                        "data": "0x70a08231" + '{:0>64}'.format(address.replace('0x', '').lower())
-                                        }, "latest"],
-                            "id": i + 1})
+            queries.append({'jsonrpc': '2.0',
+                            'method': 'eth_call',
+                            'params': [{'to': erc20_address,  # Balance of
+                                        'data': '0x70a08231' + '{:0>64}'.format(address.replace('0x', '').lower())
+                                        }, 'latest'],
+                            'id': i + 1})
         response = requests.post(self.ethereum_client.ethereum_node_url, json=queries)
         balances = []
         for token_address, data in zip([None] + erc20_addresses, response.json()):
@@ -254,7 +254,7 @@ class Erc20Manager:
                  erc20.functions.symbol().buildTransaction(params)['data'],
                  erc20.functions.decimals().buildTransaction(params)['data']]
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_call',
-                    'params': [{'to': erc20_address, 'data': data}]}
+                    'params': [{'to': erc20_address, 'data': data}, 'latest']}
                    for i, data in enumerate(datas)]
         response = requests.post(self.ethereum_client.ethereum_node_url, json=payload)
         if not response.ok:

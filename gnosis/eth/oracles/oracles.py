@@ -108,7 +108,7 @@ class UniswapOracle(PriceOracle):
         token_balance_data = erc20.functions.balanceOf(uniswap_exchange_address).buildTransaction(params)['data']
         datas = [decimals_data, token_balance_data]
         payload_calls = [{'id': i + 1, 'jsonrpc': '2.0', 'method': 'eth_call',
-                          'params': [{'to': token_address, 'data': data}]}
+                          'params': [{'to': token_address, 'data': data}, 'latest']}
                          for i, data in enumerate(datas)]
         payloads = [payload_balance] + payload_calls
         r = requests.post(self.ethereum_client.ethereum_node_url, json=payloads)
