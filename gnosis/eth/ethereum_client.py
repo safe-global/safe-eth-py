@@ -263,7 +263,7 @@ class Erc20Manager:
             response_json = response.json()
             errors = [r['error'] for r in response_json if 'error' in r]
             if errors:
-                return InvalidERC20Info(f'{erc20_address} - {errors}')
+                raise InvalidERC20Info(f'{erc20_address} - {errors}')
             results = [HexBytes(r['result']) for r in response_json]
             name = decode_string_or_bytes32(results[0])
             symbol = decode_string_or_bytes32(results[1])
