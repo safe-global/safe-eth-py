@@ -260,7 +260,11 @@ class Erc20Manager:
         if not response.ok:
             raise InvalidERC20Info(response.content)
         try:
-            results = [HexBytes(r['result']) for r in response.json()]
+            response_json = response.json()
+            errors = [r['error'] for r in response_json if 'error' in r]
+            if errors:
+                return InvalidERC20Info(f'{erc20_address} - {errors}')
+            results = [HexBytes(r['result']) for r in response_json]
             name = decode_string_or_bytes32(results[0])
             symbol = decode_string_or_bytes32(results[1])
             decimals = self.ethereum_client.w3.codec.decode_single('uint8', results[2])
