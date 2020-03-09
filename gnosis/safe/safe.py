@@ -8,7 +8,7 @@ from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
                                   get_safe_contract, get_safe_V0_0_1_contract,
                                   get_safe_V1_0_0_contract)
@@ -507,6 +507,10 @@ class Safe:
         bytes_address = self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:]
         int_address = int.from_bytes(bytes_address, byteorder='big')
         return Web3.toChecksumAddress('{:#042x}'.format(int_address))
+
+    def retrieve_modules(self, block_identifier: Optional[str] = 'latest') -> str:
+        return self.get_contract().functions.getModulesPaginated(SENTINEL_ADDRESS,
+                                                                 100).call(block_identifier=block_identifier)
 
     def retrieve_is_hash_approved(self, owner: str, safe_hash: bytes, block_identifier: Optional[str] = 'latest') -> bool:
         return self.get_contract().functions.approvedHashes(owner,

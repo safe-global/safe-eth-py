@@ -338,6 +338,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertEqual(safe.retrieve_nonce(), 0)
         self.assertEqual(set(safe.retrieve_owners()), set(safe_creation.owners))
         self.assertEqual(safe.retrieve_threshold(), safe_creation.threshold)
+        self.assertEqual(safe.retrieve_modules(), [])
 
         # Versions must be semantic, like 0.1.0, so we count 3 points
         self.assertTrue(safe.retrieve_version().count('.'), 3)
