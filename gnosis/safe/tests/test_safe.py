@@ -10,8 +10,9 @@ from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
+from .. import SafeTx
 from ..exceptions import CouldNotPayGasWithEther, CouldNotPayGasWithToken
-from ..safe import Safe
+from ..safe import Safe, SafeOperation
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -344,6 +345,33 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         for owner in safe_creation.owners:
             self.assertTrue(safe.retrieve_is_owner(owner))
+
+    def test_retrieve_modules(self):
+        safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
+        safe = Safe(safe_creation.safe_address, self.ethereum_client)
+        safe_contract = safe.get_contract()
+        module_address = Account.create().address
+        self.assertEqual(safe.retrieve_modules(), [])
+
+        tx = safe_contract.functions.enableModule(
+            module_address
+        ).buildTransaction({'from': self.ethereum_test_account.address, 'gas': 0, 'gasPrice': 0})
+        safe_tx = safe.build_multisig_tx(safe.address, 0, tx['data'])
+        safe_tx.sign(self.ethereum_test_account.key)
+        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key, tx_gas_price=self.gas_price)
+        self.assertEqual(safe.retrieve_modules(), [module_address])
+
+        more_modules = [Account.create().address for _ in range(2)]
+        for more_module in more_modules:
+            # Test pagination
+            tx = safe_contract.functions.enableModule(
+                more_module
+            ).buildTransaction({'from': self.ethereum_test_account.address, 'gas': 0, 'gasPrice': 0})
+            safe_tx = safe.build_multisig_tx(safe.address, 0, tx['data'])
+            safe_tx.sign(self.ethereum_test_account.key)
+            safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key, tx_gas_price=self.gas_price)
+
+        self.assertCountEqual(safe.retrieve_modules(pagination=1), [module_address] + more_modules)
 
     def test_retrieve_is_hash_approved(self):
         safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
