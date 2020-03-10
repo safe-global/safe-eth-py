@@ -337,7 +337,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe = Safe(safe_creation.safe_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_master_copy_address(), self.safe_contract_address)
         self.assertEqual(safe.retrieve_nonce(), 0)
-        self.assertEqual(set(safe.retrieve_owners()), set(safe_creation.owners))
+        self.assertCountEqual(safe.retrieve_owners(), safe_creation.owners)
         self.assertEqual(safe.retrieve_threshold(), safe_creation.threshold)
 
         # Versions must be semantic, like 0.1.0, so we count 3 points
@@ -345,6 +345,14 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         for owner in safe_creation.owners:
             self.assertTrue(safe.retrieve_is_owner(owner))
+
+        safe_info = safe.retrieve_all_info()
+        self.assertEqual(safe_info.master_copy, self.safe_contract_address)
+        self.assertEqual(safe_info.nonce, 0)
+        self.assertCountEqual(safe_info.owners, safe_creation.owners)
+        self.assertEqual(safe_info.threshold, safe_creation.threshold)
+        self.assertEqual(safe_info.modules, [])
+        print(safe_info)
 
     def test_retrieve_modules(self):
         safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])

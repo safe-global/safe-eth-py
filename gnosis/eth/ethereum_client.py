@@ -738,6 +738,8 @@ class EthereumClient:
                     normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
                     if len(normalized_data) == 1:
                         return_values.append(normalized_data[0])
+                    else:
+                        return_values.append(normalized_data)
                 except InsufficientDataBytes:
                     errors.append('InsufficientDataBytes, cannot decode')
 

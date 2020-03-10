@@ -1,3 +1,4 @@
+import dataclasses
 import math
 from enum import Enum
 from logging import getLogger
@@ -36,6 +37,22 @@ class SafeOperation(Enum):
     CALL = 0
     DELEGATE_CALL = 1
     CREATE = 2
+
+
+@dataclasses.dataclass
+class SafeInfo:
+    address: str
+    fallback_handler: str
+    master_copy: str
+    modules: List[str]
+    nonce: int
+    owners: List[str]
+    threshold: int
+    version: str
+
+    def __str__(self):
+        return f'address={self.address} safe-version={self.version} nonce={self.nonce} threshold={self.threshold} ' \
+               f'owners={self.owners} master-copy={self.master_copy} fallback-hander={self.fallback_handler}'
 
 
 class Safe:
@@ -494,11 +511,27 @@ class Safe:
     def get_contract(self):
         return get_safe_contract(self.w3, address=self.address)
 
+    def retrieve_all_info(self, block_identifier: Optional[str] = 'latest') -> SafeInfo:
+        contract = self.get_contract()
+        master_copy = self.retrieve_master_copy_address()
+        fallback_handler = self.retrieve_fallback_handler()
+
+        results = self.ethereum_client.batch_call([
+            contract.functions.getModulesPaginated(SENTINEL_ADDRESS, 100),  # Retuns a tuple of (addresses, next)
+            contract.functions.nonce(),
+            contract.functions.getOwners(),
+            contract.functions.getThreshold(),
+            contract.functions.VERSION(),
+        ], from_address=self.address, block_identifier=block_identifier)
+        modules, nonce, owners, threshold, version = results
+        return SafeInfo(self.address, fallback_handler, master_copy, modules[0], nonce, owners, threshold, version)
+
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)
 
-    def retrieve_fallback_handler(self) -> str:
-        address = self.ethereum_client.w3.eth.getStorageAt(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT)[-20:]
+    def retrieve_fallback_handler(self, block_identifier: Optional[str] = 'latest') -> str:
+        address = self.ethereum_client.w3.eth.getStorageAt(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT,
+                                                           block_identifier=block_identifier)[-20:]
         if len(address) == 20:
             return Web3.toChecksumAddress(address)
         else:
