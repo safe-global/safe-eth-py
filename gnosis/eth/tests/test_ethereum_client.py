@@ -8,6 +8,7 @@ from web3.datastructures import AttributeDict
 from web3.net import Net
 
 from ..constants import GAS_CALL_DATA_BYTE
+from ..contracts import get_erc20_contract
 from ..ethereum_client import (EthereumClientProvider, EthereumNetwork,
                                FromAddressNotFound, InsufficientFunds,
                                InvalidERC20Info, InvalidNonce,
@@ -169,6 +170,24 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
                                {'token_address': erc20.address, 'balance': tokens_value},
                                {'token_address': erc20_2.address, 'balance': tokens_value_2}
                                ])
+
+    def test_batch_call(self):
+        account_address = Account.create().address
+        tokens_value = 12
+        erc20 = self.deploy_example_erc20(tokens_value, account_address)
+        results = self.ethereum_client.batch_call([erc20.functions.decimals(),
+                                                   erc20.functions.symbol(),
+                                                   erc20.functions.balanceOf(account_address)])
+        decimals, symbol, balance_of = results
+        self.assertEqual(decimals, erc20.functions.decimals().call())
+        self.assertEqual(symbol, erc20.functions.symbol().call())
+        self.assertEqual(balance_of, tokens_value)
+
+        invalid_erc20 = get_erc20_contract(self.ethereum_client.w3, Account.create().address)
+        with self.assertRaises(ValueError):
+            self.ethereum_client.batch_call([invalid_erc20.functions.decimals(),
+                                             invalid_erc20.functions.symbol(),
+                                             invalid_erc20.functions.balanceOf(account_address)])
 
     def test_get_blocks(self):
         self.assertEqual(self.ethereum_client.get_blocks([]), [])

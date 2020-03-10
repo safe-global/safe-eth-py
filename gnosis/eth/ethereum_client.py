@@ -1,7 +1,7 @@
 from enum import Enum
 from functools import wraps
 from logging import getLogger
-from typing import Any, Dict, List, NamedTuple, Optional, Union
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Union
 
 import eth_abi
 import requests
@@ -12,8 +12,11 @@ from ethereum.utils import (check_checksum, checksum_encode,
                             mk_contract_address, privtoaddr)
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
+from web3._utils.abi import map_abi_data
 from web3._utils.method_formatters import (block_formatter, receipt_formatter,
                                            transaction_formatter)
+from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
+from web3.contract import ContractFunction
 from web3.exceptions import BlockNotFound, TimeExhausted, TransactionNotFound
 from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
@@ -632,6 +635,10 @@ class EthereumClient:
         except (ConnectionError, FileNotFoundError):
             self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
+    @property
+    def current_block_number(self):
+        return self.w3.eth.blockNumber
+
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
                                        check_receipt: bool = True):
@@ -687,9 +694,57 @@ class EthereumClient:
         """
         return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
-    @property
-    def current_block_number(self):
-        return self.w3.eth.blockNumber
+    def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
+                   block_identifier: Optional[str] = 'latest'):
+        """
+        Do batch requests of multiple contract calls
+        :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
+        argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
+        :param from_address: Use this address as `from` in every call if provided
+        :param block_identifier: `latest` by default
+        :return: List with the ABI decoded return values
+        """
+        output_types = []
+        queries = []
+        params = {'gas': 0, 'gasPrice': 0}
+        for i, contract_function in enumerate(contract_functions):
+            if not contract_function.address:
+                raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
+
+            output_types.append([output['type'] for output in contract_function.abi['outputs']])
+            query_params = {'to': contract_function.address,  # Balance of
+                            'data': contract_function.buildTransaction(params)['data']
+                            }
+            if from_address:
+                query_params['from'] = from_address
+            queries.append({'jsonrpc': '2.0',
+                            'method': 'eth_call',
+                            'params': [query_params, block_identifier],
+                            'id': i})
+
+        response = requests.post(self.ethereum_node_url, json=queries)
+        if not response.ok:
+            raise ConnectionError(f'Error connecting to {self.ethereum_node_url}: {response.content}')
+
+        return_values = []
+        errors = []
+        for output_type, result in zip(output_types, response.json()):
+            if 'error' in result:
+                errors.append(result['error'])
+                continue
+            else:
+                try:
+                    decoded_values = self.w3.codec.decode_abi(output_type, HexBytes(result['result']))
+                    normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
+                    if len(normalized_data) == 1:
+                        return_values.append(normalized_data[0])
+                except InsufficientDataBytes:
+                    errors.append('InsufficientDataBytes, cannot decode')
+
+        if errors:
+            raise ValueError(f'Errors returned {errors}')
+        else:
+            return return_values
 
     def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier: Optional[str] = 'latest'):
         data = data or b''
