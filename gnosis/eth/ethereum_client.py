@@ -694,27 +694,27 @@ class EthereumClient:
         """
         return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
-    def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
-                   block_identifier: Optional[str] = 'latest'):
+    def batch_call_custom(self, payloads: Iterable[Dict[str, Any]], block_identifier: Optional[str] = 'latest'):
         """
         Do batch requests of multiple contract calls
-        :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
-        argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
-        :param from_address: Use this address as `from` in every call if provided
+        :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
+        'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
+        `fn_name` is provided it will be used for debugging purposes
         :param block_identifier: `latest` by default
         :return: List with the ABI decoded return values
         """
         queries = []
-        params = {'gas': 0, 'gasPrice': 0}
-        for i, contract_function in enumerate(contract_functions):
-            if not contract_function.address:
-                raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
+        for i, payload in enumerate(payloads):
+            assert 'data' in payload, '`data` not present'
+            assert 'to' in payload, '`to` not present'
+            assert 'output_type' in payload, '`output-type` not present'
 
-            query_params = {'to': contract_function.address,  # Balance of
-                            'data': contract_function.buildTransaction(params)['data']
+            query_params = {'to': payload['to'],  # Balance of
+                            'data': payload['data']
                             }
-            if from_address:
-                query_params['from'] = from_address
+            if 'from' in payload:
+                query_params['from'] = payload['from']
+
             queries.append({'jsonrpc': '2.0',
                             'method': 'eth_call',
                             'params': [query_params, block_identifier],
@@ -726,12 +726,13 @@ class EthereumClient:
 
         return_values = []
         errors = []
-        for contract_function, result in zip(contract_functions, response.json()):
+        for payload, result in zip(payloads, response.json()):
             if 'error' in result:
-                errors.append(f'`{contract_function.fn_name}`: {result["error"]}')
+                fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
+                errors.append(f'`{fn_name}`: {result["error"]}')
                 continue
             else:
-                output_type = [output['type'] for output in contract_function.abi['outputs']]
+                output_type = payload['output_type']
                 try:
                     decoded_values = self.w3.codec.decode_abi(output_type, HexBytes(result['result']))
                     normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
@@ -740,12 +741,40 @@ class EthereumClient:
                     else:
                         return_values.append(normalized_data)
                 except InsufficientDataBytes:
-                    errors.append(f'`{contract_function.fn_name}`: InsufficientDataBytes, cannot decode')
+                    fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
+                    errors.append(f'`{fn_name}`: InsufficientDataBytes, cannot decode')
 
         if errors:
             raise ValueError(f'Errors returned {errors}')
         else:
             return return_values
+
+    def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
+                   block_identifier: Optional[str] = 'latest') -> Iterable[Any]:
+        """
+        Do batch requests of multiple contract calls
+        :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
+        argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
+        :param from_address: Use this address as `from` in every call if provided
+        :param block_identifier: `latest` by default
+        :return: List with the ABI decoded return values
+        """
+        payloads = []
+        params = {'gas': 0, 'gasPrice': 0}
+        for i, contract_function in enumerate(contract_functions):
+            if not contract_function.address:
+                raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
+
+            payload = {'to': contract_function.address,
+                       'data': contract_function.buildTransaction(params)['data'],
+                       'output_type': [output['type'] for output in contract_function.abi['outputs']],
+                       'fn_name': contract_function.fn_name,  # For debugging purposes
+            }
+            if from_address:
+                payload['from'] = from_address
+            payloads.append(payload)
+
+        return self.batch_call_custom(payloads, block_identifier=block_identifier)
 
     def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier: Optional[str] = 'latest'):
         data = data or b''
