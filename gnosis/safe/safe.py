@@ -512,19 +512,28 @@ class Safe:
         return get_safe_contract(self.w3, address=self.address)
 
     def retrieve_all_info(self, block_identifier: Optional[str] = 'latest') -> SafeInfo:
+        """
+        Get all Safe info in the same batch call.
+        :param block_identifier:
+        :return:
+        """
         contract = self.get_contract()
         master_copy = self.retrieve_master_copy_address()
         fallback_handler = self.retrieve_fallback_handler()
 
         results = self.ethereum_client.batch_call([
-            contract.functions.getModulesPaginated(SENTINEL_ADDRESS, 100),  # Retuns a tuple of (addresses, next)
+            contract.functions.getModules(),  # Tuple of (addresses, next) from v1.1.1 and for old Safes just a list
             contract.functions.nonce(),
             contract.functions.getOwners(),
             contract.functions.getThreshold(),
             contract.functions.VERSION(),
         ], from_address=self.address, block_identifier=block_identifier)
         modules, nonce, owners, threshold, version = results
-        return SafeInfo(self.address, fallback_handler, master_copy, modules[0], nonce, owners, threshold, version)
+        if len(modules) == 2:  # Safe version >= 1.1.1
+            modules = modules[0]
+            if len(modules) == 10:  # Pagination is enabled and by default is 10
+                modules = self.retrieve_modules()
+        return SafeInfo(self.address, fallback_handler, master_copy, modules, nonce, owners, threshold, version)
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)

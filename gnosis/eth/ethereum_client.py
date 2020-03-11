@@ -704,14 +704,12 @@ class EthereumClient:
         :param block_identifier: `latest` by default
         :return: List with the ABI decoded return values
         """
-        output_types = []
         queries = []
         params = {'gas': 0, 'gasPrice': 0}
         for i, contract_function in enumerate(contract_functions):
             if not contract_function.address:
                 raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
 
-            output_types.append([output['type'] for output in contract_function.abi['outputs']])
             query_params = {'to': contract_function.address,  # Balance of
                             'data': contract_function.buildTransaction(params)['data']
                             }
@@ -728,11 +726,12 @@ class EthereumClient:
 
         return_values = []
         errors = []
-        for output_type, result in zip(output_types, response.json()):
+        for contract_function, result in zip(contract_functions, response.json()):
             if 'error' in result:
-                errors.append(result['error'])
+                errors.append(f'`{contract_function.fn_name}`: {result["error"]}')
                 continue
             else:
+                output_type = [output['type'] for output in contract_function.abi['outputs']]
                 try:
                     decoded_values = self.w3.codec.decode_abi(output_type, HexBytes(result['result']))
                     normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
@@ -741,7 +740,7 @@ class EthereumClient:
                     else:
                         return_values.append(normalized_data)
                 except InsufficientDataBytes:
-                    errors.append('InsufficientDataBytes, cannot decode')
+                    errors.append(f'`{contract_function.fn_name}`: InsufficientDataBytes, cannot decode')
 
         if errors:
             raise ValueError(f'Errors returned {errors}')
