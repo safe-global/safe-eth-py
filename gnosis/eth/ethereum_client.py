@@ -224,7 +224,8 @@ class Erc20Manager:
         for token_address, data in zip([None] + erc20_addresses, response.json()):
             balances.append({
                 'token_address': token_address,
-                'balance': 0 if data['result'] == '0x' else int(data['result'], 16)
+                'balance': (self.w3.codec.decode_single('uint256', HexBytes(data['result']))  # Token
+                            if token_address else int(data['result'], 16))  # Ether
             })
         return balances
 
