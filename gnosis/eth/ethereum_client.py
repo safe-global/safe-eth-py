@@ -30,6 +30,7 @@ logger = getLogger(__name__)
 
 
 EthereumHash = Union[bytes, str]
+BlockIdentifier = Union[int, str]
 
 
 class EthereumNetwork(Enum):
@@ -495,6 +496,34 @@ class ParityManager:
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
 
+    def trace_block(self, block_identifier: BlockIdentifier) -> List[Dict[str, Any]]:
+        try:
+            return self._decode_traces(self.slow_w3.parity.traceBlock(block_identifier))
+        except ParityTraceDecodeException as exc:
+            logger.warning('Problem decoding trace: %s - Retrying', exc)
+            return self._decode_traces(self.slow_w3.parity.traceBlock(block_identifier))
+
+    def trace_blocks(self, block_identifiers: List[BlockIdentifier]) -> List[List[Dict[str, Any]]]:
+        if not block_identifiers:
+            return []
+        payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_block',
+                    'params': [hex(block_identifier) if isinstance(block_identifier, int) else block_identifier]}
+                   for i, block_identifier in enumerate(block_identifiers)]
+        results = requests.post(self.ethereum_node_url, json=payload).json()
+        traces = []
+        for result in results:
+            raw_tx = result['result']
+            if raw_tx:
+                try:
+                    decoded_traces = self._decode_traces(raw_tx)
+                except ParityTraceDecodeException as exc:
+                    logger.warning('Problem decoding trace: %s - Retrying', exc)
+                    decoded_traces = self._decode_traces(raw_tx)
+                traces.append(decoded_traces)
+            else:
+                traces.append([])
+        return traces
+
     def trace_transaction(self, tx_hash: EthereumHash) -> List[Dict[str, Any]]:
         try:
             return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
@@ -520,7 +549,7 @@ class ParityManager:
                     decoded_traces = self._decode_traces(raw_tx)
                 traces.append(decoded_traces)
             else:
-                traces.append(None)
+                traces.append([])
         return traces
 
     def trace_filter(self, from_block: int = 1, to_block: Optional[int] = None,
@@ -685,7 +714,7 @@ class EthereumClient:
         """
         return EthereumNetwork(int(self.w3.net.version))
 
-    def get_nonce_for_account(self, address: str, block_identifier: Optional[str] = 'latest'):
+    def get_nonce_for_account(self, address: str, block_identifier: Optional[BlockIdentifier] = 'latest'):
         """
         Get nonce for account. `getTransactionCount` is the only method for what `pending` is currently working
         (Geth and Parity)
@@ -695,7 +724,8 @@ class EthereumClient:
         """
         return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
-    def batch_call_custom(self, payloads: Iterable[Dict[str, Any]], block_identifier: Optional[str] = 'latest'):
+    def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
+                          block_identifier: Optional[BlockIdentifier] = 'latest'):
         """
         Do batch requests of multiple contract calls
         :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
@@ -751,7 +781,7 @@ class EthereumClient:
             return return_values
 
     def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
-                   block_identifier: Optional[str] = 'latest') -> Iterable[Any]:
+                   block_identifier: Optional[BlockIdentifier] = 'latest') -> Iterable[Any]:
         """
         Do batch requests of multiple contract calls
         :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
@@ -777,7 +807,8 @@ class EthereumClient:
 
         return self.batch_call_custom(payloads, block_identifier=block_identifier)
 
-    def estimate_gas(self, from_: str, to: str, value: int, data: bytes, block_identifier: Optional[str] = 'latest'):
+    def estimate_gas(self, from_: str, to: str, value: int, data: bytes,
+                     block_identifier: Optional[BlockIdentifier] = 'latest'):
         data = data or b''
         params: List[Union[Dict[str, Any], str]] = [
             {"from": from_,
@@ -893,18 +924,20 @@ class EthereumClient:
                 receipts.append(None)
         return receipts
 
-    def get_block(self, block_number: int, full_transactions=False) -> Optional[Dict[str, Any]]:
+    def get_block(self, block_identifier: BlockIdentifier, full_transactions=False) -> Optional[Dict[str, Any]]:
         try:
-            return self.w3.eth.getBlock(block_number, full_transactions=full_transactions)
+            return self.w3.eth.getBlock(block_identifier, full_transactions=full_transactions)
         except BlockNotFound:
             return None
 
-    def get_blocks(self, block_numbers: List[int], full_transactions=False) -> List[Optional[Dict[str, Any]]]:
-        if not block_numbers:
+    def get_blocks(self, block_identifiers: Iterable[BlockIdentifier],
+                   full_transactions=False) -> List[Optional[Dict[str, Any]]]:
+        if not block_identifiers:
             return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getBlockByNumber',
-                    'params': [hex(block_number), full_transactions]}
-                   for i, block_number in enumerate(block_numbers)]
+                    'params': [hex(block_identifier) if isinstance(block_identifier, int) else block_identifier,
+                               full_transactions]}
+                   for i, block_identifier in enumerate(block_identifiers)]
         results = requests.post(self.ethereum_node_url, json=payload).json()
         blocks = []
         for result in results:
@@ -930,7 +963,7 @@ class EthereumClient:
 
     def send_unsigned_transaction(self, tx: Dict[str, Any], private_key: Optional[str] = None,
                                   public_key: Optional[str] = None, retry: bool = False,
-                                  block_identifier: Optional[str] = 'pending') -> bytes:
+                                  block_identifier: Optional[BlockIdentifier] = 'pending') -> bytes:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
         `private_key` cannot be `None`
@@ -987,7 +1020,7 @@ class EthereumClient:
 
     def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int = 22000,
                     nonce: Optional[int] = None, retry: bool = False,
-                    block_identifier: Optional[str] = 'pending') -> bytes:
+                    block_identifier: Optional[BlockIdentifier] = 'pending') -> bytes:
         """
         Send ether using configured account
         :param to: to
