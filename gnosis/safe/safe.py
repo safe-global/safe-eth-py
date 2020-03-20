@@ -8,6 +8,7 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
 from web3 import Web3
+from web3.exceptions import BadFunctionCallOutput
 
 from gnosis.eth.constants import (GAS_CALL_DATA_BYTE, NULL_ADDRESS,
                                   SENTINEL_ADDRESS)
@@ -552,6 +553,13 @@ class Safe:
         return Web3.toChecksumAddress('{:#042x}'.format(int_address))
 
     def retrieve_modules(self, pagination: Optional[int] = 10, block_identifier: Optional[str] = 'latest') -> str:
+        try:
+            # Contracts with Safe version < 1.1.0 were not paginated
+            contract = get_safe_V1_0_0_contract(self.ethereum_client.w3, address=self.address)
+            return contract.functions.getModules().call(block_identifier=block_identifier)
+        except BadFunctionCallOutput:
+            pass
+
         contract = self.get_contract()
         address = SENTINEL_ADDRESS
         all_modules = []
