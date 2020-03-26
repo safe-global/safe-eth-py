@@ -352,7 +352,6 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertCountEqual(safe_info.owners, safe_creation.owners)
         self.assertEqual(safe_info.threshold, safe_creation.threshold)
         self.assertEqual(safe_info.modules, [])
-        print(safe_info)
 
     def test_retrieve_modules(self):
         safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
