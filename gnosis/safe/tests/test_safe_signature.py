@@ -76,7 +76,7 @@ class TestSafeSignature(TestCase):
         encoded_hash = Web3.keccak(encoded_message)
         self.assertEqual(encoded_hash, defunct_hash_message(primitive=safe_tx_hash))
 
-    def test_parse_signatures(self):
+    def test_parse_signature(self):
         owner_1 = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
         owner_2 = '0xADb7CB706e9A1bd9F96a397da340bF34a9984E1E'
         safe_tx_hash = HexBytes('0x4c9577d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf196')
@@ -84,7 +84,7 @@ class TestSafeSignature(TestCase):
                               '000000000000000000000000000000000000000000015dccf9f1375cee56331a67867a0b05a828894c2b76de'
                               'e84546ec663997d7548257cb2d606087ee7590b966e958d97a65528ae941a0f7e5050949f618629509c81b')
 
-        s1, s2 = SafeSignature.parse_signatures(signatures, safe_tx_hash)
+        s1, s2 = SafeSignature.parse_signature(signatures, safe_tx_hash)
         self.assertEqual(s1.owner, owner_1)
         self.assertEqual(s1.signature_type, SafeSignatureType.APPROVED_HASH)
         self.assertIsInstance(s1, SafeSignatureApprovedHash)
@@ -92,6 +92,11 @@ class TestSafeSignature(TestCase):
         self.assertEqual(s2.owner, owner_2)
         self.assertTrue(s2.is_valid())
         self.assertIsInstance(s2, SafeSignatureEOA)
+
+    def test_parse_signature_empty(self):
+        safe_tx_hash = Web3.sha3(text='Legoshi')
+        for value in (b'', '', None):
+            self.assertEqual(SafeSignature.parse_signature(value, safe_tx_hash), [])
 
 
 class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
@@ -108,7 +113,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         contract_signature = encode_single('bytes', b'')
         signature = signature_r + signature_s + signature_v + contract_signature
 
-        safe_signature = SafeSignature.parse_signatures(signature, safe_tx_hash)[0]
+        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
         # Check with previously signedMessage
@@ -119,13 +124,13 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx.sign(owner_1.key)
         safe_tx.execute(owner_1.key)
 
-        safe_signature = SafeSignature.parse_signatures(signature, safe_tx_hash)[0]
+        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
         self.assertIsInstance(safe_signature, SafeSignatureContract)
 
         # Check with crafted signature
         safe_tx_hash_2 = Web3.keccak(text='test2')
-        safe_signature = SafeSignature.parse_signatures(signature, safe_tx_hash_2)[0]
+        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash_2)[0]
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
         safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(safe_tx_hash_2).call()
@@ -135,7 +140,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         # 96 - 65 = `31`
         self.assertEqual(len(encoded_contract_signature), len(contract_signature) + 32 + 31)
         crafted_signature = signature_r + signature_s + signature_v + encoded_contract_signature
-        safe_signature = SafeSignature.parse_signatures(crafted_signature, safe_tx_hash_2)[0]
+        safe_signature = SafeSignature.parse_signature(crafted_signature, safe_tx_hash_2)[0]
         self.assertEqual(contract_signature, safe_signature.contract_signature)
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
 
@@ -177,13 +182,13 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
                      encoded_contract_signature_1 + encoded_contract_signature_2)
 
         count = 0
-        for safe_signature, contract_signature in zip(SafeSignature.parse_signatures(signature, safe_tx_hash),
+        for safe_signature, contract_signature in zip(SafeSignature.parse_signature(signature, safe_tx_hash),
                                                       [contract_signature_1, contract_signature_2]):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
             self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
             self.assertEqual(safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE)
             # Test exported signature
-            exported_signature = SafeSignature.parse_signatures(safe_signature.export_signature(), safe_tx_hash)[0]
+            exported_signature = SafeSignature.parse_signature(safe_signature.export_signature(), safe_tx_hash)[0]
             self.assertEqual(exported_signature.contract_signature, safe_signature.contract_signature)
             self.assertTrue(exported_signature.is_valid(self.ethereum_client, None))
             count += 1

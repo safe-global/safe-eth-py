@@ -44,12 +44,17 @@ class SafeSignature(ABC):
         self.v, self.r, self.s = signature_split(self.signature)
 
     @classmethod
-    def parse_signatures(cls, signatures: EthereumBytes, safe_tx_hash: EthereumBytes) -> List['SafeSignature']:
+    def parse_signature(cls, signatures: EthereumBytes, safe_tx_hash: EthereumBytes) -> List['SafeSignature']:
         """
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_tx_hash:
         :return: List of SafeSignatures decoded
         """
+        if not signatures:
+            return []
+        elif isinstance(signatures, str):
+            signatures = HexBytes(signatures)
+
         signature_size = 65  # For contract signatures there'll be some data at the end
         data_position = len(signatures)  # For contract signatures, to stop parsing at data position
 
@@ -65,8 +70,7 @@ class SafeSignature(ABC):
                 if s < data_position:
                     data_position = s
                 contract_signature_len = int.from_bytes(signatures[s:s + 32], 'big')  # Len size is 32 bytes
-                contract_signature = HexBytes(signatures[s + 32:
-                                                         s + 32 + contract_signature_len])  # Skip array size (32 bytes)
+                contract_signature = signatures[s + 32: s + 32 + contract_signature_len]  # Skip array size (32 bytes)
                 safe_signature = SafeSignatureContract(signature, safe_tx_hash, contract_signature)
             elif signature_type == SafeSignatureType.APPROVED_HASH:
                 safe_signature = SafeSignatureApprovedHash(signature, safe_tx_hash)
@@ -103,13 +107,18 @@ class SafeSignature(ABC):
         """
         raise NotImplemented
 
+    @property
+    @abstractmethod
+    def signature_type(self):
+        raise NotImplemented
+
 
 class SafeSignatureContract(SafeSignature):
     EIP1271_MAGIC_VALUE = HexBytes(0x20c13b0b)
 
     def __init__(self, signature: EthereumBytes, safe_tx_hash: EthereumBytes, contract_signature: EthereumBytes):
         super().__init__(signature, safe_tx_hash)
-        self.contract_signature = contract_signature
+        self.contract_signature = HexBytes(contract_signature)
 
     @property
     def owner(self):
