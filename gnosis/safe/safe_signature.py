@@ -7,6 +7,7 @@ from eth_abi import encode_single
 from eth_account.messages import defunct_hash_message
 from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
+from web3.exceptions import BadFunctionCallOutput
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_safe_contract
@@ -139,9 +140,15 @@ class SafeSignatureContract(SafeSignature):
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, self.owner)
-        return safe_contract.functions.isValidSignature(self.safe_tx_hash,
-                                                        self.contract_signature
-                                                        ).call() == self.EIP1271_MAGIC_VALUE
+        try:
+            for block_identifier in ('pending', 'latest'):
+                return safe_contract.functions.isValidSignature(
+                    self.safe_tx_hash,
+                    self.contract_signature
+                ).call(block_identifier=block_identifier) == self.EIP1271_MAGIC_VALUE
+        except BadFunctionCallOutput as e:  # Error using `pending` block identifier
+            pass
+        raise e  # This should never happen
 
 
 class SafeSignatureApprovedHash(SafeSignature):
@@ -153,10 +160,24 @@ class SafeSignatureApprovedHash(SafeSignature):
     def signature_type(self):
         return SafeSignatureType.APPROVED_HASH
 
+    @classmethod
+    def build_for_owner(cls, owner: str, safe_tx_hash: str) -> 'SafeSignatureApprovedHash':
+        r = owner.lower().replace('0x', '').rjust(64, '0')
+        s = '0' * 64
+        v = '01'
+        return cls(HexBytes(r + s + v), safe_tx_hash)
+
     def is_valid(self, ethereum_client: EthereumClient, safe_address: str) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, safe_address)
-        return safe_contract.functions.approvedHashes(self.owner,
-                                                      self.safe_tx_hash).call() == 1
+        try:
+            for block_identifier in ('pending', 'latest'):
+                return safe_contract.functions.approvedHashes(
+                    self.owner,
+                    self.safe_tx_hash
+                ).call(block_identifier=block_identifier) == 1
+        except BadFunctionCallOutput as e:  # Error using `pending` block identifier
+            pass
+        raise e  # This should never happen
 
 
 class SafeSignatureEthSign(SafeSignature):

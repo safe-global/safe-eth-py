@@ -37,6 +37,19 @@ class TestSafeSignature(TestCase):
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.APPROVED_HASH)
 
+    def test_approved_hash_signature_build(self):
+        owner = Account.create().address
+        safe_tx_hash = Web3.keccak(text='random')
+        safe_signature = SafeSignatureApprovedHash.build_for_owner(owner, safe_tx_hash)
+        self.assertEqual(len(safe_signature.signature), 65)
+        self.assertEqual(safe_signature.signature_type, SafeSignatureType.APPROVED_HASH)
+        self.assertEqual(safe_signature.owner, owner)
+
+        # Check parse signature get the same result
+        safe_signature = SafeSignature.parse_signature(safe_signature.signature, safe_tx_hash)[0]
+        self.assertEqual(safe_signature.signature_type, SafeSignatureType.APPROVED_HASH)
+        self.assertEqual(safe_signature.owner, owner)
+
     def test_eth_sign_signature(self):
         account = Account.create()
         owner = account.address
