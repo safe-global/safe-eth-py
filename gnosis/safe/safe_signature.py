@@ -41,7 +41,7 @@ class SafeSignatureType(Enum):
 class SafeSignature(ABC):
     def __init__(self, signature: EthereumBytes, safe_tx_hash: EthereumBytes):
         self.signature = HexBytes(signature)
-        self.safe_tx_hash = safe_tx_hash
+        self.safe_tx_hash = HexBytes(safe_tx_hash)
         self.v, self.r, self.s = signature_split(self.signature)
 
     @classmethod
