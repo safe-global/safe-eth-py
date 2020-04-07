@@ -10,7 +10,6 @@ from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
-from .. import SafeTx
 from ..exceptions import CouldNotPayGasWithEther, CouldNotPayGasWithToken
 from ..safe import Safe, SafeOperation
 from ..signatures import signature_to_bytes, signatures_to_bytes
@@ -314,6 +313,97 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         operation = 0
         safe_tx_gas = safe.estimate_tx_gas(to, value, data, operation)
         self.assertGreater(safe_tx_gas, 0)
+
+    def test_estimate_tx_gas_nested_transaction(self):
+        """
+        Test estimation with a contract that uses a lot of gas
+        """
+
+        # Uncomment this to regenerate the contract. I hardcoded it to prevent the app testing depending on solc
+        # Remember to install `py-solc` and have `solidity` in your system
+        """
+        from solc import compile_standard
+        compiled_sol = compile_standard({
+            "language": "Solidity",
+            "sources": {
+                "Nester.sol": {
+                    "content": '''
+                        contract Nester {
+                            uint256[] public data;
+                            constructor() public payable {}
+                            function nested(uint256 level, uint256 count) external {
+                                if (level == 0) {
+                                    for (uint256 i = 0; i < count; i++) {
+                                        data.push(i);
+                                    }
+                                    return;
+                                }
+                                this.nested(level - 1, count);
+                            }
+                            function useGas(uint256 count) public {
+                                this.nested(6, count);
+                                this.nested(8, count);
+                            }
+                        }
+                    '''
+                }
+            },
+            "settings":
+                {
+                    "outputSelection": {
+
+                        "*": {
+                            "*": [
+                                "metadata", "evm.bytecode"
+                                , "evm.bytecode.sourceMap"
+                            ]
+                        }
+                    }
+                }
+        })
+        contract_data = compiled_sol['contracts']['Nester.sol']['Nester']
+        bytecode = contract_data['evm']['bytecode']['object']
+        abi = json.loads(contract_data['metadata'])['output']['abi']
+        """
+
+        bytecode = '60806040526102fe806100136000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c8063022952b81461004657806350d1f08214610074578063f0ba8440146100ac575b600080fd5b6100726004803603602081101561005c57600080fd5b81019080803590602001909291905050506100ee565b005b6100aa6004803603604081101561008a57600080fd5b8101908080359060200190929190803590602001909291905050506101d9565b005b6100d8600480360360208110156100c257600080fd5b81019080803590602001909291905050506102a7565b6040518082815260200191505060405180910390f35b3073ffffffffffffffffffffffffffffffffffffffff166350d1f0826006836040518363ffffffff1660e01b81526004018083815260200182815260200192505050600060405180830381600087803b15801561014a57600080fd5b505af115801561015e573d6000803e3d6000fd5b505050503073ffffffffffffffffffffffffffffffffffffffff166350d1f0826008836040518363ffffffff1660e01b81526004018083815260200182815260200192505050600060405180830381600087803b1580156101be57600080fd5b505af11580156101d2573d6000803e3d6000fd5b5050505050565b600082141561022c5760008090505b8181101561022657600081908060018154018082558091505060019003906000526020600020016000909190919091505580806001019150506101e8565b506102a3565b3073ffffffffffffffffffffffffffffffffffffffff166350d1f08260018403836040518363ffffffff1660e01b81526004018083815260200182815260200192505050600060405180830381600087803b15801561028a57600080fd5b505af115801561029e573d6000803e3d6000fd5b505050505b5050565b600081815481106102b457fe5b90600052602060002001600091509050548156fea264697066735822122091b08fac39dd94b262ed9adf68b679a88140319e98d18d4c918bd5a1d93527fc64736f6c63430006040033'
+        abi = [{'inputs': [], 'stateMutability': 'payable', 'type': 'constructor'}, {'inputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 'name': 'data', 'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 'stateMutability': 'view', 'type': 'function'}, {'inputs': [{'internalType': 'uint256', 'name': 'level', 'type': 'uint256'}, {'internalType': 'uint256', 'name': 'count', 'type': 'uint256'}], 'name': 'nested', 'outputs': [], 'stateMutability': 'nonpayable', 'type': 'function'}, {'inputs': [{'internalType': 'uint256', 'name': 'count', 'type': 'uint256'}], 'name': 'useGas', 'outputs': [], 'stateMutability': 'nonpayable', 'type': 'function'}]
+
+        Nester = self.w3.eth.contract(abi=abi, bytecode=bytecode)
+        tx_hash = Nester.constructor().transact({'from': self.w3.eth.accounts[0]})
+        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
+        nester = self.w3.eth.contract(
+            address=tx_receipt.contractAddress,
+            abi=abi
+        )
+
+        safe = Safe(self.deploy_test_safe(owners=[self.ethereum_test_account.address],
+                                          initial_funding_wei=self.w3.toWei(0.1, 'ether')).safe_address,
+                    self.ethereum_client)
+        nester_tx = nester.functions.useGas(80).buildTransaction({'gasPrice': 1, 'from': safe.address, 'gas': 1})
+        nester_data = nester_tx['data']
+
+        safe_tx_gas_no_call = safe.estimate_tx_gas_with_safe(nester.address, 0, nester_data, SafeOperation.CALL.value)
+        with self.assertLogs(logger='gnosis.safe.safe', level='ERROR'):
+            safe_tx_gas = safe.estimate_tx_gas_by_trying(nester.address, 0, nester_data, SafeOperation.CALL.value)
+        self.assertGreater(safe_tx_gas, safe_tx_gas_no_call)
+
+        base_gas = safe.estimate_tx_base_gas(nester.address, 0, nester_data, SafeOperation.CALL.value,
+                                             NULL_ADDRESS, safe_tx_gas)
+
+        refund_receiver = Account.create().address
+        safe_tx = safe.build_multisig_tx(nester.address, 0, nester_data,
+                                         safe_tx_gas=safe_tx_gas, base_gas=base_gas,
+                                         gas_price=1, refund_receiver=refund_receiver)
+        safe_tx.sign(self.ethereum_test_account.key)
+
+        self.assertTrue(safe_tx.call(tx_sender_address=self.ethereum_test_account.address))
+
+        safe_tx_hash, safe_w3_tx = safe_tx.execute(self.ethereum_test_account.key)
+        self.w3.eth.waitForTransactionReceipt(safe_tx_hash)
+
+        # Tx was successfully executed if refund_receiver gets ether
+        self.assertGreater(self.ethereum_client.get_balance(refund_receiver), 0)
 
     def test_estimate_tx_operational_gas(self):
         for threshold in range(2, 5):

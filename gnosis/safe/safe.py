@@ -2,7 +2,7 @@ import dataclasses
 import math
 from enum import Enum
 from logging import getLogger
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple, Optional, Union
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -374,6 +374,7 @@ class Safe:
         return base_gas
 
     def estimate_tx_gas_with_safe(self, to: str, value: int, data: bytes, operation: int,
+                                  gas_limit: Optional[int] = None,
                                   block_identifier: Optional[str] = 'latest') -> int:
         """
         Estimate tx gas using safe `requiredTxGas` method
@@ -401,7 +402,6 @@ class Safe:
 
             return int(gas_estimation.hex(), 16)
 
-        # Add 10k, else we will fail in case of nested calls
         try:
             tx = self.get_contract().functions.requiredTxGas(
                 to,
@@ -410,10 +410,15 @@ class Safe:
                 operation
             ).buildTransaction({
                 'from': safe_address,
-                'gas': int(1e7),
-                'gasPrice': 0,
+                'gas': 1,  # Don't call estimate
+                'gasPrice': 1,  # Don't get gas price
             })
-            # If we build the tx Web3 will not try to decode it for us
+            if gas_limit:
+                tx['gas'] = gas_limit
+            else:
+                del tx['gas']  # Unlimited gas for call
+
+            # If we `buildTransaction` and then `eth_call` Web3 will not try to decode it for us
             # Ganache >= 6.3.0 and Geth are working like this
             result: HexBytes = self.w3.eth.call(tx, block_identifier=block_identifier)
             return parse_revert_data(result)
@@ -438,7 +443,7 @@ class Safe:
             key = list(data.keys())[0]
             result = data[key]['return']
             if result == '0x0':
-                raise exc
+                raise CannotEstimateGas('0x0') from exc
             else:
                 # Ganache-Cli with no `--noVMErrorsOnRPCResponse` flag enabled
                 logger.warning('You should use `--noVMErrorsOnRPCResponse` flag with Ganache-cli')
@@ -447,27 +452,42 @@ class Safe:
                 estimated_gas = int(estimated_gas_hex, 16)
                 return estimated_gas
 
-    def estimate_tx_gas_with_web3(self, to: str, value: int, data: bytes) -> int:
+    def estimate_tx_gas_with_web3(self, to: str, value: int, data: Union[bytes, str]) -> int:
         """
-        Estimate tx gas using web3
+        :param to:
+        :param value:
+        :param data:
+        :return: Estimation using web3 `estimateGas`
         """
-        gas_estimated = self.ethereum_client.estimate_gas(self.address, to, value, data)
+        return self.ethereum_client.estimate_gas(self.address, to, value, data)
+
+    def estimate_tx_gas_by_trying(self, to: str, value: int, data: Union[bytes, str], operation: int):
+        """
+        :param to:
+        :param value:
+        :param data:
+        :param operation:
+        :return: Estimated gas calling `requiredTxGas` setting a gas limit and checking if `eth_call` is successful
+        """
+        if isinstance(data, str):
+            data = HexBytes(data)
+
+        gas_estimated = self.estimate_tx_gas_with_safe(to, value, data, operation)
         block_gas_limit: Optional[int] = None
-        for i in range(40):  # Test `call()` and increase gas 40 times, 63/64th problem
+        base_gas: Optional[int] = None
+
+        for i in range(100):  # Make sure tx can be executed, fixing for example 63/64th problem
             try:
-                self.w3.eth.call({'gas': gas_estimated, 'from': self.address,
-                                  'to': to, 'value': value,
-                                  'data': data or b''})
+                base_gas = base_gas or self.ethereum_client.estimate_data_gas(data)
+                self.estimate_tx_gas_with_safe(to, value, data, operation,
+                                               gas_limit=gas_estimated + base_gas + 32000)
                 return gas_estimated
-            except ValueError:  # Out of gas
-                # Parity: ValueError: {'code': -32015, 'message': 'Transaction execution error.', 'data': 'NotEnoughBaseGas { required: 21632, got: 16935 }'}
-                # Geth: ValueError: {'code': -32000, 'message': 'out of gas'}
-                logger.error('Found 63/64 problem gas-estimated=%d to=%s data=%s', gas_estimated, to, data.hex())
+            except CannotEstimateGas:
+                logger.warning('Found 63/64 problem gas-estimated=%d to=%s data=%s', gas_estimated, to, data.hex())
                 block_gas_limit = block_gas_limit or self.w3.eth.getBlock('latest', full_transactions=False)['gasLimit']
                 gas_estimated = math.floor((1 + i * 0.01) * gas_estimated)
                 if gas_estimated >= block_gas_limit:
                     return block_gas_limit
-
         return gas_estimated
 
     def estimate_tx_gas(self, to: str, value: int, data: bytes, operation: int) -> int:
@@ -482,16 +502,7 @@ class Safe:
         # So gas needed by caller will be around 35k
         OLD_CALL_GAS = 35000
 
-        safe_gas_estimation = self.estimate_tx_gas_with_safe(to, value, data, operation)
-        # We cannot estimate DELEGATECALL (different storage)
-        if SafeOperation(operation) == SafeOperation.CALL:
-            try:
-                web3_gas_estimation = self.estimate_tx_gas_with_web3(to, value, data)
-            except ValueError:
-                web3_gas_estimation = 0
-            safe_gas_estimation = max(safe_gas_estimation, web3_gas_estimation)
-
-        return safe_gas_estimation + PROXY_GAS + OLD_CALL_GAS
+        return self.estimate_tx_gas_by_trying(to, value, data, operation) + PROXY_GAS + OLD_CALL_GAS
 
     def estimate_tx_operational_gas(self, data_bytes_length: int):
         """

@@ -232,22 +232,24 @@ class SafeTx:
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
+        sender_account = Account.from_key(tx_sender_private_key)
         tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gasPrice
-        safe_total_gas = self.safe_tx_gas + self.base_gas
-        tx_gas = tx_gas or (safe_total_gas * 2) or (self.w3_tx.estimateGas() + 25000)
-        tx_sender_address = Account.from_key(tx_sender_private_key).address
 
         tx_parameters = {
-            'from': tx_sender_address,
-            'gas': tx_gas,
+            'from': sender_account.address,
             'gasPrice': tx_gas_price,
         }
+
+        if tx_gas:
+            tx_parameters['gas'] = tx_gas
         if tx_nonce is not None:
             tx_parameters['nonce'] = tx_nonce
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
+        self.tx['gas'] += 1000
+
         self.tx_hash = self.ethereum_client.send_unsigned_transaction(self.tx,
-                                                                      private_key=tx_sender_private_key,
+                                                                      private_key=sender_account.key,
                                                                       retry=True,
                                                                       block_identifier=block_identifier)
 
