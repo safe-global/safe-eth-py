@@ -410,8 +410,8 @@ class Safe:
                 operation
             ).buildTransaction({
                 'from': safe_address,
-                'gas': 1,  # Don't call estimate
-                'gasPrice': 1,  # Don't get gas price
+                'gas': 0,  # Don't call estimate
+                'gasPrice': 0,  # Don't get gas price
             })
             if gas_limit:
                 tx['gas'] = gas_limit
@@ -469,7 +469,9 @@ class Safe:
         :param operation:
         :return: Estimated gas calling `requiredTxGas` setting a gas limit and checking if `eth_call` is successful
         """
-        if isinstance(data, str):
+        if not data:
+            data = b''
+        elif isinstance(data, str):
             data = HexBytes(data)
 
         gas_estimated = self.estimate_tx_gas_with_safe(to, value, data, operation)

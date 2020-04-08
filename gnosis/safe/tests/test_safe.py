@@ -384,8 +384,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         nester_data = nester_tx['data']
 
         safe_tx_gas_no_call = safe.estimate_tx_gas_with_safe(nester.address, 0, nester_data, SafeOperation.CALL.value)
-        with self.assertLogs(logger='gnosis.safe.safe', level='ERROR'):
-            safe_tx_gas = safe.estimate_tx_gas_by_trying(nester.address, 0, nester_data, SafeOperation.CALL.value)
+        safe_tx_gas = safe.estimate_tx_gas_by_trying(nester.address, 0, nester_data, SafeOperation.CALL.value)
         self.assertGreater(safe_tx_gas, safe_tx_gas_no_call)
 
         base_gas = safe.estimate_tx_base_gas(nester.address, 0, nester_data, SafeOperation.CALL.value,
