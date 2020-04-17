@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
@@ -19,11 +19,11 @@ class MultiSendOperation(Enum):
 
 
 class MultiSendTx:
-    def __init__(self, operation: MultiSendOperation, address: str, value: int, data: bytes):
+    def __init__(self, operation: MultiSendOperation, address: str, value: int, data: Union[str, bytes]):
         self.operation = operation
         self.address = address
         self.value = value
-        self.data = data
+        self.data = HexBytes(data)
 
     def __eq__(self, other):
         if not isinstance(other, MultiSendTx):

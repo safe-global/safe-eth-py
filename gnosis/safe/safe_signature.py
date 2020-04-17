@@ -110,7 +110,7 @@ class SafeSignature(ABC):
 
     @property
     @abstractmethod
-    def signature_type(self):
+    def signature_type(self) -> SafeSignatureType:
         raise NotImplemented
 
 
