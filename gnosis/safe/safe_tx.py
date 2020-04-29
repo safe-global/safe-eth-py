@@ -246,7 +246,7 @@ class SafeTx:
             tx_parameters['nonce'] = tx_nonce
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
-        self.tx['gas'] += 1000
+        self.tx['gas'] += 25000
 
         self.tx_hash = self.ethereum_client.send_unsigned_transaction(self.tx,
                                                                       private_key=sender_account.key,
