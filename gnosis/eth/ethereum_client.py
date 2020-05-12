@@ -1018,7 +1018,7 @@ class EthereumClient:
                 tx['nonce'] = self.get_nonce_for_account(address, block_identifier=block_identifier)
                 number_errors -= 1
 
-    def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int = 22000,
+    def send_eth_to(self, private_key: str, to: str, gas_price: int, value: int, gas: int = 23000,
                     nonce: Optional[int] = None, retry: bool = False,
                     block_identifier: Optional[BlockIdentifier] = 'pending') -> bytes:
         """
