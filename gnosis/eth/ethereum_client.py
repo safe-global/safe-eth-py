@@ -204,7 +204,7 @@ class Erc20Manager:
         """
         return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
 
-    def get_balances(self, address: str, erc20_addresses: List[str]) -> List[Dict[str, Union[str, int]]]:
+    def get_balances(self, address: str, erc20_addresses: List[str]) -> List[Dict[str, Union[Optional[str], int]]]:
         # Build ether `eth_getBalance` query
         balance_query = {'jsonrpc': '2.0',
                          'method': 'eth_getBalance',
