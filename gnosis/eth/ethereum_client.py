@@ -734,6 +734,9 @@ class EthereumClient:
         :param block_identifier: `latest` by default
         :return: List with the ABI decoded return values
         """
+        if not payloads:
+            return []
+
         queries = []
         for i, payload in enumerate(payloads):
             assert 'data' in payload, '`data` not present'
@@ -790,6 +793,8 @@ class EthereumClient:
         :param block_identifier: `latest` by default
         :return: List with the ABI decoded return values
         """
+        if not contract_functions:
+            return []
         payloads = []
         params = {'gas': 0, 'gasPrice': 0}
         for i, contract_function in enumerate(contract_functions):

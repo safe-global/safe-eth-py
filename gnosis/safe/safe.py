@@ -543,10 +543,8 @@ class Safe:
             contract.functions.VERSION(),
         ], from_address=self.address, block_identifier=block_identifier)
         modules, nonce, owners, threshold, version = results
-        if len(modules) == 2:  # Safe version >= 1.1.1
-            modules = modules[0]
-            if len(modules) == 10:  # Pagination is enabled and by default is 10
-                modules = self.retrieve_modules()
+        if len(modules) == 10:  # Pagination is enabled and by default is 10
+            modules = self.retrieve_modules()
         return SafeInfo(self.address, fallback_handler, master_copy, modules, nonce, owners, threshold, version)
 
     def retrieve_code(self) -> HexBytes:
