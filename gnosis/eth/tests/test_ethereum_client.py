@@ -188,6 +188,12 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.batch_call([invalid_erc20.functions.decimals(),
                                              invalid_erc20.functions.symbol(),
                                              invalid_erc20.functions.balanceOf(account_address)])
+        # It shouldn't raise error and instead return None
+        self.assertEqual(self.ethereum_client.batch_call([invalid_erc20.functions.decimals(),
+                                                          invalid_erc20.functions.symbol(),
+                                                          invalid_erc20.functions.balanceOf(account_address)],
+                                                         raise_exception=False),
+                         [None, None, None])
 
     def test_get_blocks(self):
         self.assertEqual(self.ethereum_client.get_blocks([]), [])

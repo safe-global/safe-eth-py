@@ -725,12 +725,15 @@ class EthereumClient:
         return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
 
     def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
+                          raise_exception: bool = True,
                           block_identifier: Optional[BlockIdentifier] = 'latest'):
         """
         Do batch requests of multiple contract calls
         :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
         'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
         `fn_name` is provided it will be used for debugging purposes
+        :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
+        be returned as the value
         :param block_identifier: `latest` by default
         :return: List with the ABI decoded return values
         """
@@ -764,7 +767,7 @@ class EthereumClient:
             if 'error' in result:
                 fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
                 errors.append(f'`{fn_name}`: {result["error"]}')
-                continue
+                return_values.append(None)
             else:
                 output_type = payload['output_type']
                 try:
@@ -777,13 +780,15 @@ class EthereumClient:
                 except InsufficientDataBytes:
                     fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
                     errors.append(f'`{fn_name}`: InsufficientDataBytes, cannot decode')
+                    return_values.append(None)
 
-        if errors:
+        if errors and raise_exception:
             raise ValueError(f'Errors returned {errors}')
         else:
             return return_values
 
     def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
+                   raise_exception: bool = True,
                    block_identifier: Optional[BlockIdentifier] = 'latest') -> Iterable[Any]:
         """
         Do batch requests of multiple contract calls
@@ -791,6 +796,8 @@ class EthereumClient:
         argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
         :param from_address: Use this address as `from` in every call if provided
         :param block_identifier: `latest` by default
+        :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
+        be returned as the value.
         :return: List with the ABI decoded return values
         """
         if not contract_functions:
@@ -805,12 +812,12 @@ class EthereumClient:
                        'data': contract_function.buildTransaction(params)['data'],
                        'output_type': [output['type'] for output in contract_function.abi['outputs']],
                        'fn_name': contract_function.fn_name,  # For debugging purposes
-            }
+                       }
             if from_address:
                 payload['from'] = from_address
             payloads.append(payload)
 
-        return self.batch_call_custom(payloads, block_identifier=block_identifier)
+        return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
 
     def estimate_gas(self, from_: str, to: str, value: int, data: bytes,
                      block_identifier: Optional[BlockIdentifier] = 'latest'):
