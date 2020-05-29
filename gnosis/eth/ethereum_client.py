@@ -1,7 +1,8 @@
 from enum import Enum
 from functools import wraps
 from logging import getLogger
-from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Union
+from typing import (Any, Dict, Iterable, List, NamedTuple, Optional, Tuple,
+                    Union)
 
 import eth_abi
 import requests
@@ -23,7 +24,7 @@ from web3.providers import AutoProvider
 
 from .constants import (ERC20_721_TRANSFER_TOPIC, GAS_CALL_DATA_BYTE,
                         GAS_CALL_DATA_ZERO_BYTE, NULL_ADDRESS)
-from .contracts import get_erc20_contract
+from .contracts import get_erc20_contract, get_erc721_contract
 from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
@@ -99,6 +100,10 @@ class InvalidERC20Info(EthereumClientException):
     pass
 
 
+class InvalidERC721Info(EthereumClientException):
+    pass
+
+
 def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
@@ -138,6 +143,16 @@ class Erc20Info(NamedTuple):
     name: str
     symbol: str
     decimals: int
+
+
+class Erc721Info(NamedTuple):
+    name: str
+    symbol: str
+
+
+class TokenBalance(NamedTuple):
+    token_address: str
+    balance: int
 
 
 class EthereumClientProvider:
@@ -195,16 +210,26 @@ class Erc20Manager:
             # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
             return None
 
-    def get_balance(self, address: str, erc20_address: str) -> int:
+    def get_balance(self, address: str, token_address: str) -> int:
         """
         Get balance of address for `erc20_address`
         :param address: owner address
-        :param erc20_address: erc20 token address
+        :param token_address: erc20 token address
         :return: balance
         """
-        return get_erc20_contract(self.w3, erc20_address).functions.balanceOf(address).call()
+        return get_erc20_contract(self.w3, token_address).functions.balanceOf(address).call()
 
-    def get_balances(self, address: str, erc20_addresses: List[str]) -> List[Dict[str, Union[Optional[str], int]]]:
+    def get_balances(self, address: str, token_addresses: List[str]) -> List[Dict[str, Union[Optional[str], int]]]:
+        """
+        Get balances for Ether and tokens for an `address`
+        :param address: Owner address checksummed
+        :param token_addresses: token addresses to check
+        :return: Dictionary
+        {
+            'token_address': <str>,  # None if Ether
+            'balance': <int>,
+        }
+        """
         # Build ether `eth_getBalance` query
         balance_query = {'jsonrpc': '2.0',
                          'method': 'eth_getBalance',
@@ -213,7 +238,7 @@ class Erc20Manager:
         queries = [balance_query]
 
         # Build tokens `balanceOf` query
-        for i, erc20_address in enumerate(erc20_addresses):
+        for i, erc20_address in enumerate(token_addresses):
             queries.append({'jsonrpc': '2.0',
                             'method': 'eth_call',
                             'params': [{'to': erc20_address,  # Balance of
@@ -222,7 +247,7 @@ class Erc20Manager:
                             'id': i + 1})
         response = requests.post(self.ethereum_client.ethereum_node_url, json=queries)
         balances = []
-        for token_address, data in zip([None] + erc20_addresses, response.json()):
+        for token_address, data in zip([None] + token_addresses, response.json()):
             balances.append({
                 'token_address': token_address,
                 'balance': (self.w3.codec.decode_single('uint256', HexBytes(data['result']))  # Token
@@ -421,6 +446,85 @@ class Erc20Manager:
 
         tx = erc20.functions.transfer(to, amount).buildTransaction(tx_options)
         return self.ethereum_client.send_unsigned_transaction(tx, private_key=private_key)
+
+
+class Erc721Manager:
+    # keccak('Transfer(address,address,uint256)')
+    # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+    TRANSFER_TOPIC = Erc20Manager.TRANSFER_TOPIC
+
+    def __init__(self, ethereum_client: 'EthereumClient', slow_provider_timeout: int):
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+        self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
+
+    def get_balance(self, address: str, token_address: str) -> int:
+        """
+        Get balance of address for `erc20_address`
+        :param address: owner address
+        :param token_address: erc721 token address
+        :return: balance
+        """
+        return get_erc721_contract(self.w3, token_address).functions.balanceOf(address).call()
+
+    def get_balances(self, address: str, token_addresses: List[str]) -> List[TokenBalance]:
+        """
+        Get balances for tokens for an `address`. If there's a problem with a token_address `0` will be
+        returned for balance
+        :param address: Owner address checksummed
+        :param token_addresses: token addresses to check
+        :return: Dictionary
+        {
+            'token_address': <str>,  # None if Ether
+            'balance': <int>,
+        }
+        """
+        balances = self.ethereum_client.batch_call(
+            [get_erc721_contract(self.ethereum_client.w3, token_address).functions.balanceOf(address)
+             for token_address in token_addresses],
+            raise_exception=False
+        )
+        return [TokenBalance(token_address, 0 if balance is None else balance)
+                for token_address, balance in zip(token_addresses, balances)]
+
+    def get_info(self, token_address: str) -> Erc721Info:
+        """
+        Get erc721 information (`name`, `symbol`). Use batching to get
+        all info in the same request.
+        :param token_address:
+        :return: Erc20Info
+        """
+        erc721_contract = get_erc721_contract(self.w3, token_address)
+        try:
+            name, symbol = self.ethereum_client.batch_call([
+                erc721_contract.functions.name(),
+                erc721_contract.functions.symbol(),
+            ])
+            return Erc721Info(name, symbol)
+        except (InsufficientDataBytes, ValueError):  # Not all the ERC721 have metadata
+            raise InvalidERC721Info
+
+    def get_owners(self, token_addresses_with_token_ids: Tuple[str, int]) -> List[Optional[str]]:
+        """
+        :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
+        :return: List of owner addresses, `None` if not found
+        """
+        return self.ethereum_client.batch_call(
+            [get_erc721_contract(self.ethereum_client.w3, token_address).functions.ownerOf(token_id)
+             for token_address, token_id in token_addresses_with_token_ids],
+            raise_exception=False
+        )
+
+    def get_token_uris(self, token_addresses_with_token_ids: Tuple[str, int]) -> List[Optional[str]]:
+        """
+        :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
+        :return: List of token_uris, `None` if not found
+        """
+        return self.ethereum_client.batch_call(
+            [get_erc721_contract(self.ethereum_client.w3, token_address).functions.tokenURI(token_id)
+             for token_address, token_id in token_addresses_with_token_ids],
+            raise_exception=False
+        )
 
 
 class ParityManager:
@@ -657,6 +761,7 @@ class EthereumClient:
         self.w3_provider = HTTPProvider(self.ethereum_node_url)
         self.w3: Web3 = Web3(self.w3_provider)
         self.erc20: Erc20Manager = Erc20Manager(self, slow_provider_timeout)
+        self.erc721: Erc721Manager= Erc721Manager(self, slow_provider_timeout)
         self.parity: ParityManager = ParityManager(self, slow_provider_timeout)
         try:
             if int(self.w3.net.version) != 1:
