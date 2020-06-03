@@ -66,6 +66,9 @@ class Safe:
         self.w3 = self.ethereum_client.w3
         self.address = address
 
+    def __str__(self):
+        return f'Safe={self.address}'
+
     @staticmethod
     def create(ethereum_client: EthereumClient, deployer_account: LocalAccount,
                master_copy_address: str, owners: List[str], threshold: int,

@@ -19,35 +19,65 @@ class MultiSendOperation(Enum):
 
 
 class MultiSendTx:
-    def __init__(self, operation: MultiSendOperation, address: str, value: int, data: Union[str, bytes]):
+    def __init__(self, operation: MultiSendOperation, to: str, value: int, data: Union[str, bytes]):
         self.operation = operation
-        self.address = address
+        self.to = to
         self.value = value
-        self.data = HexBytes(data)
+        self.data = HexBytes(data) if data else b''
 
     def __eq__(self, other):
         if not isinstance(other, MultiSendTx):
             return NotImplemented
 
-        return (self.operation == other.operation and self.address == other.address
+        return (self.operation == other.operation and self.to == other.to
                 and self.value == other.value and self.data == other.data)
 
-    @classmethod
-    def from_bytes(cls, encoded_multisend_tx: bytes):
-        operation = MultiSendOperation(encoded_multisend_tx[0])
-        address = Web3.toChecksumAddress(encoded_multisend_tx[1:1 + 20])
-        value = int.from_bytes(encoded_multisend_tx[21:21 + 32], byteorder='big')
-        # data_lenght = int.from_bytes(encoded_multisend_tx[21 + 32: 21 + 32 * 2], byteorder='big)
-        data = encoded_multisend_tx[21 + 32 * 2:]
-        return cls(operation, address, value, data)
+    def __len__(self):
+        """
+        :return: Size on bytes of the tx
+        """
+        return 21 + 32 * 2 + self.data_length
+
+    def __str__(self):
+        data = self.data[:4].hex() + ('...' if len(self.data) > 4 else '')
+        return f'MultisendTx operation={self.operation.name} to={self.to} value={self.value}' \
+               f' data={data}'
+
+    @property
+    def data_length(self) -> int:
+        return len(self.data)
 
     @property
     def encoded_data(self):
-        multisend_operation = HexBytes('{:0>2x}'.format(self.operation.value))  # Operation 1 byte
-        multisend_address = HexBytes('{:0>40x}'.format(int(self.address, 16)))  # Address 20 bytes
-        multisend_value = HexBytes('{:0>64x}'.format(self.value))  # Value 32 bytes
-        data_lenght = HexBytes('{:0>64x}'.format(len(self.data)))  # Data length 32 bytes
-        return multisend_operation + multisend_address + multisend_value + data_lenght + self.data
+        operation = HexBytes('{:0>2x}'.format(self.operation.value))  # Operation 1 byte
+        to = HexBytes('{:0>40x}'.format(int(self.to, 16)))  # Address 20 bytes
+        value = HexBytes('{:0>64x}'.format(self.value))  # Value 32 bytes
+        data_length = HexBytes('{:0>64x}'.format(self.data_length))  # Data length 32 bytes
+        return operation + to + value + data_length + self.data
+
+    @classmethod
+    def from_bytes(cls, encoded_multisend_tx: Union[str, bytes]) -> 'MultiSendTx':
+        """
+        Decodes one multisend transaction. If there's more data after `data` it's ignored. Structure:
+        operation   -> MultiSendOperation 1 byte
+        to          -> ethereum address 20 bytes
+        value       -> tx value 32 bytes
+        data_length -> 32 bytes
+        data        -> `data_length` bytes
+        :param encoded_multisend_tx: 1 multisend transaction encoded
+        :return: Tx as a MultisendTx
+        """
+        encoded_multisend_tx = HexBytes(encoded_multisend_tx)
+
+        operation = MultiSendOperation(encoded_multisend_tx[0])
+        to = Web3.toChecksumAddress(encoded_multisend_tx[1:1 + 20])
+        value = int.from_bytes(encoded_multisend_tx[21:21 + 32], byteorder='big')
+        data_length = int.from_bytes(encoded_multisend_tx[21 + 32: 21 + 32 * 2], byteorder='big')
+        data = encoded_multisend_tx[21 + 32 * 2: 21 + 32 * 2 + data_length]
+        if data_length != len(data):
+            raise ValueError('Data length is different from len(data)')
+
+        return cls(operation, to, value, data)
 
 
 class MultiSend:
@@ -58,6 +88,37 @@ class MultiSend:
         self.address = address
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
+
+    @classmethod
+    def from_transaction_data(cls, multisend_data: Union[str, bytes]) -> List[MultiSendTx]:
+        """
+        Decodes multisend transactions from transaction data (with selector)
+        :return:
+        """
+        try:
+            _, data = get_multi_send_contract(Web3()).decode_function_input(multisend_data)
+            return cls.from_bytes(data['transactions'])
+        except ValueError:
+            return []
+
+    @classmethod
+    def from_bytes(cls, encoded_multisend_txs: Union[str, bytes]) -> List[MultiSendTx]:
+        """
+        Decodes one or more than one multisend transaction
+        :param encoded_multisend_txs:
+        :return: List o MultiSendTx
+        """
+        if not encoded_multisend_txs:
+            return []
+
+        encoded_multisend_txs = HexBytes(encoded_multisend_txs)
+        multisend_tx = MultiSendTx.from_bytes(encoded_multisend_txs)
+        multisend_tx_size = len(multisend_tx)
+
+        assert multisend_tx_size > 0, 'Multisend tx cannot be empty'  # This should never happen, just in case
+        remaining_data = encoded_multisend_txs[multisend_tx_size:]
+
+        return [multisend_tx] + cls.from_bytes(remaining_data)
 
     @staticmethod
     def deploy_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
@@ -88,7 +149,7 @@ class MultiSend:
         :param sender:
         :return:
         """
-        multisig_contract = self.get_contract()
+        multisend_contract = self.get_contract()
         encoded_multisend_data = b''.join([x.encoded_data for x in multi_send_txs])
-        return multisig_contract.functions.multiSend(encoded_multisend_data).buildTransaction({'gas': 1,
+        return multisend_contract.functions.multiSend(encoded_multisend_data).buildTransaction({'gas': 1,
                                                                                                'gasPrice': 1})['data']
