@@ -27,6 +27,7 @@ class TestSafeSignature(TestCase):
         safe_signature = SafeSignatureContract(signature, safe_tx_hash, b'')
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE)
+        self.assertTrue(str(safe_signature))  # Test __str__
 
     def test_approved_hash_signature(self):
         owner = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
@@ -36,6 +37,7 @@ class TestSafeSignature(TestCase):
         safe_signature = SafeSignatureApprovedHash(signature, safe_tx_hash)
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.APPROVED_HASH)
+        self.assertTrue(str(safe_signature))  # Test __str__
 
     def test_approved_hash_signature_build(self):
         owner = Account.create().address
@@ -61,6 +63,7 @@ class TestSafeSignature(TestCase):
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.ETH_SIGN)
         self.assertTrue(safe_signature.is_valid())
+        self.assertTrue(str(safe_signature))  # Test __str__
 
     def test_eoa_signature(self):
         owner = '0xADb7CB706e9A1bd9F96a397da340bF34a9984E1E'
@@ -80,6 +83,7 @@ class TestSafeSignature(TestCase):
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.EOA)
         self.assertTrue(safe_signature.is_valid())
+        self.assertTrue(str(safe_signature))  # Test __str__
 
     def test_defunct_hash_message(self):
         safe_tx_hash = HexBytes('0x4c9577d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf196')

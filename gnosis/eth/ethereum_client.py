@@ -770,6 +770,9 @@ class EthereumClient:
         except (ConnectionError, FileNotFoundError):
             self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
+    def __str__(self):
+        return f'EthereumClient for url={self.ethereum_node_url}'
+
     @property
     def current_block_number(self):
         return self.w3.eth.blockNumber

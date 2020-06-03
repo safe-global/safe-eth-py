@@ -462,6 +462,9 @@ class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
 
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
+    def test_ethereum_client_str(self):
+        self.assertTrue(str(self.ethereum_client))
+
     def test_current_block_number(self):
         self.assertGreaterEqual(self.ethereum_client.current_block_number, 0)
 

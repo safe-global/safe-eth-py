@@ -44,6 +44,9 @@ class SafeSignature(ABC):
         self.safe_tx_hash = HexBytes(safe_tx_hash)
         self.v, self.r, self.s = signature_split(self.signature)
 
+    def __str__(self):
+        return f'SafeSignature type={self.signature_type.name} owner={self.owner}'
+
     @classmethod
     def parse_signature(cls, signatures: EthereumBytes, safe_tx_hash: EthereumBytes) -> List['SafeSignature']:
         """
