@@ -90,23 +90,11 @@ class MultiSend:
         self.w3 = ethereum_client.w3
 
     @classmethod
-    def from_transaction_data(cls, multisend_data: Union[str, bytes]) -> List[MultiSendTx]:
-        """
-        Decodes multisend transactions from transaction data (with selector)
-        :return:
-        """
-        try:
-            _, data = get_multi_send_contract(Web3()).decode_function_input(multisend_data)
-            return cls.from_bytes(data['transactions'])
-        except ValueError:
-            return []
-
-    @classmethod
     def from_bytes(cls, encoded_multisend_txs: Union[str, bytes]) -> List[MultiSendTx]:
         """
-        Decodes one or more than one multisend transaction
+        Decodes one or more multisend transactions from `bytes transactions` (Abi decoded)
         :param encoded_multisend_txs:
-        :return: List o MultiSendTx
+        :return: List of MultiSendTxs
         """
         if not encoded_multisend_txs:
             return []
@@ -119,6 +107,18 @@ class MultiSend:
         remaining_data = encoded_multisend_txs[multisend_tx_size:]
 
         return [multisend_tx] + cls.from_bytes(remaining_data)
+
+    @classmethod
+    def from_transaction_data(cls, multisend_data: Union[str, bytes]) -> List[MultiSendTx]:
+        """
+        Decodes multisend transactions from transaction data (ABI encoded with selector)
+        :return:
+        """
+        try:
+            _, data = get_multi_send_contract(Web3()).decode_function_input(multisend_data)
+            return cls.from_bytes(data['transactions'])
+        except ValueError:
+            return []
 
     @staticmethod
     def deploy_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
