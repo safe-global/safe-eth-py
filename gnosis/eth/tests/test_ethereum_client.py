@@ -451,7 +451,7 @@ class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
     def test_default_ethereum_network_name(self):
         self.assertEqual(EthereumNetwork(EthereumNetwork.default), EthereumNetwork.UNKNOWN)
 
-    def test_default_ethereum_network_name(self):
+    def test_unknown_ethereum_network_name(self):
         self.assertEqual(EthereumNetwork(2), EthereumNetwork.UNKNOWN)
 
     def test_mainnet_ethereum_network_name(self):

@@ -4,3 +4,4 @@ ipython
 isort
 ipdb
 flake8
+mypy

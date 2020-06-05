@@ -36,9 +36,9 @@ def generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_c
     salt = HexBytes(salt)
     init_code = HexBytes(init_code)
 
-    assert len(from_) == 20, "Address %s is not valid. Must be 20 bytes" % from_
-    assert len(salt) == 32, "Salt %s is not valid. Must be 32 bytes" % salt
-    assert len(init_code) > 0, "Init code %s is not valid" % init_code
+    assert len(from_) == 20, f'Address {from_.hex()} is not valid. Must be 20 bytes'
+    assert len(salt) == 32, f'Salt {salt.hex()} is not valid. Must be 32 bytes'
+    assert len(init_code) > 0, f'Init code {init_code.hex()} is not valid'
 
     init_code_hash = Web3.keccak(init_code)
     contract_address = Web3.keccak(HexBytes('ff') + from_ + salt + init_code_hash)
