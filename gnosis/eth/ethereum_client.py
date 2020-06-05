@@ -929,6 +929,15 @@ class EthereumClient:
 
     def estimate_gas(self, from_: str, to: str, value: int, data: bytes,
                      block_identifier: Optional[BlockIdentifier] = 'latest'):
+        """
+        Workaround to support 'pending' `block_identifier` for Geth
+        :param from_:
+        :param to:
+        :param value:
+        :param data:
+        :param block_identifier:
+        :return:
+        """
         data = data or b''
         params: List[Union[Dict[str, Any], str]] = [
             {"from": from_,
