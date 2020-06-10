@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 
 from hexbytes import HexBytes
 from web3 import Web3
+from web3.contract import Contract
 
 
 def load_contract_interface(file_name):
@@ -63,7 +64,7 @@ contracts = {
 def generate_contract_fn(contract: Dict[str, Any]):
     """
     Dynamically generate functions to work with the contracts
-    :param json_contract_filename:
+    :param contract:
     :return:
     """
     def fn(w3: Web3, address: Optional[str] = None):
@@ -73,10 +74,69 @@ def generate_contract_fn(contract: Dict[str, Any]):
     return fn
 
 
-for contract_name, json_contract_filename in contracts.items():
-    fn_name = 'get_{}_contract'.format(contract_name)
-    contract_dict = load_contract_interface(json_contract_filename)
-    setattr(current_module, fn_name, generate_contract_fn(contract_dict))
+# Anotate functions that will be generated later with `setattr` so typing does not complains
+def get_safe_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_safe_V1_0_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_safe_V0_0_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_erc20_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_erc721_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_example_erc20_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_delegate_constructor_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_multi_send_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_paying_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_proxy_factory_V1_0_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_uniswap_exchange_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_uniswap_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_kyber_network_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_cpk_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
 
 
 def get_paying_proxy_deployed_bytecode() -> bytes:
@@ -85,3 +145,9 @@ def get_paying_proxy_deployed_bytecode() -> bytes:
 
 def get_proxy_1_0_0_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface('Proxy_V1_0_0.json')['deployedBytecode'])
+
+
+for contract_name, json_contract_filename in contracts.items():
+    fn_name = 'get_{}_contract'.format(contract_name)
+    contract_dict = load_contract_interface(json_contract_filename)
+    setattr(current_module, fn_name, generate_contract_fn(contract_dict))

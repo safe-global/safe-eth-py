@@ -70,6 +70,7 @@ class SafeSignature(ABC):
             signature = signatures[i: i + signature_size]
             v, r, s = signature_split(signature)
             signature_type = SafeSignatureType.from_v(v)
+            safe_signature: 'SafeSignature'
             if signature_type == SafeSignatureType.CONTRACT_SIGNATURE:
                 if s < data_position:
                     data_position = s

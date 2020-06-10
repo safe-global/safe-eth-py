@@ -912,7 +912,7 @@ class EthereumClient:
             return []
         payloads = []
         params = {'gas': 0, 'gasPrice': 0}
-        for i, contract_function in enumerate(contract_functions):
+        for _, contract_function in enumerate(contract_functions):
             if not contract_function.address:
                 raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
 
@@ -996,7 +996,7 @@ class EthereumClient:
                 gas += GAS_CALL_DATA_BYTE
         return gas
 
-    def get_balance(self, address: str, block_identifier=None):
+    def get_balance(self, address: str, block_identifier: Optional[BlockIdentifier] = None):
         return self.w3.eth.getBalance(address, block_identifier)
 
     def get_transaction(self, tx_hash: EthereumHash) -> Optional[Dict[str, Any]]:
