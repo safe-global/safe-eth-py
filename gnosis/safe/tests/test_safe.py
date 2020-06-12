@@ -10,7 +10,8 @@ from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
-from ..exceptions import CouldNotPayGasWithEther, CouldNotPayGasWithToken
+from ..exceptions import (CannotRetrieveSafeInfoException,
+                          CouldNotPayGasWithEther, CouldNotPayGasWithToken)
 from ..safe import Safe, SafeOperation
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
@@ -435,12 +436,20 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         for owner in safe_creation.owners:
             self.assertTrue(safe.retrieve_is_owner(owner))
 
+    def test_retrieve_all_info(self):
+        safe_creation = self.deploy_test_safe()
+        safe = Safe(safe_creation.safe_address, self.ethereum_client)
         safe_info = safe.retrieve_all_info()
         self.assertEqual(safe_info.master_copy, self.safe_contract_address)
         self.assertEqual(safe_info.nonce, 0)
         self.assertCountEqual(safe_info.owners, safe_creation.owners)
         self.assertEqual(safe_info.threshold, safe_creation.threshold)
         self.assertEqual(safe_info.modules, [])
+
+        invalid_address = Account.create().address
+        invalid_safe = Safe(invalid_address, self.ethereum_client)
+        with self.assertRaisesMessage(CannotRetrieveSafeInfoException, invalid_address):
+            invalid_safe.retrieve_all_info()
 
     def test_retrieve_modules(self):
         safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])

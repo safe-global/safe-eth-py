@@ -19,7 +19,8 @@ from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
 
-from .exceptions import CannotEstimateGas, InvalidPaymentToken
+from .exceptions import (CannotEstimateGas, CannotRetrieveSafeInfoException,
+                         InvalidPaymentToken)
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
@@ -533,22 +534,26 @@ class Safe:
         Get all Safe info in the same batch call.
         :param block_identifier:
         :return:
+        :raises: CannotRetrieveSafeInfoException
         """
-        contract = self.get_contract()
-        master_copy = self.retrieve_master_copy_address()
-        fallback_handler = self.retrieve_fallback_handler()
+        try:
+            contract = self.get_contract()
+            master_copy = self.retrieve_master_copy_address()
+            fallback_handler = self.retrieve_fallback_handler()
 
-        results = self.ethereum_client.batch_call([
-            contract.functions.getModules(),  # Tuple of (addresses, next) from v1.1.1 and for old Safes just a list
-            contract.functions.nonce(),
-            contract.functions.getOwners(),
-            contract.functions.getThreshold(),
-            contract.functions.VERSION(),
-        ], from_address=self.address, block_identifier=block_identifier)
-        modules, nonce, owners, threshold, version = results
-        if len(modules) == 10:  # Pagination is enabled and by default is 10
-            modules = self.retrieve_modules()
-        return SafeInfo(self.address, fallback_handler, master_copy, modules, nonce, owners, threshold, version)
+            results = self.ethereum_client.batch_call([
+                contract.functions.getModules(),  # Tuple of (addresses, next) from v1.1.1 and for old Safes just a list
+                contract.functions.nonce(),
+                contract.functions.getOwners(),
+                contract.functions.getThreshold(),
+                contract.functions.VERSION(),
+            ], from_address=self.address, block_identifier=block_identifier)
+            modules, nonce, owners, threshold, version = results
+            if len(modules) == 10:  # Pagination is enabled and by default is 10
+                modules = self.retrieve_modules()
+            return SafeInfo(self.address, fallback_handler, master_copy, modules, nonce, owners, threshold, version)
+        except (ValueError, BadFunctionCallOutput) as e:
+            raise CannotRetrieveSafeInfoException(self.address) from e
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)

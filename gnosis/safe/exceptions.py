@@ -6,6 +6,10 @@ class CannotEstimateGas(SafeServiceException):
     pass
 
 
+class CannotRetrieveSafeInfoException(SafeServiceException):
+    pass
+
+
 class InvalidChecksumAddress(SafeServiceException):
     pass
 
