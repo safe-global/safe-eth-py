@@ -9,7 +9,7 @@ import requests
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import URI, ChecksumAddress
+from eth_typing import URI, ChecksumAddress, BlockNumber, HexStr, Hash32
 from ethereum.utils import (check_checksum, checksum_encode,
                             mk_contract_address, privtoaddr)
 from hexbytes import HexBytes
@@ -24,12 +24,12 @@ from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
 from web3.types import (BlockIdentifier, FilterParams, LogReceipt,
                         ParityBlockTrace, ParityFilterParams,
-                        ParityFilterTrace, TxData, TxParams, TxReceipt, Wei)
+                        ParityFilterTrace, TxData, TxParams, TxReceipt, Wei, Nonce, BlockData)
 
 from .constants import (ERC20_721_TRANSFER_TOPIC, GAS_CALL_DATA_BYTE,
                         GAS_CALL_DATA_ZERO_BYTE, NULL_ADDRESS)
 from .contracts import get_erc20_contract, get_erc721_contract
-from .typing import EthereumData, EthereumHash
+from .typing import EthereumData, EthereumHash, BalanceDict
 from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
@@ -136,7 +136,7 @@ def tx_with_exception_handling(func):
 
 class EthereumTxSent(NamedTuple):
     tx_hash: bytes
-    tx: Dict[str, Any]
+    tx: TxParams
     contract_address: Optional[str]
 
 
@@ -184,13 +184,13 @@ class Erc20Manager:
                 decoded_logs.append(log_copy)
         return decoded_logs
 
-    def _decode_erc20_or_erc721_log(self, data: EthereumData, topics: List[bytes]) -> Optional[Dict[str, Any]]:
+    def _decode_erc20_or_erc721_log(self, data: EthereumData, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
         decoded = self._decode_erc20_log(data, topics)
         if not decoded:
             decoded = self._decode_erc721_log(topics)
         return decoded
 
-    def _decode_erc20_log(self, data: EthereumData, topics: List[bytes]) -> Optional[Dict[str, Any]]:
+    def _decode_erc20_log(self, data: EthereumData, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
         if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 3:
             value = eth_abi.decode_single('uint256', HexBytes(data))
             _from, to = [Web3.toChecksumAddress(address) for address
@@ -201,7 +201,7 @@ class Erc20Manager:
             # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
             return None
 
-    def _decode_erc721_log(self, topics: List[bytes]) -> Optional[Dict[str, Any]]:
+    def _decode_erc721_log(self, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
         if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 4:
             _from, to, token_id = eth_abi.decode_abi(['address', 'address', 'uint256'], b''.join(topics[1:]))
             _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
@@ -220,7 +220,7 @@ class Erc20Manager:
         """
         return get_erc20_contract(self.w3, token_address).functions.balanceOf(address).call()
 
-    def get_balances(self, address: str, token_addresses: List[str]) -> List[Dict[str, Union[Optional[str], int]]]:
+    def get_balances(self, address: str, token_addresses: List[str]) -> List[BalanceDict]:
         """
         Get balances for Ether and tokens for an `address`
         :param address: Owner address checksummed
@@ -247,24 +247,25 @@ class Erc20Manager:
                                         }, 'latest'],
                             'id': i + 1})
         response = requests.post(self.ethereum_client.ethereum_node_url, json=queries)
-        balances = []
-        for token_address, data in zip([None] + token_addresses, response.json()):
+        token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]], token_addresses)
+        balances: List[BalanceDict] = []
+        for token_address, data in zip(token_addresses_casted, response.json()):
             balances.append({
                 'token_address': token_address,
-                'balance': (self.w3.codec.decode_single('uint256', HexBytes(data['result']))  # Token
+                'balance': (cast(int, self.w3.codec.decode_single('uint256', HexBytes(data['result'])))  # Token
                             if token_address else int(data['result'], 16))  # Ether
             })
         return balances
 
     def get_name(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        data = erc20.functions.name().buildTransaction({'gas': 0, 'gasPrice': 0})['data']
+        data = erc20.functions.name().buildTransaction({'gas': Wei(0), 'gasPrice': Wei(0)})['data']
         result = self.w3.eth.call({'to': erc20_address, 'data': data})
         return decode_string_or_bytes32(result)
 
     def get_symbol(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        data = erc20.functions.symbol().buildTransaction({'gas': 0, 'gasPrice': 0})['data']
+        data = erc20.functions.symbol().buildTransaction({'gas': Wei(0), 'gasPrice': Wei(0)})['data']
         result = self.w3.eth.call({'to': erc20_address, 'data': data})
         return decode_string_or_bytes32(result)
 
@@ -280,7 +281,7 @@ class Erc20Manager:
         :return: Erc20Info
         """
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        params: TxParams = {'gas': 0, 'gasPrice': 0}  # Prevent executing tx, we are just interested on `data`
+        params: TxParams = {'gas': Wei(0), 'gasPrice': Wei(0)}  # Prevent executing tx, we are just interested on `data`
         datas = [erc20.functions.name().buildTransaction(params)['data'],
                  erc20.functions.symbol().buildTransaction(params)['data'],
                  erc20.functions.decimals().buildTransaction(params)['data']]
@@ -303,9 +304,10 @@ class Erc20Manager:
         except (InsufficientDataBytes, ValueError) as e:
             raise InvalidERC20Info from e
 
-    def get_total_transfer_history(self, addresses: List[str], from_block: BlockIdentifier = 0,
+    def get_total_transfer_history(self, addresses: Sequence[ChecksumAddress],
+                                   from_block: BlockIdentifier = BlockNumber(0),
                                    to_block: Optional[BlockIdentifier] = None,
-                                   token_address: Optional[str] = None) -> List[Dict[str, Any]]:
+                                   token_address: Optional[ChecksumAddress] = None) -> List[Dict[str, Any]]:
         """
         Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually
         An example of an erc20 event:
@@ -438,13 +440,13 @@ class Erc20Manager:
         """
         erc20 = get_erc20_contract(self.w3, erc20_address)
         account = Account.from_key(private_key)
-        tx_options = {'from': account.address}
+        tx_options: TxParams = {'from': account.address}
         if nonce:
-            tx_options['nonce'] = nonce
+            tx_options['nonce'] = Nonce(nonce)
         if gas_price:
-            tx_options['gasPrice'] = gas_price
+            tx_options['gasPrice'] = Wei(gas_price)
         if gas:
-            tx_options['gas'] = gas
+            tx_options['gas'] = Wei(gas)
 
         tx = erc20.functions.transfer(to, amount).buildTransaction(tx_options)
         return self.ethereum_client.send_unsigned_transaction(tx, private_key=private_key)
@@ -737,9 +739,9 @@ class ParityManager:
         if count:
             parameters['count'] = count
         if from_block:
-            parameters['fromBlock'] = '0x%x' % from_block
+            parameters['fromBlock'] = HexStr('0x%x' % from_block)
         if to_block:
-            parameters['toBlock'] = '0x%x' % to_block
+            parameters['toBlock'] = HexStr('0x%x' % to_block)
         if from_address:
             parameters['fromAddress'] = from_address
         if to_address:
@@ -759,7 +761,7 @@ class EthereumClient:
     """
     NULL_ADDRESS = NULL_ADDRESS
 
-    def __init__(self, ethereum_node_url: URI = 'http://localhost:8545', slow_provider_timeout: int = 200):
+    def __init__(self, ethereum_node_url: URI = URI('http://localhost:8545'), slow_provider_timeout: int = 200):
         self.ethereum_node_url: str = ethereum_node_url
         self.w3_provider = HTTPProvider(self.ethereum_node_url)
         self.w3: Web3 = Web3(self.w3_provider)
@@ -783,24 +785,24 @@ class EthereumClient:
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
                                        check_receipt: bool = True):
-        contract_address = None
+        contract_address: Optional[ChecksumAddress] = None
         for data in (constructor_data, initializer_data):
             # Because initializer_data is not mandatory
             if data:
                 tx: TxParams = {'from': deployer_account.address,
                                 'data': data,
                                 'gasPrice': self.w3.eth.gasPrice,
-                                'value': 0,
-                                'to': contract_address if contract_address else b''}
+                                'value': Wei(0),
+                                'to': contract_address if contract_address else ''}
                 tx['gas'] = self.w3.eth.estimateGas(tx)
                 tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.key)
                 if check_receipt:
-                    tx_receipt = self.get_transaction_receipt(tx_hash, timeout=60)
+                    tx_receipt = self.get_transaction_receipt(Hash32(tx_hash), timeout=60)
                     assert tx_receipt
-                    assert tx_receipt.status
+                    assert tx_receipt['status']
 
                 if not contract_address:
-                    contract_address = checksum_encode(mk_contract_address(tx['from'], tx['nonce']))
+                    contract_address = ChecksumAddress(checksum_encode(mk_contract_address(tx['from'], tx['nonce'])))
 
         return EthereumTxSent(tx_hash, tx, contract_address)
 
@@ -811,7 +813,7 @@ class EthereumClient:
         :return: A new web3 provider with the `slow_provider_timeout`
         """
         if isinstance(self.w3_provider, AutoProvider):
-            return HTTPProvider(endpoint_uri='http://localhost:8545',
+            return HTTPProvider(endpoint_uri=URI('http://localhost:8545'),
                                 request_kwargs={'timeout': timeout})
         elif isinstance(self.w3_provider, HTTPProvider):
             return HTTPProvider(endpoint_uri=self.w3_provider.endpoint_uri,
@@ -838,7 +840,7 @@ class EthereumClient:
 
     def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
                           raise_exception: bool = True,
-                          block_identifier: Optional[BlockIdentifier] = 'latest') -> Iterable[Optional[Any]]:
+                          block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
         """
         Do batch requests of multiple contract calls
         :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
@@ -872,9 +874,9 @@ class EthereumClient:
 
         response = requests.post(self.ethereum_node_url, json=queries)
         if not response.ok:
-            raise ConnectionError(f'Error connecting to {self.ethereum_node_url}: {response.content}')
+            raise ConnectionError(f'Error connecting to {self.ethereum_node_url}: {response.text}')
 
-        return_values = []
+        return_values: List[Optional[Any]] = []
         errors = []
         for payload, result in zip(payloads, response.json()):
             if 'error' in result:
@@ -902,7 +904,7 @@ class EthereumClient:
 
     def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
                    raise_exception: bool = True,
-                   block_identifier: Optional[BlockIdentifier] = 'latest') -> Iterable[Optional[Any]]:
+                   block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
         """
         Do batch requests of multiple contract calls
         :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
@@ -916,7 +918,7 @@ class EthereumClient:
         if not contract_functions:
             return []
         payloads = []
-        params: TxParams = {'gas': 0, 'gasPrice': 0}
+        params: TxParams = {'gas': Wei(0), 'gasPrice': Wei(0)}
         for _, contract_function in enumerate(contract_functions):
             if not contract_function.address:
                 raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
@@ -981,7 +983,7 @@ class EthereumClient:
                     "from": from_,
                     "to": to,
                     "data": data,
-                    "value": value,
+                    "value": Wei(value),
                 })
             else:
                 raise ValueError(response_json['error'])
@@ -1041,7 +1043,7 @@ class EthereumClient:
         except TransactionNotFound:
             return None
 
-    def get_transaction_receipts(self, tx_hashes: EthereumData) -> List[Optional[TxReceipt]]:
+    def get_transaction_receipts(self, tx_hashes: Sequence[EthereumData]) -> List[Optional[TxReceipt]]:
         if not tx_hashes:
             return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionReceipt',
@@ -1058,14 +1060,14 @@ class EthereumClient:
                 receipts.append(None)
         return receipts
 
-    def get_block(self, block_identifier: BlockIdentifier, full_transactions=False) -> Optional[Dict[str, Any]]:
+    def get_block(self, block_identifier: BlockIdentifier, full_transactions: bool = False) -> Optional[BlockData]:
         try:
             return self.w3.eth.getBlock(block_identifier, full_transactions=full_transactions)
         except BlockNotFound:
             return None
 
     def get_blocks(self, block_identifiers: Iterable[BlockIdentifier],
-                   full_transactions=False) -> List[Optional[Dict[str, Any]]]:
+                   full_transactions: bool = False) -> List[Optional[BlockData]]:
         if not block_identifiers:
             return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getBlockByNumber',
@@ -1084,20 +1086,20 @@ class EthereumClient:
                 blocks.append(None)
         return blocks
 
-    def is_contract(self, contract_address: str):
+    def is_contract(self, contract_address: ChecksumAddress) -> bool:
         return bool(self.w3.eth.getCode(contract_address))
 
     @tx_with_exception_handling
-    def send_transaction(self, transaction_dict: Dict[str, Any]) -> bytes:
+    def send_transaction(self, transaction_dict: TxParams) -> HexBytes:
         return self.w3.eth.sendTransaction(transaction_dict)
 
     @tx_with_exception_handling
-    def send_raw_transaction(self, raw_transaction) -> bytes:
+    def send_raw_transaction(self, raw_transaction: EthereumData) -> HexBytes:
         return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
 
     def send_unsigned_transaction(self, tx: TxParams, private_key: Optional[str] = None,
                                   public_key: Optional[str] = None, retry: bool = False,
-                                  block_identifier: Optional[BlockIdentifier] = 'pending') -> bytes:
+                                  block_identifier: Optional[BlockIdentifier] = 'pending') -> HexBytes:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
         `private_key` cannot be `None`
@@ -1169,15 +1171,15 @@ class EthereumClient:
 
         assert check_checksum(to)
 
-        tx = {
+        tx: TxParams = {
             'to': to,
             'value': value,
-            'gas': gas,
-            'gasPrice': gas_price,
+            'gas': Wei(gas),
+            'gasPrice': Wei(gas_price),
         }
 
         if nonce is not None:
-            tx['nonce'] = nonce
+            tx['nonce'] = Nonce(nonce)
 
         return self.send_unsigned_transaction(tx, private_key=private_key, retry=retry,
                                               block_identifier=block_identifier)
