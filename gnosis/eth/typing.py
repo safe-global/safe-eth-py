@@ -1,15 +1,17 @@
 import sys
+from typing import Optional, Union
+
+from eth_typing import Hash32, HexStr
+from hexbytes import HexBytes
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict  # pylint: disable=no-name-in-module
 else:
     from typing_extensions import TypedDict
 
-from typing import Union, Optional
 
-from eth_typing import Hash32, HexStr
 
-EthereumHash = Union[Hash32, HexStr]
+EthereumHash = Union[Hash32, HexBytes, HexStr]
 EthereumData = Union[bytes, HexStr]
 
 

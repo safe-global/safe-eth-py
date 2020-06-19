@@ -4,12 +4,12 @@ from typing import List, Optional
 from django.conf import settings
 
 from eth_account import Account
+from web3.contract import Contract
 
 from gnosis.eth.contracts import (get_multi_send_contract,
                                   get_proxy_factory_contract,
                                   get_safe_contract, get_safe_V1_0_0_contract)
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
-from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -31,6 +31,18 @@ contract_addresses = {
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
+    safe_contract_address: str
+    safe_contract: Contract
+    safe_contract_V1_0_0_address: str
+    safe_contract_V1_0_0: Contract
+    safe_contract_V0_0_1_address: str
+    safe_contract_V0_0_1: Contract
+    proxy_factory_contract_address: str
+    proxy_factory_contract: Contract
+    proxy_factory: ProxyFactory
+    multi_send_contract: Contract
+    multi_send: MultiSend
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()

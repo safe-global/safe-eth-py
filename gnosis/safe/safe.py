@@ -2,13 +2,15 @@ import dataclasses
 import math
 from enum import Enum
 from logging import getLogger
-from typing import List, NamedTuple, Optional, Union
+from typing import List, NamedTuple, Optional, Sequence, Union
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput
+from web3.types import BlockIdentifier, Wei
 
 from gnosis.eth.constants import (GAS_CALL_DATA_BYTE, NULL_ADDRESS,
                                   SENTINEL_ADDRESS)
@@ -19,6 +21,7 @@ from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
 
+from ..eth.typing import EthereumData
 from .exceptions import (CannotEstimateGas, CannotRetrieveSafeInfoException,
                          InvalidPaymentToken)
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
@@ -58,9 +61,9 @@ class SafeInfo:
 
 
 class Safe:
-    FALLBACK_HANDLER_STORAGE_SLOT = '0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5'
+    FALLBACK_HANDLER_STORAGE_SLOT = 0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5
 
-    def __init__(self, address: str, ethereum_client: EthereumClient):
+    def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert Web3.isChecksumAddress(address), '%s is not a valid address' % address
 
         self.ethereum_client = ethereum_client
@@ -99,11 +102,12 @@ class Safe:
             payment_token,
             payment,
             payment_receiver
-        ).buildTransaction({'gas': 1, 'gasPrice': 1})['data']
+        ).buildTransaction({'gas': Wei(1), 'gasPrice': Wei(1)})['data']
 
         if proxy_factory_address:
             proxy_factory = ProxyFactory(proxy_factory_address, ethereum_client)
-            return proxy_factory.deploy_proxy_contract(deployer_account, master_copy_address, initializer=initializer)
+            return proxy_factory.deploy_proxy_contract(deployer_account, master_copy_address,
+                                                       initializer=HexBytes(initializer))
 
         proxy_contract = get_delegate_constructor_proxy_contract(ethereum_client.w3)
         tx = proxy_contract.constructor(master_copy_address,
@@ -111,9 +115,10 @@ class Safe:
         tx['gas'] = tx['gas'] * 100000
         tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
-        assert tx_receipt.status
+        assert tx_receipt
+        assert tx_receipt['status']
 
-        contract_address = tx_receipt.contractAddress
+        contract_address = tx_receipt['contractAddress']
         return EthereumTxSent(tx_hash, tx, contract_address)
 
     @staticmethod
@@ -130,9 +135,10 @@ class Safe:
         constructor_tx = safe_contract.constructor().buildTransaction()
         tx_hash = ethereum_client.send_unsigned_transaction(constructor_tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
-        assert tx_receipt.status
+        assert tx_receipt
+        assert tx_receipt['status']
 
-        ethereum_tx_sent = EthereumTxSent(tx_hash, constructor_tx, tx_receipt.contractAddress)
+        ethereum_tx_sent = EthereumTxSent(tx_hash, constructor_tx, tx_receipt['contractAddress'])
         logger.info("Deployed and initialized Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
                     deployer_account.address)
         return ethereum_tx_sent
@@ -160,7 +166,7 @@ class Safe:
         ).buildTransaction({'to': NULL_ADDRESS})['data']
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
-                                                                          initializer_data)
+                                                                          HexBytes(initializer_data))
         logger.info("Deployed and initialized Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
                     deployer_account.address)
         return ethereum_tx_sent
@@ -185,7 +191,7 @@ class Safe:
         ).buildTransaction({'to': NULL_ADDRESS})['data']
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(deployer_account, constructor_data,
-                                                                          initializer_data)
+                                                                          HexBytes(initializer_data))
         logger.info("Deployed and initialized Old Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
                     deployer_account.address)
         return ethereum_tx_sent
@@ -379,7 +385,7 @@ class Safe:
 
     def estimate_tx_gas_with_safe(self, to: str, value: int, data: bytes, operation: int,
                                   gas_limit: Optional[int] = None,
-                                  block_identifier: Optional[str] = 'latest') -> int:
+                                  block_identifier: Optional[BlockIdentifier] = 'latest') -> int:
         """
         Estimate tx gas using safe `requiredTxGas` method
         :return: int: Estimated gas
@@ -436,16 +442,16 @@ class Safe:
                       42066726f6d207468697320636f6e74726163740000000000000000000000000000000000000000'}
             """
             error_dict = exc.args[0]
-            data = error_dict.get('data')
-            if not data:
+            data_dict = error_dict.get('data')
+            if not data_dict:
                 raise exc
-            elif isinstance(data, str) and 'Reverted ' in data:
+            elif isinstance(data_dict, str) and 'Reverted ' in data_dict:
                 # Parity
-                result = HexBytes(data.replace('Reverted ', ''))
+                result = HexBytes(data_dict.replace('Reverted ', ''))
                 return parse_revert_data(result)
 
-            key = list(data.keys())[0]
-            result = data[key]['return']
+            key = list(data_dict.keys())[0]
+            result = data_dict[key]['return']
             if result == '0x0':
                 raise CannotEstimateGas('0x0') from exc
             else:
@@ -456,7 +462,7 @@ class Safe:
                 estimated_gas = int(estimated_gas_hex, 16)
                 return estimated_gas
 
-    def estimate_tx_gas_with_web3(self, to: str, value: int, data: Union[bytes, str]) -> int:
+    def estimate_tx_gas_with_web3(self, to: str, value: int, data: EthereumData) -> int:
         """
         :param to:
         :param value:
@@ -519,7 +525,6 @@ class Safe:
           - Base cost of 15000 gas
           - 100 of gas per word of `data_bytes`
           - Validate the signatures 5000 * threshold (ecrecover for ecdsa ~= 4K gas)
-        :param safe_address: Address of the safe
         :param data_bytes_length: Length of the data (in bytes, so `len(HexBytes('0x12'))` would be `1`
         :return: gas costs per signature * threshold of Safe
         """
@@ -529,7 +534,7 @@ class Safe:
     def get_contract(self):
         return get_safe_contract(self.w3, address=self.address)
 
-    def retrieve_all_info(self, block_identifier: Optional[str] = 'latest') -> SafeInfo:
+    def retrieve_all_info(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> SafeInfo:
         """
         Get all Safe info in the same batch call.
         :param block_identifier:
@@ -558,7 +563,7 @@ class Safe:
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.getCode(self.address)
 
-    def retrieve_fallback_handler(self, block_identifier: Optional[str] = 'latest') -> str:
+    def retrieve_fallback_handler(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
         address = self.ethereum_client.w3.eth.getStorageAt(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT,
                                                            block_identifier=block_identifier)[-20:]
         if len(address) == 20:
@@ -566,12 +571,18 @@ class Safe:
         else:
             return NULL_ADDRESS
 
-    def retrieve_master_copy_address(self, block_identifier: Optional[str] = 'latest') -> str:
+    def retrieve_master_copy_address(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
         bytes_address = self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:]
         int_address = int.from_bytes(bytes_address, byteorder='big')
         return Web3.toChecksumAddress('{:#042x}'.format(int_address))
 
-    def retrieve_modules(self, pagination: Optional[int] = 10, block_identifier: Optional[str] = 'latest') -> str:
+    def retrieve_modules(self, pagination: Optional[int] = 10,
+                         block_identifier: Optional[BlockIdentifier] = 'latest') -> List[str]:
+        """
+        :param pagination: Number of modules to get per request
+        :param block_identifier:
+        :return: List of module addresses
+        """
         try:
             # Contracts with Safe version < 1.1.0 were not paginated
             contract = get_safe_V1_0_0_contract(self.ethereum_client.w3, address=self.address)
@@ -581,7 +592,7 @@ class Safe:
 
         contract = self.get_contract()
         address = SENTINEL_ADDRESS
-        all_modules = []
+        all_modules: List[str] = []
         while True:
             (modules,
              address) = contract.functions.getModulesPaginated(address,
@@ -594,26 +605,28 @@ class Safe:
                 all_modules.append(address)
         return all_modules
 
-    def retrieve_is_hash_approved(self, owner: str, safe_hash: bytes, block_identifier: Optional[str] = 'latest') -> bool:
+    def retrieve_is_hash_approved(self, owner: str, safe_hash: bytes,
+                                  block_identifier: Optional[BlockIdentifier] = 'latest') -> bool:
         return self.get_contract().functions.approvedHashes(owner,
                                                             safe_hash).call(block_identifier=block_identifier) == 1
 
-    def retrieve_is_message_signed(self, message_hash: bytes, block_identifier: Optional[str] = 'latest') -> bool:
+    def retrieve_is_message_signed(self, message_hash: bytes,
+                                   block_identifier: Optional[BlockIdentifier] = 'latest') -> bool:
         return self.get_contract().functions.signedMessages(message_hash).call(block_identifier=block_identifier)
 
-    def retrieve_is_owner(self, owner: str, block_identifier: Optional[str] = 'latest') -> bool:
+    def retrieve_is_owner(self, owner: str, block_identifier: Optional[BlockIdentifier] = 'latest') -> bool:
         return self.get_contract().functions.isOwner(owner).call(block_identifier=block_identifier)
 
-    def retrieve_nonce(self, block_identifier: Optional[str] = 'latest') -> int:
+    def retrieve_nonce(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> int:
         return self.get_contract().functions.nonce().call(block_identifier=block_identifier)
 
-    def retrieve_owners(self, block_identifier: Optional[str] = 'latest')-> List[str]:
+    def retrieve_owners(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> List[str]:
         return self.get_contract().functions.getOwners().call(block_identifier=block_identifier)
 
-    def retrieve_threshold(self, block_identifier: Optional[str] = 'latest') -> int:
+    def retrieve_threshold(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> int:
         return self.get_contract().functions.getThreshold().call(block_identifier=block_identifier)
 
-    def retrieve_version(self, block_identifier: Optional[str] = 'latest') -> str:
+    def retrieve_version(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
         return self.get_contract().functions.VERSION().call(block_identifier=block_identifier)
 
     def build_multisig_tx(self,
@@ -669,11 +682,23 @@ class Safe:
                          tx_sender_private_key: str,
                          tx_gas=None,
                          tx_gas_price=None,
-                         block_identifier: Optional[str] = 'latest') -> EthereumTxSent:
+                         block_identifier: Optional[BlockIdentifier] = 'latest') -> EthereumTxSent:
         """
         Build and send Safe tx
+        :param to:
+        :param value:
+        :param data:
+        :param operation:
+        :param safe_tx_gas:
+        :param base_gas:
+        :param gas_price:
+        :param gas_token:
+        :param refund_receiver:
+        :param signatures:
+        :param tx_sender_private_key:
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + data_gas) * 2` will be used
         :param tx_gas_price: Gas price of the external tx. If not, `gas_price` will be used
+        :param block_identifier:
         :return: Tuple(tx_hash, tx)
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """

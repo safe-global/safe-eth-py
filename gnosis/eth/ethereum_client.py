@@ -9,7 +9,7 @@ import requests
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import URI, ChecksumAddress, BlockNumber, HexStr, Hash32
+from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
 from ethereum.utils import (check_checksum, checksum_encode,
                             mk_contract_address, privtoaddr)
 from hexbytes import HexBytes
@@ -22,14 +22,14 @@ from web3.contract import ContractFunction
 from web3.exceptions import BlockNotFound, TimeExhausted, TransactionNotFound
 from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
-from web3.types import (BlockIdentifier, FilterParams, LogReceipt,
-                        ParityBlockTrace, ParityFilterParams,
-                        ParityFilterTrace, TxData, TxParams, TxReceipt, Wei, Nonce, BlockData)
+from web3.types import (BlockData, BlockIdentifier, FilterParams, LogReceipt,
+                        Nonce, ParityBlockTrace, ParityFilterParams,
+                        ParityFilterTrace, TxData, TxParams, TxReceipt, Wei)
 
 from .constants import (ERC20_721_TRANSFER_TOPIC, GAS_CALL_DATA_BYTE,
                         GAS_CALL_DATA_ZERO_BYTE, NULL_ADDRESS)
 from .contracts import get_erc20_contract, get_erc721_contract
-from .typing import EthereumData, EthereumHash, BalanceDict
+from .typing import BalanceDict, EthereumData, EthereumHash
 from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
@@ -934,7 +934,7 @@ class EthereumClient:
 
         return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
 
-    def estimate_gas(self, from_: str, to: str, value: int, data: bytes,
+    def estimate_gas(self, from_: str, to: str, value: int, data: EthereumData,
                      block_identifier: Optional[BlockIdentifier] = 'latest'):
         """
         Workaround to support 'pending' `block_identifier` for Geth
@@ -945,11 +945,11 @@ class EthereumClient:
         :param block_identifier:
         :return:
         """
-        data = data or b''
+        data = HexBytes(data) if data else HexBytes(b'')
         params: List[Union[Dict[str, Any], BlockIdentifier]] = [
             {"from": from_,
              "to": to,
-             "data": HexBytes(data).hex(),
+             "data": data.hex(),
              "value": "0x{:x}".format(value),  # No leading zeroes
              },
         ]

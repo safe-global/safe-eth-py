@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
+from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type, cast
 
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
 from web3.exceptions import BadFunctionCallOutput
+from web3.types import BlockIdentifier, TxParams, Wei
 
 from py_eth_sig_utils.eip712 import encode_typed_data
 
@@ -24,7 +25,7 @@ from .signatures import (get_signing_address, signature_split,
 
 
 class SafeTx:
-    tx: Dict[str, Any]  # If executed, `tx` is set
+    tx: TxParams  # If executed, `tx` is set
     tx_hash: bytes  # If executed, `tx_hash` is set
 
     def __init__(self,
@@ -70,7 +71,7 @@ class SafeTx:
         data = self.data.hex() if self.data else ''
         base_gas_name = 'baseGas' if Version(self.safe_version) >= Version('1.0.0') else 'dataGas'
 
-        data = {
+        structured_data = {
             'types': {
                 'EIP712Domain': [
                     {'name': 'verifyingContract', 'type': 'address'},
@@ -106,7 +107,7 @@ class SafeTx:
             },
         }
 
-        return HexBytes(encode_typed_data(data))
+        return HexBytes(encode_typed_data(structured_data))
 
     @property
     def signers(self) -> List[str]:
@@ -157,7 +158,6 @@ class SafeTx:
             'Signatures data too short': SignaturesDataTooShort,
             # OwnerManager
             'Address is already an owner': OwnerManagerException,
-            'Invalid owner address provided': OwnerManagerException,
             'Invalid prevOwner, owner pair provided': OwnerManagerException,
             'New owner count needs to be larger than new threshold': OwnerManagerException,
             'Threshold cannot exceed owner count': OwnerManagerException,
@@ -175,7 +175,7 @@ class SafeTx:
         raise InvalidMultisigTx(message)
 
     def call(self, tx_sender_address: Optional[str] = None, tx_gas: Optional[int] = None,
-             block_identifier: Optional[str] = 'latest') -> int:
+             block_identifier: Optional[BlockIdentifier] = 'latest') -> int:
         """
         :param tx_sender_address:
         :param tx_gas: Force a gas limit
@@ -208,19 +208,19 @@ class SafeTx:
             """
             error_dict = exc.args[0]
             data = error_dict.get('data')
-            if not data:
-                raise exc
-            elif isinstance(data, str) and 'Reverted ' in data:
+            if data and isinstance(data, str) and 'Reverted ' in data:
                 # Parity
                 result = HexBytes(data.replace('Reverted ', ''))
                 return self._raise_safe_vm_exception(str(result))
+            else:
+                raise exc
 
     def execute(self,
                 tx_sender_private_key: str,
                 tx_gas: Optional[int] = None,
                 tx_gas_price: Optional[int] = None,
                 tx_nonce: Optional[int] = None,
-                block_identifier: Optional[str] = 'latest') -> Tuple[bytes, Dict[str, Any]]:
+                block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[bytes, TxParams]:
         """
         Send multisig tx to the Safe
         :param tx_sender_private_key: Sender private key
@@ -246,7 +246,7 @@ class SafeTx:
             tx_parameters['nonce'] = tx_nonce
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
-        self.tx['gas'] = tx_gas or (max(self.tx['gas'], self.base_gas + self.safe_tx_gas) + 25000)
+        self.tx['gas'] = Wei(tx_gas or (max(self.tx['gas'], self.base_gas + self.safe_tx_gas) + 25000))
 
         self.tx_hash = self.ethereum_client.send_unsigned_transaction(self.tx,
                                                                       private_key=sender_account.key,

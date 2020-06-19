@@ -4,19 +4,24 @@ from django.conf import settings
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
+from web3 import Web3
 
-from ..ethereum_client import EthereumClientProvider
+from ..ethereum_client import EthereumClient, EthereumClientProvider
 from .utils import deploy_example_erc20, send_tx
 
 logger = logging.getLogger(__name__)
 
 
 class EthereumTestCaseMixin:
+    ethereum_client: EthereumClient
+    w3: Web3
+    ethereum_test_Account: LocalAccount
+
     @classmethod
     def setUpTestData(cls):
         cls.ethereum_client = EthereumClientProvider()
         cls.w3 = cls.ethereum_client.w3
-        cls.ethereum_test_account: LocalAccount = Account.from_key(settings.ETHEREUM_TEST_PRIVATE_KEY)
+        cls.ethereum_test_account = Account.from_key(settings.ETHEREUM_TEST_PRIVATE_KEY)
 
     @property
     def gas_price(self):

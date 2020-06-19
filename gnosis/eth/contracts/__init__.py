@@ -3,6 +3,7 @@ import os
 import sys
 from typing import Any, Dict, Optional
 
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
@@ -67,8 +68,8 @@ def generate_contract_fn(contract: Dict[str, Any]):
     :param contract:
     :return:
     """
-    def fn(w3: Web3, address: Optional[str] = None):
-        return w3.eth.contract(address,
+    def fn(w3: Web3, address: Optional[ChecksumAddress] = None):
+        return w3.eth.contract(address=address,
                                abi=contract['abi'],
                                bytecode=contract.get('bytecode'))
     return fn

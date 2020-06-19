@@ -5,6 +5,7 @@ from typing import List, NamedTuple, Optional
 from eth_abi.packed import encode_abi_packed
 from hexbytes import HexBytes
 from web3 import Web3
+from web3.types import TxParams, Wei
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import (get_proxy_factory_contract,
@@ -182,7 +183,7 @@ class SafeCreate2TxBuilder:
         # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
             # Same cost to send 1 ether than 1000
-            gas += self.w3.eth.estimateGas({'to': payment_receiver, 'value': payment})
+            gas += self.w3.eth.estimateGas({'to': payment_receiver, 'value': Wei(payment)})
         else:
             # Top should be around 52000 when storage is needed (funder no previous owner of token),
             # we use value 1 as we are simulating an internal call, and in that calls you don't pay for the data.
@@ -203,6 +204,11 @@ class SafeCreate2TxBuilder:
                                      payment_token: str = NULL_ADDRESS,
                                      payment: int = 0,
                                      payment_receiver: str = NULL_ADDRESS) -> bytes:
+        empty_params: TxParams = {
+                'gas': Wei(1),
+                'gasPrice': Wei(1),
+            }
+
         if self.safe_version == '1.1.1':
             return HexBytes(self.master_copy_contract.functions.setup(
                 owners,
@@ -213,10 +219,7 @@ class SafeCreate2TxBuilder:
                 payment_token,
                 payment,
                 payment_receiver
-            ).buildTransaction({
-                'gas': 1,
-                'gasPrice': 1,
-            })['data'])
+            ).buildTransaction(empty_params)['data'])
         elif self.safe_version == '1.0.0':
             return HexBytes(self.master_copy_contract.functions.setup(
                 owners,
@@ -226,9 +229,6 @@ class SafeCreate2TxBuilder:
                 payment_token,
                 payment,
                 payment_receiver
-            ).buildTransaction({
-                'gas': 1,
-                'gasPrice': 1,
-            })['data'])
+            ).buildTransaction(empty_params)['data'])
         else:
             raise ValueError('Safe version must be 1.1.1 or 1.0.0')

@@ -2,6 +2,7 @@ from logging import getLogger
 from typing import Optional
 
 from eth_account.signers.local import LocalAccount
+from eth_typing import ChecksumAddress
 from web3 import Web3
 from web3.contract import Contract
 
@@ -34,8 +35,9 @@ class ProxyFactory:
 
         tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
-        assert tx_receipt.status
-        contract_address = tx_receipt.contractAddress
+        assert tx_receipt
+        assert tx_receipt['status']
+        contract_address = tx_receipt['contractAddress']
         logger.info("Deployed and initialized Proxy Factory Contract=%s by %s", contract_address,
                     deployer_account.address)
         return EthereumTxSent(tx_hash, tx, contract_address)
@@ -64,7 +66,7 @@ class ProxyFactory:
         proxy_factory_contract = get_proxy_factory_V1_0_0_contract(ethereum_client.w3)
         return cls._deploy_proxy_factory_contract(ethereum_client, deployer_account, proxy_factory_contract)
 
-    def check_proxy_code(self, address: str) -> bool:
+    def check_proxy_code(self, address: ChecksumAddress) -> bool:
         """
         Check if proxy is valid
         :param address: Ethereum address to check

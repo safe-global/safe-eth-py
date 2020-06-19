@@ -1,6 +1,6 @@
 from enum import Enum
 from logging import getLogger
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
 from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
@@ -9,6 +9,7 @@ from web3 import Web3
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_multi_send_contract
 from gnosis.eth.ethereum_client import EthereumTxSent
+from gnosis.eth.typing import EthereumData
 
 logger = getLogger(__name__)
 
@@ -19,7 +20,7 @@ class MultiSendOperation(Enum):
 
 
 class MultiSendTx:
-    def __init__(self, operation: MultiSendOperation, to: str, value: int, data: Union[str, bytes]):
+    def __init__(self, operation: MultiSendOperation, to: str, value: int, data: EthereumData):
         self.operation = operation
         self.to = to
         self.value = value
@@ -133,8 +134,9 @@ class MultiSend:
 
         tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
-        assert tx_receipt.status
-        contract_address = tx_receipt.contractAddress
+        assert tx_receipt
+        assert tx_receipt['status']
+        contract_address = tx_receipt['contractAddress']
         logger.info("Deployed and initialized Proxy Factory Contract=%s by %s", contract_address,
                     deployer_account.address)
         return EthereumTxSent(tx_hash, tx, contract_address)
