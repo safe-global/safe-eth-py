@@ -6,6 +6,6 @@ hexbytes==0.2.1
 packaging
 psycopg2-binary==2.8.5
 py-eth-sig-utils==0.4.0
-requests==2.23.0
+requests==2.24.0
 typing-extensions==3.7.4.2
-web3==5.11.0
+web3==5.11.1
