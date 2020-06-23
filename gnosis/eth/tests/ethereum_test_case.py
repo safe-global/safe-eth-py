@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class EthereumTestCaseMixin:
     ethereum_client: EthereumClient
     w3: Web3
-    ethereum_test_Account: LocalAccount
+    ethereum_test_account: LocalAccount
 
     @classmethod
     def setUpTestData(cls):
