@@ -21,7 +21,7 @@ class EthereumAddressField(serializers.Field):
     https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md
     """
 
-    def __init__(self, allow_zero_address=False, allow_sentinel_address=False, **kwargs):
+    def __init__(self, allow_zero_address: bool = False, allow_sentinel_address: bool = False, **kwargs):
         self.allow_zero_address = allow_zero_address
         self.allow_sentinel_address = allow_sentinel_address
         super().__init__(**kwargs)

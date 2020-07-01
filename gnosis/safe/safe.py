@@ -406,8 +406,9 @@ class Safe:
 
             # Estimated gas must be 32 bytes
             if len(gas_estimation) != 32:
-                logger.warning('Safe=%s Problem estimating gas, returned value is %s for tx=%s',
-                               safe_address, result.hex(), tx)
+                gas_limit_text = f'with gas limit={gas_limit} ' if gas_limit is not None else 'without gas limit set '
+                logger.warning('Safe=%s Problem estimating gas, returned value %sis %s for tx=%s',
+                               safe_address, gas_limit_text, result.hex(), tx)
                 raise CannotEstimateGas('Received %s for tx=%s' % (result.hex(), tx))
 
             return int(gas_estimation.hex(), 16)
@@ -495,7 +496,8 @@ class Safe:
                                                gas_limit=gas_estimated + base_gas + 32000)
                 return gas_estimated
             except CannotEstimateGas:
-                logger.warning('Found 63/64 problem gas-estimated=%d to=%s data=%s', gas_estimated, to, data.hex())
+                logger.warning('Found 63/64 problem gas-estimated=%d safe=%s to=%s data=%s',
+                               self.address, gas_estimated, to, data.hex())
                 block_gas_limit = block_gas_limit or self.w3.eth.getBlock('latest', full_transactions=False)['gasLimit']
                 gas_estimated = math.floor((1 + i * 0.01) * gas_estimated)
                 if gas_estimated >= block_gas_limit:

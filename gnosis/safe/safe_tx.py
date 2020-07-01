@@ -220,7 +220,7 @@ class SafeTx:
                 tx_gas: Optional[int] = None,
                 tx_gas_price: Optional[int] = None,
                 tx_nonce: Optional[int] = None,
-                block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[bytes, TxParams]:
+                block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[HexBytes, TxParams]:
         """
         Send multisig tx to the Safe
         :param tx_sender_private_key: Sender private key
