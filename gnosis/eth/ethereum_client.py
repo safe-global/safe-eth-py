@@ -281,6 +281,7 @@ class Erc20Manager:
         all info in the same request.
         :param erc20_address:
         :return: Erc20Info
+        :raises: InvalidERC20Info
         """
         erc20 = get_erc20_contract(self.w3, erc20_address)
         params: TxParams = {'gas': Wei(0), 'gasPrice': Wei(0)}  # Prevent executing tx, we are just interested on `data`
