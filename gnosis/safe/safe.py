@@ -496,7 +496,7 @@ class Safe:
                                                gas_limit=gas_estimated + base_gas + 32000)
                 return gas_estimated
             except CannotEstimateGas:
-                logger.warning('Found 63/64 problem gas-estimated=%d safe=%s to=%s data=%s',
+                logger.warning('Safe=%s - Found 63/64 problem gas-estimated=%d to=%s data=%s',
                                self.address, gas_estimated, to, data.hex())
                 block_gas_limit = block_gas_limit or self.w3.eth.getBlock('latest', full_transactions=False)['gasLimit']
                 gas_estimated = math.floor((1 + i * 0.01) * gas_estimated)
