@@ -56,7 +56,7 @@ class KyberOracle(PriceOracle):
                                                                                            token_address_2,
                                                                                            int(token_unit)).call()
 
-            price = expected_rate / token_unit
+            price = expected_rate / 1e18
 
             if price <= 0.:
                 # Try again the opposite
