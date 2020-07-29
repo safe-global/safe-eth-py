@@ -9,7 +9,6 @@ from web3.exceptions import BadFunctionCallOutput
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
 from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
-                         get_uniswap_exchange_contract,
                          get_uniswap_factory_contract)
 
 logger = logging.getLogger(__name__)
@@ -45,22 +44,26 @@ class KyberOracle(PriceOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.kyber_network_proxy_address = kyber_network_proxy_address
+        self.kyber_network_proxy_contract = get_kyber_network_proxy_contract(self.w3,
+                                                                             self.kyber_network_proxy_address)
 
     def get_price(self, token_address_1: str, token_address_2: str = ETH_TOKEN_ADDRESS) -> float:
-        kyber_network_proxy_contract = get_kyber_network_proxy_contract(self.w3,
-                                                                        self.kyber_network_proxy_address)
         try:
-            expected_rate, _ = kyber_network_proxy_contract.functions.getExpectedRate(token_address_1,
-                                                                                      token_address_2,
-                                                                                      int(1e18)).call()
-            price = expected_rate / 1e18
+            # Get decimals for token, estimation will be more accurate
+            decimals = self.ethereum_client.erc20.get_decimals(token_address_1)
+            token_unit = int(10 ** decimals)
+            expected_rate, _ = self.kyber_network_proxy_contract.functions.getExpectedRate(token_address_1,
+                                                                                           token_address_2,
+                                                                                           int(token_unit)).call()
+
+            price = expected_rate / token_unit
 
             if price <= 0.:
                 # Try again the opposite
-                expected_rate, _ = kyber_network_proxy_contract.functions.getExpectedRate(token_address_2,
-                                                                                          token_address_1,
-                                                                                          int(1e18)).call()
-                price = (1e18 / expected_rate) if expected_rate else 0
+                expected_rate, _ = self.kyber_network_proxy_contract.functions.getExpectedRate(token_address_2,
+                                                                                               token_address_1,
+                                                                                               int(token_unit)).call()
+                price = (token_unit / expected_rate) if expected_rate else 0
 
             if price <= 0.:
                 error_message = f'price={price} <= 0 from kyber-network-proxy={self.kyber_network_proxy_address} ' \
