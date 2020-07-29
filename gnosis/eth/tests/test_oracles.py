@@ -24,12 +24,22 @@ class TestOracles(TestCase):
     kyber_proxy_mainnet_address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
     uniswap_proxy_mainnet_address = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95'
 
+    dai_token_mainnet_address = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+    usdt_token_mainnet_address = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
+
     def test_kyber_oracle(self):
         ethereum_client = EthereumClient(MAINNET_NODE)
         kyber_oracle = KyberOracle(ethereum_client, self.kyber_proxy_mainnet_address)
         price = kyber_oracle.get_price(self.gno_token_mainnet_address, self.weth_token_mainnet_address)
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
+
+        # Test with 2 stablecoins
+        price = kyber_oracle.get_price(self.dai_token_mainnet_address, self.usdt_token_mainnet_address)
+        self.assertAlmostEqual(price, 1., delta=0.5)
+
+        price = kyber_oracle.get_price(self.usdt_token_mainnet_address, self.dai_token_mainnet_address)
+        self.assertAlmostEqual(price, 1., delta=0.5)
 
     def test_uniswap_oracle(self):
         ethereum_client = EthereumClient(MAINNET_NODE)
