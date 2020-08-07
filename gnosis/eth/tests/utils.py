@@ -24,7 +24,7 @@ def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:
     return tx_hash
 
 
-def deploy_example_erc20(w3, amount: int, owner: str, deployer: str=None, account: LocalAccount=None):
+def deploy_example_erc20(w3, amount: int, owner: str, deployer: str = None, account: LocalAccount = None):
     if account:
         erc20_contract = get_example_erc20_contract(w3)
         tx = erc20_contract.constructor(amount, owner).buildTransaction()

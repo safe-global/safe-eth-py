@@ -194,9 +194,9 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         contract_signature_2 = owner_1.signHash(safe_tx_hash_message_hash)['signature']
         encoded_contract_signature_2 = encode_single('bytes', contract_signature_2)  # It will add size of bytes
 
-        signature = (signature_r_1 + signature_s_1 + signature_v_1 +
-                     signature_r_2 + signature_s_2 + signature_v_2 +
-                     encoded_contract_signature_1 + encoded_contract_signature_2)
+        signature = (signature_r_1 + signature_s_1 + signature_v_1
+                     + signature_r_2 + signature_s_2 + signature_v_2
+                     + encoded_contract_signature_1 + encoded_contract_signature_2)
 
         count = 0
         for safe_signature, contract_signature in zip(SafeSignature.parse_signature(signature, safe_tx_hash),

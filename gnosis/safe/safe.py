@@ -2,7 +2,7 @@ import dataclasses
 import math
 from enum import Enum
 from logging import getLogger
-from typing import List, NamedTuple, Optional, Sequence, Union
+from typing import List, NamedTuple, Optional, Union
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount

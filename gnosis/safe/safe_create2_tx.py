@@ -205,9 +205,9 @@ class SafeCreate2TxBuilder:
                                      payment: int = 0,
                                      payment_receiver: str = NULL_ADDRESS) -> bytes:
         empty_params: TxParams = {
-                'gas': Wei(1),
-                'gasPrice': Wei(1),
-            }
+            'gas': Wei(1),
+            'gasPrice': Wei(1),
+        }
 
         if self.safe_version == '1.1.1':
             return HexBytes(self.master_copy_contract.functions.setup(

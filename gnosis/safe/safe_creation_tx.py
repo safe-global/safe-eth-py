@@ -187,7 +187,7 @@ class SafeCreationTx:
                                           payment: int,
                                           gas: int,
                                           gas_price: int,
-                                          nonce: int=0):
+                                          nonce: int = 0):
         """
         :param master_copy: Master Copy of Gnosis Safe already deployed
         :param initializer: Data initializer to send to GnosisSafe setup method

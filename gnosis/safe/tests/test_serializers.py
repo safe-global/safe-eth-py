@@ -1,6 +1,7 @@
 from django.test import TestCase
 
-from gnosis.eth.constants import *
+from gnosis.eth.constants import (SIGNATURE_R_MAX_VALUE, SIGNATURE_R_MIN_VALUE,
+                                  SIGNATURE_S_MAX_VALUE, SIGNATURE_S_MIN_VALUE)
 from gnosis.eth.utils import get_eth_address_with_key
 
 from ..serializers import (SafeMultisigEstimateTxSerializer,

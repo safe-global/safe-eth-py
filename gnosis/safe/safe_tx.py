@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type, cast
+from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
 from eth_account import Account
 from hexbytes import HexBytes
@@ -274,8 +274,8 @@ class SafeTx:
         if account.address not in self.signers:
             new_owners = self.signers + [account.address]
             new_owner_pos = sorted(new_owners, key=lambda x: x.lower()).index(account.address)
-            self.signatures = (self.signatures[: 65 * new_owner_pos] + signature +
-                               self.signatures[65 * new_owner_pos:])
+            self.signatures = (self.signatures[: 65 * new_owner_pos] + signature
+                               + self.signatures[65 * new_owner_pos:])
         return signature
 
     def unsign(self, address: str) -> bool:

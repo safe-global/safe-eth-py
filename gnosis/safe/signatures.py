@@ -29,9 +29,9 @@ def signature_to_bytes(vrs: Tuple[int, int, int]) -> bytes:
     byte_order = 'big'
     v, r, s = vrs
 
-    return (r.to_bytes(32, byteorder=byte_order) +
-            s.to_bytes(32, byteorder=byte_order) +
-            v.to_bytes(1, byteorder=byte_order))
+    return (r.to_bytes(32, byteorder=byte_order)
+            + s.to_bytes(32, byteorder=byte_order)
+            + v.to_bytes(1, byteorder=byte_order))
 
 
 def signatures_to_bytes(signatures: List[Tuple[int, int, int]]) -> bytes:

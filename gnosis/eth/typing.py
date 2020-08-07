@@ -10,7 +10,6 @@ else:
     from typing_extensions import TypedDict
 
 
-
 EthereumHash = Union[Hash32, HexBytes, HexStr]
 EthereumData = Union[bytes, HexStr]
 

@@ -541,7 +541,7 @@ class ParityManager:
         self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
         self.ethereum_node_url = ethereum_client.ethereum_node_url
 
-    #TODO Test with mock
+    # TODO Test with mock
     def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
         decoded = {
         }

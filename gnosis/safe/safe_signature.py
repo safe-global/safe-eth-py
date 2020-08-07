@@ -101,7 +101,7 @@ class SafeSignature(ABC):
         """
         :return: Decode owner from signature, without any further validation (signature can be not valid)
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def is_valid(self, ethereum_client: EthereumClient, safe_address: str) -> bool:
@@ -110,12 +110,12 @@ class SafeSignature(ABC):
         :param safe_address: Required for Approved Hash check
         :return: `True` if signature is valid, `False` otherwise
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def signature_type(self) -> SafeSignatureType:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class SafeSignatureContract(SafeSignature):
@@ -144,6 +144,7 @@ class SafeSignatureContract(SafeSignature):
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, self.owner)
+        exception: Exception
         try:
             for block_identifier in ('pending', 'latest'):
                 return safe_contract.functions.isValidSignature(
@@ -151,8 +152,8 @@ class SafeSignatureContract(SafeSignature):
                     self.contract_signature
                 ).call(block_identifier=block_identifier) == self.EIP1271_MAGIC_VALUE
         except BadFunctionCallOutput as e:  # Error using `pending` block identifier
-            pass
-        raise e  # This should never happen
+            exception = e
+        raise exception  # This should never happen
 
 
 class SafeSignatureApprovedHash(SafeSignature):
@@ -173,6 +174,7 @@ class SafeSignatureApprovedHash(SafeSignature):
 
     def is_valid(self, ethereum_client: EthereumClient, safe_address: str) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, safe_address)
+        exception: Exception
         try:
             for block_identifier in ('pending', 'latest'):
                 return safe_contract.functions.approvedHashes(
@@ -180,8 +182,8 @@ class SafeSignatureApprovedHash(SafeSignature):
                     self.safe_tx_hash
                 ).call(block_identifier=block_identifier) == 1
         except BadFunctionCallOutput as e:  # Error using `pending` block identifier
-            pass
-        raise e  # This should never happen
+            exception = e
+        raise exception  # This should never happen
 
 
 class SafeSignatureEthSign(SafeSignature):

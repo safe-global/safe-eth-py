@@ -1,4 +1,4 @@
-from .base import *
+from .base import *  # noqa
 
 SECRET_KEY = 'localkey'
 DEBUG = True

@@ -3,7 +3,6 @@ import logging
 from django.test import TestCase
 
 from eth_account import Account
-from ethereum.utils import ecrecover_to_pub
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract

@@ -5,8 +5,6 @@ from django.test import TestCase
 from eth_account import Account
 from hexbytes import HexBytes
 
-from gnosis.eth.contracts import get_multi_send_contract
-
 from ..multi_send import MultiSend, MultiSendOperation, MultiSendTx
 from .safe_test_case import SafeTestCaseMixin
 

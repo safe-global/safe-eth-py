@@ -1,4 +1,4 @@
-# Exceptions
+# flake8: noqa F401
 from .exceptions import (CannotEstimateGas, CouldNotPayGasWithEther,
                          InvalidChecksumAddress, InvalidInternalTx,
                          InvalidMultisigTx, InvalidPaymentToken,
