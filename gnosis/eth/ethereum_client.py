@@ -895,7 +895,7 @@ class EthereumClient:
                         return_values.append(normalized_data[0])
                     else:
                         return_values.append(normalized_data)
-                except InsufficientDataBytes:
+                except (InsufficientDataBytes, OverflowError):
                     fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
                     errors.append(f'`{fn_name}`: InsufficientDataBytes, cannot decode')
                     return_values.append(None)
