@@ -3,6 +3,7 @@ import logging
 from abc import ABC, abstractmethod
 
 import requests
+from eth_abi.exceptions import InsufficientDataBytes
 from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
 
@@ -71,7 +72,7 @@ class KyberOracle(PriceOracle):
                 logger.warning(error_message)
                 raise InvalidPriceFromOracle(error_message)
             return price
-        except ValueError as e:
+        except (ValueError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get price from kyber-network-proxy={self.kyber_network_proxy_address} ' \
                             f'for token-1={token_address_1} to token-2={token_address_2}'
             logger.warning(error_message)
@@ -142,7 +143,7 @@ class UniswapOracle(PriceOracle):
                 logger.warning(error_message)
                 raise InvalidPriceFromOracle(error_message)
             return price
-        except (BadFunctionCallOutput, ZeroDivisionError) as e:
+        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get token balance for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e

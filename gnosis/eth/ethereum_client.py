@@ -19,7 +19,8 @@ from web3._utils.method_formatters import (block_formatter, receipt_formatter,
                                            transaction_formatter)
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import ContractFunction
-from web3.exceptions import BlockNotFound, TimeExhausted, TransactionNotFound
+from web3.exceptions import (BadFunctionCallOutput, BlockNotFound,
+                             TimeExhausted, TransactionNotFound)
 from web3.middleware import geth_poa_middleware
 from web3.providers import AutoProvider
 from web3.types import (BlockData, BlockIdentifier, FilterParams, LogReceipt,
@@ -304,7 +305,7 @@ class Erc20Manager:
             symbol = decode_string_or_bytes32(results[1])
             decimals = self.ethereum_client.w3.codec.decode_single('uint8', results[2])
             return Erc20Info(name, symbol, decimals)
-        except (InsufficientDataBytes, ValueError) as e:
+        except (ValueError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             raise InvalidERC20Info from e
 
     def get_total_transfer_history(self, addresses: Sequence[ChecksumAddress],
