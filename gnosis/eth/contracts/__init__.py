@@ -148,6 +148,10 @@ def get_proxy_1_0_0_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface('Proxy_V1_0_0.json')['deployedBytecode'])
 
 
+def get_cpk_factory_proxy_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface('CPKFactoryProxy.json')['deployedBytecode'])
+
+
 for contract_name, json_contract_filename in contracts.items():
     fn_name = 'get_{}_contract'.format(contract_name)
     contract_dict = load_contract_interface(json_contract_filename)
