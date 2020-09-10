@@ -1,3 +1,4 @@
 # flake8: noqa F401
 from .oracles import (CannotGetPriceFromOracle, InvalidPriceFromOracle,
-                      KyberOracle, OracleException, UniswapOracle)
+                      KyberOracle, OracleException, UniswapOracle,
+                      UniswapV2Oracle)

@@ -1,6 +1,7 @@
 import functools
 import logging
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import requests
 from eth_abi.exceptions import InsufficientDataBytes
@@ -10,7 +11,10 @@ from web3.exceptions import BadFunctionCallOutput
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
 from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
-                         get_uniswap_factory_contract)
+                         get_uniswap_factory_contract,
+                         get_uniswap_v2_factory_contract,
+                         get_uniswap_v2_pair_contract,
+                         get_uniswap_v2_router_contract)
 
 logger = logging.getLogger(__name__)
 
@@ -145,5 +149,51 @@ class UniswapOracle(PriceOracle):
             return price
         except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get token balance for token={token_address}'
+            logger.warning(error_message)
+            raise CannotGetPriceFromOracle(error_message) from e
+
+
+class UniswapV2Oracle(PriceOracle):
+    def __init__(self, ethereum_client: EthereumClient, uniswap_router_address: str):
+        """
+        :param ethereum_client:
+        :param uniswap_factory_address: https://uniswap.org/docs/v2/smart-contracts/factory/
+        """
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+        self.router_address: str = uniswap_router_address
+        self.router = get_uniswap_v2_router_contract(ethereum_client.w3, uniswap_router_address)
+        self.weth_address: str = self.router.functions.WETH().call()
+        self.factory_address: str = self.router.functions.factory().call()
+        self.factory = get_uniswap_v2_factory_contract(ethereum_client.w3, self.factory_address)
+
+    @functools.lru_cache(maxsize=None)
+    def get_pair_address(self, token_address: str, token_address_2: str) -> Optional[str]:
+        # Token order does not matter for getting pair, just for creating or querying PairCreated event
+        pair_address = self.factory.functions.getPair(token_address, token_address_2).call()
+        if pair_address == NULL_ADDRESS:
+            return None
+        return pair_address
+
+    def get_price(self, token_address: str) -> float:
+        pair_address = self.get_pair_address(token_address, self.weth_address)
+
+        if not pair_address:
+            error_message = f'Non existing uniswap V2 exchange for token={token_address}'
+            logger.warning(error_message)
+            raise CannotGetPriceFromOracle(error_message)
+
+        try:
+            # Reserves return token_1 reserves, token_2 reserves and block timestamp (mod 2**32) of last interaction
+            # Tokens are sorted, so token_1 < token_2
+            pair = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pair_address)
+            reserves_1, reserves_2, _ = pair.functions.getReserves().call()
+            if token_address.lower() > self.weth_address.lower():
+                price = reserves_1 / reserves_2
+            else:
+                price = reserves_2 / reserves_1
+            return price
+        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+            error_message = f'Cannot get uniswap v2 token balance for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e

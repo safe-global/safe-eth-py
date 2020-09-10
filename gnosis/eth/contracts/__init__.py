@@ -57,6 +57,9 @@ contracts = {
     'proxy': 'Proxy_V1_1_1.json',
     'uniswap_exchange': 'uniswap_exchange.json',
     'uniswap_factory': 'uniswap_factory.json',
+    'uniswap_v2_factory': 'uniswap_v2_factory.json',
+    'uniswap_v2_pair': 'uniswap_v2_pair.json',
+    'uniswap_v2_router': 'uniswap_v2_router.json',
     'kyber_network_proxy': 'kyber_network_proxy.json',
     'cpk_factory': 'CPKFactory.json',
 }
@@ -129,6 +132,18 @@ def get_uniswap_exchange_contract(w3: Web3, address: Optional[str] = None) -> Co
 
 
 def get_uniswap_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_uniswap_v2_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_uniswap_v2_pair_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_uniswap_v2_router_contract(w3: Web3, address: Optional[str] = None) -> Contract:
     pass
 
 
