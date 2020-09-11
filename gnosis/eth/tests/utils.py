@@ -1,7 +1,20 @@
+import os
+
+import pytest
+import requests
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 
 from ..contracts import get_example_erc20_contract
+
+
+def just_test_if_mainnet_node() -> str:
+    mainnet_node_url = os.environ.get('ETHEREUM_MAINNET_NODE')
+    if not mainnet_node_url:
+        pytest.skip("Mainnet node not defined, cannot test oracles", allow_module_level=True)
+    elif requests.get(mainnet_node_url).status_code == 404:
+        pytest.skip("Cannot connect to mainnet node", allow_module_level=True)
+    return mainnet_node_url
 
 
 def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:

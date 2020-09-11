@@ -59,7 +59,7 @@ contracts = {
     'uniswap_factory': 'uniswap_factory.json',
     'uniswap_v2_factory': 'uniswap_v2_factory.json',
     'uniswap_v2_pair': 'uniswap_v2_pair.json',
-    'uniswap_v2_router': 'uniswap_v2_router.json',
+    'uniswap_v2_router': 'uniswap_v2_router.json',  # Router02
     'kyber_network_proxy': 'kyber_network_proxy.json',
     'cpk_factory': 'CPKFactory.json',
 }

@@ -1,3 +1,4 @@
+cached-property==1.5.1
 django-filter==2.3.0
 django==3.0.9
 djangorestframework==3.11.1

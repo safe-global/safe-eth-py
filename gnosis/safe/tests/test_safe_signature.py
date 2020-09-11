@@ -111,7 +111,7 @@ class TestSafeSignature(TestCase):
         self.assertIsInstance(s2, SafeSignatureEOA)
 
     def test_parse_signature_empty(self):
-        safe_tx_hash = Web3.sha3(text='Legoshi')
+        safe_tx_hash = Web3.keccak(text='Legoshi')
         for value in (b'', '', None):
             self.assertEqual(SafeSignature.parse_signature(value, safe_tx_hash), [])
 

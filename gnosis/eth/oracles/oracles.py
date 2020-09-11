@@ -1,11 +1,14 @@
 import functools
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Dict, Optional, Tuple
 
 import requests
+from cached_property import cached_property
 from eth_abi.exceptions import InsufficientDataBytes
+from eth_abi.packed import encode_abi_packed
 from hexbytes import HexBytes
+from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput
 
 from .. import EthereumClient
@@ -154,44 +157,109 @@ class UniswapOracle(PriceOracle):
 
 
 class UniswapV2Oracle(PriceOracle):
-    def __init__(self, ethereum_client: EthereumClient, uniswap_router_address: str):
+    def __init__(self, ethereum_client: EthereumClient,
+                 uniswap_router_address: str = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'):
         """
         :param ethereum_client:
-        :param uniswap_factory_address: https://uniswap.org/docs/v2/smart-contracts/factory/
+        :param uniswap_router_address: https://uniswap.org/docs/v2/smart-contracts/router02/
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.router_address: str = uniswap_router_address
         self.router = get_uniswap_v2_router_contract(ethereum_client.w3, uniswap_router_address)
-        self.weth_address: str = self.router.functions.WETH().call()
-        self.factory_address: str = self.router.functions.factory().call()
-        self.factory = get_uniswap_v2_factory_contract(ethereum_client.w3, self.factory_address)
+        self._decimals_cache: Dict[str, int] = {}
+
+    @cached_property
+    def factory(self):
+        return get_uniswap_v2_factory_contract(self.ethereum_client.w3, self.factory_address)
+
+    @cached_property
+    def factory_address(self) -> str:
+        return self.router.functions.factory().call()
+
+    @cached_property
+    def weth_address(self) -> str:
+        return self.router.functions.WETH().call()
 
     @functools.lru_cache(maxsize=None)
     def get_pair_address(self, token_address: str, token_address_2: str) -> Optional[str]:
+        """
+        Get uniswap pair address. `token_address` and `token_address_2` are interchangeable.
+        https://uniswap.org/docs/v2/smart-contracts/factory/
+        :param token_address:
+        :param token_address_2:
+        :return: Address of the pair for `token_address` and `token_address_2`, if it has been created, else `None`.
+        """
         # Token order does not matter for getting pair, just for creating or querying PairCreated event
         pair_address = self.factory.functions.getPair(token_address, token_address_2).call()
         if pair_address == NULL_ADDRESS:
             return None
         return pair_address
 
-    def get_price(self, token_address: str) -> float:
-        pair_address = self.get_pair_address(token_address, self.weth_address)
+    def calculate_pair_address(self, token_address: str, token_address_2: str):
+        """
+        Calculate pair address without querying blockchain.
+        https://uniswap.org/docs/v2/smart-contract-integration/getting-pair-addresses/#docs-header
+        :param token_address:
+        :param token_address_2:
+        :return: Checksummed address for token pair. It could be not created yet
+        """
+        if token_address.lower() > token_address_2.lower():
+            token_address, token_address_2 = token_address_2, token_address
+        salt = Web3.keccak(encode_abi_packed(['address', 'address'],
+                                             [token_address, token_address_2]))
+        init_code = HexBytes('0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f')
+        address = Web3.keccak(
+            encode_abi_packed(['bytes', 'address', 'bytes', 'bytes'],
+                              [HexBytes('ff'), self.factory_address, salt, init_code]
+                              ))[-20:]
+        return Web3.toChecksumAddress(address)
 
-        if not pair_address:
-            error_message = f'Non existing uniswap V2 exchange for token={token_address}'
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message)
+    def get_decimals(self, token_address: str, token_address_2: str) -> Tuple[int, int]:
+        if not (token_address in self._decimals_cache and token_address_2 in self._decimals_cache):
+            decimals_1, decimals_2 = self.ethereum_client.batch_call(
+                [
+                    get_erc20_contract(self.w3, token_address).functions.decimals(),
+                    get_erc20_contract(self.w3, token_address_2).functions.decimals(),
+                ])
+            self._decimals_cache[token_address] = decimals_1
+            self._decimals_cache[token_address_2] = decimals_2
+        return self._decimals_cache[token_address], self._decimals_cache[token_address_2]
+
+    def get_reserves(self, pair_address: str) -> Tuple[int, int]:
+        """
+        Returns the
+        Also returns the block.timestamp (mod 2**32) of the last block during which an interaction occured for the pair.
+        https://uniswap.org/docs/v2/smart-contracts/pair/
+        :return: Reserves of `token_address` and `token_address_2` used to price trades and distribute liquidity.
+        """
+        pair = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pair_address)
+        # Reserves return token_1 reserves, token_2 reserves and block timestamp (mod 2**32) of last interaction
+        reserves_1, reserves_2, _ = pair.functions.getReserves().call()
+        return reserves_1, reserves_2
+
+    def get_price(self, token_address: str, token_address_2: Optional[str] = None) -> float:
+        token_address_2 = token_address_2 if token_address_2 else self.weth_address
+        pair_address = self.calculate_pair_address(token_address, token_address_2)
+
+        # These lines only make sense when `get_pair_address` is used. `calculate_pair_address` will always return
+        # an address, even it that exchange is not deployed
+
+        # pair_address = self.get_pair_address(token_address, token_address_2)
+        # if not pair_address:
+        #    error_message = f'Non existing uniswap V2 exchange for token={token_address}'
+        #    logger.warning(error_message)
+        #    raise CannotGetPriceFromOracle(error_message)
 
         try:
-            # Reserves return token_1 reserves, token_2 reserves and block timestamp (mod 2**32) of last interaction
             # Tokens are sorted, so token_1 < token_2
-            pair = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pair_address)
-            reserves_1, reserves_2, _ = pair.functions.getReserves().call()
-            if token_address.lower() > self.weth_address.lower():
+            reserves_1, reserves_2 = self.get_reserves(pair_address)
+            decimals_1, decimals_2 = self.get_decimals(token_address, token_address_2)
+            if token_address.lower() > token_address_2.lower():
                 price = reserves_1 / reserves_2
             else:
                 price = reserves_2 / reserves_1
+            price = price / 10 ** (decimals_2 - decimals_1)
             return price
         except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get uniswap v2 token balance for token={token_address}'
