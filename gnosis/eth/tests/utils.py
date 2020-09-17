@@ -53,7 +53,7 @@ def deploy_erc20(w3: Web3, name: str, symbol: str, owner: str, amount: int, deci
     else:
         deployer = deployer or w3.eth.accounts[0]
         erc20_contract = get_example_erc20_contract(w3)
-        tx_hash = erc20_contract.constructor(amount, owner).transact({'from': deployer})
+        tx_hash = erc20_contract.constructor(name, symbol, decimals, owner, amount).transact({'from': deployer})
 
     tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     erc20_address = tx_receipt.contractAddress
