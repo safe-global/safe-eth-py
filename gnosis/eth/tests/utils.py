@@ -37,23 +37,24 @@ def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:
     return tx_hash
 
 
-def deploy_example_erc20(w3, amount: int, owner: str, deployer: str = None, account: LocalAccount = None):
+def deploy_example_erc20(w3: Web3, amount: int, owner: str, deployer: str = None, account: LocalAccount = None):
+    return deploy_erc20(w3, 'Uxio', 'UXI', owner, amount, deployer=deployer, account=account)
+
+
+def deploy_erc20(w3: Web3, name: str, symbol: str, owner: str, amount: int, decimals: int = 18, deployer: str = None,
+                 account: LocalAccount = None):
     if account:
         erc20_contract = get_example_erc20_contract(w3)
-        tx = erc20_contract.constructor(amount, owner).buildTransaction()
-        if 'nonce' not in tx:
-            tx['nonce'] = w3.eth.getTransactionCount(account.address, block_identifier='pending')
+        tx = erc20_contract.constructor(name, symbol, decimals, owner, amount).buildTransaction({
+            'nonce': w3.eth.getTransactionCount(account.address, block_identifier='pending')
+        })
         signed_tx = account.sign_transaction(tx)
         tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-        erc20_address = tx_receipt.contractAddress
-        deployed_erc20 = get_example_erc20_contract(w3, erc20_address)
-        assert deployed_erc20.functions.balanceOf(owner).call() == amount
-        return deployed_erc20
+    else:
+        deployer = deployer or w3.eth.accounts[0]
+        erc20_contract = get_example_erc20_contract(w3)
+        tx_hash = erc20_contract.constructor(amount, owner).transact({'from': deployer})
 
-    deployer = deployer or w3.eth.accounts[0]
-    erc20_contract = get_example_erc20_contract(w3)
-    tx_hash = erc20_contract.constructor(amount, owner).transact({'from': deployer})
     tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     erc20_address = tx_receipt.contractAddress
     deployed_erc20 = get_example_erc20_contract(w3, erc20_address)

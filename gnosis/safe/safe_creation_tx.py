@@ -272,6 +272,8 @@ class SafeCreationTx:
                                           payment_token).functions.transfer(funder, 1).estimateGas({'from':
                                                                                                     payment_token})
             except ValueError as exc:
+                if 'transfer amount exceeds balance' in str(exc):
+                    return 70000
                 raise InvalidERC20Token from exc
 
         return gas

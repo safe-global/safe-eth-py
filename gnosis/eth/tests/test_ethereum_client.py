@@ -264,7 +264,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
         block_number = self.w3.eth.blockNumber
         events = self.ethereum_client.erc20.get_transfer_history(block_number, token_address=erc20_contract.address)
-        self.assertFalse(events)
+        self.assertEqual(len(events), 1)  # Event is triggered on minting
 
         self.send_tx(erc20_contract.functions.transfer(receiver_account.address,
                                                        amount // 2).buildTransaction({'from': owner_account.address}),
@@ -281,7 +281,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
                      receiver2_account)
 
         events = self.ethereum_client.erc20.get_transfer_history(block_number, token_address=erc20_contract.address)
-        self.assertEqual(len(events), 4)
+        self.assertEqual(len(events), 5)
 
         events = self.ethereum_client.erc20.get_transfer_history(block_number, from_address=owner_account.address)
         self.assertEqual(len(events), 2)
