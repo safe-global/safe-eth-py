@@ -4,6 +4,7 @@ import pytest
 import requests
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
+from web3.contract import Contract
 
 from ..contracts import get_example_erc20_contract
 
@@ -37,12 +38,13 @@ def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:
     return tx_hash
 
 
-def deploy_example_erc20(w3: Web3, amount: int, owner: str, deployer: str = None, account: LocalAccount = None):
+def deploy_example_erc20(w3: Web3, amount: int, owner: str, deployer: str = None,
+                         account: LocalAccount = None) -> Contract:
     return deploy_erc20(w3, 'Uxio', 'UXI', owner, amount, deployer=deployer, account=account)
 
 
 def deploy_erc20(w3: Web3, name: str, symbol: str, owner: str, amount: int, decimals: int = 18, deployer: str = None,
-                 account: LocalAccount = None):
+                 account: LocalAccount = None) -> Contract:
     if account:
         erc20_contract = get_example_erc20_contract(w3)
         tx = erc20_contract.constructor(name, symbol, decimals, owner, amount).buildTransaction({

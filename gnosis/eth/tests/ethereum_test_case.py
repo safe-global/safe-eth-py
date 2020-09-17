@@ -5,9 +5,10 @@ from django.conf import settings
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
+from web3.contract import Contract
 
 from ..ethereum_client import EthereumClient, EthereumClientProvider
-from .utils import deploy_example_erc20, send_tx
+from .utils import deploy_erc20, deploy_example_erc20, send_tx
 
 logger = logging.getLogger(__name__)
 
@@ -41,5 +42,10 @@ class EthereumTestCaseMixin:
                           }, self.ethereum_test_account)
         return account
 
-    def deploy_example_erc20(self, amount: int, owner: str):
+    def deploy_erc20(self, name: str, symbol: str, owner: str, amount: int, decimals: int = 18, deployer: str = None,
+                     account: LocalAccount = None) -> Contract:
+        return deploy_erc20(self.w3, name, symbol, owner, amount, decimals=decimals, deployer=deployer,
+                            account=account)
+
+    def deploy_example_erc20(self, amount: int, owner: str) -> Contract:
         return deploy_example_erc20(self.w3, amount, owner, account=self.ethereum_test_account)
