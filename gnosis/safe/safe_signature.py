@@ -145,14 +145,14 @@ class SafeSignatureContract(SafeSignature):
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, self.owner)
         exception: Exception
-        try:
-            for block_identifier in ('pending', 'latest'):
+        for block_identifier in ('pending', 'latest'):
+            try:
                 return safe_contract.functions.isValidSignature(
                     self.safe_tx_hash,
                     self.contract_signature
                 ).call(block_identifier=block_identifier) == self.EIP1271_MAGIC_VALUE
-        except BadFunctionCallOutput as e:  # Error using `pending` block identifier
-            exception = e
+            except BadFunctionCallOutput as e:  # Error using `pending` block identifier
+                exception = e
         raise exception  # This should never happen
 
 
@@ -175,14 +175,14 @@ class SafeSignatureApprovedHash(SafeSignature):
     def is_valid(self, ethereum_client: EthereumClient, safe_address: str) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, safe_address)
         exception: Exception
-        try:
-            for block_identifier in ('pending', 'latest'):
+        for block_identifier in ('pending', 'latest'):
+            try:
                 return safe_contract.functions.approvedHashes(
                     self.owner,
                     self.safe_tx_hash
                 ).call(block_identifier=block_identifier) == 1
-        except BadFunctionCallOutput as e:  # Error using `pending` block identifier
-            exception = e
+            except BadFunctionCallOutput as e:  # Error using `pending` block identifier
+                exception = e
         raise exception  # This should never happen
 
 
