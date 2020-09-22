@@ -181,39 +181,35 @@ class Erc20Manager:
     def decode_logs(self, logs: List[Dict[str, Any]]):
         decoded_logs = []
         for log in logs:
-            decoded = self._decode_erc20_or_erc721_log(log['data'], log['topics'])
+            decoded = self._decode_transfer_log(log['data'], log['topics'])
             if decoded:
                 log_copy = dict(log)
                 log_copy['args'] = decoded
                 decoded_logs.append(log_copy)
         return decoded_logs
 
-    def _decode_erc20_or_erc721_log(self, data: EthereumData, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
-        decoded = self._decode_erc20_log(data, topics)
-        if not decoded:
-            decoded = self._decode_erc721_log(topics)
-        return decoded
-
-    def _decode_erc20_log(self, data: EthereumData, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
-        if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 3:
-            value = eth_abi.decode_single('uint256', HexBytes(data))
-            _from, to = [Web3.toChecksumAddress(address) for address
-                         in eth_abi.decode_abi(['address', 'address'], b''.join(topics[1:]))]
-            return {'from': _from, 'to': to, 'value': value}
-        else:
-            # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
-            # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-            return None
-
-    def _decode_erc721_log(self, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
-        if topics and topics[0] == self.TRANSFER_TOPIC and len(topics) == 4:
-            _from, to, token_id = eth_abi.decode_abi(['address', 'address', 'uint256'], b''.join(topics[1:]))
-            _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
-            return {'from': _from, 'to': to, 'tokenId': token_id}
-        else:
-            # Not compliant ERC20 Transfer(address indexed from, address indexed to, uint256 value)
-            # Maybe ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-            return None
+    def _decode_transfer_log(self, data: EthereumData, topics: Sequence[bytes]) -> Optional[Dict[str, Any]]:
+        topics_len = len(topics)
+        if topics_len and topics[0] == self.TRANSFER_TOPIC:
+            if topics_len == 1:
+                # Not standard Transfer(address from, address to, uint256 unknown)
+                # 1 topic (transfer topic)
+                _from, to, unknown = eth_abi.decode_abi(['address', 'address', 'uint256'], HexBytes(data))
+                return {'from': _from, 'to': to, 'unknown': unknown}
+            elif topics_len == 3:
+                # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
+                # 3 topics (transfer topic + from + to)
+                value = eth_abi.decode_single('uint256', HexBytes(data))
+                _from, to = [Web3.toChecksumAddress(address) for address
+                             in eth_abi.decode_abi(['address', 'address'], b''.join(topics[1:]))]
+                return {'from': _from, 'to': to, 'value': value}
+            elif topics_len == 4:
+                # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+                # 4 topics (transfer topic + from + to + tokenId)
+                _from, to, token_id = eth_abi.decode_abi(['address', 'address', 'uint256'], b''.join(topics[1:]))
+                _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
+                return {'from': _from, 'to': to, 'tokenId': token_id}
+        return None
 
     def get_balance(self, address: str, token_address: str) -> int:
         """
@@ -309,7 +305,7 @@ class Erc20Manager:
         except (ValueError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             raise InvalidERC20Info from e
 
-    def get_total_transfer_history(self, addresses: Sequence[ChecksumAddress],
+    def get_total_transfer_history(self, addresses: Optional[Sequence[ChecksumAddress]] = None,
                                    from_block: BlockIdentifier = BlockNumber(0),
                                    to_block: Optional[BlockIdentifier] = None,
                                    token_address: Optional[ChecksumAddress] = None) -> List[Dict[str, Any]]:
@@ -352,17 +348,45 @@ class Erc20Manager:
                   'tokenId': 99
                  }
          }
-        :param addresses: Search events `from` and `to` these `addresses`
+        An example of unknown transfer event (no indexed parts), could be a ERC20 or ERC721 transfer:
+        {'address': '0x6631FcbB50677DfC6c02CCDcc03a8f68Db427a64',
+         'blockHash': HexBytes('0x95c71c6c9373e9a8ca2c767dda1cd5083eb6addcce36fc216c9e1f458d6970f9'),
+         'blockNumber': 5341681,
+         'data': '0x',
+         'logIndex': 0,
+         'removed': False,
+         'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+          HexBytes('0x000000000000000000000000b5239c032ab9fb5abfc3903e770a4b6a9095542c'),
+          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000063')],
+         'transactionHash': HexBytes('0xce8c8af0503e6f8a421345c10cdf92834c95186916a3f5b1437d2bba63d2db9e'),
+         'transactionIndex': 0,
+         'transactionLogIndex': '0x0',
+         'type': 'mined',
+         'args': {'from': '0x0000000000000000000000000000000000000000',
+                  'to': '0xb5239C032AB9fB5aBFc3903e770A4B6a9095542C',
+                  'unknown': 99
+                 }
+         }
+        :param addresses: Search events `from` and `to` these `addresses`. If not, every transfer event within the
+        range will be retrieved
         :param from_block: Block to start querying from
         :param to_block: Block to stop querying from
         :param token_address: Address of the token
         :return: List of events sorted by blockNumber
         """
         topic_0 = self.TRANSFER_TOPIC.hex()
-        addresses_encoded = [HexBytes(eth_abi.encode_single('address', address)).hex() for address in addresses]
-        # Topics for transfer `to` and `from` an address
-        topics_from = [topic_0, addresses_encoded]
-        topics_to = [topic_0, None, addresses_encoded]
+        if addresses:
+            addresses_encoded = [HexBytes(eth_abi.encode_single('address', address)).hex() for address in addresses]
+            # Topics for transfer `to` and `from` an address
+            all_topics = [
+                [topic_0, addresses_encoded],  # Topics from
+                [topic_0, None, addresses_encoded],  # Topics to
+            ]
+        else:
+            all_topics = [
+                [topic_0]  # All transfer events
+            ]
         parameters: FilterParams = {'fromBlock': from_block}
         if to_block:
             parameters['toBlock'] = to_block
@@ -371,7 +395,7 @@ class Erc20Manager:
 
         all_events: List[LogReceipt] = []
         # Do the request to `eth_getLogs`
-        for topics in (topics_to, topics_from):
+        for topics in all_topics:
             parameters['topics'] = topics
             all_events.extend(self.slow_w3.eth.getLogs(parameters))
 
@@ -379,7 +403,7 @@ class Erc20Manager:
         erc20_events = []
         for event in all_events:
             e = cast(Dict[str, Any], event)  # TODO Create LogReceiptWithArguments
-            e['args'] = self._decode_erc20_or_erc721_log(event['data'], event['topics'])
+            e['args'] = self._decode_transfer_log(e['data'], e['topics'])
             if e['args']:
                 erc20_events.append(e)
         erc20_events.sort(key=lambda x: x['blockNumber'])

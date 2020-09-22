@@ -18,7 +18,7 @@ from .ethereum_test_case import EthereumTestCaseMixin
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
-    def test_decode_erc20_or_erc721_log(self):
+    def test_decode_transfer_log(self):
         logs = [AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
                                'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
                                           HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
@@ -119,21 +119,73 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
                                'transactionIndex': 14,
                                'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
                                'logIndex': 21,
-                               'removed': False})]
+                               'removed': False}),
+                AttributeDict({'address': '0xe35F3B71CA90eE2606F64b645D8F4f8DCaA914Bf',
+                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')],
+                               'data': '0x0000000000000000000000008683f9c4e856be65f8a38a3a768e8fd6de94d30a000000000000000000000000fd1017c3284a12ac33bc65df12d71721c85931e00000000000000000000000000000000000000000000000000000000000000001',
+                               'blockNumber': 7240557,
+                               'transactionHash': HexBytes('0x1962e296457b16d5221d33623f2db5f617cb54221deb7cfd73611f761ac526a3'),
+                               'transactionIndex': 6,
+                               'blockHash': HexBytes('0xdf3c33d034f1b342820afdfb2612d0794d4a1c15518184d71a047ef1eb151d10'),
+                               'logIndex': 5,
+                               'removed': False}),
+                ]
 
         # TODO Test with ganache
         decoded_logs = self.ethereum_client.erc20.decode_logs(logs)
-        self.assertEqual(len(decoded_logs), 5)
+        self.assertEqual(len(decoded_logs), 6)
         self.assertEqual(len([event for event in decoded_logs if 'tokenId' in event['args']]), 2)
         self.assertEqual(len([event for event in decoded_logs if 'value' in event['args']]), 3)
-        self.assertEqual(decoded_logs[1]['args']['value'], 30000000000000000000)
-        self.assertEqual(decoded_logs[1]['args']['from'], '0x94E01661eBaef430fE862f958c03200b0F483f27')
-        self.assertEqual(decoded_logs[1]['args']['to'], '0x64DA772DD84965f0Ee58174941d78a9DfBccca2e')
-        self.assertEqual(decoded_logs[3]['args']['tokenId'],
-                         92344574081811136966607054691835999266725413506859602442775390826469350798133)
-        self.assertEqual(decoded_logs[3]['args']['from'], '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47')
-        self.assertEqual(decoded_logs[3]['args']['to'], '0x94E01661eBaef430fE862f958c03200b0F483f27')
-        self.assertEqual(decoded_logs[1]['blockNumber'], 4357126)
+        self.assertEqual(len([event for event in decoded_logs if 'unknown' in event['args']]), 1)
+
+        expected_log_1 = {'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
+                          'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                     HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                     HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e')],
+                          'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
+                          'blockNumber': 4357126,
+                          'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                          'transactionIndex': 14,
+                          'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
+                          'logIndex': 14,
+                          'removed': False,
+                          'args': {'from': '0x94E01661eBaef430fE862f958c03200b0F483f27',
+                                   'to': '0x64DA772DD84965f0Ee58174941d78a9DfBccca2e',
+                                   'value': 30000000000000000000}
+                          }
+        expected_log_3 = {'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
+                          'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+                                     HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
+                                     HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
+                                     HexBytes('0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335')],
+                          'data': '0x',
+                          'blockNumber': 4357126,
+                          'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
+                          'transactionIndex': 14,
+                          'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'), 'logIndex': 17,
+                          'removed': False,
+                          'args': {'from': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
+                                   'to': '0x94E01661eBaef430fE862f958c03200b0F483f27',
+                                   'tokenId': 92344574081811136966607054691835999266725413506859602442775390826469350798133}}
+
+        expected_log_5 = {'address': '0xe35F3B71CA90eE2606F64b645D8F4f8DCaA914Bf',
+                          'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')],
+                          'data': '0x0000000000000000000000008683f9c4e856be65f8a38a3a768e8fd6de94d30a000000000000000000000000fd1017c3284a12ac33bc65df12d71721c85931e00000000000000000000000000000000000000000000000000000000000000001',
+                          'blockNumber': 7240557,
+                          'transactionHash': HexBytes(
+                              '0x1962e296457b16d5221d33623f2db5f617cb54221deb7cfd73611f761ac526a3'),
+                          'transactionIndex': 6,
+                          'blockHash': HexBytes('0xdf3c33d034f1b342820afdfb2612d0794d4a1c15518184d71a047ef1eb151d10'),
+                          'logIndex': 5,
+                          'removed': False,
+                          'args': {'from': '0x8683f9c4e856be65f8a38a3a768e8fd6de94d30a',
+                                   'to': '0xfd1017c3284a12ac33bc65df12d71721c85931e0',
+                                   'unknown': 1}
+                          }
+
+        self.assertEqual(decoded_logs[1], expected_log_1)
+        self.assertEqual(decoded_logs[3], expected_log_3)
+        self.assertEqual(decoded_logs[5], expected_log_5)
 
     def test_get_balance(self):
         amount = 1000
@@ -251,6 +303,9 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
 
         logs = self.ethereum_client.erc20.get_total_transfer_history([account_2.address, account_3.address])
         self.assertEqual(len(logs), 2)
+
+        logs = self.ethereum_client.erc20.get_total_transfer_history()
+        self.assertGreaterEqual(len(logs), 3)
 
     def test_get_transfer_history(self):
         amount = 1000
