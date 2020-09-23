@@ -43,11 +43,20 @@ def signatures_to_bytes(signatures: List[Tuple[int, int, int]]) -> bytes:
     return b''.join([signature_to_bytes(vrs) for vrs in signatures])
 
 
-def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
+def get_signing_address(safe_tx_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
     """
     :return: checksummed ethereum address, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
     :rtype: str
     """
-    encoded_64_address = ecrecover_to_pub(HexBytes(signed_hash), v, r, s)
-    address_bytes = sha3(encoded_64_address)[-20:]
+    if v == 0 or v == 1:
+        # contract signature or approved hash
+        address_bytes = r[-20:]
+    else:
+        if v > 30:
+            # use personal message signing form
+            signed_hash = sha3(HexBytes(b'\x19Ethereum Signed Message:\n32') + HexBytes(safe_tx_hash))
+            signer_pub = ecrecover_to_pub(HexBytes(signed_hash), v - 4, r, s)
+        else:
+            signer_pub = ecrecover_to_pub(HexBytes(signed_hash), v, r, s)
+        address_bytes = sha3(signer_pub)[-20:]
     return checksum_encode(address_bytes)
