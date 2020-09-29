@@ -57,6 +57,6 @@ def get_signing_address(safe_tx_hash: Union[bytes, str], v: int, r: int, s: int)
             signed_hash = sha3(HexBytes(b'\x19Ethereum Signed Message:\n32') + HexBytes(safe_tx_hash))
             signer_pub = ecrecover_to_pub(HexBytes(signed_hash), v - 4, r, s)
         else:
-            signer_pub = ecrecover_to_pub(HexBytes(signed_hash), v, r, s)
+            signer_pub = ecrecover_to_pub(HexBytes(safe_tx_hash), v, r, s)
         address_bytes = sha3(signer_pub)[-20:]
     return checksum_encode(address_bytes)
