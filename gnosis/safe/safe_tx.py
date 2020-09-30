@@ -20,6 +20,7 @@ from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
                          NotEnoughSafeTransactionGas,
                          OnlyOwnersCanApproveAHash, OwnerManagerException,
                          SignatureNotProvidedByOwner, SignaturesDataTooShort)
+from .safe_signature import SafeSignature
 from .signatures import (get_signing_address, signature_split,
                          signature_to_bytes)
 
@@ -111,11 +112,8 @@ class SafeTx:
 
     @property
     def signers(self) -> List[str]:
-        owners = []
-        for i in range(len(self.signatures) // 65):
-            v, r, s = signature_split(self.signatures, i)
-            owners.append(get_signing_address(self.safe_tx_hash, v, r, s))
-        return owners
+        return list([safe_signature.owner for safe_signature
+                     in SafeSignature.parse_signature(self.signatures, self.safe_tx_hash)])
 
     @property
     def sorted_signers(self):
