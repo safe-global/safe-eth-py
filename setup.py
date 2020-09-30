@@ -21,7 +21,7 @@ requirements = [
 
 setup(
     name='gnosis-py',
-    version='2.6.3',
+    version='2.6.4',
     packages=find_packages(),
     package_data={'gnosis': ['py.typed']},
     install_requires=requirements,
