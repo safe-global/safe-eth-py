@@ -55,35 +55,14 @@ class TestSerializers(TestCase):
         # Operation cannot be contract creation and to set
         self.assertFalse(serializer.is_valid())
 
+        # Create Operation has been disabled
         data = {
             'safe': safe_address,
             'to': None,
-            'data': None,
+            'data': '0x00',
             'value': 1,
             'operation': 2
         }
         serializer = SafeMultisigEstimateTxSerializer(data=data)
         # Operation is not contract creation and to is not empty
         self.assertFalse(serializer.is_valid())
-
-        data = {
-            'safe': safe_address,
-            'to': eth_address,
-            'data': '0x00',
-            'value': 1,
-            'operation': 0
-        }
-        serializer = SafeMultisigEstimateTxSerializer(data=data)
-        # Operation is not contract creation and to is not empty
-        self.assertTrue(serializer.is_valid())
-
-        data = {
-            'safe': safe_address,
-            'to': None,
-            'data': '0x00',
-            'value': 1,
-            'operation': 2
-        }
-        serializer = SafeMultisigEstimateTxSerializer(data=data)
-        # Operation is not contract creation and to is not empty
-        self.assertTrue(serializer.is_valid())

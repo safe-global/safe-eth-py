@@ -57,7 +57,7 @@ class SafeSignatureSerializer(serializers.Serializer):
 
 class SafeMultisigEstimateTxSerializer(serializers.Serializer):
     safe = EthereumAddressField()
-    to = EthereumAddressField(default=None, allow_null=True)
+    to = EthereumAddressField()
     value = serializers.IntegerField(min_value=0)
     data = HexadecimalField(default=None, allow_null=True, allow_blank=True)
     operation = serializers.IntegerField(min_value=0)
@@ -79,12 +79,11 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
             raise ValidationError('`data` and `to` cannot both be null')
 
         if data['operation'] == SafeOperation.CREATE.value:
-            if data['to']:
-                raise ValidationError('Operation is Create, but `to` was provided')
-            elif not data['data']:
-                raise ValidationError('Operation is Create, but not `data` was provided')
-        elif not data['to']:
-            raise ValidationError('Operation is not Create, but `to` was not provided')
+            raise ValidationError('Operation CREATE not supported. Please use Gnosis Safe CreateLib')
+            #if data['to']:
+            #    raise ValidationError('Operation is Create, but `to` was provided')
+            #elif not data['data']:
+            #    raise ValidationError('Operation is Create, but not `data` was provided')
 
         return data
 
