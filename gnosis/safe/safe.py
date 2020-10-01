@@ -223,12 +223,14 @@ class Safe:
                                  master_copy_address: str, proxy_factory_address: str,
                                  number_owners: int, gas_price: int,
                                  payment_token: Optional[str], payment_receiver: str = NULL_ADDRESS,
-                                 fallback_handler: Optional[str] = NULL_ADDRESS,
+                                 fallback_handler: Optional[str] = None,
                                  payment_token_eth_value: float = 1.0,
                                  fixed_creation_cost: Optional[int] = None) -> SafeCreationEstimate:
         salt_nonce = 15
-        owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
+        owners = [Account.create().address for _ in range(number_owners)]
         threshold = number_owners
+        if not fallback_handler:
+            fallback_handler = Account.create().address  # Better estimate it, it's required for new Safes
         safe_creation_tx = SafeCreate2TxBuilder(w3=ethereum_client.w3,
                                                 master_copy_address=master_copy_address,
                                                 proxy_factory_address=proxy_factory_address

@@ -64,6 +64,15 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertGreater(safe_creation_estimate.payment, 0)
         self.assertEqual(safe_creation_estimate.payment_token, payment_token)
 
+        salt_nonce = 167
+        owners = [Account.create().address for _ in range(number_owners)]
+        threshold = 1
+        safe_creation_2 = Safe.build_safe_create2_tx(self.ethereum_client, self.safe_contract_address,
+                                                     self.proxy_factory_contract_address,
+                                                     salt_nonce, owners, threshold, gas_price, payment_token,
+                                                     fallback_handler=Account.create().address)
+        self.assertAlmostEqual(safe_creation_2.gas, safe_creation_estimate.gas, delta=1000)
+
     def test_retrieve_master_copy_address(self):
         # Test with master copy starting by 0x00
         master_copy_address = '0x004e2e9E6D637b8138B022D16083093Cb2Ee76aa'
