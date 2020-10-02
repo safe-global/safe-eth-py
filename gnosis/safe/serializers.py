@@ -80,10 +80,10 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
 
         if data['operation'] == SafeOperation.CREATE.value:
             raise ValidationError('Operation CREATE not supported. Please use Gnosis Safe CreateLib')
-            #if data['to']:
-            #    raise ValidationError('Operation is Create, but `to` was provided')
-            #elif not data['data']:
-            #    raise ValidationError('Operation is Create, but not `data` was provided')
+            #  if data['to']:
+            #      raise ValidationError('Operation is Create, but `to` was provided')
+            #  elif not data['data']:
+            #      raise ValidationError('Operation is Create, but not `data` was provided')
 
         return data
 

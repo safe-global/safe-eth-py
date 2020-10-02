@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
-from .. import EthereumClient, EthereumClientProvider
+from .. import EthereumClient
 from ..oracles import KyberOracle, UniswapOracle, UniswapV2Oracle
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node

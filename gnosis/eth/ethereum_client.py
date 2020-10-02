@@ -250,10 +250,20 @@ class Erc20Manager:
         token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]], token_addresses)
         balances: List[BalanceDict] = []
         for token_address, data in zip(token_addresses_casted, response.json()):
+            if 'result' not in data:
+                balance = 0
+            else:
+                try:
+                    if token_address:
+                        balance = int(self.w3.codec.decode_single('uint256',
+                                                                  HexBytes(data['result'])))  # Token
+                    else:
+                        balance = int(data['result'], 16)  # Ether
+                except (InsufficientDataBytes, BadFunctionCallOutput):
+                    balance = 0
             balances.append({
                 'token_address': token_address,
-                'balance': (cast(int, self.w3.codec.decode_single('uint256', HexBytes(data['result'])))  # Token
-                            if token_address else int(data['result'], 16))  # Ether
+                'balance': balance,
             })
         return balances
 
@@ -518,7 +528,7 @@ class Erc721Manager:
             raise_exception=False
         )
         return [TokenBalance(token_address, 0 if balance is None else balance)
-                for token_address, balance in zip(token_addresses, balances)]
+                for (token_address, balance) in zip(token_addresses, balances)]
 
     def get_info(self, token_address: str) -> Erc721Info:
         """

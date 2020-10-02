@@ -21,8 +21,7 @@ from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
                          OnlyOwnersCanApproveAHash, OwnerManagerException,
                          SignatureNotProvidedByOwner, SignaturesDataTooShort)
 from .safe_signature import SafeSignature
-from .signatures import (get_signing_address, signature_split,
-                         signature_to_bytes)
+from .signatures import signature_to_bytes
 
 
 class SafeTx:
