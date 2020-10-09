@@ -57,8 +57,8 @@ Contributors
 - Giacomo Licari (giacomo.licari@gnosis.pm)
 - Uxío Fuentefría (uxio@gnosis.pm)
 
-.. |travis| image:: https://travis-ci.org/gnosis/gnosis-py.svg?branch=master
-    :target: https://travis-ci.org/gnosis/gnosis-py
+.. |travis| image:: https://travis-ci.com/gnosis/gnosis-py.svg?branch=master
+    :target: https://travis-ci.com/gnosis/gnosis-py
     :alt: Travis CI build
 
 .. |coveralls| image:: https://coveralls.io/repos/github/gnosis/gnosis-py/badge.svg?branch=master
