@@ -175,10 +175,18 @@ class UniswapV2Oracle(PriceOracle):
 
     @cached_property
     def factory_address(self) -> str:
+        """
+        :return: Uniswap factory checksummed address
+        :raises: BadFunctionCallOutput: If router contract is not deployed
+        """
         return self.router.functions.factory().call()
 
     @cached_property
     def weth_address(self) -> str:
+        """
+        :return: Wrapped ether checksummed address
+        :raises: BadFunctionCallOutput: If router contract is not deployed
+        """
         return self.router.functions.WETH().call()
 
     @functools.lru_cache(maxsize=None)
@@ -239,9 +247,6 @@ class UniswapV2Oracle(PriceOracle):
         return reserves_1, reserves_2
 
     def get_price(self, token_address: str, token_address_2: Optional[str] = None) -> float:
-        token_address_2 = token_address_2 if token_address_2 else self.weth_address
-        pair_address = self.calculate_pair_address(token_address, token_address_2)
-
         # These lines only make sense when `get_pair_address` is used. `calculate_pair_address` will always return
         # an address, even it that exchange is not deployed
 
@@ -250,8 +255,9 @@ class UniswapV2Oracle(PriceOracle):
         #    error_message = f'Non existing uniswap V2 exchange for token={token_address}'
         #    logger.warning(error_message)
         #    raise CannotGetPriceFromOracle(error_message)
-
         try:
+            token_address_2 = token_address_2 if token_address_2 else self.weth_address
+            pair_address = self.calculate_pair_address(token_address, token_address_2)
             # Tokens are sorted, so token_1 < token_2
             reserves_1, reserves_2 = self.get_reserves(pair_address)
             decimals_1, decimals_2 = self.get_decimals(token_address, token_address_2)
