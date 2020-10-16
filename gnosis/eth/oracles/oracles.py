@@ -52,8 +52,10 @@ class KyberOracle(PriceOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.kyber_network_proxy_address = kyber_network_proxy_address
-        self.kyber_network_proxy_contract = get_kyber_network_proxy_contract(self.w3,
-                                                                             self.kyber_network_proxy_address)
+
+    @cached_property
+    def kyber_network_proxy_contract(self):
+        return get_kyber_network_proxy_contract(self.w3, self.kyber_network_proxy_address)
 
     def get_price(self, token_address_1: str, token_address_2: str = ETH_TOKEN_ADDRESS) -> float:
         try:
@@ -95,11 +97,11 @@ class UniswapOracle(PriceOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.uniswap_factory_address = uniswap_factory_address
+        self.uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
 
     @functools.lru_cache(maxsize=None)
     def get_uniswap_exchange(self, token_address: str) -> str:
-        uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
-        return uniswap_factory.functions.getExchange(token_address).call()
+        return self.uniswap_factory.functions.getExchange(token_address).call()
 
     def _get_balances_without_batching(self, uniswap_exchange_address: str, token_address: str):
         balance = self.ethereum_client.get_balance(uniswap_exchange_address)
@@ -133,12 +135,14 @@ class UniswapOracle(PriceOracle):
         return balance, token_decimals, token_balance
 
     def get_price(self, token_address: str) -> float:
-        uniswap_exchange_address = self.get_uniswap_exchange(token_address)
-
-        if uniswap_exchange_address == NULL_ADDRESS:
+        try:
+            uniswap_exchange_address = self.get_uniswap_exchange(token_address)
+            if uniswap_exchange_address == NULL_ADDRESS:
+                raise ValueError
+        except (BadFunctionCallOutput, InsufficientDataBytes, ValueError) as e:
             error_message = f'Non existing uniswap exchange for token={token_address}'
             logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message)
+            raise CannotGetPriceFromOracle(error_message) from e
 
         try:
             balance, token_decimals, token_balance = self._get_balances_using_batching(uniswap_exchange_address,

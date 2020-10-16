@@ -21,7 +21,7 @@ dai_token_mainnet_address = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 usdt_token_mainnet_address = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
 
 
-class TestOracles(TestCase):
+class TestOracles(EthereumTestCaseMixin, TestCase):
     def test_kyber_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -36,6 +36,12 @@ class TestOracles(TestCase):
 
         price = kyber_oracle.get_price(usdt_token_mainnet_address, dai_token_mainnet_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
+
+    def test_kyber_oracle_not_deployed(self):
+        kyber_oracle = KyberOracle(self.ethereum_client, Account.create().address)
+        random_token_address = Account.create().address
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'Cannot get price from kyber-network-proxy'):
+            kyber_oracle.get_price(random_token_address)
 
     def test_uniswap_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
@@ -52,6 +58,12 @@ class TestOracles(TestCase):
         self.assertEqual(uniswap_oracle.get_uniswap_exchange.cache_info().hits, 1)
         self.assertEqual(uniswap_oracle._get_balances_using_batching(uniswap_exchange, token_address),
                          uniswap_oracle._get_balances_without_batching(uniswap_exchange, token_address))
+
+    def test_uniswap_oracle_not_deployed(self):
+        uniswap_oracle = UniswapOracle(self.ethereum_client, Account.create().address)
+        random_token_address = Account.create().address
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'Non existing uniswap exchange'):
+            uniswap_oracle.get_price(random_token_address)
 
 
 class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
