@@ -212,6 +212,12 @@ class SafeTx:
             else:
                 raise exc
 
+    def recommended_gas(self) -> Wei:
+        """
+        :return: Recommended gas to use on the ethereum_tx
+        """
+        return Wei(self.base_gas + self.safe_tx_gas + 75000)
+
     def execute(self,
                 tx_sender_private_key: str,
                 tx_gas: Optional[int] = None,
@@ -243,7 +249,7 @@ class SafeTx:
             tx_parameters['nonce'] = tx_nonce
 
         self.tx = self.w3_tx.buildTransaction(tx_parameters)
-        self.tx['gas'] = Wei(tx_gas or (max(self.tx['gas'], self.base_gas + self.safe_tx_gas) + 25000))
+        self.tx['gas'] = Wei(tx_gas or (max(self.tx['gas'] + 75000, self.recommended_gas())))
 
         self.tx_hash = self.ethereum_client.send_unsigned_transaction(self.tx,
                                                                       private_key=sender_account.key,
