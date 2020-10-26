@@ -12,6 +12,8 @@ def signature_split(signatures: Union[bytes, str], pos: int = 0) -> Tuple[int, i
     """
     signatures = HexBytes(signatures)
     signature_pos = 65 * pos
+    if len(signatures[signature_pos:signature_pos + 65]) < 65:
+        raise ValueError(f'Signature must be at least 65 bytes {signatures.hex()}')
     r = int.from_bytes(signatures[signature_pos:32 + signature_pos], 'big')
     s = int.from_bytes(signatures[32 + signature_pos:64 + signature_pos], 'big')
     v = signatures[64 + signature_pos]

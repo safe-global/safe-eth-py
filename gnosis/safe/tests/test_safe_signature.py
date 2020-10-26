@@ -110,6 +110,16 @@ class TestSafeSignature(TestCase):
         self.assertTrue(s2.is_valid())
         self.assertIsInstance(s2, SafeSignatureEOA)
 
+    def test_parse_signature_with_trailing_zeroes(self):
+        signatures = HexBytes('0x9173a0b0895c28cdc82729f0a66e3645820a2e395cadad588463ab483e42b3df6e8b05d258e58c5255136'
+                              '0e032733b507f731001cce6b5391b7750439c8cffc020000000000000000000000000dc5299b629ef24fdec'
+                              'fbb240c00fc79fabb9cf9700000000000000000000000000000000000000000000000000000000000000000'
+                              '1000000000000000000000000000000000000000000000000000000000000')
+        parsed_signatures = SafeSignature.parse_signature(signatures, '')
+        self.assertEqual(len(parsed_signatures), 2)
+        self.assertEqual(parsed_signatures[0].signature_type, SafeSignatureType.ETH_SIGN)
+        self.assertEqual(parsed_signatures[1].signature_type, SafeSignatureType.APPROVED_HASH)
+
     def test_parse_signature_empty(self):
         safe_tx_hash = Web3.keccak(text='Legoshi')
         for value in (b'', '', None):

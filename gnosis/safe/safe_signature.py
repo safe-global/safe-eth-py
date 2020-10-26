@@ -48,10 +48,13 @@ class SafeSignature(ABC):
         return f'SafeSignature type={self.signature_type.name} owner={self.owner}'
 
     @classmethod
-    def parse_signature(cls, signatures: EthereumBytes, safe_tx_hash: EthereumBytes) -> List['SafeSignature']:
+    def parse_signature(cls, signatures: EthereumBytes, safe_tx_hash: EthereumBytes,
+                        ignore_trailing: bool = True) -> List['SafeSignature']:
         """
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_tx_hash:
+        :param ignore_trailing: Ignore trailing data on the signature. Some libraries pad it and add some zeroes at
+        the end
         :return: List of SafeSignatures decoded
         """
         if not signatures:
@@ -68,6 +71,9 @@ class SafeSignature(ABC):
                 break
 
             signature = signatures[i: i + signature_size]
+            if ignore_trailing and len(signature) < 65:
+                # Trailing stuff
+                break
             v, r, s = signature_split(signature)
             signature_type = SafeSignatureType.from_v(v)
             safe_signature: 'SafeSignature'
