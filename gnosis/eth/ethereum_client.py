@@ -412,7 +412,7 @@ class Erc20Manager:
         # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
         erc20_events = []
         for event in all_events:
-            e = cast(Dict[str, Any], event)  # TODO Create LogReceiptWithArguments
+            e = LogReceipt(event)  # Convert `AttributeDict` to `Dict`
             e['args'] = self._decode_transfer_log(e['data'], e['topics'])
             if e['args']:
                 erc20_events.append(e)
