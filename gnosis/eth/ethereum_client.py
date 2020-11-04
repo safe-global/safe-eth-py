@@ -643,6 +643,46 @@ class ParityManager:
             trace_copy['action'] = self._decode_trace_action(trace['action'])
         return new_traces
 
+    def filter_out_errored_traces(self, internal_txs: Sequence[Dict[str, Any]]) -> Sequence[Dict[str, Any]]:
+        """
+        Filter out errored transactions (traces that are errored or that have an errored parent)
+        :param internal_txs: Sorted ascending by `trace_address` `sorted(t, key = lambda i: i['traceAddress'])`. It's
+        the default output from methods returning `traces` like `trace_block` or `trace_transaction`
+        :return: List of not errored traces
+        """
+        new_list = []
+        errored_trace_address: Optional[List[int]] = None
+        for internal_tx in internal_txs:
+            if internal_tx.get('error') is not None:
+                errored_trace_address = internal_tx['traceAddress']
+            elif (errored_trace_address is not None
+                    and internal_tx['traceAddress'][:len(errored_trace_address)] == errored_trace_address):
+                continue
+            else:
+                new_list.append(internal_tx)
+        return new_list
+
+    def get_previous_trace(self, tx_hash: EthereumHash, trace_address: Sequence[int],
+                           number_traces: int = 1, skip_delegate_calls: bool = False) -> Optional[Dict[str, Any]]:
+        """
+        :param tx_hash:
+        :param trace_address:
+        :param number_traces: Number of traces to skip, by default get the immediately previous one
+        :param skip_delegate_calls: If True filter out delegate calls
+        :return: Parent trace for a trace
+        """
+        if len(trace_address) < number_traces:
+            return None
+
+        trace_address = trace_address[:-number_traces]
+        traces = reversed(self.trace_transaction(tx_hash))
+        for trace in traces:
+            if trace_address == trace['traceAddress']:
+                if skip_delegate_calls and trace['action'].get('callType') == 'delegatecall':
+                    trace_address = trace_address[:-1]
+                else:
+                    return trace
+
     def trace_block(self, block_identifier: BlockIdentifier) -> List[Dict[str, Any]]:
         try:
             return self._decode_traces(self.slow_w3.parity.traceBlock(block_identifier))
@@ -672,13 +712,21 @@ class ParityManager:
         return traces
 
     def trace_transaction(self, tx_hash: EthereumHash) -> List[Dict[str, Any]]:
+        """
+        :param tx_hash:
+        :return: List of internal txs for `tx_hash`
+        """
         try:
             return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
         except ParityTraceDecodeException as exc:
             logger.warning('Problem decoding trace: %s - Retrying', exc)
             return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
 
-    def trace_transactions(self, tx_hashes: List[EthereumHash]) -> List[List[Dict[str, Any]]]:
+    def trace_transactions(self, tx_hashes: Sequence[EthereumHash]) -> List[List[Dict[str, Any]]]:
+        """
+        :param tx_hashes:
+        :return: For every `tx_hash` a list of internal txs (in the same order as the `tx_hashes` were provided)
+        """
         if not tx_hashes:
             return []
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_transaction',
