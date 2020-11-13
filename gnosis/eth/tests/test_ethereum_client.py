@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Sequence
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -16,7 +17,8 @@ from ..ethereum_client import (EthereumClientProvider, EthereumNetwork,
                                SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
-from .mocks.mock_internal_txs import internal_txs_errored
+from .mocks.mock_internal_txs import (creation_internal_txs,
+                                      internal_txs_errored)
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
@@ -602,7 +604,7 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
                 'traceAddress': [0, 0, 2],
             },
         ]
-        self.assertEqual(sorted(traces, key = lambda trace: trace['traceAddress']), traces)
+        self.assertEqual(sorted(traces, key=lambda trace: trace['traceAddress']), traces)
         self.assertEqual(self.ethereum_client.parity.filter_out_errored_traces(traces), expected)
 
     @mock.patch.object(ParityManager, 'trace_transaction', return_value=internal_txs_errored)
@@ -620,6 +622,24 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
         self.assertEqual(self.ethereum_client.parity.get_previous_trace('0x12', [0, 0, 0],
                                                                         skip_delegate_calls=True)['traceAddress'],
                          [0, 0])
+
+    @mock.patch.object(ParityManager, 'trace_transaction', return_value=creation_internal_txs)
+    def test_get_next_traces(self, trace_transaction_mock: MagicMock):
+        def trace_addresses(traces: Sequence[Dict[str, Any]]) -> List[List[int]]:
+            return [trace['traceAddress'] for trace in traces]
+
+        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [])), [[0], [1]])
+        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [],
+                                                                                     remove_delegate_calls=True)),
+                         [[1]])
+        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [], remove_calls=True)),
+                         [[0]])
+        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [],
+                                                                                     remove_delegate_calls=True,
+                                                                                     remove_calls=True)),
+                         [])
+        self.assertEqual(self.ethereum_client.parity.get_next_traces('0x12', [0]), [])
+        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [1])), [[1, 0]])
 
     def test_trace_filter(self):
         with self.assertRaisesMessage(AssertionError, 'at least'):

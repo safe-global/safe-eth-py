@@ -683,6 +683,27 @@ class ParityManager:
                 else:
                     return trace
 
+    def get_next_traces(self, tx_hash: EthereumHash, trace_address: Sequence[int],
+                        remove_delegate_calls: bool = False, remove_calls: bool = False) -> List[Dict[str, Any]]:
+        """
+        :param tx_hash:
+        :param trace_address:
+        :param remove_delegate_calls: If True remove delegate calls from result
+        :param remove_calls: If True remove calls from result
+        :return: Children for a trace, E.g. if address is [0, 1] and number_traces = 1, it will return [0, 1, x]
+        """
+        trace_address_len = len(trace_address)
+        traces = []
+        for trace in self.trace_transaction(tx_hash):
+            if trace_address_len + 1 == len(trace['traceAddress']) and trace_address == trace['traceAddress'][:-1]:
+                if remove_delegate_calls and trace['action'].get('callType') == 'delegatecall':
+                    pass
+                elif remove_calls and trace['action'].get('callType') == 'call':
+                    pass
+                else:
+                    traces.append(trace)
+        return traces
+
     def trace_block(self, block_identifier: BlockIdentifier) -> List[Dict[str, Any]]:
         try:
             return self._decode_traces(self.slow_w3.parity.traceBlock(block_identifier))
