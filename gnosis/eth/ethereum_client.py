@@ -69,6 +69,10 @@ class ReplacementTransactionUnderpriced(EthereumClientException):
     pass
 
 
+class TransactionUnderpriced(EthereumClientException):
+    pass
+
+
 class FromAddressNotFound(EthereumClientException):
     pass
 
@@ -110,9 +114,23 @@ class InvalidERC721Info(EthereumClientException):
 
 
 def tx_with_exception_handling(func):
+    """
+    Parity
+        - https://github.com/openethereum/openethereum/blob/main/rpc/src/v1/helpers/errors.rs
+    Geth
+        - https://github.com/ethereum/go-ethereum/blob/master/core/error.go
+        - https://github.com/ethereum/go-ethereum/blob/master/core/tx_pool.go
+    Comparison
+        - https://gist.github.com/kunal365roy/3c37ac9d1c3aaf31140f7c5faa083932
+    :param func:
+    :return:
+    """
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
         'replacement transaction underpriced': ReplacementTransactionUnderpriced,
+        'transaction underpriced': TransactionUnderpriced,
+        'There are too many transactions in the queue. Your transaction was dropped due to limit. '
+        'Try increasing the fee': TransactionUnderpriced,  # Geth
         'There is another transaction with same nonce in the queue': ReplacementTransactionUnderpriced,  # Parity
         'from not found': FromAddressNotFound,
         'correct nonce': InvalidNonce,
