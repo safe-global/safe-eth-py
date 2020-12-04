@@ -92,22 +92,22 @@ class HexadecimalField(serializers.Field):
             else:
                 self.fail('blank')
 
-        data_len = len(data)
-        if self.min_length and data_len < self.min_length:
-            self.fail('min_length', min_length=data_len)
-        elif self.max_length and data_len > self.max_length:
-            self.fail('max_length', max_length=data_len)
-
         try:
-            return HexBytes(data)
+            data_hex = HexBytes(data)
+            data_len = len(data_hex)
+            if self.min_length and data_len < self.min_length:
+                self.fail('min_length', min_length=data_len)
+            elif self.max_length and data_len > self.max_length:
+                self.fail('max_length', max_length=data_len)
+            return data_hex
         except ValueError:
             self.fail('invalid', value=data)
 
 
 class Sha3HashField(HexadecimalField):
     def __init__(self, **kwargs):
-        kwargs['max_length'] = 64
-        kwargs['min_length'] = 64
+        kwargs['max_length'] = 32
+        kwargs['min_length'] = 32
         super().__init__(**kwargs)
 
 

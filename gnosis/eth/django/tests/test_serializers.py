@@ -132,6 +132,10 @@ class TestSerializers(TestCase):
         serializer.is_valid()
         self.assertFalse(serializer.is_valid())
 
-        # Hash with one less character - Must be 32 bytes
+        # Hash with 1 less character - Should still be 32 bytes
         serializer = Sha3HashSerializerTest(data={'value': value[:-1]})
+        self.assertTrue(serializer.is_valid())
+
+        # Hash with 2 less character - Less than 32 bytes
+        serializer = Sha3HashSerializerTest(data={'value': value[:-2]})
         self.assertFalse(serializer.is_valid())
