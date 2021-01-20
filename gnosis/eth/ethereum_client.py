@@ -19,6 +19,7 @@ from web3._utils.method_formatters import (block_formatter, receipt_formatter,
                                            transaction_formatter)
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import ContractFunction
+from web3.datastructures import AttributeDict
 from web3.exceptions import (BadFunctionCallOutput, BlockNotFound,
                              TimeExhausted, TransactionNotFound)
 from web3.middleware import geth_poa_middleware
@@ -650,9 +651,12 @@ class ParityManager:
     def _decode_traces(self, traces: Sequence[Union[ParityBlockTrace, ParityFilterTrace]]) -> List[Dict[str, Any]]:
         new_traces: List[Dict[str, Any]] = []
         for trace in traces:
-            if not isinstance(trace, dict):
+            if isinstance(trace, dict):
+                trace_copy = trace.copy()
+            elif isinstance(trace, AttributeDict):
+                trace_copy = trace.__dict__.copy()
+            else:
                 raise ParityTraceDecodeException('Expected dictionary, but found unexpected trace %s' % trace)
-            trace_copy = trace.copy()
             new_traces.append(trace_copy)
             # Txs with `error` field don't have `result` field
             # Txs with `type=suicide` have `result` field but is `None`
