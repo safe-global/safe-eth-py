@@ -50,11 +50,11 @@ jobs:
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
         PIPENV_DONT_LOAD_ENV: 1  # By default pipenv loads .env file
     - name: Send results to coveralls
       run: pipenv run coveralls
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
   deploy:
     runs-on: ubuntu-latest
