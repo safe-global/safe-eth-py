@@ -1,12 +1,16 @@
-Django Ethereum (gnosis-py)
+Gnosis-py
 ############################
 
 .. class:: no-web no-pdf
 
-|travis| |coveralls| |python| |django| |pipy|
+|ci| |coveralls| |python| |django| |pipy|
 
-Gnosis-py includes a set of libraries to work with Gnosis projects.
-Currently `Gnosis Safe <https://github.com/gnosis/safe-contracts>`_ is supported.
+Gnosis-py includes a set of libraries to work with Ethereum and Gnosis projects:
+- `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
+  tokens and tracing.
+- `Gnosis Safe <https://github.com/gnosis/safe-contracts>`_ classes and utilities.
+- Price oracles for `Uniswap`, `Kyber`...
+- Django serializers, models and utils.
 
 Quick start
 -----------
@@ -37,8 +41,6 @@ Contains utils for ethereum operations:
 
 - ``get_eth_address_with_key() -> Tuple[str, bytes]``: Returns a tuple of a valid public ethereum checksumed
   address with the private key.
-- ``get_eth_address_with_invalid_checksum() -> str``: Returns an invalid checksumed ethereum
-  public address.
 - ``generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: [str, bytes]) -> str``:
   Calculates the address of a new contract created using the new CREATE2 opcode.
 
@@ -60,9 +62,8 @@ Contributors
 - Giacomo Licari (giacomo.licari@gnosis.pm)
 - Uxío Fuentefría (uxio@gnosis.pm)
 
-.. |travis| image:: https://travis-ci.com/gnosis/gnosis-py.svg?branch=master
-    :target: https://travis-ci.com/gnosis/gnosis-py
-    :alt: Travis CI build
+.. |ci| image:: https://github.com/gnosis/gnosis-py/workflows/Python%20CI/badge.svg?branch=master
+    :alt: Github Actions CI build
 
 .. |coveralls| image:: https://coveralls.io/repos/github/gnosis/gnosis-py/badge.svg?branch=master
     :target: https://coveralls.io/github/gnosis/gnosis-py?branch=master
