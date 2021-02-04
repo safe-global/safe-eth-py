@@ -6,8 +6,8 @@ from django.test import TestCase
 from eth_account import Account
 
 from .. import EthereumClient
-from ..oracles import (CannotGetPriceFromOracle, KyberOracle, UniswapOracle,
-                       UniswapV2Oracle)
+from ..oracles import (CannotGetPriceFromOracle, KyberOracle, SushiswapOracle,
+                       UniswapOracle, UniswapV2Oracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -102,3 +102,23 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         with self.assertRaisesMessage(CannotGetPriceFromOracle,
                                       f'Cannot get uniswap v2 token balance for token={random_token_address}'):
             uniswap_v2_oracle.get_price(random_token_address)
+
+
+class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_price(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        sushiswap_oracle = SushiswapOracle(ethereum_client)
+
+        price = sushiswap_oracle.get_price(gno_token_mainnet_address, weth_token_mainnet_address)
+        self.assertLess(price, 1)
+        self.assertGreater(price, 0)
+
+        # Test with 2 stablecoins
+        price = sushiswap_oracle.get_price(dai_token_mainnet_address, usdt_token_mainnet_address)
+        self.assertAlmostEqual(price, 1., delta=0.5)
+        self.assertEqual(sushiswap_oracle._decimals_cache[dai_token_mainnet_address], 18)
+        self.assertEqual(sushiswap_oracle._decimals_cache[usdt_token_mainnet_address], 6)
+
+        price = sushiswap_oracle.get_price(usdt_token_mainnet_address, dai_token_mainnet_address)
+        self.assertAlmostEqual(price, 1., delta=0.5)

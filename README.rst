@@ -6,11 +6,11 @@ Gnosis-py
 |ci| |coveralls| |python| |django| |pipy|
 
 Gnosis-py includes a set of libraries to work with Ethereum and Gnosis projects:
-- `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
-  tokens and tracing.
-- `Gnosis Safe <https://github.com/gnosis/safe-contracts>`_ classes and utilities.
-- Price oracles for `Uniswap`, `Kyber`...
-- Django serializers, models and utils.
+  - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
+tokens and tracing.
+  - `Gnosis Safe <https://github.com/gnosis/safe-contracts>`_ classes and utilities.
+  - Price oracles for `Uniswap`, `Kyber`...
+  - Django serializers, models and utils.
 
 Quick start
 -----------
@@ -28,11 +28,43 @@ gnosis.eth
   with a ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
   Only ``http/https`` urls are suppored for the node url.
 
+``EthereumClient`` has some utils that improve a lot performance using Ethereum nodes, like
+the possibility of doing ``batch_calls`` (a single request making read-only calls to multiple contracts):
+
+.. code-block:: python
+
+  from gnosis.eth import EthereumClient
+  from gnosis.eth.contracts import get_erc721_contract
+  ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
+  erc721_contract = get_erc721_contract(self.w3, token_address)
+  name, symbol = ethereum_client.batch_call([
+                      erc721_contract.functions.name(),
+                      erc721_contract.functions.symbol(),
+                  ])
+
+
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``
 - ``SENTINEL_ADDRESS (0x000...1)``
 - Maximum an minimum values for `R`, `S` and `V` in ethereum signatures
+
+gnosis.eth.oracles
+~~~~~~~~~~~~~~~~~~
+
+Price oracles for Uniswap, UniswapV2, Kyber and SushiSwap. Example:
+
+.. code-block:: python
+
+  from gnosis.eth import EthereumClient
+  from gnosis.eth.oracles import UniswapV2Oracle
+  ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
+  uniswap_oracle = UniswapV2Oracle(ethereum_client)
+  gno_token_mainnet_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
+  weth_token_mainnet_address = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+  price = uniswap_oracle.get_price(gno_token_mainnet_address, uniswap_oracle.weth_address)
+
+
 
 gnosis.eth.utils
 ~~~~~~~~~~~~~~~~

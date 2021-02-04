@@ -161,16 +161,20 @@ class UniswapOracle(PriceOracle):
 
 
 class UniswapV2Oracle(PriceOracle):
+    # Pair init code is keccak(getCode(UniswapV2Pair))
+    pair_init_code = HexBytes('0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f')
+    router_address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+
     def __init__(self, ethereum_client: EthereumClient,
-                 uniswap_router_address: str = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'):
+                 router_address: Optional[str] = None):
         """
         :param ethereum_client:
-        :param uniswap_router_address: https://uniswap.org/docs/v2/smart-contracts/router02/
+        :param router_address: https://uniswap.org/docs/v2/smart-contracts/router02/
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.router_address: str = uniswap_router_address
-        self.router = get_uniswap_v2_router_contract(ethereum_client.w3, uniswap_router_address)
+        self.router_address: str = router_address or self.router_address
+        self.router = get_uniswap_v2_router_contract(ethereum_client.w3, self.router_address)
         self._decimals_cache: Dict[str, int] = {}
 
     @cached_property
@@ -220,10 +224,9 @@ class UniswapV2Oracle(PriceOracle):
             token_address, token_address_2 = token_address_2, token_address
         salt = Web3.keccak(encode_abi_packed(['address', 'address'],
                                              [token_address, token_address_2]))
-        init_code = HexBytes('0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f')
         address = Web3.keccak(
             encode_abi_packed(['bytes', 'address', 'bytes', 'bytes'],
-                              [HexBytes('ff'), self.factory_address, salt, init_code]
+                              [HexBytes('ff'), self.factory_address, salt, self.pair_init_code]
                               ))[-20:]
         return Web3.toChecksumAddress(address)
 
@@ -275,3 +278,8 @@ class UniswapV2Oracle(PriceOracle):
             error_message = f'Cannot get uniswap v2 token balance for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
+
+
+class SushiswapOracle(UniswapV2Oracle):
+    pair_init_code = HexBytes('0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303')
+    router_address = '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
