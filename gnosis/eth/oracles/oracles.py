@@ -269,13 +269,22 @@ class UniswapV2Oracle(PriceOracle):
             reserves_1, reserves_2 = self.get_reserves(pair_address)
             decimals_1, decimals_2 = self.get_decimals(token_address, token_address_2)
             if token_address.lower() > token_address_2.lower():
-                price = reserves_1 / reserves_2
-            else:
-                price = reserves_2 / reserves_1
-            price = price / 10 ** (decimals_2 - decimals_1)
-            return price
+                reserves_2, reserves_1 = reserves_1, reserves_2
+
+            print(reserves_1, reserves_2)
+            print(decimals_1, decimals_2)
+
+            # Check liquidity
+            if reserves_1 / 10 ** decimals_1 < 1 or reserves_2 / 10 ** decimals_2 < 1:
+                raise CannotGetPriceFromOracle(f'Not enough liquidity for pair token_1={token_address} '
+                                               f'token_2={token_address_2}')
+            decimals_normalized_reserves_1 = reserves_1 * 10 ** decimals_2
+            decimals_normalized_reserves_2 = reserves_2 * 10 ** decimals_1
+
+            return decimals_normalized_reserves_2 / decimals_normalized_reserves_1
         except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
-            error_message = f'Cannot get uniswap v2 token balance for token={token_address}'
+            error_message = f'Cannot get uniswap v2 price for pair token_1={token_address} ' \
+                            f'token_2={token_address_2}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
 

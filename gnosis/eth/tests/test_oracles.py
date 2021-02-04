@@ -47,7 +47,7 @@ class TestOracles(EthereumTestCaseMixin, TestCase):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
         uniswap_oracle = UniswapOracle(ethereum_client, uniswap_proxy_mainnet_address)
-        token_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
+        token_address = gno_token_mainnet_address
         price = uniswap_oracle.get_price(token_address)
         self.assertEqual(uniswap_oracle.get_uniswap_exchange.cache_info().hits, 0)
         self.assertLess(price, 1)
@@ -100,8 +100,28 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         uniswap_v2_oracle = UniswapV2Oracle(self.ethereum_client)
         random_token_address = Account.create().address
         with self.assertRaisesMessage(CannotGetPriceFromOracle,
-                                      f'Cannot get uniswap v2 token balance for token={random_token_address}'):
+                                      f'Cannot get uniswap v2 price for pair token_1={random_token_address}'):
             uniswap_v2_oracle.get_price(random_token_address)
+
+    @mock.patch.object(UniswapV2Oracle, 'factory_address', return_value='0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+                       new_callable=mock.PropertyMock)
+    @mock.patch.object(UniswapV2Oracle, 'get_decimals', return_value=(18, 3),
+                       autospec=True)
+    @mock.patch.object(UniswapV2Oracle, 'get_reserves', return_value=(int(1e20), 600),
+                       autospec=True)
+    def test_get_price_liquidity(self, get_reserves_mock: MagicMock, get_decimals_mock: MagicMock,
+                                 factory_address_mock: MagicMock):
+        uniswap_v2_oracle = UniswapV2Oracle(self.ethereum_client)
+        token_1, token_2 = '0xA14F6F8867DB84a45BCD148bfaf4e4f54B4B9b12', '0xC426A8F4C79EF274Ed93faC9e1A09bFC5659B06B'
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'Not enough liquidity'):
+            uniswap_v2_oracle.get_price(token_1, token_2)
+
+        get_reserves_mock.return_value = (int(1e20), 6000)
+        self.assertEqual(uniswap_v2_oracle.get_price(token_1, token_2), 0.06)
+
+        get_reserves_mock.return_value = reversed(get_reserves_mock.return_value)
+        self.assertEqual(uniswap_v2_oracle.get_price(token_2, token_1), 0.06)  # Reserves were inverted
 
 
 class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
