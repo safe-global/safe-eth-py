@@ -273,8 +273,8 @@ class UniswapV2Oracle(PriceOracle):
             if token_address.lower() > token_address_2.lower():
                 reserves_2, reserves_1 = reserves_1, reserves_2
 
-            # Check liquidity
-            if reserves_1 / 10 ** decimals_1 < 1 or reserves_2 / 10 ** decimals_2 < 1:
+            # Check liquidity. Require at least 2 units of every token to be on the pool
+            if reserves_1 / 10 ** decimals_1 < 2 or reserves_2 / 10 ** decimals_2 < 2:
                 raise CannotGetPriceFromOracle(f'Not enough liquidity for pair token_1={token_address} '
                                                f'token_2={token_address_2}')
             decimals_normalized_reserves_1 = reserves_1 * 10 ** decimals_2
