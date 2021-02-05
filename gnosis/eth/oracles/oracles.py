@@ -9,7 +9,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_abi.packed import encode_abi_packed
 from hexbytes import HexBytes
 from web3 import Web3
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import BadFunctionCallOutput, SolidityError
 
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
@@ -18,8 +18,7 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_factory_contract,
                          get_uniswap_v2_pair_contract,
                          get_uniswap_v2_router_contract)
-from .abis.curve_abis import (curve_address_provider_abi, curve_pool_abi,
-                              curve_registry_abi)
+from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 
 logger = logging.getLogger(__name__)
 
@@ -307,6 +306,9 @@ class CurveOracle(PriceOracle):
 
     @cached_property
     def registry_contract(self):
+        """
+        :return: https://curve.readthedocs.io/registry-registry.html
+        """
         return self.w3.eth.contract(self.address_provider_contract.functions.get_registry().call(),
                                     abi=curve_registry_abi)
 
@@ -315,7 +317,7 @@ class CurveOracle(PriceOracle):
         :param curve_token_address:
         :return: Usd price for token
         """
-        pool_address = self.registry_contract.functions.get_pool_from_lp_token(curve_token_address).call()
-        if pool_address == NULL_ADDRESS:
+        try:
+            return self.registry_contract.functions.get_virtual_price_from_lp_token(curve_token_address).call() / 1e18
+        except SolidityError:
             raise CannotGetPriceFromOracle(f'Cannot get price for {curve_token_address}. It is not a curve pool token')
-        return self.w3.eth.contract(pool_address, abi=curve_pool_abi).functions.get_virtual_price().call() / 1e18

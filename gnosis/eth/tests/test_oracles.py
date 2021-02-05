@@ -153,3 +153,6 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
 
         price = curve_oracle.get_price(curve_token_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a curve pool token'):
+            price = curve_oracle.get_price(gno_token_mainnet_address)
