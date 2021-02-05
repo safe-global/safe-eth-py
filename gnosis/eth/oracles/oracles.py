@@ -18,6 +18,8 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_factory_contract,
                          get_uniswap_v2_pair_contract,
                          get_uniswap_v2_router_contract)
+from .abis.curve_abis import (curve_address_provider_abi, curve_pool_abi,
+                              curve_registry_abi)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +46,8 @@ class KyberOracle(PriceOracle):
     # This is the `tokenAddress` they use for ETH ¯\_(ツ)_/¯
     ETH_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
-    def __init__(self, ethereum_client: EthereumClient, kyber_network_proxy_address: str):
+    def __init__(self, ethereum_client: EthereumClient,
+                 kyber_network_proxy_address: str = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'):
         """
         :param ethereum_client:
         :param kyber_network_proxy_address: https://developer.kyber.network/docs/MainnetEnvGuide/#contract-addresses
@@ -289,3 +292,30 @@ class UniswapV2Oracle(PriceOracle):
 class SushiswapOracle(UniswapV2Oracle):
     pair_init_code = HexBytes('0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303')
     router_address = '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
+
+
+class CurveOracle(PriceOracle):
+    def __init__(self, ethereum_client: EthereumClient,
+                 address_provider: str = '0x0000000022D53366457F9d5E68Ec105046FC4383'):
+        """
+        :param ethereum_client:
+        :param address_provider: https://curve.readthedocs.io/registry-address-provider.html
+        """
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+        self.address_provider_contract = self.w3.eth.contract(address_provider, abi=curve_address_provider_abi)
+
+    @cached_property
+    def registry_contract(self):
+        return self.w3.eth.contract(self.address_provider_contract.functions.get_registry().call(),
+                                    abi=curve_registry_abi)
+
+    def get_price(self, curve_token_address: str) -> float:
+        """
+        :param curve_token_address:
+        :return: Usd price for token
+        """
+        pool_address = self.registry_contract.functions.get_pool_from_lp_token(curve_token_address).call()
+        if pool_address == NULL_ADDRESS:
+            raise CannotGetPriceFromOracle(f'Cannot get price for {curve_token_address}. It is not a curve pool token')
+        return self.w3.eth.contract(pool_address, abi=curve_pool_abi).functions.get_virtual_price().call() / 1e18

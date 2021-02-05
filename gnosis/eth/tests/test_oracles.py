@@ -6,8 +6,8 @@ from django.test import TestCase
 from eth_account import Account
 
 from .. import EthereumClient
-from ..oracles import (CannotGetPriceFromOracle, KyberOracle, SushiswapOracle,
-                       UniswapOracle, UniswapV2Oracle)
+from ..oracles import (CannotGetPriceFromOracle, CurveOracle, KyberOracle,
+                       SushiswapOracle, UniswapOracle, UniswapV2Oracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -141,4 +141,15 @@ class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
         self.assertEqual(sushiswap_oracle._decimals_cache[usdt_token_mainnet_address], 6)
 
         price = sushiswap_oracle.get_price(usdt_token_mainnet_address, dai_token_mainnet_address)
+        self.assertAlmostEqual(price, 1., delta=0.5)
+
+
+class TestCurveOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_price(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        curve_oracle = CurveOracle(ethereum_client)
+        curve_token_address = '0xC25a3A3b969415c80451098fa907EC722572917F'  # Curve.fi DAI/USDC/USDT/sUSD
+
+        price = curve_oracle.get_price(curve_token_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
