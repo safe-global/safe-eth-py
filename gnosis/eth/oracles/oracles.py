@@ -294,6 +294,9 @@ class SushiswapOracle(UniswapV2Oracle):
 
 
 class CurveOracle(PriceOracle):
+    """
+    Get usd virtual price for Curve pools
+    """
     def __init__(self, ethereum_client: EthereumClient,
                  address_provider: str = '0x0000000022D53366457F9d5E68Ec105046FC4383'):
         """

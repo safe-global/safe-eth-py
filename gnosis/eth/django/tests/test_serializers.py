@@ -110,6 +110,10 @@ class TestSerializers(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data['value'], HexBytes(value))
 
+        value = 'abc'
+        serializer = HexadecimalSerializerTest(data={'value': [value]})
+        self.assertFalse(serializer.is_valid())
+
     def test_hexadecimal_class_field(self):
         class A:
             pass

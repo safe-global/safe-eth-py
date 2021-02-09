@@ -81,10 +81,14 @@ class HexadecimalField(serializers.Field):
     def to_internal_value(self, data):
         if isinstance(data, (bytes, memoryview)):
             data = data.hex()
-
-        data = data.strip()  # Trim spaces
-        if data.startswith('0x'):  # Remove 0x prefix
-            data = data[2:]
+        elif isinstance(data, str):
+            data = data.strip()  # Trim spaces
+            if data.startswith('0x'):  # Remove 0x prefix
+                data = data[2:]
+        elif data is None:
+            pass
+        else:
+            self.fail('invalid', value=data)
 
         if not data:
             if self.allow_blank:
