@@ -322,5 +322,5 @@ class CurveOracle(PriceOracle):
         """
         try:
             return self.registry_contract.functions.get_virtual_price_from_lp_token(curve_token_address).call() / 1e18
-        except SolidityError:
+        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput):
             raise CannotGetPriceFromOracle(f'Cannot get price for {curve_token_address}. It is not a curve pool token')
