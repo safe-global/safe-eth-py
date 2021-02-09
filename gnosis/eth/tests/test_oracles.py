@@ -123,6 +123,15 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         get_reserves_mock.return_value = reversed(get_reserves_mock.return_value)
         self.assertEqual(uniswap_v2_oracle.get_price(token_2, token_1), 0.06)  # Reserves were inverted
 
+    def test_get_pool_token_price(self):
+        dai_eth_pool_address = '0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11'
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        uniswap_v2_oracle = UniswapV2Oracle(ethereum_client)
+
+        price = uniswap_v2_oracle.get_pool_token_price(dai_eth_pool_address)
+        self.assertGreater(price, 0.)
+
 
 class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
     def test_get_price(self):

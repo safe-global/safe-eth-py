@@ -250,9 +250,9 @@ class UniswapV2Oracle(PriceOracle):
         https://uniswap.org/docs/v2/smart-contracts/pair/
         :return: Reserves of `token_address` and `token_address_2` used to price trades and distribute liquidity.
         """
-        pair = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pair_address)
+        pair_contract = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pair_address)
         # Reserves return token_1 reserves, token_2 reserves and block timestamp (mod 2**32) of last interaction
-        reserves_1, reserves_2, _ = pair.functions.getReserves().call()
+        reserves_1, reserves_2, _ = pair_contract.functions.getReserves().call()
         return reserves_1, reserves_2
 
     def get_price(self, token_address: str, token_address_2: Optional[str] = None) -> float:
@@ -266,6 +266,8 @@ class UniswapV2Oracle(PriceOracle):
         #    raise CannotGetPriceFromOracle(error_message)
         try:
             token_address_2 = token_address_2 if token_address_2 else self.weth_address
+            if token_address == token_address_2:
+                return 1.
             pair_address = self.calculate_pair_address(token_address, token_address_2)
             # Tokens are sorted, so token_1 < token_2
             reserves_1, reserves_2 = self.get_reserves(pair_address)
@@ -284,6 +286,30 @@ class UniswapV2Oracle(PriceOracle):
         except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get uniswap v2 price for pair token_1={token_address} ' \
                             f'token_2={token_address_2}'
+            logger.warning(error_message)
+            raise CannotGetPriceFromOracle(error_message) from e
+
+    def get_pool_token_price(self, pool_token_address: str):
+        """
+        :param pool_token_address:
+        :return: Pool token eth price per unit (total pool token supply / 1e18)
+        """
+        try:
+            pair_contract = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pool_token_address)
+            (reserves_1, reserves_2, _), token_address, token_address_2, total_supply = self.ethereum_client.batch_call(
+                [
+                    pair_contract.functions.getReserves(),
+                    pair_contract.functions.token0(),
+                    pair_contract.functions.token1(),
+                    pair_contract.functions.totalSupply(),
+                ])
+            decimals_1, decimals_2 = self.get_decimals(token_address, token_address_2)
+            price_1, price_2 = self.get_price(token_address), self.get_price(token_address_2)
+            total_value_1 = (reserves_1 / 10 ** decimals_1) * price_1
+            total_value_2 = (reserves_2 / 10 ** decimals_2) * price_2
+            return (total_value_1 + total_value_2) / (total_supply / 1e18)
+        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+            error_message = f'Cannot get uniswap v2 price for pool token={pool_token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
 
