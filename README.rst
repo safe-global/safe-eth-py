@@ -18,7 +18,7 @@ Quick start
 Just run ``pip install gnosis-py`` or add it to your **requirements.txt**
 
 If you have issues building **coincurve** maybe
-`you are missing some libraries <https://github.com/ofek/coincurve#installation>`_
+`you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
 
 Ethereum utils
 --------------
