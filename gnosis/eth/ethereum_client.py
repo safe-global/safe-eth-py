@@ -895,6 +895,7 @@ class EthereumClient:
         self.ethereum_node_url: str = ethereum_node_url
         self.w3_provider = HTTPProvider(self.ethereum_node_url)
         self.w3: Web3 = Web3(self.w3_provider)
+        self.slow_w3 = Web3(self.get_slow_provider(timeout=slow_provider_timeout))
         self.erc20: Erc20Manager = Erc20Manager(self, slow_provider_timeout)
         self.erc721: Erc721Manager = Erc721Manager(self, slow_provider_timeout)
         self.parity: ParityManager = ParityManager(self, slow_provider_timeout)
