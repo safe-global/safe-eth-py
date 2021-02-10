@@ -7,6 +7,7 @@ import requests
 from cached_property import cached_property
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_abi.packed import encode_abi_packed
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput, SolidityError
@@ -18,6 +19,7 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_factory_contract,
                          get_uniswap_v2_pair_contract,
                          get_uniswap_v2_router_contract)
+from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 
 logger = logging.getLogger(__name__)
@@ -38,6 +40,12 @@ class CannotGetPriceFromOracle(OracleException):
 class PriceOracle(ABC):
     @abstractmethod
     def get_price(self, *args) -> float:
+        pass
+
+
+class PricePoolOracle(ABC):
+    @abstractmethod
+    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         pass
 
 
@@ -162,7 +170,7 @@ class UniswapOracle(PriceOracle):
             raise CannotGetPriceFromOracle(error_message) from e
 
 
-class UniswapV2Oracle(PriceOracle):
+class UniswapV2Oracle(PricePoolOracle, PriceOracle):
     # Pair init code is keccak(getCode(UniswapV2Pair))
     pair_init_code = HexBytes('0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f')
     router_address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
@@ -289,8 +297,9 @@ class UniswapV2Oracle(PriceOracle):
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
 
-    def get_pool_token_price(self, pool_token_address: str):
+    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
+        Estimate pool token price based on its components
         :param pool_token_address:
         :return: Pool token eth price per unit (total pool token supply / 1e18)
         """
@@ -307,6 +316,7 @@ class UniswapV2Oracle(PriceOracle):
             price_1, price_2 = self.get_price(token_address), self.get_price(token_address_2)
             total_value_1 = (reserves_1 / 10 ** decimals_1) * price_1
             total_value_2 = (reserves_2 / 10 ** decimals_2) * price_2
+            # `total_value_2` should be the same than `total_value_1` if pool is under active arbitrage
             return (total_value_1 + total_value_2) / (total_supply / 1e18)
         except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get uniswap v2 price for pool token={pool_token_address}'
@@ -319,7 +329,7 @@ class SushiswapOracle(UniswapV2Oracle):
     router_address = '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
 
 
-class CurveOracle(PriceOracle):
+class CurveOracle(PricePoolOracle):
     """
     Get usd virtual price for Curve pools
     """
@@ -341,12 +351,59 @@ class CurveOracle(PriceOracle):
         return self.w3.eth.contract(self.address_provider_contract.functions.get_registry().call(),
                                     abi=curve_registry_abi)
 
-    def get_price(self, curve_token_address: str) -> float:
+    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
-        :param curve_token_address:
+        :param pool_token_address: Curve pool token address
         :return: Usd price for token
         """
         try:
-            return self.registry_contract.functions.get_virtual_price_from_lp_token(curve_token_address).call() / 1e18
-        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput):
-            raise CannotGetPriceFromOracle(f'Cannot get price for {curve_token_address}. It is not a curve pool token')
+            return self.registry_contract.functions.get_virtual_price_from_lp_token(pool_token_address).call() / 1e18
+        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
+            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
+
+
+class BalancerOracle(PricePoolOracle):
+    def __init__(self, ethereum_client: EthereumClient, price_oracle: PriceOracle):
+        """
+        :param ethereum_client:
+        :param price_oracle: Price oracle to get the price for the components of the Balancer Pool, UniswapV2 is
+        recommended
+        """
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+        self.price_oracle = price_oracle
+
+    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
+        """
+        Estimate balancer pool token price based on its components
+        :param pool_token_address: Balancer pool token address
+        :return: Eth price for pool token
+        """
+        try:
+            balancer_pool_contract = self.w3.eth.contract(pool_token_address, abi=balancer_pool_abi)
+            current_tokens, total_supply = self.ethereum_client.batch_call([
+                balancer_pool_contract.functions.getCurrentTokens(),
+                balancer_pool_contract.functions.totalSupply(),
+            ])
+            number_tokens = len(current_tokens)
+            # denormalized_weight = self.ethereum_client.batch_call([
+            #    balancer_pool_contract.functions.getReserves(current_token)
+            #    for current_token in current_tokens
+            # ])
+            token_balances_and_decimals = self.ethereum_client.batch_call([
+                balancer_pool_contract.functions.getBalance(token_address)
+                for token_address in current_tokens
+            ] + [
+                get_erc20_contract(self.w3, token_address).functions.decimals()
+                for token_address in current_tokens
+            ])
+            token_balances = token_balances_and_decimals[:number_tokens]
+            token_decimals = token_balances_and_decimals[number_tokens:]
+            token_prices = [self.price_oracle.get_price(token_address) for token_address in current_tokens]
+            total_eth_value = 0
+            for token_balance, token_decimal, token_price in zip(token_balances, token_decimals, token_prices):
+                total_eth_value += (token_balance / 10**token_decimal) * token_price
+            return total_eth_value / (total_supply / 1e18)
+        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
+            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
+                                           f'It is not a balancer pool token')

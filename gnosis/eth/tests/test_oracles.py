@@ -6,8 +6,9 @@ from django.test import TestCase
 from eth_account import Account
 
 from .. import EthereumClient
-from ..oracles import (CannotGetPriceFromOracle, CurveOracle, KyberOracle,
-                       SushiswapOracle, UniswapOracle, UniswapV2Oracle)
+from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
+                       KyberOracle, SushiswapOracle, UniswapOracle,
+                       UniswapV2Oracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -154,14 +155,35 @@ class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestCurveOracle(EthereumTestCaseMixin, TestCase):
-    def test_get_price(self):
+    def test_get_pool_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
         curve_oracle = CurveOracle(ethereum_client)
         curve_token_address = '0xC25a3A3b969415c80451098fa907EC722572917F'  # Curve.fi DAI/USDC/USDT/sUSD
 
-        price = curve_oracle.get_price(curve_token_address)
+        price = curve_oracle.get_pool_token_price(curve_token_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a curve pool token'):
-            price = curve_oracle.get_price(gno_token_mainnet_address)
+            curve_oracle.get_pool_token_price(gno_token_mainnet_address)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a curve pool token'):
+            curve_oracle.get_pool_token_price(Account.create().address)
+
+
+class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_pool_token_price(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        uniswap_oracle = UniswapV2Oracle(ethereum_client)
+        balancer_oracle = BalancerOracle(ethereum_client, uniswap_oracle)
+        balancer_token_address = '0x59A19D8c652FA0284f44113D0ff9aBa70bd46fB4'  # Balancer 80% BAL + 20% WETH
+
+        price = balancer_oracle.get_pool_token_price(balancer_token_address)
+        self.assertAlmostEqual(price, 1., delta=0.5)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a balancer pool token'):
+            balancer_oracle.get_pool_token_price(gno_token_mainnet_address)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a balancer pool token'):
+            balancer_oracle.get_pool_token_price(Account.create().address)
