@@ -195,9 +195,13 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
         ethereum_client = EthereumClient(mainnet_node)
         uniswap_oracle = UniswapV2Oracle(ethereum_client)
         mooniswap_oracle = MooniswapOracle(ethereum_client, uniswap_oracle)
-        moniswap_pool_address = '0x6a11F3E5a01D129e566d783A7b6E8862bFD66CcA'  # 1inch Liquidity Pool (ETH-WBTC)
+        mooniswap_pool_address = '0x6a11F3E5a01D129e566d783A7b6E8862bFD66CcA'  # 1inch Liquidity Pool (ETH-WBTC)
+        other_version_mooniswap_pool_address = '0x8a2f2F8637deb4Ee7C9400A240d27E3A32147dA4'  # Mooniswap V1 (OWL-GNO)
 
-        price = mooniswap_oracle.get_pool_token_price(moniswap_pool_address)
+        price = mooniswap_oracle.get_pool_token_price(mooniswap_pool_address)
+        self.assertGreater(price, 0)
+
+        price = mooniswap_oracle.get_pool_token_price(other_version_mooniswap_pool_address)
         self.assertGreater(price, 0)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a mooniswap pool token'):

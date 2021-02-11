@@ -335,7 +335,6 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 try:
                     price = self.get_price(token_address)
                     total_value = (reserves / 10 ** decimals_1) * price
-                    print(total_value * 2)
                     return (total_value * 2) / (total_supply / 1e18)
                 except CannotGetPriceFromOracle:
                     continue
@@ -439,17 +438,29 @@ class MooniswapOracle(BalancerOracle):
         """
         try:
             balancer_pool_contract = self.w3.eth.contract(pool_token_address, abi=mooniswap_abi)
-            token_0, token_1, total_supply = self.ethereum_client.batch_call([
-                balancer_pool_contract.functions.token0(),
-                balancer_pool_contract.functions.token1(),
+            tokens, total_supply = self.ethereum_client.batch_call([
+                balancer_pool_contract.functions.getTokens(),
                 balancer_pool_contract.functions.totalSupply(),
             ])
-            for token in (token_0, token_1):
-                if token == NULL_ADDRESS:  # Ether
-                    ethereum_amount = self.ethereum_client.get_balance(pool_token_address)
-                    return ethereum_amount * 2 / total_supply
-            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
-                                           f'It is not a mooniswap pool token')
+            if len(tokens) == 1 or any([token == NULL_ADDRESS for token in tokens]):  # One of the tokens is ether
+                ethereum_amount = self.ethereum_client.get_balance(pool_token_address)
+                return ethereum_amount * 2 / total_supply
+            else:
+                for token in tokens:
+                    try:
+                        price = self.price_oracle.get_price(token)
+                        token_contract = get_erc20_contract(self.w3, token)
+                        token_balance, token_decimals = self.ethereum_client.batch_call([
+                            token_contract.functions.balanceOf(pool_token_address),
+                            token_contract.functions.decimals(),
+                        ])
+                        total_value = (token_balance / 10 ** token_decimals) * price
+                        return (total_value * 2) / (total_supply / 1e18)
+                    except CannotGetPriceFromOracle:
+                        continue
+
+                raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
+                                               f'It is not a mooniswap pool token')
 
         except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
