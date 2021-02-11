@@ -21,6 +21,7 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_router_contract)
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
+from .abis.mooniswap_abis import mooniswap_abi
 
 logger = logging.getLogger(__name__)
 
@@ -297,6 +298,17 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
 
+    def get_price_without_exception(self, token_address: str, token_address_2: Optional[str] = None) -> float:
+        """
+        :param token_address:
+        :param token_address_2:
+        :return: Call `get_price`, return 0. instead on an exception if there's any issue
+        """
+        try:
+            return self.get_price(token_address, token_address_2=token_address_2)
+        except CannotGetPriceFromOracle:
+            return 0.
+
     def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
         Estimate pool token price based on its components
@@ -305,19 +317,28 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         try:
             pair_contract = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pool_token_address)
-            (reserves_1, reserves_2, _), token_address, token_address_2, total_supply = self.ethereum_client.batch_call(
+            ((reserves_1, reserves_2, _),
+             token_address_1, token_address_2, total_supply) = self.ethereum_client.batch_call(
                 [
                     pair_contract.functions.getReserves(),
                     pair_contract.functions.token0(),
                     pair_contract.functions.token1(),
                     pair_contract.functions.totalSupply(),
                 ])
-            decimals_1, decimals_2 = self.get_decimals(token_address, token_address_2)
-            price_1, price_2 = self.get_price(token_address), self.get_price(token_address_2)
-            total_value_1 = (reserves_1 / 10 ** decimals_1) * price_1
-            total_value_2 = (reserves_2 / 10 ** decimals_2) * price_2
-            # `total_value_2` should be the same than `total_value_1` if pool is under active arbitrage
-            return (total_value_1 + total_value_2) / (total_supply / 1e18)
+            decimals_1, decimals_2 = self.get_decimals(token_address_1, token_address_2)
+
+            # Total value for one token should be the same than total value for the other token
+            # if pool is under active arbitrage. We use the price for the first token we find
+            for token_address, decimals, reserves in zip((token_address_1, token_address_2),
+                                                         (decimals_1, decimals_2),
+                                                         (reserves_1, reserves_2)):
+                try:
+                    price = self.get_price(token_address)
+                    total_value = (reserves / 10 ** decimals_1) * price
+                    print(total_value * 2)
+                    return (total_value * 2) / (total_supply / 1e18)
+                except CannotGetPriceFromOracle:
+                    continue
         except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
             error_message = f'Cannot get uniswap v2 price for pool token={pool_token_address}'
             logger.warning(error_message)
@@ -407,3 +428,29 @@ class BalancerOracle(PricePoolOracle):
         except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                            f'It is not a balancer pool token')
+
+
+class MooniswapOracle(BalancerOracle):
+    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
+        """
+        Estimate balancer pool token price based on its components
+        :param pool_token_address: Moniswap pool token address
+        :return: Eth price for pool token
+        """
+        try:
+            balancer_pool_contract = self.w3.eth.contract(pool_token_address, abi=mooniswap_abi)
+            token_0, token_1, total_supply = self.ethereum_client.batch_call([
+                balancer_pool_contract.functions.token0(),
+                balancer_pool_contract.functions.token1(),
+                balancer_pool_contract.functions.totalSupply(),
+            ])
+            for token in (token_0, token_1):
+                if token == NULL_ADDRESS:  # Ether
+                    ethereum_amount = self.ethereum_client.get_balance(pool_token_address)
+                    return ethereum_amount * 2 / total_supply
+            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
+                                           f'It is not a mooniswap pool token')
+
+        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
+            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
+                                           f'It is not a mooniswap pool token')

@@ -7,8 +7,8 @@ from eth_account import Account
 
 from .. import EthereumClient
 from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
-                       KyberOracle, SushiswapOracle, UniswapOracle,
-                       UniswapV2Oracle)
+                       KyberOracle, MooniswapOracle, SushiswapOracle,
+                       UniswapOracle, UniswapV2Oracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -187,3 +187,21 @@ class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a balancer pool token'):
             balancer_oracle.get_pool_token_price(Account.create().address)
+
+
+class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_pool_token_price(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        uniswap_oracle = UniswapV2Oracle(ethereum_client)
+        mooniswap_oracle = MooniswapOracle(ethereum_client, uniswap_oracle)
+        moniswap_pool_address = '0x6a11F3E5a01D129e566d783A7b6E8862bFD66CcA'  # 1inch Liquidity Pool (ETH-WBTC)
+
+        price = mooniswap_oracle.get_pool_token_price(moniswap_pool_address)
+        self.assertGreater(price, 0)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a mooniswap pool token'):
+            mooniswap_oracle.get_pool_token_price(gno_token_mainnet_address)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a mooniswap pool token'):
+            mooniswap_oracle.get_pool_token_price(Account.create().address)
