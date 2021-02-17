@@ -138,7 +138,13 @@ class UniswapOracle(PriceOracle):
         r = requests.post(self.ethereum_client.ethereum_node_url, json=payloads)
         if not r.ok:
             raise CannotGetPriceFromOracle(f'Error from node with url={self.ethereum_client.ethereum_node_url}')
-        results = [HexBytes(result['result']) for result in r.json()]
+
+        results = []
+        for result in r.json():
+            if 'result' not in result:
+                raise CannotGetPriceFromOracle(result['error'])
+            else:
+                results.append(HexBytes(result['result']))
 
         balance = int(results[0].hex(), 16)
         token_decimals = self.ethereum_client.w3.codec.decode_single('uint8', results[1])
