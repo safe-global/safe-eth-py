@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple
 
 import requests
 from cached_property import cached_property
-from eth_abi.exceptions import InsufficientDataBytes
+from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_abi_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
@@ -92,7 +92,7 @@ class KyberOracle(PriceOracle):
                 logger.warning(error_message)
                 raise InvalidPriceFromOracle(error_message)
             return price
-        except (ValueError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+        except (ValueError, BadFunctionCallOutput, DecodingError) as e:
             error_message = f'Cannot get price from kyber-network-proxy={self.kyber_network_proxy_address} ' \
                             f'for token-1={token_address_1} to token-2={token_address_2}'
             logger.warning(error_message)
@@ -156,7 +156,7 @@ class UniswapOracle(PriceOracle):
             uniswap_exchange_address = self.get_uniswap_exchange(token_address)
             if uniswap_exchange_address == NULL_ADDRESS:
                 raise ValueError
-        except (BadFunctionCallOutput, InsufficientDataBytes, ValueError) as e:
+        except (BadFunctionCallOutput, DecodingError, ValueError) as e:
             error_message = f'Non existing uniswap exchange for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
@@ -171,7 +171,7 @@ class UniswapOracle(PriceOracle):
                 logger.warning(error_message)
                 raise InvalidPriceFromOracle(error_message)
             return price
-        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, DecodingError) as e:
             error_message = f'Cannot get token balance for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
@@ -298,7 +298,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             decimals_normalized_reserves_2 = reserves_2 * 10 ** decimals_1
 
             return decimals_normalized_reserves_2 / decimals_normalized_reserves_1
-        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, DecodingError) as e:
             error_message = f'Cannot get uniswap v2 price for pair token_1={token_address} ' \
                             f'token_2={token_address_2}'
             logger.warning(error_message)
@@ -344,7 +344,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                     return (total_value * 2) / (total_supply / 1e18)
                 except CannotGetPriceFromOracle:
                     continue
-        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+        except (ValueError, ZeroDivisionError, BadFunctionCallOutput, DecodingError) as e:
             error_message = f'Cannot get uniswap v2 price for pool token={pool_token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
@@ -384,7 +384,7 @@ class CurveOracle(PricePoolOracle):
         """
         try:
             return self.registry_contract.functions.get_virtual_price_from_lp_token(pool_token_address).call() / 1e18
-        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
+        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
 
 
@@ -430,7 +430,7 @@ class BalancerOracle(PricePoolOracle):
             for token_balance, token_decimal, token_price in zip(token_balances, token_decimals, token_prices):
                 total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
-        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
+        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                            f'It is not a balancer pool token')
 
@@ -468,6 +468,6 @@ class MooniswapOracle(BalancerOracle):
                 raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                                f'It is not a mooniswap pool token')
 
-        except (SolidityError, InsufficientDataBytes, BadFunctionCallOutput, ValueError):
+        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                            f'It is not a mooniswap pool token')

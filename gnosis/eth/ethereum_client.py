@@ -6,7 +6,7 @@ from typing import (Any, Dict, Iterable, List, NamedTuple, Optional, Sequence,
 
 import eth_abi
 import requests
-from eth_abi.exceptions import InsufficientDataBytes
+from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
@@ -278,7 +278,7 @@ class Erc20Manager:
                                                                   HexBytes(data['result'])))  # Token
                     else:
                         balance = int(data['result'], 16)  # Ether
-                except (InsufficientDataBytes, BadFunctionCallOutput):
+                except (DecodingError, BadFunctionCallOutput):
                     balance = 0
             balances.append({
                 'token_address': token_address,
@@ -331,7 +331,7 @@ class Erc20Manager:
             symbol = decode_string_or_bytes32(results[1])
             decimals = self.ethereum_client.w3.codec.decode_single('uint8', results[2])
             return Erc20Info(name, symbol, decimals)
-        except (ValueError, BadFunctionCallOutput, InsufficientDataBytes) as e:
+        except (ValueError, BadFunctionCallOutput, DecodingError) as e:
             raise InvalidERC20Info from e
 
     def get_total_transfer_history(self, addresses: Optional[Sequence[ChecksumAddress]] = None,
@@ -563,7 +563,7 @@ class Erc721Manager:
                 erc721_contract.functions.symbol(),
             ]))
             return Erc721Info(name, symbol)
-        except (InsufficientDataBytes, ValueError):  # Not all the ERC721 have metadata
+        except (DecodingError, ValueError):  # Not all the ERC721 have metadata
             raise InvalidERC721Info
 
     def get_owners(self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]) -> List[Optional[str]]:
@@ -1023,9 +1023,9 @@ class EthereumClient:
                         return_values.append(normalized_data[0])
                     else:
                         return_values.append(normalized_data)
-                except (InsufficientDataBytes, OverflowError):
+                except (DecodingError, OverflowError):
                     fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
-                    errors.append(f'`{fn_name}`: InsufficientDataBytes, cannot decode')
+                    errors.append(f'`{fn_name}`: DecodingError, cannot decode')
                     return_values.append(None)
 
         if errors and raise_exception:
