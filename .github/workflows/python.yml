@@ -46,7 +46,6 @@ jobs:
     - name: Run tests and coverage
       run: |
         source venv/bin/activate
-        python manage.py check
         coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
       env:
         SOURCE_FOLDER: gnosis
