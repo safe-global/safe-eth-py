@@ -445,6 +445,9 @@ class Safe:
                       42066726f6d207468697320636f6e74726163740000000000000000000000000000000000000000'}
             """
             error_dict = exc.args[0]
+            if not isinstance(error_dict, dict):  # Geth v1.9.25
+                raise CannotEstimateGas(error_dict) from exc
+
             data_dict = error_dict.get('data')
             if not data_dict:
                 raise exc
