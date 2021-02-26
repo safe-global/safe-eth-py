@@ -164,6 +164,10 @@ class UniswapOracle(PriceOracle):
         try:
             balance, token_decimals, token_balance = self._get_balances_using_batching(uniswap_exchange_address,
                                                                                        token_address)
+            # Check liquidity. Require at least 2 ether to be on the pool
+            if balance / 1e18 < 2:
+                raise CannotGetPriceFromOracle(f'Not enough liquidity for token={token_address}')
+
             price = balance / token_balance / 10**(18 - token_decimals)
             if price <= 0.:
                 error_message = f'price={price} <= 0 from uniswap-factory={uniswap_exchange_address} ' \
