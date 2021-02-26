@@ -452,6 +452,8 @@ class Safe:
                 # Parity
                 result = HexBytes(data_dict.replace('Reverted ', ''))
                 return parse_revert_data(result)
+            elif isinstance(data_dict, str):  # Geth 1.8.15 revert ??
+                raise CannotEstimateGas(data_dict) from exc
 
             key = list(data_dict.keys())[0]
             result = data_dict[key]['return']
