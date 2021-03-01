@@ -415,60 +415,46 @@ class Safe:
 
             return int(gas_estimation.hex(), 16)
 
-        try:
-            tx = self.get_contract().functions.requiredTxGas(
-                to,
-                value,
-                data,
-                operation
-            ).buildTransaction({
-                'from': safe_address,
-                'gas': 0,  # Don't call estimate
-                'gasPrice': 0,  # Don't get gas price
-            })
-            if gas_limit:
-                tx['gas'] = gas_limit
-            else:
-                del tx['gas']  # Unlimited gas for call
+        tx = self.get_contract().functions.requiredTxGas(
+            to,
+            value,
+            data,
+            operation
+        ).buildTransaction({
+            'from': safe_address,
+            'gas': 0,  # Don't call estimate
+            'gasPrice': 0,  # Don't get gas price
+        })
 
-            # If we `buildTransaction` and then `eth_call` Web3 will not try to decode it for us
-            # Ganache >= 6.3.0 and Geth are working like this
-            result: HexBytes = self.w3.eth.call(tx, block_identifier=block_identifier)
-            return parse_revert_data(result)
-        except ValueError as exc:  # Parity
-            """
-            Parity throws a ValueError, e.g.
-            {'code': -32015,
-             'message': 'VM execution error.',
-             'data': 'Reverted 0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000
-                      000000000000000000000000000000000000000000000002c4d6574686f642063616e206f6e6c792062652063616c6c656
-                      42066726f6d207468697320636f6e74726163740000000000000000000000000000000000000000'}
-            """
-            error_dict = exc.args[0]
-            if not isinstance(error_dict, dict):  # Geth v1.9.25
-                raise CannotEstimateGas(error_dict) from exc
+        tx_param = {
+            'from': safe_address,
+            'to': safe_address,
+            'data': tx['data'],
+        }
 
-            data_dict = error_dict.get('data')
-            if not data_dict:
-                raise exc
-            elif isinstance(data_dict, str) and 'Reverted ' in data_dict:
-                # Parity
-                result = HexBytes(data_dict.replace('Reverted ', ''))
-                return parse_revert_data(result)
-            elif isinstance(data_dict, str):  # Geth 1.8.15 revert ??
-                raise CannotEstimateGas(data_dict) from exc
+        if gas_limit:
+            tx_param['gas'] = HexBytes(gas_limit).hex()
 
-            key = list(data_dict.keys())[0]
-            result = data_dict[key]['return']
-            if result == '0x0':
-                raise CannotEstimateGas('0x0') from exc
-            else:
-                # Ganache-Cli with no `--noVMErrorsOnRPCResponse` flag enabled
-                logger.warning('You should use `--noVMErrorsOnRPCResponse` flag with Ganache-cli')
-                estimated_gas_hex = result[138:]
-                assert len(estimated_gas_hex) == 64
-                estimated_gas = int(estimated_gas_hex, 16)
-                return estimated_gas
+        query = {'jsonrpc': '2.0',
+                 'method': 'eth_call',
+                 'params': [tx_param,
+                            'latest'],
+                 'id': 1}
+
+        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=query)
+        if response.ok:
+            response_data = response.json()
+            error_data: Optional[str] = None
+            if 'error' in response_data and 'data' in response_data['error']:
+                error_data = response_data['error']['data']
+            elif 'result' in response_data:  # Ganache-cli
+                error_data = response_data['result']
+
+            if error_data:
+                if '0x' in error_data:
+                    return parse_revert_data(HexBytes(error_data[error_data.find('0x'):]))
+
+        raise CannotEstimateGas(f'Received {response.status_code} - {response.content} from ethereum node')
 
     def estimate_tx_gas_with_web3(self, to: str, value: int, data: EthereumData) -> int:
         """
