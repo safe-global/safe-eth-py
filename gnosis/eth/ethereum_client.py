@@ -265,7 +265,7 @@ class Erc20Manager:
                                         'data': '0x70a08231' + '{:0>64}'.format(address.replace('0x', '').lower())
                                         }, 'latest'],
                             'id': i + 1})
-        response = requests.post(self.ethereum_client.ethereum_node_url, json=queries)
+        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=queries)
         token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]], token_addresses)
         balances: List[BalanceDict] = []
         for token_address, data in zip(token_addresses_casted, response.json()):
@@ -318,7 +318,7 @@ class Erc20Manager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_call',
                     'params': [{'to': erc20_address, 'data': data}, 'latest']}
                    for i, data in enumerate(datas)]
-        response = requests.post(self.ethereum_client.ethereum_node_url, json=payload)
+        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=payload)
         if not response.ok:
             raise InvalidERC20Info(response.content)
         try:
@@ -739,7 +739,7 @@ class ParityManager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_block',
                     'params': [hex(block_identifier) if isinstance(block_identifier, int) else block_identifier]}
                    for i, block_identifier in enumerate(block_identifiers)]
-        results = requests.post(self.ethereum_node_url, json=payload).json()
+        results = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload).json()
         traces = []
         for result in results:
             raw_tx = result['result']
@@ -775,7 +775,7 @@ class ParityManager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_transaction',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
-        results = requests.post(self.ethereum_node_url, json=payload).json()
+        results = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload).json()
         traces = []
         for result in results:
             raw_tx = result['result']
@@ -899,6 +899,7 @@ class EthereumClient:
         self.erc20: Erc20Manager = Erc20Manager(self, slow_provider_timeout)
         self.erc721: Erc721Manager = Erc721Manager(self, slow_provider_timeout)
         self.parity: ParityManager = ParityManager(self, slow_provider_timeout)
+        self.http_session = requests.Session()
         try:
             if int(self.w3.net.version) != 1:
                 self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -1003,7 +1004,7 @@ class EthereumClient:
                             'params': [query_params, block_identifier],
                             'id': i})
 
-        response = requests.post(self.ethereum_node_url, json=queries)
+        response = self.http_session.post(self.ethereum_node_url, json=queries)
         if not response.ok:
             raise ConnectionError(f'Error connecting to {self.ethereum_node_url}: {response.text}')
 
@@ -1095,7 +1096,7 @@ class EthereumClient:
             "id": 1
         }
 
-        response = requests.post(url=self.ethereum_node_url, json=payload)
+        response = self.http_session.post(url=self.ethereum_node_url, json=payload)
         response_json = response.json()
         if 'error' in response_json:
             # When using `pending`, Geth returns
@@ -1149,7 +1150,7 @@ class EthereumClient:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionByHash',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
-        results = requests.post(self.ethereum_node_url, json=payload).json()
+        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
         txs = []
         for result in results:
             raw_tx = result['result']
@@ -1180,7 +1181,7 @@ class EthereumClient:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_getTransactionReceipt',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
-        results = requests.post(self.ethereum_node_url, json=payload).json()
+        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
         receipts = []
         for result in results:
             tx_receipt = result['result']
@@ -1205,7 +1206,7 @@ class EthereumClient:
                     'params': [hex(block_identifier) if isinstance(block_identifier, int) else block_identifier,
                                full_transactions]}
                    for i, block_identifier in enumerate(block_identifiers)]
-        results = requests.post(self.ethereum_node_url, json=payload).json()
+        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
         blocks = []
         for result in results:
             raw_block = result['result']
