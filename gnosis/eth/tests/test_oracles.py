@@ -15,9 +15,6 @@ from .utils import just_test_if_mainnet_node
 gno_token_mainnet_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
 weth_token_mainnet_address = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 
-kyber_proxy_mainnet_address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
-uniswap_proxy_mainnet_address = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95'
-
 dai_token_mainnet_address = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 usdt_token_mainnet_address = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
 
@@ -26,7 +23,7 @@ class TestOracles(EthereumTestCaseMixin, TestCase):
     def test_kyber_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
-        kyber_oracle = KyberOracle(ethereum_client, kyber_proxy_mainnet_address)
+        kyber_oracle = KyberOracle(ethereum_client)
         price = kyber_oracle.get_price(gno_token_mainnet_address, weth_token_mainnet_address)
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
@@ -47,12 +44,16 @@ class TestOracles(EthereumTestCaseMixin, TestCase):
     def test_uniswap_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
-        uniswap_oracle = UniswapOracle(ethereum_client, uniswap_proxy_mainnet_address)
-        token_address = gno_token_mainnet_address
+        uniswap_oracle = UniswapOracle(ethereum_client)
+        token_address = dai_token_mainnet_address
         price = uniswap_oracle.get_price(token_address)
         self.assertEqual(uniswap_oracle.get_uniswap_exchange.cache_info().hits, 0)
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, 'Not enough liquidity'):
+            token_address = gno_token_mainnet_address
+            uniswap_oracle.get_price(token_address)
 
         # Check batching is working
         uniswap_exchange = uniswap_oracle.get_uniswap_exchange(token_address)

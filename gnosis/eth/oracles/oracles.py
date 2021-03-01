@@ -19,6 +19,7 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_factory_contract,
                          get_uniswap_v2_pair_contract,
                          get_uniswap_v2_router_contract)
+from ..ethereum_client import EthereumNetwork
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 from .abis.mooniswap_abis import mooniswap_abi
@@ -53,16 +54,29 @@ class PricePoolOracle(ABC):
 class KyberOracle(PriceOracle):
     # This is the `tokenAddress` they use for ETH ¯\_(ツ)_/¯
     ETH_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+    ADDRESSES = {
+        EthereumNetwork.MAINNET: '0x9AAb3f75489902f3a48495025729a0AF77d4b11e',
+        EthereumNetwork.RINKEBY: '0x0d5371e5EE23dec7DF251A8957279629aa79E9C5',
+        EthereumNetwork.ROPSTEN: '0xd719c34261e099Fdb33030ac8909d5788D3039C4',
+        EthereumNetwork.KOVAN: '0xc153eeAD19e0DBbDb3462Dcc2B703cC6D738A37c',
+    }
 
     def __init__(self, ethereum_client: EthereumClient,
-                 kyber_network_proxy_address: str = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'):
+                 kyber_network_proxy_address: Optional[str] = None):
         """
         :param ethereum_client:
         :param kyber_network_proxy_address: https://developer.kyber.network/docs/MainnetEnvGuide/#contract-addresses
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.kyber_network_proxy_address = kyber_network_proxy_address
+        self._kyber_network_proxy_address = kyber_network_proxy_address
+
+    @cached_property
+    def kyber_network_proxy_address(self):
+        if self._kyber_network_proxy_address:
+            return self._kyber_network_proxy_address
+        return self.ADDRESSES.get(self.ethereum_client.get_network(),
+                                  self.ADDRESSES.get(EthereumNetwork.MAINNET))  # By default return Mainnet address
 
     @cached_property
     def kyber_network_proxy_contract(self):
@@ -100,15 +114,33 @@ class KyberOracle(PriceOracle):
 
 
 class UniswapOracle(PriceOracle):
-    def __init__(self, ethereum_client: EthereumClient, uniswap_factory_address: str):
+    ADDRESSES = {
+        EthereumNetwork.MAINNET: '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95',
+        EthereumNetwork.RINKEBY: '0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36',
+        EthereumNetwork.ROPSTEN: '0x9c83dCE8CA20E9aAF9D3efc003b2ea62aBC08351',
+        EthereumNetwork.KOVAN: '0xD3E51Ef092B2845f10401a0159B2B96e8B6c3D30',
+        EthereumNetwork.GOERLI: '0x6Ce570d02D73d4c384b46135E87f8C592A8c86dA',
+    }
+
+    def __init__(self, ethereum_client: EthereumClient, uniswap_factory_address: Optional[str] = None):
         """
         :param ethereum_client:
         :param uniswap_factory_address: https://docs.uniswap.io/frontend-integration/connect-to-uniswap#factory-contract
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.uniswap_factory_address = uniswap_factory_address
-        self.uniswap_factory = get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
+        self._uniswap_factory_address = uniswap_factory_address
+
+    @cached_property
+    def uniswap_factory_address(self):
+        if self._uniswap_factory_address:
+            return self._uniswap_factory_address
+        return self.ADDRESSES.get(self.ethereum_client.get_network(),
+                                  self.ADDRESSES.get(EthereumNetwork.MAINNET))
+
+    @cached_property
+    def uniswap_factory(self):
+        return get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
 
     @functools.lru_cache(maxsize=None)
     def get_uniswap_exchange(self, token_address: str) -> str:
@@ -184,7 +216,7 @@ class UniswapOracle(PriceOracle):
 class UniswapV2Oracle(PricePoolOracle, PriceOracle):
     # Pair init code is keccak(getCode(UniswapV2Pair))
     pair_init_code = HexBytes('0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f')
-    router_address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+    router_address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'  # Same address on every network
 
     def __init__(self, ethereum_client: EthereumClient,
                  router_address: Optional[str] = None):
