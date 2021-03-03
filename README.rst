@@ -7,7 +7,7 @@ Gnosis-py
 
 Gnosis-py includes a set of libraries to work with Ethereum and Gnosis projects:
   - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
-tokens and tracing.
+    tokens and tracing.
   - `Gnosis Safe <https://github.com/gnosis/safe-contracts>`_ classes and utilities.
   - Price oracles for `Uniswap`, `Kyber`...
   - Django serializers, models and utils.
