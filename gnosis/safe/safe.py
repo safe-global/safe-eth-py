@@ -463,7 +463,10 @@ class Safe:
         :param data:
         :return: Estimation using web3 `estimateGas`
         """
-        return self.ethereum_client.estimate_gas(self.address, to, value, data)
+        try:
+            return self.ethereum_client.estimate_gas(to, from_=self.address, value=value, data=data)
+        except ValueError as exc:
+            raise CannotEstimateGas('Cannot estimate gas with `eth_estimateGas`') from exc
 
     def estimate_tx_gas_by_trying(self, to: str, value: int, data: Union[bytes, str], operation: int):
         """

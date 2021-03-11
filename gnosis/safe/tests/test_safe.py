@@ -10,7 +10,7 @@ from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
-from ..exceptions import (CannotRetrieveSafeInfoException,
+from ..exceptions import (CannotEstimateGas, CannotRetrieveSafeInfoException,
                           CouldNotPayGasWithEther, CouldNotPayGasWithToken)
 from ..safe import Safe, SafeOperation
 from ..signatures import signature_to_bytes, signatures_to_bytes
@@ -426,6 +426,11 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertGreater(gas_estimated_safe, gas_estimated_web3)  # Web3 estimation should use less gas
         self.assertGreater(gas_estimated_web3, 0)
         self.assertGreater(gas_estimated_safe, 0)
+
+        with self.assertRaises(CannotEstimateGas):
+            deployed_erc20 = self.deploy_example_erc20(100, Account.create().address)
+            transfer_data = deployed_erc20.functions.transfer(to, 200).buildTransaction({'gas': 0})['data']
+            safe.estimate_tx_gas_with_web3(deployed_erc20.address, value, transfer_data)
 
     def test_estimate_tx_operational_gas(self):
         for threshold in range(2, 5):
