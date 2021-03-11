@@ -379,8 +379,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         bytecode = '60806040526102fe806100136000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c8063022952b81461004657806350d1f08214610074578063f0ba8440146100ac575b600080fd5b6100726004803603602081101561005c57600080fd5b81019080803590602001909291905050506100ee565b005b6100aa6004803603604081101561008a57600080fd5b8101908080359060200190929190803590602001909291905050506101d9565b005b6100d8600480360360208110156100c257600080fd5b81019080803590602001909291905050506102a7565b6040518082815260200191505060405180910390f35b3073ffffffffffffffffffffffffffffffffffffffff166350d1f0826006836040518363ffffffff1660e01b81526004018083815260200182815260200192505050600060405180830381600087803b15801561014a57600080fd5b505af115801561015e573d6000803e3d6000fd5b505050503073ffffffffffffffffffffffffffffffffffffffff166350d1f0826008836040518363ffffffff1660e01b81526004018083815260200182815260200192505050600060405180830381600087803b1580156101be57600080fd5b505af11580156101d2573d6000803e3d6000fd5b5050505050565b600082141561022c5760008090505b8181101561022657600081908060018154018082558091505060019003906000526020600020016000909190919091505580806001019150506101e8565b506102a3565b3073ffffffffffffffffffffffffffffffffffffffff166350d1f08260018403836040518363ffffffff1660e01b81526004018083815260200182815260200192505050600060405180830381600087803b15801561028a57600080fd5b505af115801561029e573d6000803e3d6000fd5b505050505b5050565b600081815481106102b457fe5b90600052602060002001600091509050548156fea264697066735822122091b08fac39dd94b262ed9adf68b679a88140319e98d18d4c918bd5a1d93527fc64736f6c63430006040033'
         abi = [{'inputs': [], 'stateMutability': 'payable', 'type': 'constructor'}, {'inputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 'name': 'data', 'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 'stateMutability': 'view', 'type': 'function'}, {'inputs': [{'internalType': 'uint256', 'name': 'level', 'type': 'uint256'}, {'internalType': 'uint256', 'name': 'count', 'type': 'uint256'}], 'name': 'nested', 'outputs': [], 'stateMutability': 'nonpayable', 'type': 'function'}, {'inputs': [{'internalType': 'uint256', 'name': 'count', 'type': 'uint256'}], 'name': 'useGas', 'outputs': [], 'stateMutability': 'nonpayable', 'type': 'function'}]
 
-        Nester = self.w3.eth.contract(abi=abi, bytecode=bytecode)
-        tx_hash = Nester.constructor().transact({'from': self.w3.eth.accounts[0]})
+        nester_contract = self.w3.eth.contract(abi=abi, bytecode=bytecode)
+        tx_hash = nester_contract.constructor().transact({'from': self.w3.eth.accounts[0]})
         tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
         nester = self.w3.eth.contract(
             address=tx_receipt.contractAddress,
@@ -413,6 +413,19 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         # Tx was successfully executed if refund_receiver gets ether
         self.assertGreater(self.ethereum_client.get_balance(refund_receiver), 0)
+
+    def test_estimate_tx_gas_with_web3(self):
+        safe = Safe(self.deploy_test_safe(owners=[self.ethereum_test_account.address],
+                                          initial_funding_wei=self.w3.toWei(0.1, 'ether')).safe_address,
+                    self.ethereum_client)
+        to = Account.create().address
+        value = self.w3.toWei(0.01, 'ether')
+        data = b''
+        gas_estimated_web3 = safe.estimate_tx_gas_with_web3(to, value, data)
+        gas_estimated_safe = safe.estimate_tx_gas_with_safe(to, value, data, 0)
+        self.assertGreater(gas_estimated_safe, gas_estimated_web3)  # Web3 estimation should use less gas
+        self.assertGreater(gas_estimated_web3, 0)
+        self.assertGreater(gas_estimated_safe, 0)
 
     def test_estimate_tx_operational_gas(self):
         for threshold in range(2, 5):
