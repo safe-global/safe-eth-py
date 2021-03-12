@@ -1068,17 +1068,18 @@ class EthereumClient:
 
     def estimate_gas(self, to: str, from_: Optional[str] = None, value: Optional[int] = None,
                      data: Optional[EthereumData] = None, gas: Optional[int] = None, gas_price: Optional[int] = None,
-                     block_identifier: Optional[BlockIdentifier] = 'latest'):
+                     block_identifier: Optional[BlockIdentifier] = None) -> int:
         """
-        Workaround to support 'pending' `block_identifier` for Geth
+        Estimate gas calling `eth_estimateGas`
         :param from_:
         :param to:
         :param value:
         :param data:
         :param gas:
         :param gas_price:
-        :param block_identifier: Be careful, Geth does not support `pending` when estimating
-        :return:
+        :param block_identifier: Be careful, `Geth` does not support `pending` when estimating
+        :return: Amount of gas needed for transaction
+        :raises: ValueError
         """
         tx: TxParams = {'to': to}
         if from_:
@@ -1094,7 +1095,10 @@ class EthereumClient:
         try:
             return self.w3.eth.estimateGas(tx, block_identifier=block_identifier)
         except ValueError:
-            return self.w3.eth.estimateGas(tx, block_identifier=None)
+            if block_identifier is not None:  # Geth does not support setting `block_identifier`
+                return self.w3.eth.estimateGas(tx, block_identifier=None)
+            else:
+                raise
 
     @staticmethod
     def estimate_data_gas(data: bytes):
