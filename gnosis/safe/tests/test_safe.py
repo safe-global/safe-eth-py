@@ -165,7 +165,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         # Check owners are the same
         contract_owners = my_safe_contract.functions.getOwners().call()
         self.assertEqual(set(contract_owners), set(owners))
-        self.assertEqual(w3.eth.getBalance(owners[0]), owner0_balance)
+        self.assertEqual(w3.eth.get_balance(owners[0]), owner0_balance)
 
         with self.assertRaises(CouldNotPayGasWithEther):
             safe.send_multisig_tx(
@@ -206,7 +206,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         tx_receipt = w3.eth.waitForTransactionReceipt(ethereum_tx_sent.tx_hash)
         self.assertTrue(tx_receipt['status'])
-        owner0_new_balance = w3.eth.getBalance(owners[0])
+        owner0_new_balance = w3.eth.get_balance(owners[0])
         gas_used = tx_receipt['gasUsed']
         gas_cost = gas_used * self.gas_price
         estimated_payment = (base_gas + gas_used) * gas_price
@@ -292,7 +292,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertGreater(owner_token_balance, 0)
 
         # All ether on safe was transferred to receiver
-        receiver_balance = self.w3.eth.getBalance(receiver)
+        receiver_balance = self.w3.eth.get_balance(receiver)
         self.assertEqual(receiver_balance, safe_balance)
 
     def test_estimate_tx_base_gas(self):
@@ -607,5 +607,5 @@ class TestSafe(SafeTestCaseMixin, TestCase):
                               data_gas, gas_price, gas_token, refund_receiver, signature_bytes,
                               self.ethereum_test_account.key)
 
-        balance = self.w3.eth.getBalance(to)
+        balance = self.w3.eth.get_balance(to)
         self.assertEqual(value, balance)

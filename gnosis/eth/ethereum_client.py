@@ -678,7 +678,7 @@ class ParityManager:
             if internal_tx.get('error') is not None:
                 errored_trace_address = internal_tx['traceAddress']
             elif (errored_trace_address is not None
-                    and internal_tx['traceAddress'][:len(errored_trace_address)] == errored_trace_address):
+                  and internal_tx['traceAddress'][:len(errored_trace_address)] == errored_trace_address):
                 continue
             else:
                 new_list.append(internal_tx)
@@ -912,7 +912,7 @@ class EthereumClient:
 
     @property
     def current_block_number(self):
-        return self.w3.eth.blockNumber
+        return self.w3.eth.block_number
 
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
@@ -923,7 +923,7 @@ class EthereumClient:
             if data:
                 tx: TxParams = {'from': deployer_account.address,
                                 'data': data,
-                                'gasPrice': self.w3.eth.gasPrice,
+                                'gasPrice': self.w3.eth.gas_price,
                                 'value': Wei(0),
                                 'to': contract_address if contract_address else ''}
                 tx['gas'] = self.w3.eth.estimateGas(tx)
@@ -968,7 +968,7 @@ class EthereumClient:
         :param block_identifier:
         :return:
         """
-        return self.w3.eth.getTransactionCount(address, block_identifier=block_identifier)
+        return self.w3.eth.get_transaction_count(address, block_identifier=block_identifier)
 
     def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
                           raise_exception: bool = True,
@@ -1114,11 +1114,11 @@ class EthereumClient:
         return gas
 
     def get_balance(self, address: ChecksumAddress, block_identifier: Optional[BlockIdentifier] = None):
-        return self.w3.eth.getBalance(address, block_identifier)
+        return self.w3.eth.get_balance(address, block_identifier)
 
     def get_transaction(self, tx_hash: EthereumHash) -> Optional[TxData]:
         try:
-            return self.w3.eth.getTransaction(tx_hash)
+            return self.w3.eth.get_transaction(tx_hash)
         except TransactionNotFound:
             return None
 
@@ -1172,7 +1172,7 @@ class EthereumClient:
 
     def get_block(self, block_identifier: BlockIdentifier, full_transactions: bool = False) -> Optional[BlockData]:
         try:
-            return self.w3.eth.getBlock(block_identifier, full_transactions=full_transactions)
+            return self.w3.eth.get_block(block_identifier, full_transactions=full_transactions)
         except BlockNotFound:
             return None
 
@@ -1197,15 +1197,15 @@ class EthereumClient:
         return blocks
 
     def is_contract(self, contract_address: ChecksumAddress) -> bool:
-        return bool(self.w3.eth.getCode(contract_address))
+        return bool(self.w3.eth.get_code(contract_address))
 
     @tx_with_exception_handling
     def send_transaction(self, transaction_dict: TxParams) -> HexBytes:
-        return self.w3.eth.sendTransaction(transaction_dict)
+        return self.w3.eth.send_transaction(transaction_dict)
 
     @tx_with_exception_handling
     def send_raw_transaction(self, raw_transaction: EthereumData) -> HexBytes:
-        return self.w3.eth.sendRawTransaction(bytes(raw_transaction))
+        return self.w3.eth.send_raw_transaction(bytes(raw_transaction))
 
     def send_unsigned_transaction(self, tx: TxParams, private_key: Optional[str] = None,
                                   public_key: Optional[str] = None, retry: bool = False,
@@ -1306,7 +1306,7 @@ class EthereumClient:
             # If `tx_receipt` exists but `blockNumber` is `None`, tx is still pending (just Parity)
             return False
         else:
-            return (self.w3.eth.blockNumber - tx_receipt['blockNumber']) >= confirmations
+            return (self.w3.eth.block_number - tx_receipt['blockNumber']) >= confirmations
 
     @staticmethod
     def private_key_to_address(private_key):

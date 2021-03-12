@@ -236,7 +236,7 @@ class SafeTx:
         """
 
         sender_account = Account.from_key(tx_sender_private_key)
-        tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gasPrice
+        tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gas_price
 
         tx_parameters = {
             'from': sender_account.address,

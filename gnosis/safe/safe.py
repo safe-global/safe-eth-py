@@ -498,7 +498,7 @@ class Safe:
             except CannotEstimateGas:
                 logger.warning('Safe=%s - Found 63/64 problem gas-estimated=%d to=%s data=%s',
                                self.address, gas_estimated, to, data.hex())
-                block_gas_limit = block_gas_limit or self.w3.eth.getBlock('latest', full_transactions=False)['gasLimit']
+                block_gas_limit = block_gas_limit or self.w3.eth.get_block('latest', full_transactions=False)['gasLimit']
                 gas_estimated = math.floor((1 + i * 0.01) * gas_estimated)
                 if gas_estimated >= block_gas_limit:
                     return block_gas_limit
@@ -574,18 +574,18 @@ class Safe:
             raise CannotRetrieveSafeInfoException(self.address) from e
 
     def retrieve_code(self) -> HexBytes:
-        return self.w3.eth.getCode(self.address)
+        return self.w3.eth.get_code(self.address)
 
     def retrieve_fallback_handler(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
-        address = self.ethereum_client.w3.eth.getStorageAt(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT,
-                                                           block_identifier=block_identifier)[-20:]
+        address = self.ethereum_client.w3.eth.get_storage_at(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT,
+                                                             block_identifier=block_identifier)[-20:]
         if len(address) == 20:
             return Web3.toChecksumAddress(address)
         else:
             return NULL_ADDRESS
 
     def retrieve_master_copy_address(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
-        bytes_address = self.w3.eth.getStorageAt(self.address, 0, block_identifier=block_identifier)[-20:]
+        bytes_address = self.w3.eth.get_storage_at(self.address, 0, block_identifier=block_identifier)[-20:]
         int_address = int.from_bytes(bytes_address, byteorder='big')
         return Web3.toChecksumAddress('{:#042x}'.format(int_address))
 

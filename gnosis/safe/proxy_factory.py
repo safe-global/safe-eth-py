@@ -73,7 +73,7 @@ class ProxyFactory:
         :return: True if proxy is valid, False otherwise
         """
 
-        deployed_proxy_code = self.w3.eth.getCode(address)
+        deployed_proxy_code = self.w3.eth.get_code(address)
         proxy_code_fns = (get_paying_proxy_deployed_bytecode,
                           get_proxy_1_0_0_deployed_bytecode,
                           self.get_proxy_runtime_code)

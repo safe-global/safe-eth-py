@@ -30,11 +30,11 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
     def test_generate_address2_with_proxy(self):
         deployer_account = self.ethereum_test_account
         proxy_factory_contract = get_proxy_factory_contract(self.w3)
-        nonce = self.w3.eth.getTransactionCount(deployer_account.address, block_identifier='pending')
+        nonce = self.w3.eth.get_transaction_count(deployer_account.address, block_identifier='pending')
         tx = proxy_factory_contract.constructor().buildTransaction({'nonce': nonce,
                                                                     'from': deployer_account.address})
         signed_tx = deployer_account.sign_transaction(tx)
-        tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+        tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
         tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
         proxy_factory_contract = get_proxy_factory_contract(self.w3, address=tx_receipt['contractAddress'])
 
@@ -49,7 +49,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                                                                                        'from': deployer_account.address,
                                                                                        })
         signed_tx = deployer_account.sign_transaction(tx)
-        tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+        tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
         tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
         logs = proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
         log = logs[0]

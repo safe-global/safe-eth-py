@@ -26,7 +26,7 @@ class EthereumTestCaseMixin:
 
     @property
     def gas_price(self):
-        return self.w3.eth.gasPrice
+        return self.w3.eth.gas_price
 
     def send_tx(self, tx, account: LocalAccount) -> bytes:
         return send_tx(self.w3, tx, account)
