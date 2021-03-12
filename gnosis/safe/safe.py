@@ -438,7 +438,7 @@ class Safe:
         query = {'jsonrpc': '2.0',
                  'method': 'eth_call',
                  'params': [tx_param,
-                            'latest'],
+                            block_identifier],
                  'id': 1}
 
         response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=query)
@@ -463,15 +463,22 @@ class Safe:
         :param data:
         :return: Estimation using web3 `estimateGas`
         """
-        return self.ethereum_client.estimate_gas(self.address, to, value, data)
+        try:
+            return self.ethereum_client.estimate_gas(to, from_=self.address, value=value, data=data)
+        except ValueError as exc:
+            raise CannotEstimateGas('Cannot estimate gas with `eth_estimateGas`') from exc
 
     def estimate_tx_gas_by_trying(self, to: str, value: int, data: Union[bytes, str], operation: int):
         """
+        Try to get an estimation with Safe's `requiredTxGas`. If estimation if successful, try to set a gas limit and
+        estimate again. If gas estimation is ok, same gas estimation should be returned, if it's less than required
+        estimation will not be completed, so estimation was not accurate and gas limit needs to be increased.
         :param to:
         :param value:
         :param data:
         :param operation:
         :return: Estimated gas calling `requiredTxGas` setting a gas limit and checking if `eth_call` is successful
+        :raises: CannotEstimateGas
         """
         if not data:
             data = b''
@@ -499,8 +506,13 @@ class Safe:
 
     def estimate_tx_gas(self, to: str, value: int, data: bytes, operation: int) -> int:
         """
-        Estimate tx gas. Use the max of calculation using safe method and web3 if operation == CALL or
-        use just the safe calculation otherwise
+        Estimate tx gas. Use `requiredTxGas` on the Safe contract and fallbacks to `eth_estimateGas` if that method
+        fails. Note: `eth_estimateGas` cannot estimate delegate calls
+        :param to:
+        :param value:
+        :param data:
+        :return: Estimated gas for Safe inner tx
+        :raises: CannotEstimateGas
         """
         # Costs to route through the proxy and nested calls
         PROXY_GAS = 1000
@@ -508,8 +520,14 @@ class Safe:
         # This was `false` before solc 0.4.21 -> `m_context.evmVersion().canOverchargeGasForCall()`
         # So gas needed by caller will be around 35k
         OLD_CALL_GAS = 35000
+        # Web3 `estimateGas` estimates less gas
+        WEB3_ESTIMATION_OFFSET = 20000
+        ADDITIONAL_GAS = PROXY_GAS + OLD_CALL_GAS
 
-        return self.estimate_tx_gas_by_trying(to, value, data, operation) + PROXY_GAS + OLD_CALL_GAS
+        try:
+            return self.estimate_tx_gas_by_trying(to, value, data, operation) + ADDITIONAL_GAS
+        except CannotEstimateGas:
+            return self.estimate_tx_gas_with_web3(to, value, data) + ADDITIONAL_GAS + WEB3_ESTIMATION_OFFSET
 
     def estimate_tx_operational_gas(self, data_bytes_length: int):
         """

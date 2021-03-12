@@ -716,13 +716,13 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         send_ether_gas = 21000
         from_ = self.ethereum_test_account.address
         to, _ = get_eth_address_with_key()
-        gas = self.ethereum_client.estimate_gas(from_, to, 5, None, block_identifier='pending')
+        gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=None, block_identifier='pending')
         self.assertEqual(gas, send_ether_gas)
 
-        gas = self.ethereum_client.estimate_gas(from_, to, 5, b'')
+        gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=b'')
         self.assertEqual(gas, send_ether_gas)
 
-        gas = self.ethereum_client.estimate_gas(from_, to, 5, None)
+        gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=None)
         self.assertEqual(gas, send_ether_gas)
 
     def test_estimate_gas_with_erc20(self):
@@ -747,7 +747,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         # self.assertGreater(gas, send_ether_gas)
         # self.assertLess(gas, send_ether_gas + 2000)
 
-        gas = self.ethereum_client.estimate_gas(from_, erc20_contract.address, 0, data, block_identifier='pending')
+        gas = self.ethereum_client.estimate_gas(erc20_contract.address, from_=from_, value=0, data=data,
+                                                block_identifier='pending')
         self.assertGreater(gas, send_ether_gas)
 
         # We do the real erc20 transfer for the next test case
@@ -756,7 +757,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertTrue(token_balance, amount_to_send)
 
         # Gas will be lowest now because you don't have to pay for storage
-        gas2 = self.ethereum_client.estimate_gas(from_, erc20_contract.address, 0, data, block_identifier='pending')
+        gas2 = self.ethereum_client.estimate_gas(erc20_contract.address, from_=from_, value=0, data=data,
+                                                 block_identifier='pending')
         self.assertLess(gas2, gas)
 
     def test_get_ethereum_network_default(self):

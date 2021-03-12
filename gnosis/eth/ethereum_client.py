@@ -1066,61 +1066,39 @@ class EthereumClient:
 
         return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
 
-    def estimate_gas(self, from_: str, to: str, value: int, data: EthereumData,
-                     block_identifier: Optional[BlockIdentifier] = 'latest'):
+    def estimate_gas(self, to: str, from_: Optional[str] = None, value: Optional[int] = None,
+                     data: Optional[EthereumData] = None, gas: Optional[int] = None, gas_price: Optional[int] = None,
+                     block_identifier: Optional[BlockIdentifier] = None) -> int:
         """
-        Workaround to support 'pending' `block_identifier` for Geth
+        Estimate gas calling `eth_estimateGas`
         :param from_:
         :param to:
         :param value:
         :param data:
-        :param block_identifier:
-        :return:
+        :param gas:
+        :param gas_price:
+        :param block_identifier: Be careful, `Geth` does not support `pending` when estimating
+        :return: Amount of gas needed for transaction
+        :raises: ValueError
         """
-        data = HexBytes(data) if data else HexBytes(b'')
-        params: List[Union[Dict[str, Any], BlockIdentifier]] = [
-            {"from": from_,
-             "to": to,
-             "data": data.hex(),
-             "value": "0x{:x}".format(value),  # No leading zeroes
-             },
-        ]
-
-        if block_identifier:
-            params.append(block_identifier)
-
-        payload = {
-            "method": "eth_estimateGas",
-            "params": params,
-            "jsonrpc": "2.0",
-            "id": 1
-        }
-
-        response = self.http_session.post(url=self.ethereum_node_url, json=payload)
-        response_json = response.json()
-        if 'error' in response_json:
-            # When using `pending`, Geth returns
-            """
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "error": {
-                    "code": -32602,
-                    "message": "too many arguments, want at most 1"
-                }
-            }
-            """
-            if response_json['error']['code'] == -32602:
-                return self.w3.eth.estimateGas({
-                    "from": from_,
-                    "to": to,
-                    "data": data,
-                    "value": Wei(value),
-                })
+        tx: TxParams = {'to': to}
+        if from_:
+            tx['from'] = from_
+        if value:
+            tx['value'] = value
+        if data:
+            tx['data'] = data
+        if gas:
+            tx['gas'] = gas
+        if gas_price:
+            tx['gasPrice'] = gas_price
+        try:
+            return self.w3.eth.estimateGas(tx, block_identifier=block_identifier)
+        except ValueError:
+            if block_identifier is not None:  # Geth does not support setting `block_identifier`
+                return self.w3.eth.estimateGas(tx, block_identifier=None)
             else:
-                raise ValueError(response_json['error'])
-        else:
-            return int(response_json['result'], 16)
+                raise
 
     @staticmethod
     def estimate_data_gas(data: bytes):
