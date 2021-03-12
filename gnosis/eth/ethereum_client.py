@@ -1081,8 +1081,6 @@ class EthereumClient:
         :return:
         """
         tx: TxParams = {'to': to}
-        if to:
-            tx['to'] = to
         if from_:
             tx['from'] = from_
         if value:
