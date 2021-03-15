@@ -426,18 +426,18 @@ class Safe:
             'gasPrice': 0,  # Don't get gas price
         })
 
-        tx_param = {
+        tx_params = {
             'from': safe_address,
             'to': safe_address,
             'data': tx['data'],
         }
 
         if gas_limit:
-            tx_param['gas'] = HexBytes(gas_limit).hex()
+            tx_params['gas'] = HexBytes(gas_limit).hex()
 
         query = {'jsonrpc': '2.0',
                  'method': 'eth_call',
-                 'params': [tx_param,
+                 'params': [tx_params,
                             block_identifier],
                  'id': 1}
 
@@ -487,11 +487,10 @@ class Safe:
 
         gas_estimated = self.estimate_tx_gas_with_safe(to, value, data, operation)
         block_gas_limit: Optional[int] = None
-        base_gas: Optional[int] = None
+        base_gas: Optional[int] = self.ethereum_client.estimate_data_gas(data)
 
-        for i in range(100):  # Make sure tx can be executed, fixing for example 63/64th problem
+        for i in range(1, 30):  # Make sure tx can be executed, fixing for example 63/64th problem
             try:
-                base_gas = base_gas or self.ethereum_client.estimate_data_gas(data)
                 self.estimate_tx_gas_with_safe(to, value, data, operation,
                                                gas_limit=gas_estimated + base_gas + 32000)
                 return gas_estimated
@@ -499,7 +498,7 @@ class Safe:
                 logger.warning('Safe=%s - Found 63/64 problem gas-estimated=%d to=%s data=%s',
                                self.address, gas_estimated, to, data.hex())
                 block_gas_limit = block_gas_limit or self.w3.eth.get_block('latest', full_transactions=False)['gasLimit']
-                gas_estimated = math.floor((1 + i * 0.01) * gas_estimated)
+                gas_estimated = math.floor((1 + i * 0.03) * gas_estimated)
                 if gas_estimated >= block_gas_limit:
                     return block_gas_limit
         return gas_estimated
