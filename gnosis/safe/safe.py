@@ -510,6 +510,7 @@ class Safe:
         :param to:
         :param value:
         :param data:
+        :param operation:
         :return: Estimated gas for Safe inner tx
         :raises: CannotEstimateGas
         """

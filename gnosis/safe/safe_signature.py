@@ -4,6 +4,7 @@ from logging import getLogger
 from typing import List, Union
 
 from eth_abi import encode_single
+from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
 from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
@@ -18,6 +19,14 @@ logger = getLogger(__name__)
 
 
 EthereumBytes = Union[bytes, str]
+
+
+class SafeSignatureException(Exception):
+    pass
+
+
+class CannotCheckEIP1271ContractSignature(SafeSignatureException):
+    pass
 
 
 class SafeSignatureType(Enum):
@@ -133,7 +142,10 @@ class SafeSignatureContract(SafeSignature):
 
     @property
     def owner(self):
-        # We don't need further checks to get the owner
+        """
+        :return: Address of contract signing. No further checks to get the owner are needed,
+        but it could be a non existing contract
+        """
         contract_address = checksum_encode(self.r)
         return contract_address
 
@@ -150,16 +162,16 @@ class SafeSignatureContract(SafeSignature):
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, self.owner)
-        exception: Exception
         for block_identifier in ('pending', 'latest'):
             try:
                 return safe_contract.functions.isValidSignature(
                     self.safe_tx_hash,
                     self.contract_signature
                 ).call(block_identifier=block_identifier) == self.EIP1271_MAGIC_VALUE
-            except BadFunctionCallOutput as e:  # Error using `pending` block identifier
-                exception = e
-        raise exception  # This should never happen
+            except (BadFunctionCallOutput, DecodingError):
+                # Error using `pending` block identifier or contract does not exist
+                logger.warning('Cannot check EIP1271 signature from contract %s', self.owner)
+        return False
 
 
 class SafeSignatureApprovedHash(SafeSignature):

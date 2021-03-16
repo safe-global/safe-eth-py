@@ -9,6 +9,7 @@ from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
 from web3 import Web3
 
+from ...eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from .. import Safe
 from ..safe_signature import (SafeSignature, SafeSignatureApprovedHash,
                               SafeSignatureContract, SafeSignatureEOA,
@@ -18,7 +19,7 @@ from .safe_test_case import SafeTestCaseMixin
 logger = logging.getLogger(__name__)
 
 
-class TestSafeSignature(TestCase):
+class TestSafeSignature(EthereumTestCaseMixin, TestCase):
     def test_contract_signature(self):
         owner = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
         safe_tx_hash = HexBytes('0x4c9577d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf196')
@@ -28,6 +29,7 @@ class TestSafeSignature(TestCase):
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE)
         self.assertTrue(str(safe_signature))  # Test __str__
+        self.assertFalse(safe_signature.is_valid(self.ethereum_client))
 
     def test_approved_hash_signature(self):
         owner = '0x05c85Ab5B09Eb8A55020d72daf6091E04e264af9'
