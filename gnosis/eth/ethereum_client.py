@@ -741,7 +741,11 @@ class ParityManager:
                    for i, block_identifier in enumerate(block_identifiers)]
         results = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload).json()
         traces = []
-        for result in results:
+        for block_identifier, result in zip(block_identifiers, results):
+            if 'result' not in result:
+                message = f'Problem calling batch `trace_block` on block={block_identifier}, result={result}'
+                logger.error(message)
+                raise ValueError(message)
             raw_tx = result['result']
             if raw_tx:
                 try:
