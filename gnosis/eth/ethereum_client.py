@@ -70,7 +70,7 @@ class ReplacementTransactionUnderpriced(EthereumClientException):
     pass
 
 
-class TransactionUnderpriced(EthereumClientException):
+class TransactionQueueLimitReached(EthereumClientException):
     pass
 
 
@@ -82,7 +82,11 @@ class InvalidNonce(EthereumClientException):
     pass
 
 
-class NonceTooLow(EthereumClientException):
+class NonceTooLow(InvalidNonce):
+    pass
+
+
+class NonceTooHigh(InvalidNonce):
     pass
 
 
@@ -99,6 +103,10 @@ class UnknownAccount(EthereumClientException):
 
 
 class GasLimitExceeded(EthereumClientException):
+    pass
+
+
+class TransactionGasPriceTooLow(EthereumClientException):
     pass
 
 
@@ -128,20 +136,23 @@ def tx_with_exception_handling(func):
     """
     error_with_exception: Dict[str, Exception] = {
         'Transaction with the same hash was already imported': TransactionAlreadyImported,
-        'replacement transaction underpriced': ReplacementTransactionUnderpriced,
-        'transaction underpriced': TransactionUnderpriced,
-        'There are too many transactions in the queue. Your transaction was dropped due to limit. '
-        'Try increasing the fee': TransactionUnderpriced,  # Geth
-        'There is another transaction with same nonce in the queue': ReplacementTransactionUnderpriced,  # Parity
+        'replacement transaction underpriced': ReplacementTransactionUnderpriced,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L72
+        'There is another transaction with same nonce in the queue': ReplacementTransactionUnderpriced,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L374
+        'There are too many transactions in the queue. Your transaction was dropped due to limit. Try increasing '
+        'the fee': TransactionQueueLimitReached,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L380
+        'txpool is full': TransactionQueueLimitReached,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L68
+        'transaction underpriced': TransactionGasPriceTooLow,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L64
+        'Transaction gas price is too low': TransactionGasPriceTooLow,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L386
         'from not found': FromAddressNotFound,
         'correct nonce': InvalidNonce,
-        'nonce too low': NonceTooLow,
-        'insufficient funds': InsufficientFunds,
+        'nonce too low': NonceTooLow,  # https://github.com/ethereum/go-ethereum/blob/bbfb1e4008a359a8b57ec654330c0e674623e52f/core/error.go#L46
+        'nonce too high': NonceTooHigh,  # https://github.com/ethereum/go-ethereum/blob/bbfb1e4008a359a8b57ec654330c0e674623e52f/core/error.go#L46
+        'insufficient funds': InsufficientFunds,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L389
         "doesn't have enough funds": InsufficientFunds,
         'sender account not recognized': SenderAccountNotFoundInNode,
         'unknown account': UnknownAccount,
-        'Transaction cost exceeds current gas limit': GasLimitExceeded,  # Parity
         'exceeds block gas limit': GasLimitExceeded,  # Geth
+        'exceeds current gas limit': GasLimitExceeded,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L392
     }
 
     @wraps(func)

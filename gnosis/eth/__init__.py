@@ -2,9 +2,9 @@
 from .ethereum_client import (EthereumClient, EthereumClientProvider,
                               FromAddressNotFound, GasLimitExceeded,
                               InsufficientFunds, InvalidERC20Info,
-                              InvalidERC721Info, InvalidNonce,
-                              ParityTraceDecodeException,
+                              InvalidERC721Info, InvalidNonce, NonceTooHigh,
+                              NonceTooLow, ParityTraceDecodeException,
                               ReplacementTransactionUnderpriced,
                               SenderAccountNotFoundInNode,
                               TransactionAlreadyImported,
-                              TransactionUnderpriced, UnknownAccount)
+                              TransactionQueueLimitReached, UnknownAccount)
