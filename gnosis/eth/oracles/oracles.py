@@ -52,6 +52,12 @@ class PricePoolOracle(ABC):
         pass
 
 
+class UsdPricePoolOracle(ABC):
+    @abstractmethod
+    def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
+        pass
+
+
 class KyberOracle(PriceOracle):
     # This is the `tokenAddress` they use for ETH ¯\_(ツ)_/¯
     ETH_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
@@ -393,7 +399,7 @@ class SushiswapOracle(UniswapV2Oracle):
     router_address = '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
 
 
-class CurveOracle(PricePoolOracle):
+class CurveOracle(UsdPricePoolOracle):
     """
     Curve pool Oracle. More info on https://curve.fi/
     """
@@ -415,7 +421,7 @@ class CurveOracle(PricePoolOracle):
         return self.w3.eth.contract(self.address_provider_contract.functions.get_registry().call(),
                                     abi=curve_registry_abi)
 
-    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
+    def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
         :param pool_token_address: Curve pool token address
         :return: Usd price for token
@@ -427,7 +433,7 @@ class CurveOracle(PricePoolOracle):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
 
 
-class YearnOracle(PricePoolOracle):
+class YearnOracle(UsdPricePoolOracle):
     """
     Yearn oracle. More info on https://docs.yearn.finance
     """
@@ -438,7 +444,7 @@ class YearnOracle(PricePoolOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
 
-    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
+    def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
         :param pool_token_address: Yearn yVault pool token address
         :return: Usd price for token
