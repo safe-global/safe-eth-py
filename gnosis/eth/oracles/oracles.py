@@ -23,6 +23,7 @@ from ..ethereum_client import EthereumNetwork
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 from .abis.mooniswap_abis import mooniswap_abi
+from .abis.yearn_abis import YVAULT_ABI
 
 logger = logging.getLogger(__name__)
 
@@ -356,6 +357,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         Estimate pool token price based on its components
         :param pool_token_address:
         :return: Pool token eth price per unit (total pool token supply / 1e18)
+        :raises: CannotGetPriceFromOracle
         """
         try:
             pair_contract = get_uniswap_v2_pair_contract(self.ethereum_client.w3, pool_token_address)
@@ -393,7 +395,7 @@ class SushiswapOracle(UniswapV2Oracle):
 
 class CurveOracle(PricePoolOracle):
     """
-    Get usd virtual price for Curve pools
+    Curve pool Oracle. More info on https://curve.fi/
     """
     def __init__(self, ethereum_client: EthereumClient,
                  address_provider: str = '0x0000000022D53366457F9d5E68Ec105046FC4383'):
@@ -417,6 +419,7 @@ class CurveOracle(PricePoolOracle):
         """
         :param pool_token_address: Curve pool token address
         :return: Usd price for token
+        :raises: CannotGetPriceFromOracle
         """
         try:
             return self.registry_contract.functions.get_virtual_price_from_lp_token(pool_token_address).call() / 1e18
@@ -424,7 +427,34 @@ class CurveOracle(PricePoolOracle):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
 
 
+class YearnOracle(PricePoolOracle):
+    """
+    Yearn oracle. More info on https://docs.yearn.finance
+    """
+    def __init__(self, ethereum_client: EthereumClient):
+        """
+        :param ethereum_client:
+        """
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+
+    def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
+        """
+        :param pool_token_address: Yearn yVault pool token address
+        :return: Usd price for token
+        :raises: CannotGetPriceFromOracle
+        """
+        contract = self.w3.eth.contract(pool_token_address, abi=YVAULT_ABI)
+        try:
+            return contract.functions.getPricePerFullShare().call() / 1e18
+        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
+            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a Yearn yVault')
+
+
 class BalancerOracle(PricePoolOracle):
+    """
+    Oracle for Balancer. More info on https://balancer.exchange
+    """
     def __init__(self, ethereum_client: EthereumClient, price_oracle: PriceOracle):
         """
         :param ethereum_client:
@@ -440,6 +470,7 @@ class BalancerOracle(PricePoolOracle):
         Estimate balancer pool token price based on its components
         :param pool_token_address: Balancer pool token address
         :return: Eth price for pool token
+        :raises: CannotGetPriceFromOracle
         """
         try:
             balancer_pool_contract = self.w3.eth.contract(pool_token_address, abi=balancer_pool_abi)
@@ -477,6 +508,7 @@ class MooniswapOracle(BalancerOracle):
         Estimate balancer pool token price based on its components
         :param pool_token_address: Moniswap pool token address
         :return: Eth price for pool token
+        :raises: CannotGetPriceFromOracle
         """
         try:
             balancer_pool_contract = self.w3.eth.contract(pool_token_address, abi=mooniswap_abi)
