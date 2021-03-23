@@ -8,8 +8,7 @@ from eth_account import Account
 from .. import EthereumClient
 from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
                        KyberOracle, MooniswapOracle, SushiswapOracle,
-                       UniswapOracle, UniswapV2Oracle)
-from ..oracles.oracles import YearnOracle
+                       UniswapOracle, UniswapV2Oracle, YearnOracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
