@@ -1235,6 +1235,8 @@ class EthereumClient:
         :param block_identifier: For nonce calculation, recommended is `pending`
         :return: tx hash
         """
+
+        # TODO Refactor this method, it's not working well with new version of the nodes
         if private_key:
             address = self.private_key_to_address(private_key)
         elif public_key:

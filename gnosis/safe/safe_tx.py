@@ -253,7 +253,7 @@ class SafeTx:
 
         self.tx_hash = self.ethereum_client.send_unsigned_transaction(self.tx,
                                                                       private_key=sender_account.key,
-                                                                      retry=True,
+                                                                      retry=False if tx_nonce is not None else True,
                                                                       block_identifier=block_identifier)
 
         # Set signatures empty after executing the tx. `Nonce` is increased even if it fails,
