@@ -441,7 +441,8 @@ class Safe:
                             block_identifier],
                  'id': 1}
 
-        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=query)
+        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=query,
+                                                          timeout=30)
         if response.ok:
             response_data = response.json()
             error_data: Optional[str] = None
