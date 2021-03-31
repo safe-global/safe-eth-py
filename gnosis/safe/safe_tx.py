@@ -3,7 +3,7 @@ from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import BadFunctionCallOutput, ContractLogicError
 from web3.types import BlockIdentifier, TxParams, Wei
 
 from py_eth_sig_utils.eip712 import encode_typed_data
@@ -191,7 +191,8 @@ class SafeTx:
             if not success:
                 raise InvalidInternalTx('Success bit is %d, should be equal to 1' % success)
             return success
-        except BadFunctionCallOutput as exc:  # Geth
+        except (ContractLogicError, BadFunctionCallOutput) as exc:
+            # e.g. web3.exceptions.ContractLogicError: execution reverted: Invalid owner provided
             return self._raise_safe_vm_exception(str(exc))
         except ValueError as exc:  # Parity
             """
