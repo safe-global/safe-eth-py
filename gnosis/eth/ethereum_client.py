@@ -1016,7 +1016,9 @@ class EthereumClient:
 
             queries.append({'jsonrpc': '2.0',
                             'method': 'eth_call',
-                            'params': [query_params, block_identifier],
+                            'params': [query_params,
+                                       hex(block_identifier) if isinstance(block_identifier,
+                                                                           int) else block_identifier],
                             'id': i})
 
         response = self.http_session.post(self.ethereum_node_url, json=queries)

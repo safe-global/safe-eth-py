@@ -433,7 +433,7 @@ class Safe:
         }
 
         if gas_limit:
-            tx_params['gas'] = HexBytes(gas_limit).hex()
+            tx_params['gas'] = hex(gas_limit)
 
         query = {'jsonrpc': '2.0',
                  'method': 'eth_call',
