@@ -161,7 +161,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
         # -------- New version of the contract --------------------------
         expected_hash = HexBytes('0x7c60341f3e1b4483575f38e84e97d6b332a2dd55b9290f39e6e26eef29a04fe7')
-        tx_hash = SafeTx(self.ethereum_client, '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+        tx_hash = SafeTx(self.ethereum_client, '0x692a70D2e424a56D2C6C27aA97D1a86395877b3A',
                          '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
                          5000000,
                          HexBytes('0x00'),
@@ -171,11 +171,12 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
                          10000,
                          '0x' + '0' * 40,
                          '0x' + '0' * 40,
-                         safe_nonce=67).safe_tx_hash
+                         safe_nonce=67,
+                         safe_version='1.0.0').safe_tx_hash
         self.assertEqual(expected_hash, tx_hash)
 
         expected_hash = HexBytes('0xf585279fd867c94738096f4eab964e9e202014d2f0d5155d751099ad85cbe504')
-        tx_hash = SafeTx(self.ethereum_client, '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
+        tx_hash = SafeTx(self.ethereum_client, '0x692a70D2e424a56D2C6C27aA97D1a86395877b3A',
                          '0x' + '0' * 40,
                          80000000,
                          HexBytes('0x562944'),
@@ -185,7 +186,8 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
                          22000000,
                          '0x' + '0' * 40,
                          '0x' + '0' * 40,
-                         safe_nonce=257000).safe_tx_hash
+                         safe_nonce=257000,
+                         safe_version='1.0.0').safe_tx_hash
         self.assertEqual(expected_hash, tx_hash)
 
         safe_create2_tx = self.deploy_test_safe()
@@ -212,5 +214,25 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
                               12345,
                               '0x' + '2' * 40,
                               '0x' + '2' * 40,
-                              safe_nonce=10789).safe_tx_hash
+                              safe_nonce=10789,
+                              safe_version='1.0.0').safe_tx_hash
+        self.assertEqual(HexBytes(expected_hash), safe_tx_hash)
+
+    def test_hash_safe_multisig_tx_1_3(self):
+        safe_address = '0x2B0b9cBDA3D7b0F760187c52A8FFB18C48E5d96A'
+        expected_hash = '0x01d42a801ac44d3ebd43592be980dea0756d7f7b27d718d3016a42ea7ce85587'
+        safe_tx_hash = SafeTx(self.ethereum_client, safe_address,
+                              '0x79613FD49472C3C7a32188e45ff00e7bdC8a897d',
+                              2,
+                              HexBytes('0x1212'),
+                              0,
+                              0,
+                              0,
+                              0,
+                              '0xFA995c7a0d32A4e7497508a5C380369BE8dB49Db',
+                              '0x6b92f5E5360bfCa8F5d3FcE65D87382967847983',
+                              safe_nonce=17,
+                              safe_version='1.3.0',
+                              chain_id=4,
+                              ).safe_tx_hash
         self.assertEqual(HexBytes(expected_hash), safe_tx_hash)

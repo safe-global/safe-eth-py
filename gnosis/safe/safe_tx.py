@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
+from cached_property import cached_property
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
@@ -42,7 +43,27 @@ class SafeTx:
                  refund_receiver: str,
                  signatures: bytes = b'',
                  safe_nonce: Optional[int] = None,
-                 safe_version: str = '1.0.0'):
+                 safe_version: str = None,
+                 chain_id: Optional[int] = None):
+        """
+        :param ethereum_client:
+        :param safe_address:
+        :param to:
+        :param value:
+        :param data:
+        :param operation:
+        :param safe_tx_gas:
+        :param base_gas:
+        :param gas_price:
+        :param gas_token:
+        :param refund_receiver:
+        :param signatures:
+        :param safe_nonce: Current nonce of the Safe. If not provided, it will be retrieved from network
+        :param safe_version: Safe version 1.0.0 renamed `baseGas` to `dataGas`. Safe version 1.3.0 added `chainId` to
+        the `domainSeparator`. If not provided, it will be retrieved from network
+        :param chain_id: Ethereum network chain_id is used in hash calculation for Safes >= 1.3.0. If not provided,
+        it will be retrieved from the provided ethereum_client
+        """
 
         assert isinstance(signatures, bytes), "Signatures must be bytes"
         self.ethereum_client = ethereum_client
@@ -56,19 +77,45 @@ class SafeTx:
         self.gas_price = gas_price
         self.gas_token = gas_token or NULL_ADDRESS
         self.refund_receiver = refund_receiver or NULL_ADDRESS
-        self.safe_nonce = safe_nonce
         self.signatures = signatures
-        self.safe_version = safe_version
+        self._safe_nonce = safe_nonce
+        self._safe_version = safe_version
+        self._chain_id = chain_id
 
     @property
     def w3(self):
         return self.ethereum_client.w3
 
+    @cached_property
+    def contract(self):
+        return get_safe_contract(self.w3, address=self.safe_address)
+
+    @cached_property
+    def chain_id(self) -> int:
+        if self._chain_id is not None:
+            return self._chain_id
+        else:
+            return self.ethereum_client.get_network().value
+
+    @cached_property
+    def safe_nonce(self) -> str:
+        if self._safe_nonce is not None:
+            return self._safe_nonce
+        else:
+            return self.contract.functions.nonce().call()
+
+    @cached_property
+    def safe_version(self) -> str:
+        if self._safe_version is not None:
+            return self._safe_version
+        else:
+            return self.contract.functions.VERSION().call()
+
     @property
     def safe_tx_hash(self) -> HexBytes:
-        if self.safe_nonce is None:
-            raise ValueError('`safe_nonce` must be set to calculate hash')
         data = self.data.hex() if self.data else ''
+
+        # Safes >= 1.0.0 Renamed `baseGas` to `dataGas`
         base_gas_name = 'baseGas' if Version(self.safe_version) >= Version('1.0.0') else 'dataGas'
 
         structured_data = {
@@ -107,6 +154,12 @@ class SafeTx:
             },
         }
 
+        # Safes >= 1.3.0 Added `chainId` to the domain
+        if Version(self.safe_version) >= Version('1.3.0'):
+            # EIP712Domain(uint256 chainId,address verifyingContract)
+            structured_data['types']['EIP712Domain'].insert(0, {'name': 'chainId', 'type': 'uint256'})
+            structured_data['domain']['chainId'] = self.chain_id
+
         return HexBytes(encode_typed_data(structured_data))
 
     @property
@@ -123,8 +176,7 @@ class SafeTx:
         """
         :return: Web3 contract tx prepared for `call`, `transact` or `buildTransaction`
         """
-        safe_contract = get_safe_contract(self.w3, address=self.safe_address)
-        return safe_contract.functions.execTransaction(
+        return self.contract.functions.execTransaction(
             self.to,
             self.value,
             self.data,
