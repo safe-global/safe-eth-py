@@ -27,13 +27,13 @@ def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:
         tx['gasPrice'] = w3.eth.gas_price
 
     if 'gas' not in tx:
-        tx['gas'] = w3.eth.estimateGas(tx)
+        tx['gas'] = w3.eth.estimate_gas(tx)
     else:
         tx['gas'] *= 2
 
     signed_tx = account.sign_transaction(tx)
     tx_hash = w3.eth.send_raw_transaction(bytes(signed_tx.rawTransaction))
-    tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     assert tx_receipt.status == 1, 'Error with tx %s - %s' % (tx_hash.hex(), tx)
     return tx_hash
 
@@ -57,7 +57,7 @@ def deploy_erc20(w3: Web3, name: str, symbol: str, owner: str, amount: int, deci
         erc20_contract = get_example_erc20_contract(w3)
         tx_hash = erc20_contract.constructor(name, symbol, decimals, owner, amount).transact({'from': deployer})
 
-    tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     erc20_address = tx_receipt.contractAddress
     deployed_erc20 = get_example_erc20_contract(w3, erc20_address)
     assert deployed_erc20.functions.balanceOf(owner).call() == amount

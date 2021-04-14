@@ -35,7 +35,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                                                                     'from': deployer_account.address})
         signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         proxy_factory_contract = get_proxy_factory_contract(self.w3, address=tx_receipt['contractAddress'])
 
         initializer = b''  # Should be the safe `setup()` call with `owners`, `threshold`, `payment`...
@@ -50,7 +50,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                                                                                        })
         signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         logs = proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
         log = logs[0]
         self.assertEqual(log['event'], 'ProxyCreation')

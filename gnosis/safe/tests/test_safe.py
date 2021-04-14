@@ -204,7 +204,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             tx_gas_price=self.gas_price,
         )
 
-        tx_receipt = w3.eth.waitForTransactionReceipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
         self.assertTrue(tx_receipt['status'])
         owner0_new_balance = w3.eth.get_balance(owners[0])
         gas_used = tx_receipt['gasUsed']
@@ -381,7 +381,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         nester_contract = self.w3.eth.contract(abi=abi, bytecode=bytecode)
         tx_hash = nester_contract.constructor().transact({'from': self.w3.eth.accounts[0]})
-        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         nester = self.w3.eth.contract(
             address=tx_receipt.contractAddress,
             abi=abi
@@ -409,7 +409,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertTrue(safe_tx.call(tx_sender_address=self.ethereum_test_account.address))
 
         safe_tx_hash, safe_w3_tx = safe_tx.execute(self.ethereum_test_account.key)
-        self.w3.eth.waitForTransactionReceipt(safe_tx_hash)
+        self.w3.eth.wait_for_transaction_receipt(safe_tx_hash)
 
         # Tx was successfully executed if refund_receiver gets ether
         self.assertGreater(self.ethereum_client.get_balance(refund_receiver), 0)

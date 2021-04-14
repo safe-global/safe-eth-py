@@ -49,7 +49,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         logger.info("Create proxy contract with address %s", safe_creation_tx.safe_address)
 
         tx_hash = w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         self.assertEqual(tx_receipt.contractAddress, safe_creation_tx.safe_address)
 
         deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
@@ -134,7 +134,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         # This tx will create the Safe Proxy and return ether to the funder
         tx_hash = w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         self.assertEqual(tx_receipt.contractAddress, safe_creation_tx.safe_address)
 
         self.assertEqual(w3.eth.get_balance(funder_account.address),
@@ -201,7 +201,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         # This tx will create the Safe Proxy and return tokens to the funder
         tx_hash = w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         self.assertEqual(tx_receipt.contractAddress, safe_address)
         self.assertEqual(w3.eth.get_balance(funder), funder_balance)
         self.assertEqual(erc20_contract.functions.balanceOf(funder).call(), payment)
@@ -312,7 +312,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         # This tx will create the Safe Proxy and return tokens to the funder
         tx_hash = w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         self.assertEqual(tx_receipt.contractAddress, safe_address)
         self.assertEqual(w3.eth.get_balance(safe_address), safe_balance - fixed_creation_cost)
         self.assertLess(w3.eth.get_balance(deployer_address), safe_creation_tx.payment_ether)
@@ -350,7 +350,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
                 'value': safe_creation_tx.payment
             }, funder_account)
             tx_hash = w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
-            tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
             self.assertEqual(tx_receipt.contractAddress, safe_creation_tx.safe_address)
 
             logger.info("Number of owners: %d - Gas estimated %d - Gas Used %d - Difference %d",

@@ -492,7 +492,7 @@ class Safe:
         :param to:
         :param value:
         :param data:
-        :return: Estimation using web3 `estimateGas`
+        :return: Estimation using web3 `estimate_gas`
         """
         try:
             return self.ethereum_client.estimate_gas(to, from_=self.address, value=value, data=data)
@@ -551,7 +551,7 @@ class Safe:
         # This was `false` before solc 0.4.21 -> `m_context.evmVersion().canOverchargeGasForCall()`
         # So gas needed by caller will be around 35k
         OLD_CALL_GAS = 35000
-        # Web3 `estimateGas` estimates less gas
+        # Web3 `estimate_gas` estimates less gas
         WEB3_ESTIMATION_OFFSET = 20000
         ADDITIONAL_GAS = PROXY_GAS + OLD_CALL_GAS
 

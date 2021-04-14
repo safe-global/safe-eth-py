@@ -437,7 +437,7 @@ class Erc20Manager:
         # Do the request to `eth_getLogs`
         for topics in all_topics:
             parameters['topics'] = topics
-            all_events.extend(self.slow_w3.eth.getLogs(parameters))
+            all_events.extend(self.slow_w3.eth.get_logs(parameters))
 
         # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
         erc20_events = []
@@ -941,7 +941,7 @@ class EthereumClient:
                                 'gasPrice': self.w3.eth.gas_price,
                                 'value': Wei(0),
                                 'to': contract_address if contract_address else ''}
-                tx['gas'] = self.w3.eth.estimateGas(tx)
+                tx['gas'] = self.w3.eth.estimate_gas(tx)
                 tx_hash = self.send_unsigned_transaction(tx, private_key=deployer_account.key)
                 if check_receipt:
                     tx_receipt = self.get_transaction_receipt(Hash32(tx_hash), timeout=60)
@@ -1110,10 +1110,10 @@ class EthereumClient:
         if gas_price:
             tx['gasPrice'] = gas_price
         try:
-            return self.w3.eth.estimateGas(tx, block_identifier=block_identifier)
+            return self.w3.eth.estimate_gas(tx, block_identifier=block_identifier)
         except ValueError:
             if block_identifier is not None:  # Geth does not support setting `block_identifier`
-                return self.w3.eth.estimateGas(tx, block_identifier=None)
+                return self.w3.eth.estimate_gas(tx, block_identifier=None)
             else:
                 raise
 
@@ -1158,10 +1158,10 @@ class EthereumClient:
     def get_transaction_receipt(self, tx_hash: EthereumHash, timeout=None) -> Optional[TxReceipt]:
         try:
             if not timeout:
-                tx_receipt = self.w3.eth.getTransactionReceipt(tx_hash)
+                tx_receipt = self.w3.eth.get_transaction_receipt(tx_hash)
             else:
                 try:
-                    tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=timeout)
+                    tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout)
                 except TimeExhausted:
                     return None
 

@@ -183,7 +183,7 @@ class SafeCreate2TxBuilder:
         # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
             # Same cost to send 1 ether than 1000
-            gas += self.w3.eth.estimateGas({'to': payment_receiver, 'value': Wei(payment)})
+            gas += self.w3.eth.estimate_gas({'to': payment_receiver, 'value': Wei(payment)})
         else:
             # Top should be around 52000 when storage is needed (funder no previous owner of token),
             # we use value 1 as we are simulating an internal call, and in that calls you don't pay for the data.

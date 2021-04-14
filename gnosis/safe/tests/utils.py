@@ -36,7 +36,7 @@ def deploy_safe(w3: Web3, safe_creation_tx: SafeCreationTx, funder: str, initial
             'value': safe_creation_tx.payment + initial_funding_wei,
         }, funder_account)
     else:
-        w3.eth.waitForTransactionReceipt(
+        w3.eth.wait_for_transaction_receipt(
             w3.eth.send_transaction({
                 'from': funder,
                 'to': safe_creation_tx.deployer_address,
@@ -44,7 +44,7 @@ def deploy_safe(w3: Web3, safe_creation_tx: SafeCreationTx, funder: str, initial
             })
         )
 
-        w3.eth.waitForTransactionReceipt(
+        w3.eth.wait_for_transaction_receipt(
             w3.eth.send_transaction({
                 'from': funder,
                 'to': safe_creation_tx.safe_address,
@@ -53,7 +53,7 @@ def deploy_safe(w3: Web3, safe_creation_tx: SafeCreationTx, funder: str, initial
         )
 
     tx_hash = w3.eth.send_raw_transaction(bytes(safe_creation_tx.tx_raw))
-    tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     assert tx_receipt.contractAddress == safe_creation_tx.safe_address
     assert tx_receipt.status
 
