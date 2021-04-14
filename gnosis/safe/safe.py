@@ -2,13 +2,14 @@ import dataclasses
 import math
 from enum import Enum
 from logging import getLogger
-from typing import List, NamedTuple, Optional, Union
+from typing import Callable, List, NamedTuple, Optional, Union
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
+from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 from web3.types import BlockIdentifier, Wei
 
@@ -16,7 +17,8 @@ from gnosis.eth.constants import (GAS_CALL_DATA_BYTE, NULL_ADDRESS,
                                   SENTINEL_ADDRESS)
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
                                   get_safe_contract, get_safe_V0_0_1_contract,
-                                  get_safe_V1_0_0_contract)
+                                  get_safe_V1_0_0_contract,
+                                  get_safe_V1_3_0_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -122,16 +124,17 @@ class Safe:
         return EthereumTxSent(tx_hash, tx, contract_address)
 
     @staticmethod
-    def deploy_master_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+    def _deploy_master_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount,
+                                contract_fn: Callable[[Web3, Optional[str]], Contract]) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
         Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
         :param ethereum_client:
         :param deployer_account: Ethereum account
+        :param contract_fn: get contract function
         :return: deployed contract address
         """
-
-        safe_contract = get_safe_contract(ethereum_client.w3)
+        safe_contract = contract_fn(ethereum_client.w3)
         constructor_tx = safe_contract.constructor().buildTransaction()
         tx_hash = ethereum_client.send_unsigned_transaction(constructor_tx, private_key=deployer_account.key)
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
@@ -139,9 +142,36 @@ class Safe:
         assert tx_receipt['status']
 
         ethereum_tx_sent = EthereumTxSent(tx_hash, constructor_tx, tx_receipt['contractAddress'])
-        logger.info("Deployed and initialized Safe Master Contract=%s by %s", ethereum_tx_sent.contract_address,
+        logger.info("Deployed and initialized Safe Master Contract version=%s on address %s by %s",
+                    contract_fn(ethereum_client.w3, ethereum_tx_sent.contract_address).functions.VERSION().call(),
+                    ethereum_tx_sent.contract_address,
                     deployer_account.address)
         return ethereum_tx_sent
+
+    @classmethod
+    def deploy_master_contract(cls, ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_contract)
+
+    @classmethod
+    def deploy_master_contract_v1_3_0(cls, ethereum_client: EthereumClient,
+                                      deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy master contract v1.3.0. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_V1_3_0_contract)
 
     @staticmethod
     def deploy_master_contract_v1_0_0(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
