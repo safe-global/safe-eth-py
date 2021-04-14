@@ -221,18 +221,59 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
     def test_hash_safe_multisig_tx_1_3(self):
         safe_address = '0x2B0b9cBDA3D7b0F760187c52A8FFB18C48E5d96A'
         expected_hash = '0x01d42a801ac44d3ebd43592be980dea0756d7f7b27d718d3016a42ea7ce85587'
+        to = '0x79613FD49472C3C7a32188e45ff00e7bdC8a897d'
+        data = HexBytes('0x1212')
+        value = 2
+        operation = 0
+        safe_tx_gas = 0
+        base_gas = 0
+        gas_price = 0
+        gas_token = '0xFA995c7a0d32A4e7497508a5C380369BE8dB49Db'
+        refund_receiver = '0x6b92f5E5360bfCa8F5d3FcE65D87382967847983'
+        safe_nonce = 17
+        chain_id = 4  # Rinkeby
         safe_tx_hash = SafeTx(self.ethereum_client, safe_address,
-                              '0x79613FD49472C3C7a32188e45ff00e7bdC8a897d',
-                              2,
-                              HexBytes('0x1212'),
-                              0,
-                              0,
-                              0,
-                              0,
-                              '0xFA995c7a0d32A4e7497508a5C380369BE8dB49Db',
-                              '0x6b92f5E5360bfCa8F5d3FcE65D87382967847983',
-                              safe_nonce=17,
+                              to,
+                              value,
+                              data,
+                              operation,
+                              safe_tx_gas,
+                              base_gas,
+                              gas_price,
+                              gas_token,
+                              refund_receiver,
+                              safe_nonce=safe_nonce,
                               safe_version='1.3.0',
-                              chain_id=4,
+                              chain_id=chain_id,
                               ).safe_tx_hash
+        self.assertEqual(HexBytes(expected_hash), safe_tx_hash)
+
+        # Test with ganache master copy contract v1.3.0
+        chain_id = self.ethereum_client.w3.eth.chain_id
+        safe_tx_hash = SafeTx(self.ethereum_client, self.safe_contract_V1_3_0_address,
+                              to,
+                              value,
+                              data,
+                              operation,
+                              safe_tx_gas,
+                              base_gas,
+                              gas_price,
+                              gas_token,
+                              refund_receiver,
+                              safe_nonce=safe_nonce,
+                              safe_version='1.3.0',
+                              chain_id=chain_id,
+                              ).safe_tx_hash
+        expected_hash = self.safe_contract_V1_3_0.functions.getTransactionHash(
+            to,
+            value,
+            data,
+            operation,
+            safe_tx_gas,
+            base_gas,
+            gas_price,
+            gas_token,
+            refund_receiver,
+            safe_nonce
+        ).call()
         self.assertEqual(HexBytes(expected_hash), safe_tx_hash)

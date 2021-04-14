@@ -8,7 +8,8 @@ from web3.contract import Contract
 
 from gnosis.eth.contracts import (get_multi_send_contract,
                                   get_proxy_factory_contract,
-                                  get_safe_contract, get_safe_V1_0_0_contract)
+                                  get_safe_contract, get_safe_V1_0_0_contract,
+                                  get_safe_V1_3_0_contract)
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
@@ -24,6 +25,7 @@ contract_addresses = {
     'safe': Safe.deploy_master_contract,
     'safe_V0_0_1': Safe.deploy_old_master_contract,
     'safe_V1_0_0': Safe.deploy_master_contract_v1_0_0,
+    'safe_V1_3_0': Safe.deploy_master_contract_v1_3_0,
     'proxy_factory': ProxyFactory.deploy_proxy_factory_contract,
     'proxy_factory_V1_0_0': ProxyFactory.deploy_proxy_factory_contract_v1_0_0,
     'multi_send': MultiSend.deploy_contract,
@@ -33,6 +35,8 @@ contract_addresses = {
 class SafeTestCaseMixin(EthereumTestCaseMixin):
     safe_contract_address: str
     safe_contract: Contract
+    safe_contract_V1_3_0_address: str
+    safe_contract_V1_3_0: Contract
     safe_contract_V1_0_0_address: str
     safe_contract_V1_0_0: Contract
     safe_contract_V0_0_1_address: str
@@ -53,6 +57,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
 
         settings.SAFE_CONTRACT_ADDRESS = contract_addresses['safe']
         settings.SAFE_MULTISEND_ADDRESS = contract_addresses['multi_send']
+        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = contract_addresses['safe_V1_3_0']
         settings.SAFE_V1_0_0_CONTRACT_ADDRESS = contract_addresses['safe_V1_0_0']
         settings.SAFE_V0_0_1_CONTRACT_ADDRESS = contract_addresses['safe_V0_0_1']
         settings.SAFE_PROXY_FACTORY_ADDRESS = contract_addresses['proxy_factory']
@@ -63,6 +68,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                                                   }
         cls.safe_contract_address = contract_addresses['safe']
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
+        cls.safe_contract_V1_3_0_address = contract_addresses['safe_V1_3_0']
+        cls.safe_contract_V1_3_0 = get_safe_V1_3_0_contract(cls.w3, cls.safe_contract_V1_3_0_address)
         cls.safe_contract_V1_0_0_address = contract_addresses['safe_V1_0_0']
         cls.safe_contract_V1_0_0 = get_safe_V1_0_0_contract(cls.w3, cls.safe_contract_V1_0_0_address)
         cls.safe_contract_V0_0_1_address = contract_addresses['safe_V0_0_1']

@@ -44,6 +44,7 @@ MultiSend: 0xD4B7B161E4779629C2717385114Bf78D612aEa72
 
 contracts = {
     'safe': 'GnosisSafe_V1_1_1.json',
+    'safe_V1_3_0': 'GnosisSafe_V1_3_0.json',
     'safe_V1_0_0': 'GnosisSafe_V1_0_0.json',
     'safe_V0_0_1': 'GnosisSafe_V0_0_1.json',
     'erc20': 'ERC20.json',
@@ -80,6 +81,10 @@ def generate_contract_fn(contract: Dict[str, Any]):
 
 # Anotate functions that will be generated later with `setattr` so typing does not complains
 def get_safe_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_safe_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
     pass
 
 
