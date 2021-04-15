@@ -24,7 +24,7 @@ class Sourcify:
       but the source code can be different: Variables can have misleading names,
       comments can be different and especially the NatSpec comments could have been modified.
     """
-    def __init__(self, base_url: str = 'https://contractrepo.komputing.org/'):
+    def __init__(self, base_url: str = 'https://repo.sourcify.dev/'):
         self.base_url = base_url
         self.http_session = requests.session()
 

@@ -11,10 +11,7 @@ class TestSourcify(TestCase):
     def test_sourcify_get_contract_metadata(self):
         sourcify = Sourcify()
         safe_contract_address = '0x6851D6fDFAfD08c0295C392436245E5bc78B0185'
-        try:
-            contract_metadata = sourcify.get_contract_metadata(safe_contract_address)
-        except SSLError:
-            self.skipTest('SSL Error for sourcify domain')
+        contract_metadata = sourcify.get_contract_metadata(safe_contract_address)
         self.assertEqual(contract_metadata.name, 'GnosisSafe')
         self.assertIsInstance(contract_metadata.abi, List)
         self.assertTrue(contract_metadata.abi)
