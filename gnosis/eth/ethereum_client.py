@@ -750,7 +750,13 @@ class ParityManager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_block',
                     'params': [hex(block_identifier) if isinstance(block_identifier, int) else block_identifier]}
                    for i, block_identifier in enumerate(block_identifiers)]
-        results = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload).json()
+        response = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload)
+        if not response.ok:
+            message = f'Problem calling batch `trace_block` on blocks={block_identifiers} ' \
+                      f'status_code={response.status_code} result={response.content}'
+            logger.error(message)
+            raise ValueError(message)
+        results = response.json()
         traces = []
         for block_identifier, result in zip(block_identifiers, results):
             if 'result' not in result:
@@ -790,7 +796,13 @@ class ParityManager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_transaction',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
-        results = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload).json()
+        response = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload)
+        if not response.ok:
+            message = f'Problem calling batch `trace_transaction` on tx_hashes={tx_hashes} ' \
+                      f'status_code={response.status_code} result={response.content}'
+            logger.error(message)
+            raise ValueError(message)
+        results = response.json()
         traces = []
         for result in results:
             raw_tx = result['result']
