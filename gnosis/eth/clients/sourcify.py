@@ -37,7 +37,7 @@ class Sourcify:
             return values[0]
 
     def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
-        response = self.http_session.get(url)
+        response = self.http_session.get(url, timeout=5)
         if not response.ok:
             return None
 
