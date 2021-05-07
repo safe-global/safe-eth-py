@@ -9,15 +9,18 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 requirements = [
-    "cached-property>=1.5.1",
-    "django>=2",
-    "django-filter>=2",
+    "cached-property>=1.5; python_version < '3.8'",
     "ethereum>=2.3.2",
     "packaging",
     "py-eth-sig-utils>=0.3.0",
+    "typing-extensions==3.10.0.0; python_version < '3.8'",
     "requests>=2",
-    "web3>=5.19",
+    "web3>=5.18",
 ]
+
+extras_require = {
+    "django": ["django>=2", "django-filter>=2", "djangorestframework>=2"]
+}
 
 setup(
     name='gnosis-py',
@@ -26,6 +29,8 @@ setup(
     package_data={'gnosis': ['py.typed']},
     install_requires=requirements,
     include_package_data=True,
+    extras_require=extras_require,
+    python_requires='>=3.7',
     license='MIT License',
     description='Gnosis libraries for Python Projects',
     long_description=README,
@@ -41,8 +46,9 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],

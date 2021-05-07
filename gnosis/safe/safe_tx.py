@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
-from cached_property import cached_property
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
@@ -23,6 +22,11 @@ from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
                          SignatureNotProvidedByOwner, SignaturesDataTooShort)
 from .safe_signature import SafeSignature
 from .signatures import signature_to_bytes
+
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
 
 
 class SafeTx:

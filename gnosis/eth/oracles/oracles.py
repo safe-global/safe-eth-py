@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional, Tuple
 
 import requests
-from cached_property import cached_property
 from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_abi_packed
 from eth_typing import ChecksumAddress
@@ -24,6 +23,12 @@ from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 from .abis.mooniswap_abis import mooniswap_abi
 from .abis.yearn_abis import YVAULT_ABI
+
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
+
 
 logger = logging.getLogger(__name__)
 

@@ -17,6 +17,9 @@ Quick start
 
 Just run ``pip install gnosis-py`` or add it to your **requirements.txt**
 
+If you want django ethereum utils (models, serializers, filters...) you need to run
+``pip install gnosis-py[django]``
+
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
 
@@ -46,8 +49,8 @@ the possibility of doing ``batch_calls`` (a single request making read-only call
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``
-- ``SENTINEL_ADDRESS (0x000...1)``
-- Maximum an minimum values for `R`, `S` and `V` in ethereum signatures
+- ``SENTINEL_ADDRESS (0x000...1)``: Used for Gnosis Safe's linked lists (modules, owners...).
+- Maximum an minimum values for `R`, `S` and `V` in ethereum signatures.
 
 gnosis.eth.oracles
 ~~~~~~~~~~~~~~~~~~
@@ -76,17 +79,19 @@ Contains utils for ethereum operations:
 - ``generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: [str, bytes]) -> str``:
   Calculates the address of a new contract created using the new CREATE2 opcode.
 
-Ethereum django utils
----------------------
-Now ``django-eth`` is part of this package, available under ``gnosis.eth.django``
+Ethereum django (REST) utils
+----------------------------
+Django utils are available under ``gnosis.eth.django``.
 You can find a set of helpers for working with Ethereum using Django and Django Rest framework.
 
 It includes:
 
-- Basic serializers (signature, transaction)
-- Serializer fields (Ethereum address field, hexadecimal field)
-- Model fields (Ethereum address, Ethereum big integer field)
-- Utils for testing
+- **gnosis.eth.django.filters**: EthereumAddressFilter.
+- **gnosis.eth.django.models**: Model fields (Ethereum address, Ethereum big integer field).
+- **gnosis.eth.django.serializers**: Serializer fields (Ethereum address field, hexadecimal field).
+- **gnosis.eth.django.validators**: Ethereum related validators.
+- **gnosis.safe.serializers**: Serializers for Gnosis Safe (signature, transaction...).
+- All the tests are written using Django Test suite.
 
 Contributors
 ------------
@@ -101,8 +106,8 @@ Contributors
     :target: https://coveralls.io/github/gnosis/gnosis-py?branch=master
     :alt: Coveralls
 
-.. |python| image:: https://img.shields.io/badge/Python-3.6-blue.svg
-    :alt: Python 3.7
+.. |python| image:: https://img.shields.io/badge/Python-3.9-blue.svg
+    :alt: Python 3.9
 
 .. |django| image:: https://img.shields.io/badge/Django-2-blue.svg
     :alt: Django 2.2

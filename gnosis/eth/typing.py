@@ -1,12 +1,11 @@
-import sys
 from typing import Optional, Union
 
 from eth_typing import Hash32, HexStr
 from hexbytes import HexBytes
 
-if sys.version_info >= (3, 8):
+try:
     from typing import TypedDict  # pylint: disable=no-name-in-module
-else:
+except ImportError:
     from typing_extensions import TypedDict
 
 
