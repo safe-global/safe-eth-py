@@ -1,4 +1,4 @@
-from django.db import DefaultConnectionProxy, models
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 import ethereum.utils
@@ -6,7 +6,12 @@ from hexbytes import HexBytes
 
 from .validators import validate_checksumed_address
 
-connection = DefaultConnectionProxy()
+try:
+    from django.db import DefaultConnectionProxy
+    connection = DefaultConnectionProxy()
+except ImportError:
+    from django.db import connections
+    connection = connections['default']
 
 
 class EthereumAddressField(models.CharField):
