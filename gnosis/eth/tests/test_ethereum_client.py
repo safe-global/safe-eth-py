@@ -191,16 +191,19 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.assertEqual(decoded_logs[3], expected_log_3)
         self.assertEqual(decoded_logs[5], expected_log_5)
 
-    def test_get_balance(self):
+    def test_get_name_symbol_balance(self):
         amount = 1000
-        address, _ = get_eth_address_with_key()
+        address = Account.create().address
         erc20_contract = self.deploy_example_erc20(amount, address)
         token_balance = self.ethereum_client.erc20.get_balance(address, erc20_contract.address)
         self.assertTrue(token_balance, amount)
 
-        another_account, _ = get_eth_address_with_key()
+        another_account = Account.create().address
         token_balance = self.ethereum_client.erc20.get_balance(another_account, erc20_contract.address)
         self.assertEqual(token_balance, 0)
+
+        self.assertTrue(self.ethereum_client.erc20.get_name(erc20_contract.address))
+        self.assertTrue(self.ethereum_client.erc20.get_symbol(erc20_contract.address))
 
     def test_get_balances(self):
         account_address = Account.create().address
@@ -292,7 +295,10 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(erc20_contract.functions.transfer(account_2.address,
                                                        amount // 2).buildTransaction({'from': account_1.address}),
                      account_1)
-        logs = self.ethereum_client.erc20.get_total_transfer_history([account_1.address])
+        # Test `token_address` and `to_block` parameters
+        logs = self.ethereum_client.erc20.get_total_transfer_history([account_1.address],
+                                                                     token_address=erc20_contract.address,
+                                                                     to_block='latest')
         self.assertEqual(len(logs), 2)
         self.assertEqual(logs[1]['args']['from'], account_1.address)
         self.assertEqual(logs[1]['args']['to'], account_2.address)

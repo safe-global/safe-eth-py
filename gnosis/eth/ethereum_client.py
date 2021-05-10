@@ -55,9 +55,6 @@ class EthereumNetwork(Enum):
     def _missing_(cls, value):
         return cls.UNKNOWN
 
-    def __str__(self):
-        return str(self.value)
-
 
 class EthereumClientException(ValueError):
     pass
