@@ -50,6 +50,8 @@ jobs:
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
+        ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
+        ETHEREUM_TEST_NODES_URLS: ${{ secrets.ETHEREUM_TEST_NODES_URLS }}
     - name: Test setup.py
       run: |
         source venv/bin/activate
