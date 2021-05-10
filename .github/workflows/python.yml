@@ -55,7 +55,7 @@ jobs:
         source venv/bin/activate
         pip install -e .
     - name: Send results to coveralls
-      if: ${{ env.COVERALLS_REPO_TOKEN }}
+      if: ${{ env.COVERALLS_REPO_TOKEN && matrix.python-version == '3.9' }}
       run: |
         source venv/bin/activate
         coveralls
