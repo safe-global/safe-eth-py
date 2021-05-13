@@ -701,6 +701,7 @@ class ParityManager:
         :param number_traces: Number of traces to skip, by default get the immediately previous one
         :param skip_delegate_calls: If True filter out delegate calls
         :return: Parent trace for a trace
+        :raises: ValueError if tracing is not supported
         """
         if len(trace_address) < number_traces:
             return None
@@ -722,6 +723,7 @@ class ParityManager:
         :param remove_delegate_calls: If True remove delegate calls from result
         :param remove_calls: If True remove calls from result
         :return: Children for a trace, E.g. if address is [0, 1] and number_traces = 1, it will return [0, 1, x]
+        :raises: ValueError if tracing is not supported
         """
         trace_address_len = len(trace_address)
         traces = []
