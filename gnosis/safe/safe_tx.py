@@ -120,7 +120,8 @@ class SafeTx:
         data = self.data.hex() if self.data else ''
 
         # Safes >= 1.0.0 Renamed `baseGas` to `dataGas`
-        base_gas_name = 'baseGas' if Version(self.safe_version) >= Version('1.0.0') else 'dataGas'
+        safe_version = Version(self.safe_version)
+        base_gas_name = 'baseGas' if safe_version >= Version('1.0.0') else 'dataGas'
 
         structured_data = {
             'types': {
@@ -159,7 +160,7 @@ class SafeTx:
         }
 
         # Safes >= 1.3.0 Added `chainId` to the domain
-        if Version(self.safe_version) >= Version('1.3.0'):
+        if safe_version >= Version('1.3.0'):
             # EIP712Domain(uint256 chainId,address verifyingContract)
             structured_data['types']['EIP712Domain'].insert(0, {'name': 'chainId', 'type': 'uint256'})
             structured_data['domain']['chainId'] = self.chain_id
