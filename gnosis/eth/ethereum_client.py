@@ -782,10 +782,10 @@ class ParityManager:
         :return: List of internal txs for `tx_hash`
         """
         try:
-            return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
+            return self._decode_traces(self.slow_w3.parity.trace_transaction(tx_hash))
         except ParityTraceDecodeException as exc:
             logger.warning('Problem decoding trace: %s - Retrying', exc)
-            return self._decode_traces(self.slow_w3.parity.traceTransaction(tx_hash))
+            return self._decode_traces(self.slow_w3.parity.trace_transaction(tx_hash))
 
     def trace_transactions(self, tx_hashes: Sequence[EthereumHash]) -> List[List[Dict[str, Any]]]:
         """
