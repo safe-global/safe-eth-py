@@ -345,7 +345,7 @@ class Safe:
         return balance >= (safe_tx_gas + base_gas) * gas_price
 
     def estimate_tx_base_gas(self, to: str, value: int, data: bytes,
-                             operation: int, gas_token: str, estimate_tx_gas: int) -> int:
+                             operation: int, gas_token: str, estimated_tx_gas: int) -> int:
         """
         Calculate gas costs that are independent of the transaction execution(e.g. base transaction fee,
         signature check, payment of the refund...)
@@ -354,7 +354,7 @@ class Safe:
         :param data:
         :param operation:
         :param gas_token:
-        :param estimate_tx_gas: gas calculated with `estimate_tx_gas`
+        :param estimated_tx_gas: gas calculated with `estimate_tx_gas`
         :return:
         """
         data = data or b''
@@ -373,7 +373,7 @@ class Safe:
         ecrecover_gas = 6000
         signature_gas = threshold * (1 * GAS_CALL_DATA_BYTE + 2 * 32 * GAS_CALL_DATA_BYTE + ecrecover_gas)
 
-        safe_tx_gas = estimate_tx_gas
+        safe_tx_gas = estimated_tx_gas
         base_gas = 0
         gas_price = 1
         gas_token = gas_token or NULL_ADDRESS
@@ -497,7 +497,7 @@ class Safe:
         try:
             return self.ethereum_client.estimate_gas(to, from_=self.address, value=value, data=data)
         except ValueError as exc:
-            raise CannotEstimateGas('Cannot estimate gas with `eth_estimateGas`') from exc
+            raise CannotEstimateGas(f'Cannot estimate gas with `eth_estimateGas`: {exc}') from exc
 
     def estimate_tx_gas_by_trying(self, to: str, value: int, data: Union[bytes, str], operation: int):
         """

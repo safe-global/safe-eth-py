@@ -204,7 +204,7 @@ class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
         balancer_token_address = '0x59A19D8c652FA0284f44113D0ff9aBa70bd46fB4'  # Balancer 80% BAL + 20% WETH
 
         price = balancer_oracle.get_pool_token_price(balancer_token_address)
-        self.assertAlmostEqual(price, 1., delta=0.6)
+        self.assertAlmostEqual(price, 1., delta=0.9)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a balancer pool token'):
             balancer_oracle.get_pool_token_price(gno_token_mainnet_address)

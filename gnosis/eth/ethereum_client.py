@@ -677,8 +677,9 @@ class ParityManager:
     def filter_out_errored_traces(self, internal_txs: Sequence[Dict[str, Any]]) -> Sequence[Dict[str, Any]]:
         """
         Filter out errored transactions (traces that are errored or that have an errored parent)
-        :param internal_txs: Sorted ascending by `trace_address` `sorted(t, key = lambda i: i['traceAddress'])`. It's
-        the default output from methods returning `traces` like `trace_block` or `trace_transaction`
+        :param internal_txs: Traces for the SAME ethereum tx, sorted ascending by `trace_address`
+        `sorted(t, key = lambda i: i['traceAddress'])`. It's the default output from methods returning `traces` like
+        `trace_block` or `trace_transaction`
         :return: List of not errored traces
         """
         new_list = []
