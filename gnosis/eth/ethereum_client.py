@@ -46,9 +46,11 @@ class EthereumNetwork(Enum):
     GOERLI = 5
     KOVAN = 42
     XDAI = 100
+    MATIC = 137
     ENERGY_WEB_CHAIN = 246
     GANACHE = 1337
     VOLTA = 73799
+    MUMBAI = 80001
     default = UNKNOWN
 
     @classmethod
