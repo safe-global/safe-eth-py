@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 class TestProxyFactory(SafeTestCaseMixin, TestCase):
     @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
+    def setUpClass(cls):
+        super().setUpClass()
         cls.proxy_factory = ProxyFactory(cls.proxy_factory_contract_address, cls.ethereum_client)
 
     def test_check_proxy_code(self):

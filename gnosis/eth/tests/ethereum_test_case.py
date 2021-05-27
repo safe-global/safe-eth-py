@@ -19,7 +19,8 @@ class EthereumTestCaseMixin:
     ethereum_test_account: LocalAccount
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpClass(cls):
+        super().setUpClass()
         cls.ethereum_client = EthereumClientProvider()
         cls.w3 = cls.ethereum_client.w3
         cls.ethereum_test_account = Account.from_key(settings.ETHEREUM_TEST_PRIVATE_KEY)

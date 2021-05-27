@@ -48,8 +48,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     multi_send: MultiSend
 
     @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
+    def setUpClass(cls):
+        super().setUpClass()
 
         for key, value in contract_addresses.items():
             if callable(value):
