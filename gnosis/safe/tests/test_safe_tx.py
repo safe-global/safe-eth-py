@@ -91,7 +91,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
     def test_sign_safe_tx(self):
         owners = [Account.create() for _ in range(3)]
-        owners_unsorted = sorted(owners, key=lambda x: x.address.lower(), reverse=True)
+        owners_unsorted = sorted(owners, key=lambda x: int(x.address, 16), reverse=True)
         owner_addresses = [owner.address for owner in owners_unsorted]
         threshold = 1
         safe_creation = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,

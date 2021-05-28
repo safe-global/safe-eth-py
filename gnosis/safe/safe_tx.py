@@ -169,12 +169,12 @@ class SafeTx:
 
     @property
     def signers(self) -> List[str]:
-        return list([safe_signature.owner for safe_signature
-                     in SafeSignature.parse_signature(self.signatures, self.safe_tx_hash)])
+        return [safe_signature.owner for safe_signature
+                in SafeSignature.parse_signature(self.signatures, self.safe_tx_hash)]
 
     @property
     def sorted_signers(self):
-        return sorted(self.signers, key=lambda x: x.lower())
+        return sorted(self.signers, key=lambda x: int(x, 16))
 
     @property
     def w3_tx(self):
@@ -323,7 +323,7 @@ class SafeTx:
         """
         {bytes32 r}{bytes32 s}{uint8 v}
         :param private_key:
-        :return:
+        :return: Signature
         """
         account = Account.from_key(private_key)
         signature_dict = account.signHash(self.safe_tx_hash)
@@ -334,7 +334,9 @@ class SafeTx:
         # Insert signature sorted
         if account.address not in self.signers:
             new_owners = self.signers + [account.address]
-            new_owner_pos = sorted(new_owners, key=lambda x: x.lower()).index(account.address)
+            new_owner_pos = sorted(new_owners,
+                                   key=lambda x: int(x, 16)
+                                   ).index(account.address)
             self.signatures = (self.signatures[: 65 * new_owner_pos] + signature
                                + self.signatures[65 * new_owner_pos:])
         return signature
