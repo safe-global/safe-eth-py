@@ -158,7 +158,7 @@ class SafeSignatureContract(SafeSignature):
         Fix offset (s) and append `contract_signature` at the end of the signature
         :return:
         """
-        return HexBytes(signature_to_bytes((self.v, self.r, 65)) + encode_single('bytes', self.contract_signature))
+        return HexBytes(signature_to_bytes(self.v, self.r, 65) + encode_single('bytes', self.contract_signature))
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, self.owner)

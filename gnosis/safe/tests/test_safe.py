@@ -237,7 +237,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         erc20_contract = self.deploy_example_erc20(amount_token, funder)
         self.assertEqual(self.ethereum_client.erc20.get_balance(funder, erc20_contract.address), amount_token)
 
-        signature_packed = signature_to_bytes((1, int(owner, 16), 0))
+        signature_packed = signature_to_bytes(1, int(owner, 16), 0)
 
         to = receiver
         value = safe_balance

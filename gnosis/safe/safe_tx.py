@@ -327,9 +327,9 @@ class SafeTx:
         """
         account = Account.from_key(private_key)
         signature_dict = account.signHash(self.safe_tx_hash)
-        signature = signature_to_bytes((signature_dict['v'],
-                                        signature_dict['r'],
-                                        signature_dict['s']))
+        signature = signature_to_bytes(signature_dict['v'],
+                                       signature_dict['r'],
+                                       signature_dict['s'])
 
         # Insert signature sorted
         if account.address not in self.signers:

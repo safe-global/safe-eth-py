@@ -21,15 +21,16 @@ def signature_split(signatures: Union[bytes, str], pos: int = 0) -> Tuple[int, i
     return v, r, s
 
 
-def signature_to_bytes(vrs: Tuple[int, int, int]) -> bytes:
+def signature_to_bytes(v: int, r: int, s: int) -> bytes:
     """
-    Convert signature to bytes
-    :param vrs: tuple of v, r, s
+    Convert ecdsa signature to bytes
+    :param v:
+    :param r:
+    :param s:
     :return: signature in form of {bytes32 r}{bytes32 s}{uint8 v}
     """
 
     byte_order = 'big'
-    v, r, s = vrs
 
     return (r.to_bytes(32, byteorder=byte_order)
             + s.to_bytes(32, byteorder=byte_order)
@@ -42,7 +43,7 @@ def signatures_to_bytes(signatures: List[Tuple[int, int, int]]) -> bytes:
     :param signatures: list of tuples(v, r, s)
     :return: 65 bytes per signature
     """
-    return b''.join([signature_to_bytes(vrs) for vrs in signatures])
+    return b''.join([signature_to_bytes(v, r, s) for v, r, s in signatures])
 
 
 def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
