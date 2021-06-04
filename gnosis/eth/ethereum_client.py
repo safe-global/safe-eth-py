@@ -42,6 +42,7 @@ class EthereumNetwork(Enum):
     OLYMPIC = 0
     MAINNET = 1
     ROPSTEN = 3
+    OPTIMISTIC = 10
     RINKEBY = 4
     GOERLI = 5
     KOVAN = 42
@@ -49,8 +50,10 @@ class EthereumNetwork(Enum):
     XDAI = 100
     MATIC = 137
     ENERGY_WEB_CHAIN = 246
+    FANTOM = 250
     GANACHE = 1337
     ARBITRUM = 42161
+    AVALANCHE = 43114
     VOLTA = 73799
     MUMBAI = 80001
     default = UNKNOWN
