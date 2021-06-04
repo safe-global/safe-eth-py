@@ -1,7 +1,6 @@
 import dataclasses
 import math
 from enum import Enum
-from functools import cache
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
@@ -70,6 +69,7 @@ class Safe:
         self.ethereum_client = ethereum_client
         self.w3 = self.ethereum_client.w3
         self.address = address
+        self._contract: Optional[Contract] = None
 
     def __str__(self):
         return f'Safe={self.address}'
@@ -574,9 +574,10 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    @cache
     def get_contract(self) -> Contract:
-        return get_safe_V1_3_0_contract(self.w3, address=self.address)
+        if not self._contract:
+            self._contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
+        return self._contract
 
     def retrieve_all_info(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> SafeInfo:
         """
