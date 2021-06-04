@@ -1,6 +1,7 @@
 import dataclasses
 import math
 from enum import Enum
+from functools import cache
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
@@ -48,22 +49,20 @@ class SafeOperation(Enum):
 
 @dataclasses.dataclass
 class SafeInfo:
-    address: str
-    fallback_handler: str
-    master_copy: str
-    modules: List[str]
+    address: ChecksumAddress
+    fallback_handler: ChecksumAddress
+    guard: ChecksumAddress
+    master_copy: ChecksumAddress
+    modules: List[ChecksumAddress]
     nonce: int
-    owners: List[str]
+    owners: List[ChecksumAddress]
     threshold: int
     version: str
-
-    def __str__(self):
-        return f'address={self.address} safe-version={self.version} nonce={self.nonce} threshold={self.threshold} ' \
-               f'owners={self.owners} master-copy={self.master_copy} fallback-hander={self.fallback_handler}'
 
 
 class Safe:
     FALLBACK_HANDLER_STORAGE_SLOT = 0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5
+    GUARD_STORAGE_SLOT = 0x4a204f620c8c5ccdca3fd54d003badd85ba500436a431f0cbda4f558c93c34c8
 
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert Web3.isChecksumAddress(address), '%s is not a valid address' % address
@@ -575,8 +574,9 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    def get_contract(self):
-        return get_safe_contract(self.w3, address=self.address)
+    @cache
+    def get_contract(self) -> Contract:
+        return get_safe_V1_3_0_contract(self.w3, address=self.address)
 
     def retrieve_all_info(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> SafeInfo:
         """
@@ -589,25 +589,29 @@ class Safe:
             contract = self.get_contract()
             master_copy = self.retrieve_master_copy_address()
             fallback_handler = self.retrieve_fallback_handler()
+            guard = self.retrieve_guard()
 
             results = self.ethereum_client.batch_call([
-                contract.functions.getModules(),  # Tuple of (addresses, next) from v1.1.1 and for old Safes just a list
+                contract.functions.getModulesPaginated(SENTINEL_ADDRESS, 20),  # Does not exist in version < 1.1.1
                 contract.functions.nonce(),
                 contract.functions.getOwners(),
                 contract.functions.getThreshold(),
                 contract.functions.VERSION(),
-            ], from_address=self.address, block_identifier=block_identifier)
-            modules, nonce, owners, threshold, version = results
-            if len(modules) == 10:  # Pagination is enabled and by default is 10
+            ], from_address=self.address, block_identifier=block_identifier, raise_exception=False)
+            modules_response, nonce, owners, threshold, version = results
+            if modules_response:
+                modules, next_module = modules_response
+            if not modules_response or next_module != SENTINEL_ADDRESS:  # < 1.1.1 or still more elements in the list
                 modules = self.retrieve_modules()
-            return SafeInfo(self.address, fallback_handler, master_copy, modules, nonce, owners, threshold, version)
+            return SafeInfo(self.address, fallback_handler, guard, master_copy, modules, nonce,
+                            owners, threshold, version)
         except (ValueError, BadFunctionCallOutput) as e:
             raise CannotRetrieveSafeInfoException(self.address) from e
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.get_code(self.address)
 
-    def retrieve_fallback_handler(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
+    def retrieve_fallback_handler(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> ChecksumAddress:
         address = self.ethereum_client.w3.eth.get_storage_at(self.address, self.FALLBACK_HANDLER_STORAGE_SLOT,
                                                              block_identifier=block_identifier)[-20:]
         if len(address) == 20:
@@ -615,12 +619,20 @@ class Safe:
         else:
             return NULL_ADDRESS
 
-    def retrieve_master_copy_address(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> str:
+    def retrieve_guard(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> ChecksumAddress:
+        address = self.ethereum_client.w3.eth.get_storage_at(self.address, self.GUARD_STORAGE_SLOT,
+                                                             block_identifier=block_identifier)[-20:]
+        if len(address) == 20:
+            return Web3.toChecksumAddress(address)
+        else:
+            return NULL_ADDRESS
+
+    def retrieve_master_copy_address(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> ChecksumAddress:
         bytes_address = self.w3.eth.get_storage_at(self.address, 0, block_identifier=block_identifier)[-20:]
         int_address = int.from_bytes(bytes_address, byteorder='big')
         return Web3.toChecksumAddress('{:#042x}'.format(int_address))
 
-    def retrieve_modules(self, pagination: Optional[int] = 10,
+    def retrieve_modules(self, pagination: Optional[int] = 50,
                          block_identifier: Optional[BlockIdentifier] = 'latest') -> List[str]:
         """
         :param pagination: Number of modules to get per request
@@ -638,9 +650,10 @@ class Safe:
         address = SENTINEL_ADDRESS
         all_modules: List[str] = []
         while True:
-            (modules,
-             address) = contract.functions.getModulesPaginated(address,
-                                                               pagination).call(block_identifier=block_identifier)
+            (modules, address) = contract.functions.getModulesPaginated(
+                address,
+                pagination
+            ).call(block_identifier=block_identifier)
 
             all_modules.extend(modules)
             if address == SENTINEL_ADDRESS:

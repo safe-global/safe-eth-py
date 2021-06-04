@@ -4,6 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
+from packaging.version import Version
 from web3 import Web3
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
@@ -449,34 +450,68 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe = Safe(self.deploy_test_safe(fallback_handler=random_fallback_handler).safe_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_fallback_handler(), random_fallback_handler)
 
+    def test_retrieve_guard(self):
+        # Test guard in a Safe < 1.2
+        owner_account = Account.create()
+        safe_v1_2 = Safe(
+            self.deploy_test_safe().safe_address, self.ethereum_client
+        )
+        self.assertEqual(safe_v1_2.retrieve_guard(), NULL_ADDRESS)
+        self.assertLess(Version(safe_v1_2.retrieve_version()), Version('1.3.0'))
+
+        safe = self.deploy_test_safe_v1_3_0(owners=[owner_account.address])
+        self.assertEqual(safe.retrieve_guard(), NULL_ADDRESS)
+        self.assertGreaterEqual(Version(safe.retrieve_version()), Version('1.3.0'))
+
+        guard_address = Account.create().address
+        set_guard_data = HexBytes(
+            safe.get_contract().functions.setGuard(
+                guard_address
+            ).buildTransaction({'gas': 1, 'gasPrice': 1})['data'])
+        set_guard_tx = safe.build_multisig_tx(safe.address, 0, set_guard_data)
+        set_guard_tx.sign(owner_account.key)
+        set_guard_tx.execute(self.ethereum_test_account.key)
+        self.assertEqual(safe.retrieve_guard(), guard_address)
+
     def test_retrieve_info(self):
-        safe_creation = self.deploy_test_safe()
-        safe = Safe(safe_creation.safe_address, self.ethereum_client)
-        self.assertEqual(safe.retrieve_master_copy_address(), self.safe_contract_address)
-        self.assertEqual(safe.retrieve_nonce(), 0)
-        self.assertCountEqual(safe.retrieve_owners(), safe_creation.owners)
-        self.assertEqual(safe.retrieve_threshold(), safe_creation.threshold)
+        owners = [Account.create().address for _ in range(2)]
+        threshold = 2
+        safe_v1_0_0 = self.deploy_test_safe_v1_0_0(owners=owners, threshold=threshold)
+        safe_v1_3_0 = self.deploy_test_safe_v1_3_0(owners=owners, threshold=threshold)
 
-        # Versions must be semantic, like 0.1.0, so we count 3 points
-        self.assertTrue(safe.retrieve_version().count('.'), 3)
+        for safe, master_copy_address in ((safe_v1_0_0, self.safe_contract_V1_0_0_address),
+                                          (safe_v1_3_0, self.safe_contract_V1_3_0_address)):
+            self.assertEqual(safe.retrieve_master_copy_address(), master_copy_address)
+            self.assertEqual(safe.retrieve_nonce(), 0)
+            self.assertCountEqual(safe.retrieve_owners(), owners)
+            self.assertEqual(safe.retrieve_threshold(), threshold)
+            self.assertEqual(safe.retrieve_modules(), [])
 
-        for owner in safe_creation.owners:
-            self.assertTrue(safe.retrieve_is_owner(owner))
+            # Versions must be semantic, like 0.1.0, so we count 3 points
+            self.assertTrue(safe.retrieve_version().count('.'), 3)
+
+            for owner in owners:
+                self.assertTrue(safe.retrieve_is_owner(owner))
 
     def test_retrieve_all_info(self):
-        safe_creation = self.deploy_test_safe()
-        safe = Safe(safe_creation.safe_address, self.ethereum_client)
-        safe_info = safe.retrieve_all_info()
-        self.assertEqual(safe_info.master_copy, self.safe_contract_address)
-        self.assertEqual(safe_info.nonce, 0)
-        self.assertCountEqual(safe_info.owners, safe_creation.owners)
-        self.assertEqual(safe_info.threshold, safe_creation.threshold)
-        self.assertEqual(safe_info.modules, [])
+        owners = [Account.create().address for _ in range(2)]
+        threshold = 2
+        safe_v1_0_0 = self.deploy_test_safe_v1_0_0(owners=owners, threshold=threshold)
+        safe_v1_3_0 = self.deploy_test_safe_v1_3_0(owners=owners, threshold=threshold)
 
-        invalid_address = Account.create().address
-        invalid_safe = Safe(invalid_address, self.ethereum_client)
-        with self.assertRaisesMessage(CannotRetrieveSafeInfoException, invalid_address):
-            invalid_safe.retrieve_all_info()
+        for safe, master_copy_address in ((safe_v1_0_0, self.safe_contract_V1_0_0_address),
+                                          (safe_v1_3_0, self.safe_contract_V1_3_0_address)):
+            safe_info = safe.retrieve_all_info()
+            self.assertEqual(safe_info.master_copy, master_copy_address)
+            self.assertEqual(safe_info.nonce, 0)
+            self.assertCountEqual(safe_info.owners, owners)
+            self.assertEqual(safe_info.threshold, threshold)
+            self.assertEqual(safe_info.modules, [])
+
+            invalid_address = Account.create().address
+            invalid_safe = Safe(invalid_address, self.ethereum_client)
+            with self.assertRaisesMessage(CannotRetrieveSafeInfoException, invalid_address):
+                invalid_safe.retrieve_all_info()
 
     def test_retrieve_modules(self):
         safe_creation = self.deploy_test_safe(owners=[self.ethereum_test_account.address])

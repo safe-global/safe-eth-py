@@ -908,10 +908,10 @@ class ParityManager:
             parameters['toAddress'] = to_address
 
         try:
-            return self._decode_traces(self.slow_w3.parity.traceFilter(parameters))
+            return self._decode_traces(self.slow_w3.parity.trace_filter(parameters))
         except ParityTraceDecodeException as exc:
             logger.warning('Problem decoding trace: %s - Retrying', exc)
-            return self._decode_traces(self.slow_w3.parity.traceFilter(parameters))
+            return self._decode_traces(self.slow_w3.parity.trace_filter(parameters))
 
 
 class EthereumClient:

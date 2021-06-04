@@ -4,6 +4,8 @@ from typing import List, Optional
 from django.conf import settings
 
 from eth_account import Account
+from eth_typing import ChecksumAddress
+from hexbytes import HexBytes
 from web3.contract import Contract
 
 from gnosis.eth.contracts import (get_multi_send_contract,
@@ -16,6 +18,7 @@ from gnosis.safe.multi_send import MultiSend
 from gnosis.safe.proxy_factory import ProxyFactory
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
+from ...eth.constants import NULL_ADDRESS
 from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
@@ -99,9 +102,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
         safe_creation_tx = self.build_test_safe(threshold=threshold, owners=owners, fallback_handler=fallback_handler)
-        funder_account = self.ethereum_test_account
 
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(funder_account,
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(self.ethereum_test_account,
                                                                                self.safe_contract_address,
                                                                                safe_creation_tx.safe_setup_data,
                                                                                safe_creation_tx.salt_nonce)
@@ -117,3 +119,64 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         self.assertEqual(safe_address, safe_creation_tx.safe_address)
 
         return safe_creation_tx
+
+    def deploy_test_safe_v1_0_0(self, number_owners: int = 3, threshold: Optional[int] = None,
+                                owners: Optional[List[ChecksumAddress]] = None, initial_funding_wei: int = 0) -> Safe:
+        owners = owners if owners else [Account.create().address for _ in range(number_owners)]
+        if not threshold:
+            threshold = len(owners) - 1 if len(owners) > 1 else 1
+        empty_parameters = {'gas': 1, 'gasPrice': 1}
+        to = NULL_ADDRESS
+        data = b''
+        payment_token = NULL_ADDRESS
+        payment = 0
+        payment_receiver = NULL_ADDRESS
+        initializer = HexBytes(
+            self.safe_contract_V1_0_0.functions.setup(
+                owners, threshold, to, data, payment_token,
+                payment, payment_receiver
+            ).buildTransaction(empty_parameters)['data']
+        )
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+            self.ethereum_test_account, self.safe_contract_V1_0_0_address,
+            initializer=initializer
+        )
+        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
+        if initial_funding_wei:
+            self.send_ether(safe.address, initial_funding_wei)
+
+        self.assertEqual(safe.retrieve_threshold(), threshold)
+        self.assertCountEqual(safe.retrieve_owners(), owners)
+
+        return safe
+
+    def deploy_test_safe_v1_3_0(self, number_owners: int = 3, threshold: Optional[int] = None,
+                                owners: Optional[List[ChecksumAddress]] = None, initial_funding_wei: int = 0,
+                                fallback_handler: ChecksumAddress = NULL_ADDRESS) -> Safe:
+        owners = owners if owners else [Account.create().address for _ in range(number_owners)]
+        if not threshold:
+            threshold = len(owners) - 1 if len(owners) > 1 else 1
+        empty_parameters = {'gas': 1, 'gasPrice': 1}
+        to = NULL_ADDRESS
+        data = b''
+        payment_token = NULL_ADDRESS
+        payment = 0
+        payment_receiver = NULL_ADDRESS
+        initializer = HexBytes(
+            self.safe_contract_V1_3_0.functions.setup(
+                owners, threshold, to, data, fallback_handler, payment_token,
+                payment, payment_receiver
+            ).buildTransaction(empty_parameters)['data']
+        )
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+            self.ethereum_test_account, self.safe_contract_V1_3_0.address,
+            initializer=initializer
+        )
+        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
+        if initial_funding_wei:
+            self.send_ether(safe.address, initial_funding_wei)
+
+        self.assertEqual(safe.retrieve_threshold(), threshold)
+        self.assertCountEqual(safe.retrieve_owners(), owners)
+
+        return safe
