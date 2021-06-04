@@ -45,10 +45,12 @@ class EthereumNetwork(Enum):
     RINKEBY = 4
     GOERLI = 5
     KOVAN = 42
+    BINANCE = 56
     XDAI = 100
     MATIC = 137
     ENERGY_WEB_CHAIN = 246
     GANACHE = 1337
+    ARBITRUM = 42161
     VOLTA = 73799
     MUMBAI = 80001
     default = UNKNOWN
