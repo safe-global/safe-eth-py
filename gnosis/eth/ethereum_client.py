@@ -294,7 +294,7 @@ class Erc20Manager:
                                                                   HexBytes(data['result'])))  # Token
                     else:
                         balance = int(data['result'], 16)  # Ether
-                except (DecodingError, BadFunctionCallOutput):
+                except (ValueError, BadFunctionCallOutput, DecodingError):
                     balance = 0
             balances.append({
                 'token_address': token_address,

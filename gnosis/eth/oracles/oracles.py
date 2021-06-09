@@ -9,7 +9,7 @@ from eth_abi.packed import encode_abi_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
-from web3.exceptions import BadFunctionCallOutput, SolidityError
+from web3.exceptions import BadFunctionCallOutput
 
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
@@ -200,7 +200,7 @@ class UniswapOracle(PriceOracle):
             uniswap_exchange_address = self.get_uniswap_exchange(token_address)
             if uniswap_exchange_address == NULL_ADDRESS:
                 raise ValueError
-        except (BadFunctionCallOutput, DecodingError, ValueError) as e:
+        except (ValueError, BadFunctionCallOutput, DecodingError) as e:
             error_message = f'Non existing uniswap exchange for token={token_address}'
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
@@ -434,7 +434,7 @@ class CurveOracle(UsdPricePoolOracle):
         """
         try:
             return self.registry_contract.functions.get_virtual_price_from_lp_token(pool_token_address).call() / 1e18
-        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
+        except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
 
 
@@ -458,7 +458,7 @@ class YearnOracle(UsdPricePoolOracle):
         contract = self.w3.eth.contract(pool_token_address, abi=YVAULT_ABI)
         try:
             return contract.functions.getPricePerFullShare().call() / 1e18
-        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
+        except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a Yearn yVault')
 
 
@@ -508,7 +508,7 @@ class BalancerOracle(PricePoolOracle):
             for token_balance, token_decimal, token_price in zip(token_balances, token_decimals, token_prices):
                 total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
-        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
+        except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                            f'It is not a balancer pool token')
 
@@ -547,6 +547,6 @@ class MooniswapOracle(BalancerOracle):
                 raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                                f'It is not a mooniswap pool token')
 
-        except (SolidityError, DecodingError, BadFunctionCallOutput, ValueError):
+        except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. '
                                            f'It is not a mooniswap pool token')

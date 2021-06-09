@@ -168,7 +168,7 @@ class SafeSignatureContract(SafeSignature):
                     self.safe_tx_hash,
                     self.contract_signature
                 ).call(block_identifier=block_identifier) == self.EIP1271_MAGIC_VALUE
-            except (BadFunctionCallOutput, DecodingError):
+            except (ValueError, BadFunctionCallOutput, DecodingError):
                 # Error using `pending` block identifier or contract does not exist
                 logger.warning('Cannot check EIP1271 signature from contract %s', self.owner)
         return False
