@@ -5,4 +5,5 @@ from .etherscan_client import (EtherscanClient,
                                EtherscanClientConfigurationProblem,
                                EtherscanClientException,
                                EtherscanRateLimitError)
-from .sourcify import ContractMetadata, Sourcify
+from .sourcify import Sourcify
+from .contract_metadata import ContractMetadata

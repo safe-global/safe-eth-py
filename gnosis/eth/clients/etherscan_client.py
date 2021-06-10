@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 import requests
 
 from .. import EthereumNetwork
-from . import ContractMetadata
+from .contract_metadata import ContractMetadata
 
 
 class EtherscanClientException(Exception):

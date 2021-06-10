@@ -6,7 +6,7 @@ import requests
 from eth_typing import ChecksumAddress
 
 from .. import EthereumNetwork
-from . import ContractMetadata
+from .contract_metadata import ContractMetadata
 
 
 class BlockscoutClientException(Exception):

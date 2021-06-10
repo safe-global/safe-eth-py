@@ -767,16 +767,17 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
                                                  block_identifier='pending')
         self.assertLess(gas2, gas)
 
-    def test_get_ethereum_network_default(self):
-        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN)
+    def test_get_ethereum_network(self):
+        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
 
-    @mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock)
-    def test_mock_get_ethereum_network_mainnet(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.MAINNET)
+        with mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock):
+            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.MAINNET)
 
-    @mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock)
-    def test_mock_get_ethereum_network_rinkeby(self, version_mock):
-        self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.RINKEBY)
+        with mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock):
+            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.RINKEBY)
+
+        with mock.patch.object(Net, 'version', return_value='4815162342', new_callable=mock.PropertyMock):
+            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN)
 
     def test_get_nonce(self):
         address = Account.create().address

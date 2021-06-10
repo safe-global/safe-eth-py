@@ -1,18 +1,11 @@
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import requests
 from web3 import Web3
 
-from gnosis.eth.ethereum_client import EthereumNetwork
-
-
-@dataclass
-class ContractMetadata:
-    name: Optional[str]
-    abi: List[Dict[str, Any]]
-    partial_match: bool
+from .contract_metadata import ContractMetadata
+from .. import EthereumNetwork
 
 
 class Sourcify:
