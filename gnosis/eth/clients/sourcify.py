@@ -5,6 +5,8 @@ from urllib.parse import urljoin
 import requests
 from web3 import Web3
 
+from gnosis.eth.ethereum_client import EthereumNetwork
+
 
 @dataclass
 class ContractMetadata:
@@ -24,7 +26,9 @@ class Sourcify:
       but the source code can be different: Variables can have misleading names,
       comments can be different and especially the NatSpec comments could have been modified.
     """
-    def __init__(self, base_url: str = 'https://repo.sourcify.dev/'):
+    def __init__(self, network: EthereumNetwork = EthereumNetwork.MAINNET,
+                 base_url: str = 'https://repo.sourcify.dev/'):
+        self.network = network
         self.base_url = base_url
         self.http_session = requests.session()
 
@@ -43,11 +47,12 @@ class Sourcify:
 
         return response.json()
 
-    def get_contract_metadata(self, contract_address: str, network_id: int = 1) -> Optional[ContractMetadata]:
+    def get_contract_metadata(self, contract_address: str) -> Optional[ContractMetadata]:
         assert Web3.isChecksumAddress(contract_address), 'Expecting a checksummed address'
 
         for match_type in ('full_match', 'partial_match'):
-            url = urljoin(self.base_url, f'/contracts/{match_type}/{network_id}/{contract_address}/metadata.json')
+            url = urljoin(self.base_url,
+                          f'/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json')
             metadata = self._do_request(url)
             if metadata:
                 abi = self._get_abi_from_metadata(metadata)

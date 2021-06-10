@@ -3,6 +3,7 @@ from typing import List
 from django.test import TestCase
 
 from ...clients import Sourcify
+from ...ethereum_client import EthereumNetwork
 
 
 class TestSourcify(TestCase):
@@ -17,7 +18,7 @@ class TestSourcify(TestCase):
         self.assertIsInstance(contract_metadata.abi, List)
         self.assertTrue(contract_metadata.abi)
         self.assertFalse(contract_metadata.partial_match)
-        contract_metadata_rinkeby = sourcify.get_contract_metadata(safe_contract_address, network_id=4)
+        contract_metadata_rinkeby = Sourcify(EthereumNetwork.RINKEBY).get_contract_metadata(safe_contract_address)
         self.assertEqual(contract_metadata, contract_metadata_rinkeby)
 
         partial_match_contract_address = '0x000000000000C1CB11D5c062901F32D06248CE48'
