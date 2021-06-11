@@ -135,6 +135,7 @@ class SafeSignature(ABC):
 
 class SafeSignatureContract(SafeSignature):
     EIP1271_MAGIC_VALUE = HexBytes(0x20c13b0b)
+    EIP1271_MAGIC_VALUE_UPDATED = HexBytes(0x1626ba7e)
 
     def __init__(self, signature: EthereumBytes, safe_tx_hash: EthereumBytes, contract_signature: EthereumBytes):
         super().__init__(signature, safe_tx_hash)
@@ -167,7 +168,8 @@ class SafeSignatureContract(SafeSignature):
                 return safe_contract.functions.isValidSignature(
                     self.safe_tx_hash,
                     self.contract_signature
-                ).call(block_identifier=block_identifier) == self.EIP1271_MAGIC_VALUE
+                ).call(block_identifier=block_identifier) in (self.EIP1271_MAGIC_VALUE,
+                                                              self.EIP1271_MAGIC_VALUE_UPDATED)
             except (ValueError, BadFunctionCallOutput, DecodingError):
                 # Error using `pending` block identifier or contract does not exist
                 logger.warning('Cannot check EIP1271 signature from contract %s', self.owner)
