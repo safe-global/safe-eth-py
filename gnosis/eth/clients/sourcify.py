@@ -4,8 +4,8 @@ from urllib.parse import urljoin
 import requests
 from web3 import Web3
 
-from .contract_metadata import ContractMetadata
 from .. import EthereumNetwork
+from .contract_metadata import ContractMetadata
 
 
 class Sourcify:

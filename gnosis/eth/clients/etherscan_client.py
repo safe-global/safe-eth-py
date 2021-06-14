@@ -42,8 +42,7 @@ class EtherscanClient:
             url += f'&apikey={self.api_key}'
         return url
 
-    def _get_contract_abi(self, contract_address: str) -> Optional[Dict[str, Any]]:
-        url = self.build_url(f'api?module=contract&action=getabi&address={contract_address}')
+    def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
         response = self.http_session.get(url)
 
         if response.ok:
@@ -52,19 +51,53 @@ class EtherscanClient:
             if 'Max rate limit reached, please use API Key for higher rate limit' == result:
                 raise EtherscanRateLimitError
             if response_json['status'] == '1':
-                return json.loads(result)
+                return result
 
-    def get_contract_metadata(self, contract_address: str, retry: bool = True) -> Optional[ContractMetadata]:
-        contract_abi = self.get_contract_abi(contract_address, retry=retry)
-        if contract_abi:
-            return ContractMetadata(None, contract_abi, False)
-
-    def get_contract_abi(self, contract_address: str, retry: bool = True):
+    def _retry_request(self, url: str, retry: bool = True) -> Optional[Dict[str, Any]]:
         for _ in range(3):
             try:
-                return self._get_contract_abi(contract_address)
+                return self._do_request(url)
             except EtherscanRateLimitError as exc:
                 if not retry:
                     raise exc
                 else:
                     time.sleep(5)
+
+    def get_contract_metadata(self, contract_address: str, retry: bool = True) -> Optional[ContractMetadata]:
+        contract_source_code = self.get_contract_source_code(contract_address, retry=retry)
+        contract_name = contract_source_code['ContractName']
+        contract_abi = contract_source_code['ABI']
+        if contract_abi:
+            return ContractMetadata(contract_name, contract_abi, False)
+
+    def get_contract_source_code(self, contract_address: str, retry: bool = True):
+        """
+        Source code query also returns:
+            ContractName: "",
+            CompilerVersion: "",
+            OptimizationUsed: "",
+            Runs: "",
+            ConstructorArguments: ""
+            EVMVersion: "Default",
+            Library: "",
+            LicenseType: "",
+            Proxy: "0",
+            Implementation: "",
+            SwarmSource: ""
+        :param contract_address:
+        :param retry:
+        :return:
+        """
+        url = self.build_url(f'api?module=contract&action=getsourcecode&address={contract_address}')
+        result = self._retry_request(url, retry=retry)  # Returns a list
+        if result:
+            result = result[0]
+            abi_str = result['ABI']
+            result['ABI'] = json.loads(abi_str) if abi_str.startswith('[') else None
+            return result
+
+    def get_contract_abi(self, contract_address: str, retry: bool = True):
+        url = self.build_url(f'api?module=contract&action=getabi&address={contract_address}')
+        result = self._retry_request(url, retry=retry)
+        if result:
+            return json.loads(result)
