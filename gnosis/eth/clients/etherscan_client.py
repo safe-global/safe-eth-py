@@ -48,7 +48,8 @@ class EtherscanClient:
         if response.ok:
             response_json = response.json()
             result = response_json['result']
-            if 'Max rate limit reached, please use API Key for higher rate limit' == result:
+            if 'Max rate limit reached' in result:
+                # Max rate limit reached, please use API Key for higher rate limit
                 raise EtherscanRateLimitError
             if response_json['status'] == '1':
                 return result
@@ -65,10 +66,11 @@ class EtherscanClient:
 
     def get_contract_metadata(self, contract_address: str, retry: bool = True) -> Optional[ContractMetadata]:
         contract_source_code = self.get_contract_source_code(contract_address, retry=retry)
-        contract_name = contract_source_code['ContractName']
-        contract_abi = contract_source_code['ABI']
-        if contract_abi:
-            return ContractMetadata(contract_name, contract_abi, False)
+        if contract_source_code:
+            contract_name = contract_source_code['ContractName']
+            contract_abi = contract_source_code['ABI']
+            if contract_abi:
+                return ContractMetadata(contract_name, contract_abi, False)
 
     def get_contract_source_code(self, contract_address: str, retry: bool = True):
         """
