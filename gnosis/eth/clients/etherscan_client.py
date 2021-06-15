@@ -27,6 +27,9 @@ class EtherscanClient:
         EthereumNetwork.RINKEBY: 'https://api-rinkeby.etherscan.io',
         EthereumNetwork.BINANCE: 'https://api.bscscan.com',
     }
+    HTTP_HEADERS = {
+        'User-Agent': 'curl/7.77.0',
+    }
 
     def __init__(self, network: EthereumNetwork, api_key: Optional[str] = None):
         self.network = network
@@ -35,6 +38,7 @@ class EtherscanClient:
         if self.base_url is None:
             raise EtherscanClientConfigurationProblem(f'Network {network.name} - {network.value} not supported')
         self.http_session = requests.Session()
+        self.http_session.headers = self.HTTP_HEADERS
 
     def build_url(self, path: str):
         url = urljoin(self.base_url, path)
