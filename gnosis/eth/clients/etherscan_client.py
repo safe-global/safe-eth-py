@@ -26,6 +26,7 @@ class EtherscanClient:
         EthereumNetwork.MAINNET: 'https://api.etherscan.io',
         EthereumNetwork.RINKEBY: 'https://api-rinkeby.etherscan.io',
         EthereumNetwork.BINANCE: 'https://api.bscscan.com',
+        EthereumNetwork.MATIC: 'https://api.polygonscan.com/',
     }
     HTTP_HEADERS = {
         'User-Agent': 'curl/7.77.0',
