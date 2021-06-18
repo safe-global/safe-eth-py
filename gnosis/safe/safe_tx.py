@@ -45,7 +45,7 @@ class SafeTx:
                  gas_price: int,
                  gas_token: str,
                  refund_receiver: str,
-                 signatures: bytes = b'',
+                 signatures: bytes = None,
                  safe_nonce: Optional[int] = None,
                  safe_version: str = None,
                  chain_id: Optional[int] = None):
@@ -81,10 +81,16 @@ class SafeTx:
         self.gas_price = gas_price
         self.gas_token = gas_token or NULL_ADDRESS
         self.refund_receiver = refund_receiver or NULL_ADDRESS
-        self.signatures = signatures
+        self.signatures = signatures or b''
         self._safe_nonce = safe_nonce
         self._safe_version = safe_version
         self._chain_id = chain_id
+
+    def __str__(self):
+        return f'SafeTx - safe={self.safe_address} - to={self.to} - value={self.value} - data={self.data.hex()} - ' \
+               f'operation={self.operation} - safe-tx-gas={self.safe_tx_gas} - base-gas={self.base_gas} - ' \
+               f'gas-price={self.gas_price} - gas-token={self.gas_token} - refund-receiver={self.refund_receiver} - ' \
+               f'signers = {self.signers}'
 
     @property
     def w3(self):
