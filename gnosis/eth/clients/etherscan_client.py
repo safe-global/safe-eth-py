@@ -23,8 +23,22 @@ class EtherscanRateLimitError(EtherscanClientException):
 
 class EtherscanClient:
     NETWORK_WITH_URL = {
+        EthereumNetwork.MAINNET: 'https://etherscan.io',
+        EthereumNetwork.RINKEBY: 'https://rinkeby.etherscan.io',
+        EthereumNetwork.ROPSTEN: 'https://ropsten.etherscan.io',
+        EthereumNetwork.GOERLI: 'https://goerli.etherscan.io',
+        EthereumNetwork.KOVAN: 'https://kovan.etherscan.io',
+        EthereumNetwork.BINANCE: 'https://bscscan.com',
+        EthereumNetwork.MATIC: 'https://polygonscan.com',
+        EthereumNetwork.OPTIMISTIC: 'https://optimistic.etherscan.io',
+    }
+
+    NETWORK_WITH_API_URL = {
         EthereumNetwork.MAINNET: 'https://api.etherscan.io',
         EthereumNetwork.RINKEBY: 'https://api-rinkeby.etherscan.io',
+        EthereumNetwork.ROPSTEN: 'https://api-ropsten.etherscan.io',
+        EthereumNetwork.GOERLI: 'https://api-goerli.etherscan.io/',
+        EthereumNetwork.KOVAN: 'https://api-kovan.etherscan.io/',
         EthereumNetwork.BINANCE: 'https://api.bscscan.com',
         EthereumNetwork.MATIC: 'https://api.polygonscan.com',
         EthereumNetwork.OPTIMISTIC: 'https://api-optimistic.etherscan.io',
@@ -36,14 +50,15 @@ class EtherscanClient:
     def __init__(self, network: EthereumNetwork, api_key: Optional[str] = None):
         self.network = network
         self.api_key = api_key
-        self.base_url = self.NETWORK_WITH_URL.get(network)
-        if self.base_url is None:
+        self.base_url = self.URL_BY_NETWORK.get(network)
+        self.base_api_url = self.NETWORK_WITH_API_URL.get(network)
+        if self.base_api_url is None:
             raise EtherscanClientConfigurationProblem(f'Network {network.name} - {network.value} not supported')
         self.http_session = requests.Session()
         self.http_session.headers = self.HTTP_HEADERS
 
     def build_url(self, path: str):
-        url = urljoin(self.base_url, path)
+        url = urljoin(self.base_api_url, path)
         if self.api_key:
             url += f'&apikey={self.api_key}'
         return url
