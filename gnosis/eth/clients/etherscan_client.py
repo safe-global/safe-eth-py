@@ -50,7 +50,7 @@ class EtherscanClient:
     def __init__(self, network: EthereumNetwork, api_key: Optional[str] = None):
         self.network = network
         self.api_key = api_key
-        self.base_url = self.URL_BY_NETWORK.get(network)
+        self.base_url = self.NETWORK_WITH_URL.get(network)
         self.base_api_url = self.NETWORK_WITH_API_URL.get(network)
         if self.base_api_url is None:
             raise EtherscanClientConfigurationProblem(f'Network {network.name} - {network.value} not supported')
