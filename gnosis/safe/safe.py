@@ -629,7 +629,7 @@ class Safe:
             return NULL_ADDRESS
 
     def retrieve_master_copy_address(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> ChecksumAddress:
-        bytes_address = self.w3.eth.get_storage_at(self.address, 0, block_identifier=block_identifier)[-20:]
+        bytes_address = self.w3.eth.get_storage_at(self.address, '0x00', block_identifier=block_identifier)[-20:]
         int_address = int.from_bytes(bytes_address, byteorder='big')
         return Web3.toChecksumAddress('{:#042x}'.format(int_address))
 
