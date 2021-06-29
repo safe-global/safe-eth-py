@@ -22,7 +22,7 @@ from ..ethereum_client import EthereumNetwork
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 from .abis.mooniswap_abis import mooniswap_abi
-from .abis.yearn_abis import YVAULT_ABI
+from .abis.yearn_abis import YTOKEN_ABI, YVAULT_ABI
 
 try:
     from functools import cached_property
@@ -451,15 +451,20 @@ class YearnOracle(UsdPricePoolOracle):
 
     def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
-        :param pool_token_address: Yearn yVault pool token address
+        :param pool_token_address: Yearn yVault/yToken address
         :return: Usd price for token
         :raises: CannotGetPriceFromOracle
         """
-        contract = self.w3.eth.contract(pool_token_address, abi=YVAULT_ABI)
+        exceptions = (ValueError, BadFunctionCallOutput, DecodingError)
         try:
-            return contract.functions.getPricePerFullShare().call() / 1e18
-        except (ValueError, BadFunctionCallOutput, DecodingError):
-            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a Yearn yVault')
+            return self.w3.eth.contract(pool_token_address,
+                                        abi=YVAULT_ABI).functions.getPricePerFullShare().call() / 1e18
+        except exceptions:
+            try:
+                return self.w3.eth.contract(pool_token_address,
+                                            abi=YTOKEN_ABI).functions.pricePerShare().call() / 1e18
+            except exceptions:
+                raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a Yearn yVault')
 
 
 class BalancerOracle(PricePoolOracle):

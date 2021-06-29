@@ -187,6 +187,11 @@ class TestYearnOracle(EthereumTestCaseMixin, TestCase):
         price = yearn_oracle.get_pool_usd_token_price(iearn_token_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
 
+        # Test yToken
+        y_token = '0x30FCf7c6cDfC46eC237783D94Fc78553E79d4E9C'
+        price = yearn_oracle.get_pool_usd_token_price(y_token)
+        self.assertAlmostEqual(price, 1., delta=0.5)
+
         error_message = 'It is not a Yearn yVault'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
             yearn_oracle.get_pool_usd_token_price(gno_token_mainnet_address)
