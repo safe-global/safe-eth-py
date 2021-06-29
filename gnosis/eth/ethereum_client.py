@@ -56,6 +56,7 @@ class EthereumNetwork(Enum):
     AVALANCHE = 43114
     VOLTA = 73799
     MUMBAI = 80001
+    ARBITRUM_TESTNET = 421611
     default = UNKNOWN
 
     @classmethod
