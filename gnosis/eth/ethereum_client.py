@@ -23,7 +23,6 @@ from web3.datastructures import AttributeDict
 from web3.exceptions import (BadFunctionCallOutput, BlockNotFound,
                              TimeExhausted, TransactionNotFound)
 from web3.middleware import geth_poa_middleware
-from web3.providers import AutoProvider
 from web3.types import (BlockData, BlockIdentifier, FilterParams, LogReceipt,
                         Nonce, ParityBlockTrace, ParityFilterParams,
                         ParityFilterTrace, TxData, TxParams, TxReceipt, Wei)
@@ -209,10 +208,11 @@ class Erc20Manager:
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
 
-    def __init__(self, ethereum_client: 'EthereumClient', slow_provider_timeout: int):
+    def __init__(self, ethereum_client: 'EthereumClient'):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
+        self.slow_w3 = ethereum_client.slow_w3
+        self.http_session = ethereum_client.http_session
 
     def decode_logs(self, logs: List[Dict[str, Any]]):
         decoded_logs = []
@@ -282,7 +282,7 @@ class Erc20Manager:
                                         'data': '0x70a08231' + '{:0>64}'.format(address.replace('0x', '').lower())
                                         }, 'latest'],
                             'id': i + 1})
-        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=queries)
+        response = self.http_session.post(self.ethereum_client.ethereum_node_url, json=queries)
         token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]], token_addresses)
         balances: List[BalanceDict] = []
         for token_address, data in zip(token_addresses_casted, response.json()):
@@ -335,7 +335,7 @@ class Erc20Manager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'eth_call',
                     'params': [{'to': erc20_address, 'data': data}, 'latest']}
                    for i, data in enumerate(datas)]
-        response = self.ethereum_client.http_session.post(self.ethereum_client.ethereum_node_url, json=payload)
+        response = self.http_session.post(self.ethereum_client.ethereum_node_url, json=payload)
         if not response.ok:
             raise InvalidERC20Info(response.content)
         try:
@@ -532,10 +532,10 @@ class Erc721Manager:
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = Erc20Manager.TRANSFER_TOPIC
 
-    def __init__(self, ethereum_client: 'EthereumClient', slow_provider_timeout: int):
+    def __init__(self, ethereum_client: 'EthereumClient'):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
+        self.slow_w3 = ethereum_client.slow_w3
 
     def get_balance(self, address: str, token_address: str) -> int:
         """
@@ -607,11 +607,12 @@ class Erc721Manager:
 
 
 class ParityManager:
-    def __init__(self, ethereum_client: 'EthereumClient', slow_provider_timeout: int):
+    def __init__(self, ethereum_client: 'EthereumClient'):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.slow_w3 = Web3(self.ethereum_client.get_slow_provider(timeout=slow_provider_timeout))
+        self.slow_w3 = ethereum_client.slow_w3
         self.ethereum_node_url = ethereum_client.ethereum_node_url
+        self.http_session = ethereum_client.http_session
 
     # TODO Test with mock
     def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
@@ -748,10 +749,10 @@ class ParityManager:
 
     def trace_block(self, block_identifier: BlockIdentifier) -> List[Dict[str, Any]]:
         try:
-            return self._decode_traces(self.slow_w3.parity.traceBlock(block_identifier))
+            return self._decode_traces(self.slow_w3.parity.trace_block(block_identifier))
         except ParityTraceDecodeException as exc:
             logger.warning('Problem decoding trace: %s - Retrying', exc)
-            return self._decode_traces(self.slow_w3.parity.traceBlock(block_identifier))
+            return self._decode_traces(self.slow_w3.parity.trace_block(block_identifier))
 
     def trace_blocks(self, block_identifiers: List[BlockIdentifier]) -> List[List[Dict[str, Any]]]:
         if not block_identifiers:
@@ -759,7 +760,7 @@ class ParityManager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_block',
                     'params': [hex(block_identifier) if isinstance(block_identifier, int) else block_identifier]}
                    for i, block_identifier in enumerate(block_identifiers)]
-        response = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload)
+        response = self.http_session.post(self.ethereum_node_url, json=payload)
         if not response.ok:
             message = f'Problem calling batch `trace_block` on blocks={block_identifiers} ' \
                       f'status_code={response.status_code} result={response.content}'
@@ -805,7 +806,7 @@ class ParityManager:
         payload = [{'id': i, 'jsonrpc': '2.0', 'method': 'trace_transaction',
                     'params': [HexBytes(tx_hash).hex()]}
                    for i, tx_hash in enumerate(tx_hashes)]
-        response = self.ethereum_client.http_session.post(self.ethereum_node_url, json=payload)
+        response = self.http_session.post(self.ethereum_node_url, json=payload)
         if not response.ok:
             message = f'Problem calling batch `trace_transaction` on tx_hashes={tx_hashes} ' \
                       f'status_code={response.status_code} result={response.content}'
@@ -927,15 +928,17 @@ class EthereumClient:
     """
     NULL_ADDRESS = NULL_ADDRESS
 
-    def __init__(self, ethereum_node_url: URI = URI('http://localhost:8545'), slow_provider_timeout: int = 200):
+    def __init__(self, ethereum_node_url: URI = URI('http://localhost:8545'), slow_provider_timeout: int = 60):
         self.ethereum_node_url: str = ethereum_node_url
         self.w3_provider = HTTPProvider(self.ethereum_node_url)
+        self.w3_slow_provider = HTTPProvider(self.ethereum_node_url,
+                                             request_kwargs={'timeout': slow_provider_timeout})
         self.w3: Web3 = Web3(self.w3_provider)
-        self.slow_w3 = Web3(self.get_slow_provider(timeout=slow_provider_timeout))
-        self.erc20: Erc20Manager = Erc20Manager(self, slow_provider_timeout)
-        self.erc721: Erc721Manager = Erc721Manager(self, slow_provider_timeout)
-        self.parity: ParityManager = ParityManager(self, slow_provider_timeout)
+        self.slow_w3: Web3 = Web3(self.w3_slow_provider)
         self.http_session = requests.Session()
+        self.erc20: Erc20Manager = Erc20Manager(self)
+        self.erc721: Erc721Manager = Erc721Manager(self)
+        self.parity: ParityManager = ParityManager(self)
         try:
             if int(self.w3.net.version) != 1:
                 self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -973,21 +976,6 @@ class EthereumClient:
                     contract_address = ChecksumAddress(checksum_encode(mk_contract_address(tx['from'], tx['nonce'])))
 
         return EthereumTxSent(tx_hash, tx, contract_address)
-
-    def get_slow_provider(self, timeout: int):
-        """
-        Get web3 provider for slow queries. Default `HTTPProvider` timeouts after 10 seconds
-        :param timeout: Timeout to configure for internal requests
-        :return: A new web3 provider with the `slow_provider_timeout`
-        """
-        if isinstance(self.w3_provider, AutoProvider):
-            return HTTPProvider(endpoint_uri=URI('http://localhost:8545'),
-                                request_kwargs={'timeout': timeout})
-        elif isinstance(self.w3_provider, HTTPProvider):
-            return HTTPProvider(endpoint_uri=self.w3_provider.endpoint_uri,
-                                request_kwargs={'timeout': timeout})
-        else:
-            return self.w3_provider
 
     def get_network(self) -> EthereumNetwork:
         """
