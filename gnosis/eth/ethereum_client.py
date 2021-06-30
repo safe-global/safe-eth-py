@@ -929,13 +929,14 @@ class EthereumClient:
     NULL_ADDRESS = NULL_ADDRESS
 
     def __init__(self, ethereum_node_url: URI = URI('http://localhost:8545'), slow_provider_timeout: int = 60):
+        self.http_session = self._prepare_http_session()
         self.ethereum_node_url: str = ethereum_node_url
-        self.w3_provider = HTTPProvider(self.ethereum_node_url)
+        self.w3_provider = HTTPProvider(self.ethereum_node_url, session=self.http_session)
         self.w3_slow_provider = HTTPProvider(self.ethereum_node_url,
-                                             request_kwargs={'timeout': slow_provider_timeout})
+                                             request_kwargs={'timeout': slow_provider_timeout},
+                                             session=self.http_session)
         self.w3: Web3 = Web3(self.w3_provider)
         self.slow_w3: Web3 = Web3(self.w3_slow_provider)
-        self.http_session = requests.Session()
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
         self.parity: ParityManager = ParityManager(self)
@@ -948,6 +949,21 @@ class EthereumClient:
 
     def __str__(self):
         return f'EthereumClient for url={self.ethereum_node_url}'
+
+    def _prepare_http_session(self):
+        """
+        Prepare http session with custom pooling. See:
+        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
+        https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
+        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
+        :return:
+        """
+        session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=1,  # Doing all the connections to the same url
+                                                pool_maxsize=100)  # Do many requests to the same host
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+        return session
 
     @property
     def current_block_number(self):
