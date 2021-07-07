@@ -19,6 +19,7 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_pair_contract,
                          get_uniswap_v2_router_contract)
 from ..ethereum_client import EthereumNetwork
+from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 from .abis.mooniswap_abis import mooniswap_abi
@@ -402,6 +403,30 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
 class SushiswapOracle(UniswapV2Oracle):
     pair_init_code = HexBytes('0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303')
     router_address = '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
+
+
+class AaveOracle(PriceOracle):
+    def __init__(self, ethereum_client: EthereumClient, price_oracle: PriceOracle):
+        """
+        :param ethereum_client:
+        :param price_oracle: Price oracle to get the price for the components of the Balancer Pool, UniswapV2 is
+        recommended
+        """
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+        self.price_oracle = price_oracle
+
+    def get_price(self, token_address: str) -> float:
+        if token_address == '0x4da27a545c0c5B758a6BA100e3a049001de870f5':  # Stacked Aave
+            return self.price_oracle.get_price('0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9')
+        try:
+            underlying_token = self.w3.eth.contract(
+                token_address,
+                abi=AAVE_ATOKEN_ABI
+            ).functions.UNDERLYING_ASSET_ADDRESS().call()
+            return self.price_oracle.get_price(underlying_token)
+        except (ValueError, BadFunctionCallOutput, DecodingError):
+            raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not an Aaave atoken')
 
 
 class CurveOracle(UsdPricePoolOracle):

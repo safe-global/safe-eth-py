@@ -9,6 +9,7 @@ from .. import EthereumClient
 from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
                        KyberOracle, MooniswapOracle, SushiswapOracle,
                        UniswapOracle, UniswapV2Oracle, YearnOracle)
+from ..oracles.oracles import AaveOracle
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -153,6 +154,29 @@ class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
 
         price = sushiswap_oracle.get_price(usdt_token_mainnet_address, dai_token_mainnet_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
+
+
+class TestAaveOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_token_price(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        uniswap_oracle = UniswapV2Oracle(ethereum_client)
+        aave_oracle = AaveOracle(ethereum_client, uniswap_oracle)
+
+        aweth_address = '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e'
+        price = aave_oracle.get_price(aweth_address)
+        self.assertGreater(price, 0.)
+
+        stacked_aave_address = '0x4da27a545c0c5B758a6BA100e3a049001de870f5'
+        price = aave_oracle.get_price(stacked_aave_address)
+        self.assertGreater(price, 0.)
+
+        error_message = 'It is not an Aaave atoken'
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            aave_oracle.get_price(gno_token_mainnet_address)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            aave_oracle.get_price(Account.create().address)
 
 
 class TestCurveOracle(EthereumTestCaseMixin, TestCase):
