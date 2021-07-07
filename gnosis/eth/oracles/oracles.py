@@ -64,6 +64,12 @@ class UsdPricePoolOracle(ABC):
         pass
 
 
+class ComposedPriceOracle(ABC):
+    @abstractmethod
+    def get_price_per_share_with_token(self, *args) -> Tuple[float, ChecksumAddress]:
+        pass
+
+
 class KyberOracle(PriceOracle):
     # This is the `tokenAddress` they use for ETH ¯\_(ツ)_/¯
     ETH_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
@@ -463,7 +469,7 @@ class CurveOracle(UsdPricePoolOracle):
             raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
 
 
-class YearnOracle(UsdPricePoolOracle):
+class YearnOracle(ComposedPriceOracle):
     """
     Yearn oracle. More info on https://docs.yearn.finance
     """
@@ -474,22 +480,23 @@ class YearnOracle(UsdPricePoolOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
 
-    def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
+    def get_price_per_share_with_token(self, token_address: ChecksumAddress) -> Tuple[float, ChecksumAddress]:
         """
-        :param pool_token_address: Yearn yVault/yToken address
-        :return: Usd price for token
-        :raises: CannotGetPriceFromOracle
+        :param token_address:
+        :return: Price per share and underlying token
         """
-        exceptions = (ValueError, BadFunctionCallOutput, DecodingError)
-        try:
-            return self.w3.eth.contract(pool_token_address,
-                                        abi=YVAULT_ABI).functions.getPricePerFullShare().call() / 1e18
-        except exceptions:
+        yvault_contract = self.w3.eth.contract(token_address, abi=YVAULT_ABI)
+        for fn in (
+                yvault_contract.functions.getPricePerFullShare(),
+                self.w3.eth.contract(token_address, abi=YTOKEN_ABI).functions.pricePerShare(),
+        ):
             try:
-                return self.w3.eth.contract(pool_token_address,
-                                            abi=YTOKEN_ABI).functions.pricePerShare().call() / 1e18
-            except exceptions:
-                raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a Yearn yVault')
+                # Getting underlying token function is the same for both yVault and yToken
+                return fn.call() / 1e18, yvault_contract.functions.token().call()
+            except (ValueError, BadFunctionCallOutput, DecodingError):
+                pass
+
+        raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not a Yearn yToken/yVault')
 
 
 class BalancerOracle(PricePoolOracle):

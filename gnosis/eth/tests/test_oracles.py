@@ -203,25 +203,31 @@ class TestYearnOracle(EthereumTestCaseMixin, TestCase):
         ethereum_client = EthereumClient(mainnet_node)
         yearn_oracle = YearnOracle(ethereum_client)
         yearn_token_address = '0x5533ed0a3b83F70c3c4a1f69Ef5546D3D4713E44'  # Yearn Curve.fi DAI/USDC/USDT/sUSD
+        yearn_underlying_token_address = '0xC25a3A3b969415c80451098fa907EC722572917F'  # Curve.fi DAI/USDC/USDT/sUSD
         iearn_token_address = '0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01'  # iearn DAI
+        iearn_underlying_token_address = '0x6B175474E89094C44Da98b954EedeAC495271d0F'  # DAI
 
-        price = yearn_oracle.get_pool_usd_token_price(yearn_token_address)
+        price, token = yearn_oracle.get_price_per_share_with_token(yearn_token_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
+        self.assertEqual(token, yearn_underlying_token_address)
 
-        price = yearn_oracle.get_pool_usd_token_price(iearn_token_address)
+        price, token = yearn_oracle.get_price_per_share_with_token(iearn_token_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
+        self.assertEqual(token, iearn_underlying_token_address)
 
         # Test yToken
         y_token = '0x30FCf7c6cDfC46eC237783D94Fc78553E79d4E9C'
-        price = yearn_oracle.get_pool_usd_token_price(y_token)
+        yearn_underlying_token = '0x3a664Ab939FD8482048609f652f9a0B0677337B9'
+        price, token = yearn_oracle.get_price_per_share_with_token(y_token)
         self.assertAlmostEqual(price, 1., delta=0.5)
+        self.assertEqual(token, yearn_underlying_token)
 
-        error_message = 'It is not a Yearn yVault'
+        error_message = 'It is not a Yearn yToken/yVault'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            yearn_oracle.get_pool_usd_token_price(gno_token_mainnet_address)
+            yearn_oracle.get_price_per_share_with_token(gno_token_mainnet_address)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            yearn_oracle.get_pool_usd_token_price(Account.create().address)
+            yearn_oracle.get_price_per_share_with_token(Account.create().address)
 
 
 class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
