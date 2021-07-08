@@ -45,17 +45,26 @@ the possibility of doing ``batch_calls`` (a single request making read-only call
                       erc721_contract.functions.symbol(),
                   ])
 
+If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>`_ library:
+
+.. code-block:: python
+
+  from gnosis.eth import EthereumClient
+  ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
+  ethereum_client.w3.eth.get_block(57)
+
 
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
-- ``NULL_ADDRESS (0x000...0)``
+- ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
 - ``SENTINEL_ADDRESS (0x000...1)``: Used for Gnosis Safe's linked lists (modules, owners...).
 - Maximum an minimum values for `R`, `S` and `V` in ethereum signatures.
 
 gnosis.eth.oracles
 ~~~~~~~~~~~~~~~~~~
 
-Price oracles for Uniswap, UniswapV2, Kyber and SushiSwap. Example:
+Price oracles for Uniswap, UniswapV2, Kyber, SushiSwap, Aave, Balancer, Curve, Mooniswap, Yearn...
+Example:
 
 .. code-block:: python
 
