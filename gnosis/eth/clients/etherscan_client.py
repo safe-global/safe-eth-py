@@ -95,20 +95,22 @@ class EtherscanClient:
 
     def get_contract_source_code(self, contract_address: str, retry: bool = True):
         """
-        Source code query also returns:
-            ContractName: "",
-            CompilerVersion: "",
-            OptimizationUsed: "",
-            Runs: "",
-            ConstructorArguments: ""
-            EVMVersion: "Default",
-            Library: "",
-            LicenseType: "",
-            Proxy: "0",
-            Implementation: "",
-            SwarmSource: ""
+        Get source code for a contract. Source code query also returns:
+
+            - ContractName: "",
+            - CompilerVersion: "",
+            - OptimizationUsed: "",
+            - Runs: "",
+            - ConstructorArguments: ""
+            - EVMVersion: "Default",
+            - Library: "",
+            - LicenseType: "",
+            - Proxy: "0",
+            - Implementation: "",
+            - SwarmSource: ""
+
         :param contract_address:
-        :param retry:
+        :param retry: if ``True``, try again if there's Rate Limit Error
         :return:
         """
         url = self.build_url(f'api?module=contract&action=getsourcecode&address={contract_address}')

@@ -1,7 +1,9 @@
 -r requirements.txt
 -r requirements-test.txt
+flake8
+ipdb
 ipython
 isort
-ipdb
-flake8
 mypy
+sphinx
+sphinx-rtd-theme
