@@ -26,6 +26,7 @@ def get_eth_address_with_invalid_checksum() -> str:
 def generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]) -> str:
     """
     Generates an address for a contract created using CREATE2.
+
     :param from_: The address which is creating this new address (need to be 20 bytes)
     :param salt: A salt (32 bytes)
     :param init_code: A init code of the contract being created

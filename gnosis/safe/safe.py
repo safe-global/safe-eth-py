@@ -60,10 +60,17 @@ class SafeInfo:
 
 
 class Safe:
+    """
+    Class to manage a Gnosis Safe
+    """
     FALLBACK_HANDLER_STORAGE_SLOT = 0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5
     GUARD_STORAGE_SLOT = 0x4a204f620c8c5ccdca3fd54d003badd85ba500436a431f0cbda4f558c93c34c8
 
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
+        """
+        :param address: Safe address
+        :param ethereum_client: Initialized ethereum client
+        """
         assert Web3.isChecksumAddress(address), '%s is not a valid address' % address
 
         self.ethereum_client = ethereum_client
@@ -128,6 +135,7 @@ class Safe:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
         Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :param contract_fn: get contract function
@@ -152,6 +160,7 @@ class Safe:
         """
         Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
         Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
@@ -165,6 +174,7 @@ class Safe:
         """
         Deploy master contract v1.3.0. Takes deployer_account (if unlocked in the node) or the deployer private key
         Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
@@ -176,6 +186,7 @@ class Safe:
     def deploy_master_contract_v1_0_0(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
@@ -204,6 +215,7 @@ class Safe:
     def deploy_old_master_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
@@ -331,6 +343,7 @@ class Safe:
     def check_funds_for_tx_gas(self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str) -> bool:
         """
         Check safe has enough funds to pay for a tx
+
         :param safe_tx_gas: Safe tx gas
         :param base_gas: Data gas
         :param gas_price: Gas Price
@@ -348,6 +361,7 @@ class Safe:
         """
         Calculate gas costs that are independent of the transaction execution(e.g. base transaction fee,
         signature check, payment of the refund...)
+
         :param to:
         :param value:
         :param data:
@@ -419,6 +433,7 @@ class Safe:
                                   block_identifier: Optional[BlockIdentifier] = 'latest') -> int:
         """
         Estimate tx gas using safe `requiredTxGas` method
+
         :return: int: Estimated gas
         :raises: CannotEstimateGas: If gas cannot be estimated
         :raises: ValueError: Cannot decode received data
@@ -503,6 +518,7 @@ class Safe:
         Try to get an estimation with Safe's `requiredTxGas`. If estimation if successful, try to set a gas limit and
         estimate again. If gas estimation is ok, same gas estimation should be returned, if it's less than required
         estimation will not be completed, so estimation was not accurate and gas limit needs to be increased.
+
         :param to:
         :param value:
         :param data:
@@ -537,6 +553,7 @@ class Safe:
         """
         Estimate tx gas. Use `requiredTxGas` on the Safe contract and fallbacks to `eth_estimateGas` if that method
         fails. Note: `eth_estimateGas` cannot estimate delegate calls
+
         :param to:
         :param value:
         :param data:
@@ -561,13 +578,15 @@ class Safe:
 
     def estimate_tx_operational_gas(self, data_bytes_length: int):
         """
-        DEPRECATED. `estimate_tx_base_gas` already includes this
+        DEPRECATED. `estimate_tx_base_gas` already includes this.
         Estimates the gas for the verification of the signatures and other safe related tasks
         before and after executing a transaction.
         Calculation will be the sum of:
-          - Base cost of 15000 gas
-          - 100 of gas per word of `data_bytes`
-          - Validate the signatures 5000 * threshold (ecrecover for ecdsa ~= 4K gas)
+
+            - Base cost of 15000 gas
+            - 100 of gas per word of `data_bytes`
+            - Validate the signatures 5000 * threshold (ecrecover for ecdsa ~= 4K gas)
+
         :param data_bytes_length: Length of the data (in bytes, so `len(HexBytes('0x12'))` would be `1`
         :return: gas costs per signature * threshold of Safe
         """
@@ -582,6 +601,7 @@ class Safe:
     def retrieve_all_info(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> SafeInfo:
         """
         Get all Safe info in the same batch call.
+
         :param block_identifier:
         :return:
         :raises: CannotRetrieveSafeInfoException
@@ -703,13 +723,14 @@ class Safe:
         """
         Allows to execute a Safe transaction confirmed by required number of owners and then pays the account
         that submitted the transaction. The fees are always transfered, even if the user transaction fails
+
         :param to: Destination address of Safe transaction
         :param value: Ether value of Safe transaction
         :param data: Data payload of Safe transaction
         :param operation: Operation type of Safe transaction
         :param safe_tx_gas: Gas that should be used for the Safe transaction
         :param base_gas: Gas costs for that are independent of the transaction execution
-        (e.g. base transaction fee, signature check, payment of the refund)
+            (e.g. base transaction fee, signature check, payment of the refund)
         :param gas_price: Gas price that should be used for the payment calculation
         :param gas_token: Token address (or `0x000..000` if ETH) that is used for the payment
         :param refund_receiver: Address of receiver of gas payment (or `0x000..000`  if tx.origin).
@@ -743,6 +764,7 @@ class Safe:
                          block_identifier: Optional[BlockIdentifier] = 'latest') -> EthereumTxSent:
         """
         Build and send Safe tx
+
         :param to:
         :param value:
         :param data:

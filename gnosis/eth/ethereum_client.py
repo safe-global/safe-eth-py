@@ -136,6 +136,7 @@ def tx_with_exception_handling(func):
         - https://github.com/ethereum/go-ethereum/blob/master/core/tx_pool.go
     Comparison
         - https://gist.github.com/kunal365roy/3c37ac9d1c3aaf31140f7c5faa083932
+
     :param func:
     :return:
     """
@@ -204,6 +205,9 @@ class EthereumClientProvider:
 
 
 class Erc20Manager:
+    """
+    Manager for ERC20 operations
+    """
     # keccak('Transfer(address,address,uint256)')
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
@@ -250,6 +254,7 @@ class Erc20Manager:
     def get_balance(self, address: str, token_address: str) -> int:
         """
         Get balance of address for `erc20_address`
+
         :param address: owner address
         :param token_address: erc20 token address
         :return: balance
@@ -259,13 +264,10 @@ class Erc20Manager:
     def get_balances(self, address: str, token_addresses: List[str]) -> List[BalanceDict]:
         """
         Get balances for Ether and tokens for an `address`
+
         :param address: Owner address checksummed
         :param token_addresses: token addresses to check
-        :return: Dictionary
-        {
-            'token_address': <str>,  # None if Ether
-            'balance': <int>,
-        }
+        :return: ``List[BalanceDict]``
         """
         # Build ether `eth_getBalance` query
         balance_query = {'jsonrpc': '2.0',
@@ -323,6 +325,7 @@ class Erc20Manager:
         """
         Get erc20 information (`name`, `symbol` and `decimals`). Use batching to get
         all info in the same request.
+
         :param erc20_address:
         :return: Erc20Info
         :raises: InvalidERC20Info
@@ -356,66 +359,70 @@ class Erc20Manager:
                                    to_block: Optional[BlockIdentifier] = None,
                                    token_address: Optional[ChecksumAddress] = None) -> List[Dict[str, Any]]:
         """
-        Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually
-        An example of an erc20 event:
-        {'logIndex': 0,
-         'transactionIndex': 0,
-         'transactionHash': HexBytes('0x4d0f25313603e554e3b040667f7f391982babbd195c7ae57a8c84048189f7794'),
-         'blockHash': HexBytes('0x90fa67d848a0eaf3be625235dae28815389f5292d4465c48d1139f0c207f8d42'),
-         'blockNumber': 791,
-         'address': '0xf7d0Bd47BF3214494E7F5B40E392A25cb4788620',
-         'data': '0x000000000000000000000000000000000000000000000000002001f716742000',
-         'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-          HexBytes('0x000000000000000000000000f5984365fca2e3bc7d2e020abb2c701df9070eb7'),
-          HexBytes('0x0000000000000000000000001df62f291b2e969fb0849d99d9ce41e2f137006e')],
-         'type': 'mined'
-         'args': {'from': '0xf5984365FcA2e3bc7D2E020AbB2c701DF9070eB7',
-                  'to': '0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e',
-                  'value': 9009360000000000
-                 }
-        }
-        An example of an erc721 event
-        {'address': '0x6631FcbB50677DfC6c02CCDcc03a8f68Db427a64',
-         'blockHash': HexBytes('0x95c71c6c9373e9a8ca2c767dda1cd5083eb6addcce36fc216c9e1f458d6970f9'),
-         'blockNumber': 5341681,
-         'data': '0x',
-         'logIndex': 0,
-         'removed': False,
-         'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
-          HexBytes('0x000000000000000000000000b5239c032ab9fb5abfc3903e770a4b6a9095542c'),
-          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000063')],
-         'transactionHash': HexBytes('0xce8c8af0503e6f8a421345c10cdf92834c95186916a3f5b1437d2bba63d2db9e'),
-         'transactionIndex': 0,
-         'transactionLogIndex': '0x0',
-         'type': 'mined',
-         'args': {'from': '0x0000000000000000000000000000000000000000',
-                  'to': '0xb5239C032AB9fB5aBFc3903e770A4B6a9095542C',
-                  'tokenId': 99
-                 }
-         }
-        An example of unknown transfer event (no indexed parts), could be a ERC20 or ERC721 transfer:
-        {'address': '0x6631FcbB50677DfC6c02CCDcc03a8f68Db427a64',
-         'blockHash': HexBytes('0x95c71c6c9373e9a8ca2c767dda1cd5083eb6addcce36fc216c9e1f458d6970f9'),
-         'blockNumber': 5341681,
-         'data': '0x',
-         'logIndex': 0,
-         'removed': False,
-         'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
-          HexBytes('0x000000000000000000000000b5239c032ab9fb5abfc3903e770a4b6a9095542c'),
-          HexBytes('0x0000000000000000000000000000000000000000000000000000000000000063')],
-         'transactionHash': HexBytes('0xce8c8af0503e6f8a421345c10cdf92834c95186916a3f5b1437d2bba63d2db9e'),
-         'transactionIndex': 0,
-         'transactionLogIndex': '0x0',
-         'type': 'mined',
-         'args': {'from': '0x0000000000000000000000000000000000000000',
-                  'to': '0xb5239C032AB9fB5aBFc3903e770A4B6a9095542C',
-                  'unknown': 99
-                 }
-         }
+        Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually.
+        Example of an erc20 event:
+
+        .. code-block:: python
+
+            {'logIndex': 0,
+             'transactionIndex': 0,
+             'transactionHash': HexBytes('0x4d0f25313603e554e3b040667f7f391982babbd195c7ae57a8c84048189f7794'),
+             'blockHash': HexBytes('0x90fa67d848a0eaf3be625235dae28815389f5292d4465c48d1139f0c207f8d42'),
+             'blockNumber': 791,
+             'address': '0xf7d0Bd47BF3214494E7F5B40E392A25cb4788620',
+             'data': '0x000000000000000000000000000000000000000000000000002001f716742000',
+             'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+              HexBytes('0x000000000000000000000000f5984365fca2e3bc7d2e020abb2c701df9070eb7'),
+              HexBytes('0x0000000000000000000000001df62f291b2e969fb0849d99d9ce41e2f137006e')],
+             'type': 'mined'
+             'args': {'from': '0xf5984365FcA2e3bc7D2E020AbB2c701DF9070eB7',
+                      'to': '0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e',
+                      'value': 9009360000000000
+                     }
+            }
+            An example of an erc721 event
+            {'address': '0x6631FcbB50677DfC6c02CCDcc03a8f68Db427a64',
+             'blockHash': HexBytes('0x95c71c6c9373e9a8ca2c767dda1cd5083eb6addcce36fc216c9e1f458d6970f9'),
+             'blockNumber': 5341681,
+             'data': '0x',
+             'logIndex': 0,
+             'removed': False,
+             'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+              HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+              HexBytes('0x000000000000000000000000b5239c032ab9fb5abfc3903e770a4b6a9095542c'),
+              HexBytes('0x0000000000000000000000000000000000000000000000000000000000000063')],
+             'transactionHash': HexBytes('0xce8c8af0503e6f8a421345c10cdf92834c95186916a3f5b1437d2bba63d2db9e'),
+             'transactionIndex': 0,
+             'transactionLogIndex': '0x0',
+             'type': 'mined',
+             'args': {'from': '0x0000000000000000000000000000000000000000',
+                      'to': '0xb5239C032AB9fB5aBFc3903e770A4B6a9095542C',
+                      'tokenId': 99
+                     }
+             }
+            An example of unknown transfer event (no indexed parts), could be a ERC20 or ERC721 transfer:
+            {'address': '0x6631FcbB50677DfC6c02CCDcc03a8f68Db427a64',
+             'blockHash': HexBytes('0x95c71c6c9373e9a8ca2c767dda1cd5083eb6addcce36fc216c9e1f458d6970f9'),
+             'blockNumber': 5341681,
+             'data': '0x',
+             'logIndex': 0,
+             'removed': False,
+             'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
+              HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+              HexBytes('0x000000000000000000000000b5239c032ab9fb5abfc3903e770a4b6a9095542c'),
+              HexBytes('0x0000000000000000000000000000000000000000000000000000000000000063')],
+             'transactionHash': HexBytes('0xce8c8af0503e6f8a421345c10cdf92834c95186916a3f5b1437d2bba63d2db9e'),
+             'transactionIndex': 0,
+             'transactionLogIndex': '0x0',
+             'type': 'mined',
+             'args': {'from': '0x0000000000000000000000000000000000000000',
+                      'to': '0xb5239C032AB9fB5aBFc3903e770A4B6a9095542C',
+                      'unknown': 99
+                     }
+             }
+
         :param addresses: Search events `from` and `to` these `addresses`. If not, every transfer event within the
-        range will be retrieved
+            range will be retrieved
         :param from_block: Block to start querying from
         :param to_block: Block to stop querying from
         :param token_address: Address of the token
@@ -461,22 +468,25 @@ class Erc20Manager:
         """
         DON'T USE, it will fail in some cases until they fix https://github.com/ethereum/web3.py/issues/1351
         Get events for erc20/erc721 transfers. At least one of `from_address`, `to_address` or `token_address` must be
-        defined
-        An example of decoded event:
-        {
-            "args": {
-                "from": "0x1Ce67Ea59377A163D47DFFc9BaAB99423BE6EcF1",
-                "to": "0xaE9E15896fd32E59C7d89ce7a95a9352D6ebD70E",
-                "value": 15000000000000000
-            },
-            "event": "Transfer",
-            "logIndex": 42,
-            "transactionIndex": 60,
-            "transactionHash": "0x71d6d83fef3347bad848e83dfa0ab28296e2953de946ee152ea81c6dfb42d2b3",
-            "address": "0xfecA834E7da9D437645b474450688DA9327112a5",
-            "blockHash": "0x054de9a496fc7d10303068cbc7ee3e25181a3b26640497859a5e49f0342e7db2",
-            "blockNumber": 7265022
-        }
+        defined. Example of decoded event:
+
+        .. code-block:: python
+
+            {
+                "args": {
+                    "from": "0x1Ce67Ea59377A163D47DFFc9BaAB99423BE6EcF1",
+                    "to": "0xaE9E15896fd32E59C7d89ce7a95a9352D6ebD70E",
+                    "value": 15000000000000000
+                },
+                "event": "Transfer",
+                "logIndex": 42,
+                "transactionIndex": 60,
+                "transactionHash": "0x71d6d83fef3347bad848e83dfa0ab28296e2953de946ee152ea81c6dfb42d2b3",
+                "address": "0xfecA834E7da9D437645b474450688DA9327112a5",
+                "blockHash": "0x054de9a496fc7d10303068cbc7ee3e25181a3b26640497859a5e49f0342e7db2",
+                "blockNumber": 7265022
+            }
+
         :param from_block: Block to start querying from
         :param to_block: Block to stop querying from
         :param from_address: Address sending the erc20 transfer
@@ -504,6 +514,7 @@ class Erc20Manager:
                     nonce: Optional[int] = None, gas_price: Optional[int] = None, gas: Optional[int] = None) -> bytes:
         """
         Send tokens to address
+
         :param to:
         :param amount:
         :param erc20_address:
@@ -540,6 +551,7 @@ class Erc721Manager:
     def get_balance(self, address: str, token_address: str) -> int:
         """
         Get balance of address for `erc20_address`
+
         :param address: owner address
         :param token_address: erc721 token address
         :return: balance
@@ -550,13 +562,10 @@ class Erc721Manager:
         """
         Get balances for tokens for an `address`. If there's a problem with a token_address `0` will be
         returned for balance
+
         :param address: Owner address checksummed
         :param token_addresses: token addresses to check
-        :return: Dictionary
-        {
-            'token_address': <str>,  # None if Ether
-            'balance': <int>,
-        }
+        :return:
         """
         balances = self.ethereum_client.batch_call(
             [get_erc721_contract(self.ethereum_client.w3, token_address).functions.balanceOf(address)
@@ -570,8 +579,9 @@ class Erc721Manager:
         """
         Get erc721 information (`name`, `symbol`). Use batching to get
         all info in the same request.
+
         :param token_address:
-        :return: Erc20Info
+        :return: Erc721Info
         """
         erc721_contract = get_erc721_contract(self.w3, token_address)
         try:
@@ -686,9 +696,10 @@ class ParityManager:
     def filter_out_errored_traces(self, internal_txs: Sequence[Dict[str, Any]]) -> Sequence[Dict[str, Any]]:
         """
         Filter out errored transactions (traces that are errored or that have an errored parent)
+
         :param internal_txs: Traces for the SAME ethereum tx, sorted ascending by `trace_address`
-        `sorted(t, key = lambda i: i['traceAddress'])`. It's the default output from methods returning `traces` like
-        `trace_block` or `trace_transaction`
+            `sorted(t, key = lambda i: i['traceAddress'])`. It's the default output from methods returning `traces` like
+            `trace_block` or `trace_transaction`
         :return: List of not errored traces
         """
         new_list = []
@@ -711,7 +722,7 @@ class ParityManager:
         :param number_traces: Number of traces to skip, by default get the immediately previous one
         :param skip_delegate_calls: If True filter out delegate calls
         :return: Parent trace for a trace
-        :raises: ValueError if tracing is not supported
+        :raises: ``ValueError`` if tracing is not supported
         """
         if len(trace_address) < number_traces:
             return None
@@ -733,7 +744,7 @@ class ParityManager:
         :param remove_delegate_calls: If True remove delegate calls from result
         :param remove_calls: If True remove calls from result
         :return: Children for a trace, E.g. if address is [0, 1] and number_traces = 1, it will return [0, 1, x]
-        :raises: ValueError if tracing is not supported
+        :raises: ``ValueError`` if tracing is not supported
         """
         trace_address_len = len(trace_address)
         traces = []
@@ -832,6 +843,8 @@ class ParityManager:
                      to_address: Optional[Sequence[ChecksumAddress]] = None,
                      after: Optional[int] = None, count: Optional[int] = None) -> List[Dict[str, Any]]:
         """
+        Get events using ``trace_filter`` method
+
         :param from_block: Quantity or Tag - (optional) From this block. `0` is not working, it needs to be `>= 1`
         :param to_block: Quantity or Tag - (optional) To this block.
         :param from_address: Array - (optional) Sent from these addresses.
@@ -839,65 +852,68 @@ class ParityManager:
         :param after: Quantity - (optional) The offset trace number
         :param count: Quantity - (optional) Integer number of traces to display in a batch.
         :return:
-          [
-            {
-              "action": {
-                "callType": "call",
-                "from": "0x32be343b94f860124dc4fee278fdcbd38c102d88",
-                "gas": "0x4c40d",
-                "input": "0x",
-                "to": "0x8bbb73bcb5d553b5a556358d27625323fd781d37",
-                "value": "0x3f0650ec47fd240000"
-              },
-              "blockHash": "0x86df301bcdd8248d982dbf039f09faf792684e1aeee99d5b58b77d620008b80f",
-              "blockNumber": 3068183,
-              "result": {
-                "gasUsed": "0x0",
-                "output": "0x"
-              },
-              "subtraces": 0,
-              "traceAddress": [],
-              "transactionHash": "0x3321a7708b1083130bd78da0d62ead9f6683033231617c9d268e2c7e3fa6c104",
-              "transactionPosition": 3,
-              "type": "call"
-            },
-          {
-            "action": {
-              "from": "0x3b169a0fb55ea0b6bafe54c272b1fe4983742bf7",
-              "gas": "0x49b0b",
-              "init": "0x608060405234801561001057600080fd5b5060405161060a38038061060a833981018060405281019080805190602001909291908051820192919060200180519060200190929190805190602001909291908051906020019092919050505084848160008173ffffffffffffffffffffffffffffffffffffffff1614151515610116576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260248152602001807f496e76616c6964206d617374657220636f707920616464726573732070726f7681526020017f696465640000000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506000815111156101a35773ffffffffffffffffffffffffffffffffffffffff60005416600080835160208501846127105a03f46040513d6000823e600082141561019f573d81fd5b5050505b5050600081111561036d57600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156102b7578273ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f1935050505015156102b2576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f206574686572000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b61036c565b6102d1828483610377640100000000026401000000009004565b151561036b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f20746f6b656e000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b5b5b5050505050610490565b600060608383604051602401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506040516020818303038152906040527fa9059cbb000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff19166020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff838183161783525050505090506000808251602084016000896127105a03f16040513d6000823e3d60008114610473576020811461047b5760009450610485565b829450610485565b8151158315171594505b505050509392505050565b61016b8061049f6000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d0410800290000000000000000000000008942595a2dc5181df0465af0d7be08c8f23c93af00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000d9e09beaeb338d81a7c5688358df0071d498811500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b15f91a8c35300000000000000000000000000000000000000000000000000000000000001640ec78d9e00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000004000000000000000000000000f763ea5fbb191d47dc4b083dcdc3cdfb586468f8000000000000000000000000ad25c9717d04c0a12086a1d352c1ccf4bf5fcbf80000000000000000000000000da7155692446c80a4e7ad72018e586f20fa3bfe000000000000000000000000bce0cc48ce44e0ac9ee38df4d586afbacef191fa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-              "value": "0x0"
-            },
-            "blockHash": "0x03f9f64dfeb7807b5df608e6957dd4d521fd71685aac5533451d27f0abe03660",
-            "blockNumber": 3793534,
-            "result": {
-              "address": "0x61a7cc907c47c133d5ff5b685407201951fcbd08",
-              "code": "0x60806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d041080029",
-              "gasUsed": "0x4683f"
-            },
-            "subtraces": 2,
-            "traceAddress": [],
-            "transactionHash": "0x6c7e8f8778d33d81b29c4bd7526ee50a4cea340d69eed6c89ada4e6fab731789",
-            "transactionPosition": 1,
-            "type": "create"
-          },
-          {
-            'action': {
-              'address': '0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac',
-              'balance': '0x0',
-              'refundAddress': '0x0000000000000000000000000000000000000000'
-            },
-            'blockHash': '0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c',
-            'blockNumber': 7829689,
-            'result': None,
-            'subtraces': 0,
-            'traceAddress': [0, 0, 0, 0, 0, 0],
-            'transactionHash': '0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d',
-            'transactionPosition': 35,
-            'type': 'suicide'
-          }
-          ...
-        ]
+
+        .. code-block:: python
+
+            [
+                {
+                    "action": {
+                        "callType": "call",
+                        "from": "0x32be343b94f860124dc4fee278fdcbd38c102d88",
+                        "gas": "0x4c40d",
+                        "input": "0x",
+                        "to": "0x8bbb73bcb5d553b5a556358d27625323fd781d37",
+                        "value": "0x3f0650ec47fd240000"
+                    },
+                    "blockHash": "0x86df301bcdd8248d982dbf039f09faf792684e1aeee99d5b58b77d620008b80f",
+                    "blockNumber": 3068183,
+                    "result": {
+                        "gasUsed": "0x0",
+                        "output": "0x"
+                    },
+                    "subtraces": 0,
+                    "traceAddress": [],
+                    "transactionHash": "0x3321a7708b1083130bd78da0d62ead9f6683033231617c9d268e2c7e3fa6c104",
+                    "transactionPosition": 3,
+                    "type": "call"
+                },
+                {
+                    "action": {
+                        "from": "0x3b169a0fb55ea0b6bafe54c272b1fe4983742bf7",
+                        "gas": "0x49b0b",
+                        "init": "0x608060405234801561001057600080fd5b5060405161060a38038061060a833981018060405281019080805190602001909291908051820192919060200180519060200190929190805190602001909291908051906020019092919050505084848160008173ffffffffffffffffffffffffffffffffffffffff1614151515610116576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260248152602001807f496e76616c6964206d617374657220636f707920616464726573732070726f7681526020017f696465640000000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506000815111156101a35773ffffffffffffffffffffffffffffffffffffffff60005416600080835160208501846127105a03f46040513d6000823e600082141561019f573d81fd5b5050505b5050600081111561036d57600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156102b7578273ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f1935050505015156102b2576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f206574686572000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b61036c565b6102d1828483610377640100000000026401000000009004565b151561036b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f20746f6b656e000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b5b5b5050505050610490565b600060608383604051602401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506040516020818303038152906040527fa9059cbb000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff19166020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff838183161783525050505090506000808251602084016000896127105a03f16040513d6000823e3d60008114610473576020811461047b5760009450610485565b829450610485565b8151158315171594505b505050509392505050565b61016b8061049f6000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d0410800290000000000000000000000008942595a2dc5181df0465af0d7be08c8f23c93af00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000d9e09beaeb338d81a7c5688358df0071d498811500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b15f91a8c35300000000000000000000000000000000000000000000000000000000000001640ec78d9e00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000004000000000000000000000000f763ea5fbb191d47dc4b083dcdc3cdfb586468f8000000000000000000000000ad25c9717d04c0a12086a1d352c1ccf4bf5fcbf80000000000000000000000000da7155692446c80a4e7ad72018e586f20fa3bfe000000000000000000000000bce0cc48ce44e0ac9ee38df4d586afbacef191fa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                        "value": "0x0"
+                    },
+                    "blockHash": "0x03f9f64dfeb7807b5df608e6957dd4d521fd71685aac5533451d27f0abe03660",
+                    "blockNumber": 3793534,
+                    "result": {
+                        "address": "0x61a7cc907c47c133d5ff5b685407201951fcbd08",
+                        "code": "0x60806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d041080029",
+                        "gasUsed": "0x4683f"
+                    },
+                    "subtraces": 2,
+                    "traceAddress": [],
+                    "transactionHash": "0x6c7e8f8778d33d81b29c4bd7526ee50a4cea340d69eed6c89ada4e6fab731789",
+                    "transactionPosition": 1,
+                    "type": "create"
+                },
+                {
+                    'action': {
+                        'address': '0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac',
+                        'balance': '0x0',
+                        'refundAddress': '0x0000000000000000000000000000000000000000'
+                    },
+                    'blockHash': '0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c',
+                    'blockNumber': 7829689,
+                    'result': None,
+                    'subtraces': 0,
+                    'traceAddress': [0, 0, 0, 0, 0, 0],
+                    'transactionHash': '0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d',
+                    'transactionPosition': 35,
+                    'type': 'suicide'
+                }
+            ]
+
         """
         assert from_address or to_address, 'You must provide at least `from_address` or `to_address`'
         parameters: ParityFilterParams = {}
@@ -956,7 +972,6 @@ class EthereumClient:
         https://urllib3.readthedocs.io/en/stable/advanced-usage.html
         https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
         https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
-        :return:
         """
         session = requests.Session()
         adapter = requests.adapters.HTTPAdapter(pool_connections=1,  # Doing all the connections to the same url
@@ -996,6 +1011,7 @@ class EthereumClient:
     def get_network(self) -> EthereumNetwork:
         """
         Get network name based on the network version id
+
         :return: The EthereumNetwork enum type
         """
         return EthereumNetwork(int(self.w3.net.version))
@@ -1004,6 +1020,7 @@ class EthereumClient:
         """
         Get nonce for account. `getTransactionCount` is the only method for what `pending` is currently working
         (Geth and Parity)
+
         :param address:
         :param block_identifier:
         :return:
@@ -1015,11 +1032,12 @@ class EthereumClient:
                           block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
         """
         Do batch requests of multiple contract calls
+
         :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
-        'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
-        `fn_name` is provided it will be used for debugging purposes
+            'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
+            `fn_name` is provided it will be used for debugging purposes
         :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
-        be returned as the value
+            be returned as the value
         :param block_identifier: `latest` by default
         :return: List with the ABI decoded return values
         :raises: ValueError if raise_exception=True
@@ -1081,12 +1099,13 @@ class EthereumClient:
                    block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
         """
         Do batch requests of multiple contract calls
+
         :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
-        argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
+            argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
         :param from_address: Use this address as `from` in every call if provided
         :param block_identifier: `latest` by default
         :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
-        be returned as the value.
+            be returned as the value.
         :return: List with the ABI decoded return values
         """
         if not contract_functions:
@@ -1113,6 +1132,7 @@ class EthereumClient:
                      block_identifier: Optional[BlockIdentifier] = None) -> int:
         """
         Estimate gas calling `eth_estimateGas`
+
         :param from_:
         :param to:
         :param value:
@@ -1255,6 +1275,7 @@ class EthereumClient:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
         `private_key` cannot be `None`
+
         :param tx:
         :param private_key:
         :param public_key:
@@ -1313,6 +1334,7 @@ class EthereumClient:
                     block_identifier: Optional[BlockIdentifier] = 'pending') -> bytes:
         """
         Send ether using configured account
+
         :param to: to
         :param gas_price: gas_price
         :param value: value(wei)
@@ -1341,6 +1363,7 @@ class EthereumClient:
     def check_tx_with_confirmations(self, tx_hash: EthereumHash, confirmations: int) -> bool:
         """
         Check tx hash and make sure it has the confirmations required
+
         :param tx_hash: Hash of the tx
         :param confirmations: Minimum number of confirmations required
         :return: True if tx was mined with the number of confirmations required, False otherwise

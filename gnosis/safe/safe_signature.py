@@ -63,7 +63,7 @@ class SafeSignature(ABC):
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_tx_hash:
         :param ignore_trailing: Ignore trailing data on the signature. Some libraries pad it and add some zeroes at
-        the end
+            the end
         :return: List of SafeSignatures decoded
         """
         if not signatures:
@@ -145,7 +145,7 @@ class SafeSignatureContract(SafeSignature):
     def owner(self):
         """
         :return: Address of contract signing. No further checks to get the owner are needed,
-        but it could be a non existing contract
+            but it could be a non existing contract
         """
         contract_address = checksum_encode(self.r)
         return contract_address

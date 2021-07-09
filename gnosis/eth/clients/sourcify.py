@@ -10,14 +10,14 @@ from .contract_metadata import ContractMetadata
 
 class Sourcify:
     """
-    Get contract metadata from Sourcify
+    Get contract metadata from Sourcify. Matches can be full or partial:
 
-    Matches can be full or partial:
       - Full: Both the source files as well as the meta data files were an exact match between the deployed bytecode
-      and the published files.
+        and the published files.
       - Partial: Source code compiles to the same bytecode and thus the contract behaves in the same way,
-      but the source code can be different: Variables can have misleading names,
-      comments can be different and especially the NatSpec comments could have been modified.
+        but the source code can be different: Variables can have misleading names,
+        comments can be different and especially the NatSpec comments could have been modified.
+
     """
     def __init__(self, network: EthereumNetwork = EthereumNetwork.MAINNET,
                  base_url: str = 'https://repo.sourcify.dev/'):
