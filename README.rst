@@ -3,7 +3,7 @@ Gnosis-py
 
 .. class:: no-web no-pdf
 
-|ci| |coveralls| |python| |django| |pipy|
+|ci| |coveralls| |python| |django| |pipy| |readthedocs|
 
 Gnosis-py includes a set of libraries to work with Ethereum and Gnosis projects:
   - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
@@ -124,3 +124,7 @@ Contributors
 .. |pipy| image:: https://badge.fury.io/py/gnosis-py.svg
     :target: https://badge.fury.io/py/gnosis-py
     :alt: Pypi package
+
+.. |readthedocs| image:: https://readthedocs.org/projects/gnosis-py/badge/?version=latest
+    :target: https://gnosis-py.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
