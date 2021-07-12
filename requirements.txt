@@ -9,4 +9,4 @@ psycopg2-binary==2.8.6
 py-eth-sig-utils==0.4.0
 requests==2.25.1
 typing-extensions==3.10.0.0
-web3==5.19.0
+web3==5.20.1
