@@ -1,7 +1,8 @@
 import functools
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 
 import requests
 from eth_abi.exceptions import DecodingError
@@ -9,6 +10,7 @@ from eth_abi.packed import encode_abi_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
+from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 
 from .. import EthereumClient
@@ -21,9 +23,9 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
 from ..ethereum_client import EthereumNetwork
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
-from .abis.curve_abis import curve_address_provider_abi, curve_registry_abi
 from .abis.mooniswap_abis import mooniswap_abi
 from .abis.yearn_abis import YTOKEN_ABI, YVAULT_ABI
+from .abis.zerion_abis import ZERION_TOKEN_ADAPTER_ABI
 
 try:
     from functools import cached_property
@@ -32,6 +34,12 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class UnderlyingToken:
+    address: ChecksumAddress
+    quantity: int
 
 
 class OracleException(Exception):
@@ -66,7 +74,7 @@ class UsdPricePoolOracle(ABC):
 
 class ComposedPriceOracle(ABC):
     @abstractmethod
-    def get_price_per_share_with_token(self, *args) -> Tuple[float, ChecksumAddress]:
+    def get_underlying_tokens(self, *args) -> List[Tuple[UnderlyingToken]]:
         pass
 
 
@@ -274,6 +282,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         Get uniswap pair address. `token_address` and `token_address_2` are interchangeable.
         https://uniswap.org/docs/v2/smart-contracts/factory/
+
         :param token_address:
         :param token_address_2:
         :return: Address of the pair for `token_address` and `token_address_2`, if it has been created, else `None`.
@@ -288,6 +297,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         Calculate pair address without querying blockchain.
         https://uniswap.org/docs/v2/smart-contract-integration/getting-pair-addresses/#docs-header
+
         :param token_address:
         :param token_address_2:
         :return: Checksummed address for token pair. It could be not created yet
@@ -373,6 +383,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
     def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
         Estimate pool token price based on its components
+
         :param pool_token_address:
         :return: Pool token eth price per unit (total pool token supply / 1e18)
         :raises: CannotGetPriceFromOracle
@@ -435,38 +446,50 @@ class AaveOracle(PriceOracle):
             raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not an Aaave atoken')
 
 
-class CurveOracle(UsdPricePoolOracle):
+class CurveOracle(ComposedPriceOracle):
     """
     Curve pool Oracle. More info on https://curve.fi/
     """
     def __init__(self, ethereum_client: EthereumClient,
-                 address_provider: str = '0x0000000022D53366457F9d5E68Ec105046FC4383'):
+                 zerion_adapter_address: str = '0x36c60c1CC2818ccb9eA5a1b87C0b309196D2D867'):
         """
         :param ethereum_client:
-        :param address_provider: https://curve.readthedocs.io/registry-address-provider.html
+        :param zerion_adapter_address: By default, Curve adapter mainnet address.
+            https://github.com/zeriontech/defi-sdk/wiki/Addresses
         """
+
+        self.zerion_adapter_address = zerion_adapter_address  # Mainnet address
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.address_provider_contract = self.w3.eth.contract(address_provider, abi=curve_address_provider_abi)
 
     @cached_property
-    def registry_contract(self):
+    def zerion_adapter_contract(self) -> Optional[Contract]:
         """
         :return: https://curve.readthedocs.io/registry-registry.html
         """
-        return self.w3.eth.contract(self.address_provider_contract.functions.get_registry().call(),
-                                    abi=curve_registry_abi)
+        if self.ethereum_client.is_contract(self.zerion_adapter_address):
+            return self.w3.eth.contract(self.zerion_adapter_address, abi=ZERION_TOKEN_ADAPTER_ABI)
 
-    def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
+    def get_underlying_tokens(self, token_address: ChecksumAddress) -> List[UnderlyingToken]:
         """
-        :param pool_token_address: Curve pool token address
-        :return: Usd price for token
+        Use Zerion Token adapter to return underlying components for pool
+
+        :param token_address: Curve pool token address
+        :return: Price per share and underlying token
         :raises: CannotGetPriceFromOracle
         """
+        if not self.zerion_adapter_contract:
+            raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. Cannot find Zerion adapter')
+
         try:
-            return self.registry_contract.functions.get_virtual_price_from_lp_token(pool_token_address).call() / 1e18
+            result = self.zerion_adapter_contract.functions.getComponents(token_address).call()
+            if result:
+                return [UnderlyingToken(token_address, quantity / 10**len(str(quantity)))
+                        for token_address, _, quantity in result]
         except (ValueError, BadFunctionCallOutput, DecodingError):
-            raise CannotGetPriceFromOracle(f'Cannot get price for {pool_token_address}. It is not a curve pool token')
+            pass
+
+        raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not a curve pool token')
 
 
 class YearnOracle(ComposedPriceOracle):
@@ -480,10 +503,11 @@ class YearnOracle(ComposedPriceOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
 
-    def get_price_per_share_with_token(self, token_address: ChecksumAddress) -> Tuple[float, ChecksumAddress]:
+    def get_underlying_tokens(self, token_address: ChecksumAddress) -> List[Tuple[float, ChecksumAddress]]:
         """
         :param token_address:
         :return: Price per share and underlying token
+        :raises: CannotGetPriceFromOracle
         """
         yvault_contract = self.w3.eth.contract(token_address, abi=YVAULT_ABI)
         for fn in (
@@ -492,7 +516,7 @@ class YearnOracle(ComposedPriceOracle):
         ):
             try:
                 # Getting underlying token function is the same for both yVault and yToken
-                return fn.call() / 1e18, yvault_contract.functions.token().call()
+                return [UnderlyingToken(yvault_contract.functions.token().call(), fn.call() / 1e18)]
             except (ValueError, BadFunctionCallOutput, DecodingError):
                 pass
 
@@ -516,6 +540,7 @@ class BalancerOracle(PricePoolOracle):
     def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
         Estimate balancer pool token price based on its components
+
         :param pool_token_address: Balancer pool token address
         :return: Eth price for pool token
         :raises: CannotGetPriceFromOracle
@@ -554,6 +579,7 @@ class MooniswapOracle(BalancerOracle):
     def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """
         Estimate balancer pool token price based on its components
+
         :param pool_token_address: Moniswap pool token address
         :return: Eth price for pool token
         :raises: CannotGetPriceFromOracle

@@ -180,25 +180,43 @@ class TestAaveOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestCurveOracle(EthereumTestCaseMixin, TestCase):
-    def test_get_pool_token_price(self):
+    def test_get_underlying_tokens(self):
+        curve_token_address = '0xC25a3A3b969415c80451098fa907EC722572917F'  # Curve.fi DAI/USDC/USDT/sUSD
+        local_curve_oracle = CurveOracle(self.ethereum_client)
+        error_message = 'Cannot find Zerion adapter'
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            local_curve_oracle.get_underlying_tokens(curve_token_address)
+
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
         curve_oracle = CurveOracle(ethereum_client)
-        curve_token_address = '0xC25a3A3b969415c80451098fa907EC722572917F'  # Curve.fi DAI/USDC/USDT/sUSD
-
-        price = curve_oracle.get_pool_usd_token_price(curve_token_address)
-        self.assertAlmostEqual(price, 1., delta=0.5)
 
         error_message = 'It is not a curve pool token'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            curve_oracle.get_pool_usd_token_price(gno_token_mainnet_address)
+            # Curve.fi ETH/stETH (steCRV) is not working
+            curve_oracle.get_underlying_tokens('0x06325440D014e39736583c165C2963BA99fAf14E')
+
+        underlying_tokens = curve_oracle.get_underlying_tokens(curve_token_address)
+        self.assertEqual(len(underlying_tokens), 4)
+
+        self.assertCountEqual(
+            [underlying_token.address for underlying_token in underlying_tokens],
+            ['0x6B175474E89094C44Da98b954EedeAC495271d0F', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+             '0xdAC17F958D2ee523a2206206994597C13D831ec7', '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51']
+        )
+        for underlying_token in underlying_tokens:
+            self.assertTrue(0. < underlying_token.quantity < 1.)
+
+        error_message = 'It is not a curve pool token'
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            curve_oracle.get_underlying_tokens(gno_token_mainnet_address)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            curve_oracle.get_pool_usd_token_price(Account.create().address)
+            curve_oracle.get_underlying_tokens(Account.create().address)
 
 
 class TestYearnOracle(EthereumTestCaseMixin, TestCase):
-    def test_get_pool_token_price(self):
+    def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
         yearn_oracle = YearnOracle(ethereum_client)
@@ -207,27 +225,33 @@ class TestYearnOracle(EthereumTestCaseMixin, TestCase):
         iearn_token_address = '0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01'  # iearn DAI
         iearn_underlying_token_address = '0x6B175474E89094C44Da98b954EedeAC495271d0F'  # DAI
 
-        price, token = yearn_oracle.get_price_per_share_with_token(yearn_token_address)
-        self.assertAlmostEqual(price, 1., delta=0.5)
-        self.assertEqual(token, yearn_underlying_token_address)
+        underlying_tokens = yearn_oracle.get_underlying_tokens(yearn_token_address)
+        self.assertEqual(len(underlying_tokens), 1)
+        underlying_token = underlying_tokens[0]
+        self.assertAlmostEqual(underlying_token.quantity, 1., delta=0.5)
+        self.assertEqual(underlying_token.address, yearn_underlying_token_address)
 
-        price, token = yearn_oracle.get_price_per_share_with_token(iearn_token_address)
-        self.assertAlmostEqual(price, 1., delta=0.5)
-        self.assertEqual(token, iearn_underlying_token_address)
+        underlying_tokens = yearn_oracle.get_underlying_tokens(iearn_token_address)
+        self.assertEqual(len(underlying_tokens), 1)
+        underlying_token = underlying_tokens[0]
+        self.assertAlmostEqual(underlying_token.quantity, 1., delta=0.5)
+        self.assertEqual(underlying_token.address, iearn_underlying_token_address)
 
         # Test yToken
         y_token = '0x30FCf7c6cDfC46eC237783D94Fc78553E79d4E9C'
         yearn_underlying_token = '0x3a664Ab939FD8482048609f652f9a0B0677337B9'
-        price, token = yearn_oracle.get_price_per_share_with_token(y_token)
-        self.assertAlmostEqual(price, 1., delta=0.5)
-        self.assertEqual(token, yearn_underlying_token)
+        underlying_tokens = yearn_oracle.get_underlying_tokens(y_token)
+        self.assertEqual(len(underlying_tokens), 1)
+        underlying_token = underlying_tokens[0]
+        self.assertAlmostEqual(underlying_token.quantity, 1., delta=0.5)
+        self.assertEqual(underlying_token.address, yearn_underlying_token)
 
         error_message = 'It is not a Yearn yToken/yVault'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            yearn_oracle.get_price_per_share_with_token(gno_token_mainnet_address)
+            yearn_oracle.get_underlying_tokens(gno_token_mainnet_address)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            yearn_oracle.get_price_per_share_with_token(Account.create().address)
+            yearn_oracle.get_underlying_tokens(Account.create().address)
 
 
 class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
