@@ -451,7 +451,7 @@ class CurveOracle(ComposedPriceOracle):
     Curve pool Oracle. More info on https://curve.fi/
     """
     def __init__(self, ethereum_client: EthereumClient,
-                 zerion_adapter_address: str = '0x36c60c1CC2818ccb9eA5a1b87C0b309196D2D867'):
+                 zerion_adapter_address: str = '0x99b0bEadc3984eab9842AF81f9fad0C2219108cc'):
         """
         :param ethereum_client:
         :param zerion_adapter_address: By default, Curve adapter mainnet address.

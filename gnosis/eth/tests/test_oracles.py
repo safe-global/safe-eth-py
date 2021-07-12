@@ -191,10 +191,8 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
         ethereum_client = EthereumClient(mainnet_node)
         curve_oracle = CurveOracle(ethereum_client)
 
-        error_message = 'It is not a curve pool token'
-        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            # Curve.fi ETH/stETH (steCRV) is not working
-            curve_oracle.get_underlying_tokens('0x06325440D014e39736583c165C2963BA99fAf14E')
+        # Curve.fi ETH/stETH (steCRV) is working with the updated adapter
+        self.assertEqual(len(curve_oracle.get_underlying_tokens('0x06325440D014e39736583c165C2963BA99fAf14E')), 2)
 
         underlying_tokens = curve_oracle.get_underlying_tokens(curve_token_address)
         self.assertEqual(len(underlying_tokens), 4)
