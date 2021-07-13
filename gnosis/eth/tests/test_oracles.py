@@ -222,17 +222,17 @@ class TestZerionComposedOracle(EthereumTestCaseMixin, TestCase):
 
 class TestPoolTogetherOracle(EthereumTestCaseMixin, TestCase):
     def test_get_underlying_token(self):
-        pooltogether_token_address = '0xD81b1A8B1AD00Baa2D6609E0BAE28A38713872f7'  # v3 USDC Ticket
-        local_pooltogether_oracle = CurveOracle(self.ethereum_client)
+        pool_together_token_address = '0xD81b1A8B1AD00Baa2D6609E0BAE28A38713872f7'  # v3 USDC Ticket
+        local_pool_together_oracle = CurveOracle(self.ethereum_client)
         error_message = 'Cannot find Zerion adapter'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            local_pooltogether_oracle.get_underlying_tokens(pooltogether_token_address)
+            local_pool_together_oracle.get_underlying_tokens(pool_together_token_address)
 
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
-        pooltogether_oracle = PoolTogetherOracle(ethereum_client)
+        pool_together_oracle = PoolTogetherOracle(ethereum_client)
 
-        underlying_tokens = pooltogether_oracle.get_underlying_tokens(pooltogether_token_address)
+        underlying_tokens = pool_together_oracle.get_underlying_tokens(pool_together_token_address)
         self.assertEqual(len(underlying_tokens), 1)
         self.assertEqual(
             [underlying_token.address for underlying_token in underlying_tokens],
@@ -242,10 +242,10 @@ class TestPoolTogetherOracle(EthereumTestCaseMixin, TestCase):
 
         error_message = 'It is not a Zerion supported pool token'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            pooltogether_oracle.get_underlying_tokens(gno_token_mainnet_address)
+            pool_together_oracle.get_underlying_tokens(gno_token_mainnet_address)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
-            pooltogether_oracle.get_underlying_tokens(Account.create().address)
+            pool_together_oracle.get_underlying_tokens(Account.create().address)
 
 
 class TestYearnOracle(EthereumTestCaseMixin, TestCase):
