@@ -15,7 +15,7 @@ requirements = [
     "py-eth-sig-utils>=0.3.0",
     "typing-extensions==3.10.0.0; python_version < '3.8'",
     "requests>=2",
-    "web3>=5.18",
+    "web3>=5.18<=5.19",
 ]
 
 extras_require = {
