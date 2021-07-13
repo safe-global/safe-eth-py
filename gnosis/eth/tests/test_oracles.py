@@ -9,7 +9,8 @@ from .. import EthereumClient
 from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
                        KyberOracle, MooniswapOracle, SushiswapOracle,
                        UniswapOracle, UniswapV2Oracle, YearnOracle)
-from ..oracles.oracles import AaveOracle
+from ..oracles.oracles import (AaveOracle, PoolTogetherOracle,
+                               ZerionComposedOracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -205,12 +206,46 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
         for underlying_token in underlying_tokens:
             self.assertTrue(0. < underlying_token.quantity < 1.)
 
-        error_message = 'It is not a curve pool token'
+        error_message = 'It is not a Zerion supported pool token'
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
             curve_oracle.get_underlying_tokens(gno_token_mainnet_address)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
             curve_oracle.get_underlying_tokens(Account.create().address)
+
+
+class TestZerionComposedOracle(EthereumTestCaseMixin, TestCase):
+    def test_zerion_composed_oracle(self):
+        with self.assertRaisesMessage(ValueError, 'Expected a Zerion adapter address'):
+            ZerionComposedOracle(self.ethereum_client)
+
+
+class TestPoolTogetherOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_underlying_token(self):
+        pooltogether_token_address = '0xD81b1A8B1AD00Baa2D6609E0BAE28A38713872f7'  # v3 USDC Ticket
+        local_pooltogether_oracle = CurveOracle(self.ethereum_client)
+        error_message = 'Cannot find Zerion adapter'
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            local_pooltogether_oracle.get_underlying_tokens(pooltogether_token_address)
+
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        pooltogether_oracle = PoolTogetherOracle(ethereum_client)
+
+        underlying_tokens = pooltogether_oracle.get_underlying_tokens(pooltogether_token_address)
+        self.assertEqual(len(underlying_tokens), 1)
+        self.assertEqual(
+            [underlying_token.address for underlying_token in underlying_tokens],
+            ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48']
+        )
+        self.assertEqual(underlying_tokens[0].quantity, 1.)
+
+        error_message = 'It is not a Zerion supported pool token'
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            pooltogether_oracle.get_underlying_tokens(gno_token_mainnet_address)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            pooltogether_oracle.get_underlying_tokens(Account.create().address)
 
 
 class TestYearnOracle(EthereumTestCaseMixin, TestCase):

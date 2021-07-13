@@ -2,6 +2,6 @@
 from .oracles import (AaveOracle, BalancerOracle, CannotGetPriceFromOracle,
                       ComposedPriceOracle, CurveOracle, InvalidPriceFromOracle,
                       KyberOracle, MooniswapOracle, OracleException,
-                      PriceOracle, PricePoolOracle, SushiswapOracle,
-                      UnderlyingToken, UniswapOracle, UniswapV2Oracle,
-                      UsdPricePoolOracle, YearnOracle)
+                      PoolTogetherOracle, PriceOracle, PricePoolOracle,
+                      SushiswapOracle, UnderlyingToken, UniswapOracle,
+                      UniswapV2Oracle, UsdPricePoolOracle, YearnOracle)

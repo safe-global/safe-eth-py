@@ -446,19 +446,21 @@ class AaveOracle(PriceOracle):
             raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not an Aaave atoken')
 
 
-class CurveOracle(ComposedPriceOracle):
-    """
-    Curve pool Oracle. More info on https://curve.fi/
-    """
+class ZerionComposedOracle(ComposedPriceOracle):
+    ZERION_ADAPTER_ADDRESS = None
+
     def __init__(self, ethereum_client: EthereumClient,
-                 zerion_adapter_address: str = '0x99b0bEadc3984eab9842AF81f9fad0C2219108cc'):
+                 zerion_adapter_address: Optional[str] = None):
         """
         :param ethereum_client:
-        :param zerion_adapter_address: By default, Curve adapter mainnet address.
-            https://github.com/zeriontech/defi-sdk/wiki/Addresses
+        :param zerion_adapter_address: Can be retrieved using the Zerion registry on
+            0x06FE76B2f432fdfEcAEf1a7d4f6C3d41B5861672 . https://github.com/zeriontech/defi-sdk/wiki/Addresses is
+            outdated
         """
 
-        self.zerion_adapter_address = zerion_adapter_address  # Mainnet address
+        self.zerion_adapter_address = zerion_adapter_address or self.ZERION_ADAPTER_ADDRESS
+        if not self.zerion_adapter_address:
+            raise ValueError('Expected a Zerion adapter address')
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
 
@@ -474,22 +476,44 @@ class CurveOracle(ComposedPriceOracle):
         """
         Use Zerion Token adapter to return underlying components for pool
 
-        :param token_address: Curve pool token address
+        :param token_address: Pool token address
         :return: Price per share and underlying token
         :raises: CannotGetPriceFromOracle
         """
         if not self.zerion_adapter_contract:
-            raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. Cannot find Zerion adapter')
+            raise CannotGetPriceFromOracle(
+                f'{self.__class__.__name__}: Cannot get price for {token_address}. Cannot find Zerion adapter'
+            )
 
         try:
-            result = self.zerion_adapter_contract.functions.getComponents(token_address).call()
-            if result:
-                return [UnderlyingToken(token_address, quantity / 10**len(str(quantity)))
-                        for token_address, _, quantity in result]
+            results = self.zerion_adapter_contract.functions.getComponents(token_address).call()
+            if results:
+                underlying_tokens = []
+                for token_address, _, quantity in results:
+                    # If there's just one component, quantity must be 100%
+                    normalized_quantity = 1. if len(results) == 1 else quantity / 10 ** len(str(quantity))
+                    underlying_tokens.append(UnderlyingToken(token_address, normalized_quantity))
+                return underlying_tokens
         except (ValueError, BadFunctionCallOutput, DecodingError):
             pass
 
-        raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not a curve pool token')
+        raise CannotGetPriceFromOracle(
+            f'{self.__class__.__name__}: Cannot get price for {token_address}. It is not a Zerion supported pool token'
+        )
+
+
+class CurveOracle(ZerionComposedOracle):
+    """
+    Curve pool Oracle. More info on https://curve.fi/
+    """
+    ZERION_ADAPTER_ADDRESS = '0x99b0bEadc3984eab9842AF81f9fad0C2219108cc'   # Mainnet address
+
+
+class PoolTogetherOracle(ZerionComposedOracle):
+    """
+    PoolTogether pool Oracle. More info on https://pooltogether.com/
+    """
+    ZERION_ADAPTER_ADDRESS = '0xb4E0E1672fFd9b128784dB9f3BE9158fac3f1DFc'   # Mainnet address
 
 
 class YearnOracle(ComposedPriceOracle):
