@@ -24,7 +24,6 @@ from ..ethereum_client import EthereumNetwork
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.mooniswap_abis import mooniswap_abi
-from .abis.yearn_abis import YTOKEN_ABI, YVAULT_ABI
 from .abis.zerion_abis import ZERION_TOKEN_ADAPTER_ABI
 
 try:
@@ -520,12 +519,18 @@ class YearnOracle(ComposedPriceOracle):
     """
     Yearn oracle. More info on https://docs.yearn.finance
     """
-    def __init__(self, ethereum_client: EthereumClient):
+    def __init__(self, ethereum_client: EthereumClient,
+                 yearn_vault_token_adapter: Optional[str] = '0xb460FcC1B6c1CBD7D03F47B6BD5F03994d286c75',
+                 iearn_token_adapter: Optional[str] = '0x65B23774daE2a5be02dD275918DDF048d177a5B4'):
         """
         :param ethereum_client:
+        :param yearn_vault_token_adapter:
+        :param iearn_token_adapter:
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
+        self.yearn_vault_token_adapter = ZerionComposedOracle(ethereum_client, yearn_vault_token_adapter)
+        self.iearn_token_adapter = ZerionComposedOracle(ethereum_client, iearn_token_adapter)
 
     def get_underlying_tokens(self, token_address: ChecksumAddress) -> List[Tuple[float, ChecksumAddress]]:
         """
@@ -533,15 +538,14 @@ class YearnOracle(ComposedPriceOracle):
         :return: Price per share and underlying token
         :raises: CannotGetPriceFromOracle
         """
-        yvault_contract = self.w3.eth.contract(token_address, abi=YVAULT_ABI)
-        for fn in (
-                yvault_contract.functions.getPricePerFullShare(),
-                self.w3.eth.contract(token_address, abi=YTOKEN_ABI).functions.pricePerShare(),
+        for adapter in (
+            self.yearn_vault_token_adapter,
+            self.iearn_token_adapter
         ):
             try:
                 # Getting underlying token function is the same for both yVault and yToken
-                return [UnderlyingToken(yvault_contract.functions.token().call(), fn.call() / 1e18)]
-            except (ValueError, BadFunctionCallOutput, DecodingError):
+                return adapter.get_underlying_tokens(token_address)
+            except CannotGetPriceFromOracle:
                 pass
 
         raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not a Yearn yToken/yVault')

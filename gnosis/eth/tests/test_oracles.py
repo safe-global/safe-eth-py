@@ -257,18 +257,26 @@ class TestYearnOracle(EthereumTestCaseMixin, TestCase):
         yearn_underlying_token_address = '0xC25a3A3b969415c80451098fa907EC722572917F'  # Curve.fi DAI/USDC/USDT/sUSD
         iearn_token_address = '0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01'  # iearn DAI
         iearn_underlying_token_address = '0x6B175474E89094C44Da98b954EedeAC495271d0F'  # DAI
+        yvault_token_address = '0xdCD90C7f6324cfa40d7169ef80b12031770B4325'  # steCRV yVault
+        yvault_underlying_token_address = '0x06325440D014e39736583c165C2963BA99fAf14E'  # steCRV
 
         underlying_tokens = yearn_oracle.get_underlying_tokens(yearn_token_address)
         self.assertEqual(len(underlying_tokens), 1)
         underlying_token = underlying_tokens[0]
-        self.assertAlmostEqual(underlying_token.quantity, 1., delta=0.5)
+        self.assertEqual(underlying_token.quantity, 1.)
         self.assertEqual(underlying_token.address, yearn_underlying_token_address)
 
         underlying_tokens = yearn_oracle.get_underlying_tokens(iearn_token_address)
         self.assertEqual(len(underlying_tokens), 1)
         underlying_token = underlying_tokens[0]
-        self.assertAlmostEqual(underlying_token.quantity, 1., delta=0.5)
+        self.assertEqual(underlying_token.quantity, 1.)
         self.assertEqual(underlying_token.address, iearn_underlying_token_address)
+
+        underlying_tokens = yearn_oracle.get_underlying_tokens(yvault_token_address)
+        self.assertEqual(len(underlying_tokens), 1)
+        underlying_token = underlying_tokens[0]
+        self.assertEqual(underlying_token.quantity, 1.)
+        self.assertEqual(underlying_token.address, yvault_underlying_token_address)
 
         # Test yToken
         y_token = '0x30FCf7c6cDfC46eC237783D94Fc78553E79d4E9C'
