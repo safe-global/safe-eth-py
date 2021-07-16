@@ -109,6 +109,8 @@ class KyberOracle(PriceOracle):
         return get_kyber_network_proxy_contract(self.w3, self.kyber_network_proxy_address)
 
     def get_price(self, token_address_1: str, token_address_2: str = ETH_TOKEN_ADDRESS) -> float:
+        if token_address_1 == token_address_2:
+            return 1.
         try:
             # Get decimals for token, estimation will be more accurate
             decimals = self.ethereum_client.erc20.get_decimals(token_address_1)

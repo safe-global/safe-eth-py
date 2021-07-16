@@ -37,6 +37,8 @@ class TestOracles(EthereumTestCaseMixin, TestCase):
         price = kyber_oracle.get_price(usdt_token_mainnet_address, dai_token_mainnet_address)
         self.assertAlmostEqual(price, 1., delta=0.5)
 
+        self.assertEqual(kyber_oracle.get_price('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'), 1.)
+
     def test_kyber_oracle_not_deployed(self):
         kyber_oracle = KyberOracle(self.ethereum_client, Account.create().address)
         random_token_address = Account.create().address
