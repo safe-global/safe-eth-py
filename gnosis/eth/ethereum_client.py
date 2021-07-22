@@ -16,7 +16,7 @@ from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.method_formatters import (block_formatter, receipt_formatter,
-                                           transaction_formatter)
+                                           transaction_result_formatter)
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import ContractFunction
 from web3.datastructures import AttributeDict
@@ -1195,7 +1195,7 @@ class EthereumClient:
         for result in results:
             raw_tx = result['result']
             if raw_tx:
-                txs.append(transaction_formatter(raw_tx))
+                txs.append(transaction_result_formatter(raw_tx))
             else:
                 txs.append(None)
         return txs
