@@ -285,9 +285,10 @@ class Erc20Manager:
                                         }, 'latest'],
                             'id': i + 1})
         response = self.http_session.post(self.ethereum_client.ethereum_node_url, json=queries)
-        token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]], token_addresses)
+        token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]],
+                                                                                 token_addresses)
         balances: List[BalanceDict] = []
-        for token_address, data in zip(token_addresses_casted, response.json()):
+        for token_address, data in zip(token_addresses_casted, sorted(response.json(), key=lambda x: x['id'])):
             if 'result' not in data:
                 balance = 0
             else:
@@ -342,7 +343,7 @@ class Erc20Manager:
         if not response.ok:
             raise InvalidERC20Info(response.content)
         try:
-            response_json = response.json()
+            response_json = sorted(response.json(), key=lambda x: x['id'])
             errors = [r['error'] for r in response_json if 'error' in r]
             if errors:
                 raise InvalidERC20Info(f'{erc20_address} - {errors}')
@@ -777,7 +778,7 @@ class ParityManager:
                       f'status_code={response.status_code} result={response.content}'
             logger.error(message)
             raise ValueError(message)
-        results = response.json()
+        results = sorted(response.json(), key=lambda x: x['id'])
         traces = []
         for block_identifier, result in zip(block_identifiers, results):
             if 'result' not in result:
@@ -823,7 +824,7 @@ class ParityManager:
                       f'status_code={response.status_code} result={response.content}'
             logger.error(message)
             raise ValueError(message)
-        results = response.json()
+        results = sorted(response.json(), key=lambda x: x['id'])
         traces = []
         for result in results:
             raw_tx = result['result']
@@ -1070,7 +1071,7 @@ class EthereumClient:
 
         return_values: List[Optional[Any]] = []
         errors = []
-        for payload, result in zip(payloads, response.json()):
+        for payload, result in zip(payloads, sorted(response.json(), key=lambda x: x['id'])):
             if 'error' in result:
                 fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
                 errors.append(f'`{fn_name}`: {result["error"]}')
