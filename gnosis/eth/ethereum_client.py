@@ -1193,7 +1193,7 @@ class EthereumClient:
                    for i, tx_hash in enumerate(tx_hashes)]
         results = self.http_session.post(self.ethereum_node_url, json=payload).json()
         txs = []
-        for result in results:
+        for result in sorted(results, key=lambda x: x['id']):
             raw_tx = result['result']
             if raw_tx:
                 txs.append(transaction_formatter(raw_tx))
@@ -1224,7 +1224,7 @@ class EthereumClient:
                    for i, tx_hash in enumerate(tx_hashes)]
         results = self.http_session.post(self.ethereum_node_url, json=payload).json()
         receipts = []
-        for result in results:
+        for result in sorted(results, key=lambda x: x['id']):
             tx_receipt = result['result']
             # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
             if tx_receipt and tx_receipt['blockNumber'] is not None:
@@ -1249,7 +1249,7 @@ class EthereumClient:
                    for i, block_identifier in enumerate(block_identifiers)]
         results = self.http_session.post(self.ethereum_node_url, json=payload).json()
         blocks = []
-        for result in results:
+        for result in sorted(results, key=lambda x: x['id']):
             raw_block = result['result']
             if raw_block:
                 if 'extraData' in raw_block:
