@@ -50,6 +50,7 @@ class EthereumNetwork(Enum):
     MATIC = 137
     ENERGY_WEB_CHAIN = 246
     FANTOM = 250
+    FANTOM_TESTNET = 4002
     GANACHE = 1337
     ARBITRUM = 42161
     AVALANCHE = 43114
