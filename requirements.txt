@@ -1,6 +1,6 @@
 django-filter==2.4.0
 cached-property==1.5.2
-django==3.2.5
+django==3.2.6
 djangorestframework==3.12.4
 ethereum==2.3.2
 hexbytes==0.2.1
