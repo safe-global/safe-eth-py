@@ -24,7 +24,7 @@ extras_require = {
 
 setup(
     name='gnosis-py',
-    version='3.2.0',
+    version='3.2.1',
     packages=find_packages(),
     package_data={'gnosis': ['py.typed']},
     install_requires=requirements,
