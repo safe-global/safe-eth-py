@@ -21,8 +21,7 @@ jobs:
           - 5432:5432
     steps:
     - name: Setup and run ganache
-      run: |
-        docker run --detach --publish 8545:8545 --network-alias ganache -e DOCKER=true trufflesuite/ganache-cli:latest --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --noVMErrorsOnRPCResponse --chainId 1337 --networkId 1337 -d
+      run: docker run --detach --publish 8545:8545 --network-alias ganache -e DOCKER=true trufflesuite/ganache-cli:latest --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --noVMErrorsOnRPCResponse --chainId 1337 --networkId 1337 -d
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -35,25 +34,21 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Install dependencies
-      run: |
-        pip install -r requirements-test.txt coveralls wheel
+      run: pip install -r requirements-test.txt coveralls wheel
       env:
         PIP_USE_MIRRORS: true
     - name: Run tests and coverage
-      run: |
-        coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
+      run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
         ETHEREUM_TEST_NODES_URLS: ${{ secrets.ETHEREUM_TEST_NODES_URLS }}
     - name: Test setup.py
-      run: |
-        pip install -e .
+      run: pip install -e .
     - name: Send results to coveralls
       if: ${{ env.COVERALLS_REPO_TOKEN }}
-      run: |
-        coveralls
+      run: coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
