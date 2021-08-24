@@ -21,46 +21,34 @@ jobs:
           - 5432:5432
     steps:
     - name: Setup and run ganache
-      run: |
-        docker run --detach --publish 8545:8545 --network-alias ganache -e DOCKER=true trufflesuite/ganache-cli:latest --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --noVMErrorsOnRPCResponse --chainId 1337 --networkId 1337 -d
+      run: docker run --detach --publish 8545:8545 --network-alias ganache -e DOCKER=true trufflesuite/ganache-cli:latest --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --noVMErrorsOnRPCResponse --chainId 1337 --networkId 1337 -d
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Create virtualenv
-      run: |
-        python -m venv venv
     - uses: actions/cache@v2
-      id: cache-pip
       with:
-        path: ./venv
-        key: ${{ matrix.python-version }}-${{ hashFiles('requirements-test.txt') }}-${{ hashFiles('requirements.txt') }}
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-test.txt') }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
     - name: Install dependencies
-      if: steps.cache-pip.outputs.cache-hit != 'true'
-      run: |
-        source venv/bin/activate
-        pip install -r requirements-test.txt coveralls wheel
+      run: pip install -r requirements-test.txt coveralls wheel
       env:
         PIP_USE_MIRRORS: true
     - name: Run tests and coverage
-      run: |
-        source venv/bin/activate
-        coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
+      run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
         ETHEREUM_TEST_NODES_URLS: ${{ secrets.ETHEREUM_TEST_NODES_URLS }}
     - name: Test setup.py
-      run: |
-        source venv/bin/activate
-        pip install -e .
+      run: pip install -e .
     - name: Send results to coveralls
       if: ${{ env.COVERALLS_REPO_TOKEN }}
-      run: |
-        source venv/bin/activate
-        coveralls
+      run: coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
