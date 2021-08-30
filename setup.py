@@ -15,7 +15,7 @@ requirements = [
     "py-eth-sig-utils>=0.3.0",
     "typing-extensions==3.10.0.0; python_version < '3.8'",
     "requests>=2",
-    "web3==5.23.1",
+    "web3>=5.23.0",
 ]
 
 extras_require = {
@@ -24,7 +24,7 @@ extras_require = {
 
 setup(
     name='gnosis-py',
-    version='3.2.1',
+    version='3.2.2',
     packages=find_packages(),
     package_data={'gnosis': ['py.typed']},
     install_requires=requirements,
