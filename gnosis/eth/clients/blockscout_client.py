@@ -25,7 +25,6 @@ class BlockscoutClient:
         EthereumNetwork.ENERGY_WEB_CHAIN: 'https://explorer.energyweb.org/',
         EthereumNetwork.VOLTA: 'https://volta-explorer.energyweb.org/',
         EthereumNetwork.OLYMPUS: 'https://explorer.polis.tech',
-        EthereumNetwork.SPARTA: 'https://sparta-explorer.polis.tech',
     }
 
     def __init__(self, network: EthereumNetwork):

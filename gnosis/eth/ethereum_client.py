@@ -58,7 +58,6 @@ class EthereumNetwork(Enum):
     MUMBAI = 80001
     ARBITRUM_TESTNET = 421611
     OLYMPUS = 333999
-    SPARTA = 333888
     default = UNKNOWN
 
     @classmethod
