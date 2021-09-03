@@ -278,11 +278,12 @@ class Erc20Manager:
         queries = [balance_query]
 
         # Build tokens `balanceOf` query
+        balance_of = '0x70a08231' + '{:0>64}'.format(address.replace('0x', '').lower())
         for i, erc20_address in enumerate(token_addresses):
             queries.append({'jsonrpc': '2.0',
                             'method': 'eth_call',
-                            'params': [{'to': erc20_address,  # Balance of
-                                        'data': '0x70a08231' + '{:0>64}'.format(address.replace('0x', '').lower())
+                            'params': [{'to': erc20_address,
+                                        'data': balance_of
                                         }, 'latest'],
                             'id': i + 1})
         response = self.http_session.post(self.ethereum_client.ethereum_node_url, json=queries)
