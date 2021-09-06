@@ -8,5 +8,5 @@ packaging
 psycopg2-binary==2.9.1
 py-eth-sig-utils==0.4.0
 requests==2.26.0
-typing-extensions==3.10.0.1
+typing-extensions==3.10.0.2
 web3==5.23.1
