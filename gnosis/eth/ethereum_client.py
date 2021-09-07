@@ -64,6 +64,10 @@ class EthereumNetwork(Enum):
         return cls.UNKNOWN
 
 
+class EthereumNetworkNotSupported(Exception):
+    pass
+
+
 class EthereumClientException(ValueError):
     pass
 
