@@ -91,7 +91,8 @@ class Multicall:
         cls.ADDRESSES[ethereum_client.get_network()] = contract_address
         return EthereumTxSent(tx_hash, tx, contract_address)
 
-    def _build_payload(self, contract_functions: Sequence[ContractFunction]
+    @staticmethod
+    def _build_payload(contract_functions: Sequence[ContractFunction]
                        ) -> Tuple[List[Tuple[ChecksumAddress, bytes]], List[List[Any]]]:
         targets_with_data = []
         output_types = []
