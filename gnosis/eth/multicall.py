@@ -1,33 +1,25 @@
 """
 Support for MakerDAO MultiCall contract
 """
+import logging
 from dataclasses import dataclass
-from typing import Any, List, Sequence, Tuple
+from typing import Any, List, Optional, Sequence, Tuple
 
 from eth_abi.exceptions import DecodingError
+from eth_account.signers.local import LocalAccount
 from eth_typing import BlockNumber, ChecksumAddress
 from hexbytes import HexBytes
+from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import ContractFunction
 from web3.exceptions import ContractLogicError
 
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
-from .oracles.abis.makerdao import multicall_v2_abi
+from .ethereum_client import EthereumTxSent
+from .oracles.abis.makerdao import multicall_v2_abi, multicall_v2_bytecode
 
-MULTICALL_V2_ADDRESSES = {
-    EthereumNetwork.MAINNET: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    EthereumNetwork.KOVAN: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    EthereumNetwork.RINKEBY: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    EthereumNetwork.GOERLI: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    EthereumNetwork.ROPSTEN: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    EthereumNetwork.BINANCE: '0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4',
-    EthereumNetwork.MATIC: '0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4',
-    EthereumNetwork.MUMBAI: '0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4',
-    EthereumNetwork.ARBITRUM: '0x021CeAC7e681dBCE9b5039d2535ED97590eB395c',
-    EthereumNetwork.ARBITRUM_TESTNET: '0xc80e33a6f02cf08557a0ca3d94d1474d73f64bc1',
-    EthereumNetwork.XDAI: '0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7',  # TODO Check this address
-}
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -51,14 +43,53 @@ class MulticallFunctionFailed(MulticallException):
 
 
 class Multicall:
-    def __init__(self, ethereum_client: EthereumClient):
+    ADDRESSES = {
+        EthereumNetwork.MAINNET: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
+        EthereumNetwork.KOVAN: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
+        EthereumNetwork.RINKEBY: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
+        EthereumNetwork.GOERLI: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
+        EthereumNetwork.ROPSTEN: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
+        EthereumNetwork.BINANCE: '0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4',
+        EthereumNetwork.MATIC: '0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4',
+        EthereumNetwork.MUMBAI: '0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4',
+        EthereumNetwork.ARBITRUM: '0x021CeAC7e681dBCE9b5039d2535ED97590eB395c',
+        EthereumNetwork.ARBITRUM_TESTNET: '0xc80e33a6f02cf08557a0ca3d94d1474d73f64bc1',
+        EthereumNetwork.XDAI: '0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7',
+    }
+
+    def __init__(self, ethereum_client: EthereumClient, multicall_contract_address: Optional[ChecksumAddress] = None):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         ethereum_network = ethereum_client.get_network()
-        address = MULTICALL_V2_ADDRESSES.get(ethereum_network)
+        address = multicall_contract_address or self.ADDRESSES.get(ethereum_network)
         if not address:
             raise EthereumNetworkNotSupported('Multicall contract not available for %s', ethereum_network.name)
-        self.contract = self.w3.eth.contract(address, abi=multicall_v2_abi)
+        self.contract = self.get_contract(self.w3, address)
+
+    def get_contract(self, w3: Web3, address: Optional[ChecksumAddress] = None):
+        return w3.eth.contract(address, abi=multicall_v2_abi, bytecode=multicall_v2_bytecode)
+
+    @classmethod
+    def deploy_contract(cls, ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy contract
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum Account
+        :return: deployed contract address
+        """
+        contract = cls.get_contract(cls, ethereum_client.w3)
+        tx = contract.constructor().buildTransaction({'from': deployer_account.address})
+
+        tx_hash = ethereum_client.send_unsigned_transaction(tx, private_key=deployer_account.key)
+        tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
+        assert tx_receipt and tx_receipt['status']
+        contract_address = tx_receipt['contractAddress']
+        logger.info("Deployed Multicall V2 Contract %s by %s", contract_address,
+                    deployer_account.address)
+        # Add address to addresses dictionary
+        cls.ADDRESSES[ethereum_client.get_network()] = contract_address
+        return EthereumTxSent(tx_hash, tx, contract_address)
 
     def _build_payload(self, contract_functions: Sequence[ContractFunction]
                        ) -> Tuple[List[Tuple[ChecksumAddress, bytes]], List[List[Any]]]:

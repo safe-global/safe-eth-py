@@ -8,22 +8,41 @@ from web3 import Web3
 from web3.contract import Contract
 
 from ..ethereum_client import EthereumClient, EthereumClientProvider
+from ..multicall import Multicall
 from .utils import deploy_erc20, deploy_example_erc20, send_tx
 
 logger = logging.getLogger(__name__)
 
 
+_cached_data = {
+    'ethereum_client': None,  # Prevents initializing again
+    'multicall': None,
+}
+
+
 class EthereumTestCaseMixin:
-    ethereum_client: EthereumClient
-    w3: Web3
-    ethereum_test_account: LocalAccount
+    ethereum_client: EthereumClient = None
+    w3: Web3 = None
+    ethereum_test_account: LocalAccount = None
+    multicall: Multicall = None
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.ethereum_client = EthereumClientProvider()
-        cls.w3 = cls.ethereum_client.w3
+
         cls.ethereum_test_account = Account.from_key(settings.ETHEREUM_TEST_PRIVATE_KEY)
+        # Caching ethereum_client to prevent initializing again
+        cls.ethereum_client = _cached_data['ethereum_client']
+        cls.multicall = _cached_data['multicall']
+
+        if not cls.ethereum_client:
+            cls.ethereum_client = EthereumClientProvider()
+            Multicall.deploy_contract(cls.ethereum_client, cls.ethereum_test_account)
+            cls.multicall = Multicall(cls.ethereum_client)
+            _cached_data['ethereum_client'] = cls.ethereum_client
+            _cached_data['multicall'] = cls.multicall
+
+        cls.w3 = cls.ethereum_client.w3
 
     @property
     def gas_price(self):

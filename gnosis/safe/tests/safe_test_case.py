@@ -24,7 +24,7 @@ from .utils import generate_salt_nonce
 logger = logging.getLogger(__name__)
 
 
-contract_addresses = {
+_contract_addresses = {
     'safe': Safe.deploy_master_contract,
     'safe_V0_0_1': Safe.deploy_old_master_contract,
     'safe_V1_0_0': Safe.deploy_master_contract_v1_0_0,
@@ -36,15 +36,15 @@ contract_addresses = {
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
-    safe_contract_address: str
+    safe_contract_address: ChecksumAddress
     safe_contract: Contract
-    safe_contract_V1_3_0_address: str
+    safe_contract_V1_3_0_address: ChecksumAddress
     safe_contract_V1_3_0: Contract
-    safe_contract_V1_0_0_address: str
+    safe_contract_V1_0_0_address: ChecksumAddress
     safe_contract_V1_0_0: Contract
-    safe_contract_V0_0_1_address: str
+    safe_contract_V0_0_1_address: ChecksumAddress
     safe_contract_V0_0_1: Contract
-    proxy_factory_contract_address: str
+    proxy_factory_contract_address: ChecksumAddress
     proxy_factory_contract: Contract
     proxy_factory: ProxyFactory
     multi_send_contract: Contract
@@ -54,33 +54,33 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     def setUpClass(cls):
         super().setUpClass()
 
-        for key, value in contract_addresses.items():
+        for key, value in _contract_addresses.items():
             if callable(value):
-                contract_addresses[key] = value(cls.ethereum_client, cls.ethereum_test_account).contract_address
+                _contract_addresses[key] = value(cls.ethereum_client, cls.ethereum_test_account).contract_address
 
-        settings.SAFE_CONTRACT_ADDRESS = contract_addresses['safe']
-        settings.SAFE_MULTISEND_ADDRESS = contract_addresses['multi_send']
-        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = contract_addresses['safe_V1_3_0']
-        settings.SAFE_V1_0_0_CONTRACT_ADDRESS = contract_addresses['safe_V1_0_0']
-        settings.SAFE_V0_0_1_CONTRACT_ADDRESS = contract_addresses['safe_V0_0_1']
-        settings.SAFE_PROXY_FACTORY_ADDRESS = contract_addresses['proxy_factory']
-        settings.SAFE_PROXY_FACTORY_V1_0_0_ADDRESS = contract_addresses['proxy_factory_V1_0_0']
+        settings.SAFE_CONTRACT_ADDRESS = _contract_addresses['safe']
+        settings.SAFE_MULTISEND_ADDRESS = _contract_addresses['multi_send']
+        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses['safe_V1_3_0']
+        settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses['safe_V1_0_0']
+        settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses['safe_V0_0_1']
+        settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses['proxy_factory']
+        settings.SAFE_PROXY_FACTORY_V1_0_0_ADDRESS = _contract_addresses['proxy_factory_V1_0_0']
         settings.SAFE_VALID_CONTRACT_ADDRESSES = {settings.SAFE_CONTRACT_ADDRESS,
                                                   settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
                                                   settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
                                                   }
-        cls.safe_contract_address = contract_addresses['safe']
+        cls.safe_contract_address = _contract_addresses['safe']
         cls.safe_contract = get_safe_contract(cls.w3, cls.safe_contract_address)
-        cls.safe_contract_V1_3_0_address = contract_addresses['safe_V1_3_0']
+        cls.safe_contract_V1_3_0_address = _contract_addresses['safe_V1_3_0']
         cls.safe_contract_V1_3_0 = get_safe_V1_3_0_contract(cls.w3, cls.safe_contract_V1_3_0_address)
-        cls.safe_contract_V1_0_0_address = contract_addresses['safe_V1_0_0']
+        cls.safe_contract_V1_0_0_address = _contract_addresses['safe_V1_0_0']
         cls.safe_contract_V1_0_0 = get_safe_V1_0_0_contract(cls.w3, cls.safe_contract_V1_0_0_address)
-        cls.safe_contract_V0_0_1_address = contract_addresses['safe_V0_0_1']
+        cls.safe_contract_V0_0_1_address = _contract_addresses['safe_V0_0_1']
         cls.safe_contract_V0_0_1 = get_safe_V1_0_0_contract(cls.w3, cls.safe_contract_V0_0_1_address)
-        cls.proxy_factory_contract_address = contract_addresses['proxy_factory']
+        cls.proxy_factory_contract_address = _contract_addresses['proxy_factory']
         cls.proxy_factory_contract = get_proxy_factory_contract(cls.w3, cls.proxy_factory_contract_address)
         cls.proxy_factory = ProxyFactory(cls.proxy_factory_contract_address, cls.ethereum_client)
-        cls.multi_send_contract = get_multi_send_contract(cls.w3, contract_addresses['multi_send'])
+        cls.multi_send_contract = get_multi_send_contract(cls.w3, _contract_addresses['multi_send'])
         cls.multi_send = MultiSend(cls.multi_send_contract.address, cls.ethereum_client)
 
     def build_test_safe(self, number_owners: int = 3, threshold: Optional[int] = None,
