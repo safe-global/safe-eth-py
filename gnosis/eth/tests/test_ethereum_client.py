@@ -771,13 +771,19 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
 
         with mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock):
+            # Test caching
+            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
+            self.ethereum_client.get_network.cache_clear()
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.MAINNET)
+            self.ethereum_client.get_network.cache_clear()
 
         with mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock):
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.RINKEBY)
+            self.ethereum_client.get_network.cache_clear()
 
         with mock.patch.object(Net, 'version', return_value='4815162342', new_callable=mock.PropertyMock):
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN)
+            self.ethereum_client.get_network.cache_clear()
 
     def test_get_nonce(self):
         address = Account.create().address

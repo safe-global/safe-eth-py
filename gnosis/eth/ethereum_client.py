@@ -33,6 +33,19 @@ from .contracts import get_erc20_contract, get_erc721_contract
 from .typing import BalanceDict, EthereumData, EthereumHash
 from .utils import decode_string_or_bytes32
 
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
+
+
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+    cache = lru_cache(maxsize=None)
+
+
 logger = getLogger(__name__)
 
 
@@ -964,7 +977,7 @@ class EthereumClient:
         self.erc721: Erc721Manager = Erc721Manager(self)
         self.parity: ParityManager = ParityManager(self)
         try:
-            if int(self.w3.net.version) != 1:
+            if self.get_network() != EthereumNetwork.MAINNET:
                 self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             # For tests using dummy connections (like IPC)
         except (ConnectionError, FileNotFoundError):
@@ -973,7 +986,7 @@ class EthereumClient:
     def __str__(self):
         return f'EthereumClient for url={self.ethereum_node_url}'
 
-    def _prepare_http_session(self):
+    def _prepare_http_session(self) -> requests.Session:
         """
         Prepare http session with custom pooling. See:
         https://urllib3.readthedocs.io/en/stable/advanced-usage.html
@@ -990,6 +1003,24 @@ class EthereumClient:
     @property
     def current_block_number(self):
         return self.w3.eth.block_number
+
+    @cache
+    def get_network(self) -> EthereumNetwork:
+        """
+        Get network name based on the network version id. It should never change, so it's cached
+
+        :return: The EthereumNetwork enum type
+        """
+        return EthereumNetwork(int(self.w3.net.version))
+
+    @cached_property
+    def multicall(self) -> 'Multicall':
+        from .multicall import Multicall
+        try:
+            return Multicall(self)
+        except EthereumNetworkNotSupported:
+            logger.warning('Multicall not supported for this network')
+            return None
 
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
@@ -1014,14 +1045,6 @@ class EthereumClient:
                     contract_address = ChecksumAddress(checksum_encode(mk_contract_address(tx['from'], tx['nonce'])))
 
         return EthereumTxSent(tx_hash, tx, contract_address)
-
-    def get_network(self) -> EthereumNetwork:
-        """
-        Get network name based on the network version id
-
-        :return: The EthereumNetwork enum type
-        """
-        return EthereumNetwork(int(self.w3.net.version))
 
     def get_nonce_for_account(self, address: ChecksumAddress, block_identifier: Optional[BlockIdentifier] = 'latest'):
         """
