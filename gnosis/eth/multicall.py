@@ -7,7 +7,7 @@ from typing import Any, List, Optional, Sequence, Tuple
 
 from eth_abi.exceptions import DecodingError
 from eth_account.signers.local import LocalAccount
-from eth_typing import BlockNumber, ChecksumAddress
+from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3._utils.abi import map_abi_data
@@ -25,13 +25,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MulticallResult:
     success: bool
-    return_data: bytes
+    return_data: Optional[bytes]
 
 
 @dataclass
 class MulticallDecodedResult:
     success: bool
-    return_data_decoded: Any
+    return_data_decoded: Optional[Any]
 
 
 class MulticallException(Exception):
@@ -103,7 +103,19 @@ class Multicall:
 
         return targets_with_data, output_types
 
-    def _decode_data(self, output_type: Sequence[str], data: bytes) -> Any:
+    def _build_payload_same_function(self, contract_function: ContractFunction,
+                                     contract_addresses: Sequence[ChecksumAddress],
+                                     ) -> Tuple[List[Tuple[ChecksumAddress, bytes]], List[List[Any]]]:
+        targets_with_data = []
+        output_types = []
+        tx_data = HexBytes(contract_function._encode_transaction_data())
+        for contract_address in contract_addresses:
+            targets_with_data.append((contract_address, tx_data))
+            output_types.append([output['type'] for output in contract_function.abi['outputs']])
+
+        return targets_with_data, output_types
+
+    def _decode_data(self, output_type: Sequence[str], data: bytes) -> Optional[Any]:
         """
 
         :param output_type:
@@ -112,66 +124,110 @@ class Multicall:
         :raises: DecodingError
         :raises: OverflowError
         """
-        try:
-            decoded_values = self.w3.codec.decode_abi(output_type, data)
-            normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
-            if len(normalized_data) == 1:
-                return normalized_data[0]
-            else:
-                return normalized_data
-        except DecodingError:
-            return b''
+        if data:
+            try:
+                decoded_values = self.w3.codec.decode_abi(output_type, data)
+                normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
+                if len(normalized_data) == 1:
+                    return normalized_data[0]
+                else:
+                    return normalized_data
+            except DecodingError:
+                return None
 
-    def _aggregate(self, targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]]) -> Tuple[BlockNumber, List[Any]]:
+    def _aggregate(self, targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
+                   block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[BlockNumber, List[Optional[Any]]]:
         """
 
         :param targets_with_data: List of target `addresses` and `data` to be called in each Contract
+        :param block_identifier:
         :return:
         :raises: MulticallFunctionFailed
         """
         aggregate_parameter = [{'target': target, 'callData': data} for target, data in targets_with_data]
         try:
-            return self.contract.functions.aggregate(aggregate_parameter).call()
+            return self.contract.functions.aggregate(aggregate_parameter).call(block_identifier=block_identifier)
         except ContractLogicError:
             raise MulticallFunctionFailed
 
-    def aggregate(self, contract_functions: Sequence[ContractFunction]) -> Tuple[BlockNumber, List[Any]]:
+    def aggregate(self, contract_functions: Sequence[ContractFunction],
+                  block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[BlockNumber, List[Optional[Any]]]:
         """
         Calls ``aggregate`` on MakerDAO's Multicall contract. If a function called raises an error execution is stopped
 
         :param contract_functions:
+        :param block_identifier:
         :return: A tuple with the ``blockNumber`` and a list with the decoded return values
         :raises: MulticallFunctionFailed
         """
         targets_with_data, output_types = self._build_payload(contract_functions)
-        block_number, results = self._aggregate(targets_with_data)
+        block_number, results = self._aggregate(targets_with_data, block_identifier=block_identifier)
         decoded_results = [self._decode_data(output_type, data) for output_type, data in zip(output_types, results)]
         return block_number, decoded_results
 
     def _try_aggregate(self,
                        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
-                       require_success: bool = False
+                       require_success: bool = False,
+                       block_identifier: Optional[BlockIdentifier] = 'latest'
                        ) -> List[MulticallResult]:
         aggregate_parameter = [{'target': target, 'callData': data} for target, data in targets_with_data]
         try:
-            result = self.contract.functions.tryAggregate(require_success, aggregate_parameter).call()
-            return [MulticallResult(success, data) for success, data in result]
+            result = self.contract.functions.tryAggregate(
+                require_success,
+                aggregate_parameter
+            ).call(block_identifier=block_identifier)
+            return [MulticallResult(success, data if data else None) for success, data in result]
         except ContractLogicError:
             raise MulticallFunctionFailed
 
     def try_aggregate(self,
                       contract_functions: Sequence[ContractFunction],
-                      require_success: bool = False
+                      require_success: bool = False,
+                      block_identifier: Optional[BlockIdentifier] = 'latest'
                       ) -> List[MulticallDecodedResult]:
         """
         Calls ``try_aggregate`` on MakerDAO's Multicall contract.
 
         :param contract_functions:
         :param require_success: If ``True``, an exception in any of the functions will stop the execution
+        :param block_identifier:
         :return: A list with the decoded return values
         """
         targets_with_data, output_types = self._build_payload(contract_functions)
         results = self._try_aggregate(targets_with_data, require_success=require_success)
+        return [
+            MulticallDecodedResult(
+                multicall_result.success,
+                self._decode_data(
+                    output_type,
+                    multicall_result.return_data
+                ) if multicall_result.success else multicall_result.return_data
+            ) for output_type, multicall_result in zip(output_types, results)
+        ]
+
+    def try_aggregate_same_function(self,
+                                    contract_function: ContractFunction,
+                                    contract_addresses: Sequence[ChecksumAddress],
+                                    require_success: bool = False,
+                                    block_identifier: Optional[BlockIdentifier] = 'latest'
+                                    ) -> List[MulticallDecodedResult]:
+        """
+        Calls ``try_aggregate`` on MakerDAO's Multicall contract. Reuse same function with multiple contract addresses.
+        It's more optimal due to instantiating ``ContractFunction`` objects is very demanding
+
+        :param contract_function:
+        :param contract_addresses:
+        :param require_success: If ``True``, an exception in any of the functions will stop the execution
+        :param block_identifier:
+        :return: A list with the decoded return values
+        """
+
+        targets_with_data, output_types = self._build_payload_same_function(contract_function, contract_addresses)
+        results = self._try_aggregate(
+            targets_with_data,
+            require_success=require_success,
+            block_identifier=block_identifier
+        )
         return [
             MulticallDecodedResult(
                 multicall_result.success,

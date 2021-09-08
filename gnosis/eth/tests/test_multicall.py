@@ -40,6 +40,25 @@ class TestMulticallGanache(EthereumTestCaseMixin, TestCase):
 
         self.assertEqual(results, expected_results)
 
+    def test_try_aggregate_same_function(self):
+        account = '0x44425Eff435c3B1C38Cbc1139f248CA2918ACccA'
+        erc20_contracts = [self.deploy_example_erc20(i, account) for i in range(3)]
+        token_addresses = [erc20_contract.address for erc20_contract in erc20_contracts]
+
+        erc20_contract = get_erc20_contract(self.ethereum_client.w3)
+
+        results = self.multicall.try_aggregate_same_function(
+            erc20_contract.functions.balanceOf(account),
+            token_addresses
+        )
+        expected_results = [
+            MulticallDecodedResult(success=True, return_data_decoded=0),
+            MulticallDecodedResult(success=True, return_data_decoded=1),
+            MulticallDecodedResult(success=True, return_data_decoded=2)
+        ]
+
+        self.assertEqual(results, expected_results)
+
 
 class TestMulticallNode(EthereumTestCaseMixin, TestCase):
     """

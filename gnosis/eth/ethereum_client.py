@@ -70,7 +70,6 @@ class EthereumNetwork(Enum):
     VOLTA = 73799
     MUMBAI = 80001
     ARBITRUM_TESTNET = 421611
-    OLYMPUS = 333999
     default = UNKNOWN
 
     @classmethod
@@ -223,6 +222,155 @@ class EthereumClientProvider:
         return cls.instance
 
 
+class BatchCallManager:
+    def __init__(self, ethereum_client: 'EthereumClient'):
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+
+    def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
+                          raise_exception: bool = True,
+                          block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
+        """
+        Do batch requests of multiple contract calls
+
+        :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
+            'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
+            `fn_name` is provided it will be used for debugging purposes
+        :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
+            be returned as the value
+        :param block_identifier: `latest` by default
+        :return: List with the ABI decoded return values
+        :raises: ValueError if raise_exception=True
+        """
+        if not payloads:
+            return []
+
+        queries = []
+        for i, payload in enumerate(payloads):
+            assert 'data' in payload, '`data` not present'
+            assert 'to' in payload, '`to` not present'
+            assert 'output_type' in payload, '`output-type` not present'
+
+            query_params = {'to': payload['to'],  # Balance of
+                            'data': payload['data']
+                            }
+            if 'from' in payload:
+                query_params['from'] = payload['from']
+
+            queries.append({'jsonrpc': '2.0',
+                            'method': 'eth_call',
+                            'params': [query_params,
+                                       hex(block_identifier) if isinstance(block_identifier,
+                                                                           int) else block_identifier],
+                            'id': i})
+
+        response = self.http_session.post(self.ethereum_node_url, json=queries)
+        if not response.ok:
+            raise ConnectionError(f'Error connecting to {self.ethereum_node_url}: {response.text}')
+
+        return_values: List[Optional[Any]] = []
+        errors = []
+        for payload, result in zip(payloads, sorted(response.json(), key=lambda x: x['id'])):
+            if 'error' in result:
+                fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
+                errors.append(f'`{fn_name}`: {result["error"]}')
+                return_values.append(None)
+            else:
+                output_type = payload['output_type']
+                try:
+                    decoded_values = self.w3.codec.decode_abi(output_type, HexBytes(result['result']))
+                    normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
+                    if len(normalized_data) == 1:
+                        return_values.append(normalized_data[0])
+                    else:
+                        return_values.append(normalized_data)
+                except (DecodingError, OverflowError):
+                    fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
+                    errors.append(f'`{fn_name}`: DecodingError, cannot decode')
+                    return_values.append(None)
+
+        if errors and raise_exception:
+            raise ValueError(f'Errors returned {errors}')
+        else:
+            return return_values
+
+    def batch_call(self, contract_functions: Iterable[ContractFunction],
+                   from_address: Optional[ChecksumAddress] = None,
+                   raise_exception: bool = True,
+                   block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
+        """
+        Do batch requests of multiple contract calls
+
+        :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
+            argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
+        :param from_address: Use this address as `from` in every call if provided
+        :param block_identifier: `latest` by default
+        :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
+            be returned as the value.
+        :return: List with the ABI decoded return values
+        """
+        if not contract_functions:
+            return []
+        payloads = []
+        params: TxParams = {'gas': Wei(0), 'gasPrice': Wei(0)}
+        for _, contract_function in enumerate(contract_functions):
+            if not contract_function.address:
+                raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
+
+            payload = {'to': contract_function.address,
+                       'data': contract_function.buildTransaction(params)['data'],
+                       'output_type': [output['type'] for output in contract_function.abi['outputs']],
+                       'fn_name': contract_function.fn_name,  # For debugging purposes
+                       }
+            if from_address:
+                payload['from'] = from_address
+            payloads.append(payload)
+
+        return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
+
+    def batch_call_same_function(self, contract_function: ContractFunction,
+                                 contract_addresses: Sequence[ChecksumAddress],
+                                 from_address: Optional[ChecksumAddress] = None,
+                                 raise_exception: bool = True,
+                                 block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
+        """
+        Do batch requests using the same function to multiple address. ``batch_call`` could be used to achieve that,
+        but generating the ContractFunction is slow, so this function allows to use the same contract_function for
+        multiple addresses
+
+        :param contract_function:
+        :param contract_addresses:
+        :param from_address:
+        :param raise_exception:
+        :param block_identifier:
+        :return:
+        """
+
+        assert contract_function, 'Contract function is required'
+
+        if not contract_addresses:
+            return []
+
+        contract_function.address = NULL_ADDRESS  # It's required by web3.py
+        params: TxParams = {'gas': Wei(0), 'gasPrice': Wei(0)}
+        data = contract_function.buildTransaction(params)['data']
+        output_type = [output['type'] for output in contract_function.abi['outputs']]
+        fn_name = contract_function.fn_name
+
+        payloads = []
+        for contract_address in contract_addresses:
+            payload = {'to': contract_address,
+                       'data': data,
+                       'output_type': output_type,
+                       'fn_name': fn_name,  # For debugging purposes
+                       }
+            if from_address:
+                payload['from'] = from_address
+            payloads.append(payload)
+
+        return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
+
+
 class Erc20Manager:
     """
     Manager for ERC20 operations
@@ -288,43 +436,23 @@ class Erc20Manager:
         :param token_addresses: token addresses to check
         :return: ``List[BalanceDict]``
         """
-        # Build ether `eth_getBalance` query
-        balance_query = {'jsonrpc': '2.0',
-                         'method': 'eth_getBalance',
-                         'params': [address, 'latest'],
-                         'id': 0}
-        queries = [balance_query]
 
-        # Build tokens `balanceOf` query
-        balance_of = '0x70a08231' + '{:0>64}'.format(address.replace('0x', '').lower())
-        for i, erc20_address in enumerate(token_addresses):
-            queries.append({'jsonrpc': '2.0',
-                            'method': 'eth_call',
-                            'params': [{'to': erc20_address,
-                                        'data': balance_of
-                                        }, 'latest'],
-                            'id': i + 1})
-        response = self.http_session.post(self.ethereum_client.ethereum_node_url, json=queries)
-        token_addresses_casted = cast(List[Union[Optional[str]]], [None]) + cast(List[Union[Optional[str]]],
-                                                                                 token_addresses)
-        balances: List[BalanceDict] = []
-        for token_address, data in zip(token_addresses_casted, sorted(response.json(), key=lambda x: x['id'])):
-            if 'result' not in data:
-                balance = 0
-            else:
-                try:
-                    if token_address:
-                        balance = int(self.w3.codec.decode_single('uint256',
-                                                                  HexBytes(data['result'])))  # Token
-                    else:
-                        balance = int(data['result'], 16)  # Ether
-                except (ValueError, BadFunctionCallOutput, DecodingError):
-                    balance = 0
-            balances.append({
+        balances = self.ethereum_client.batch_call_same_function(
+            get_erc20_contract(self.ethereum_client.w3).functions.balanceOf(address),
+            token_addresses,
+            raise_exception=False
+        )
+
+        return_balances = [{
                 'token_address': token_address,
-                'balance': balance,
-            })
-        return balances
+                'balance': 0 if balance is None else balance,
+            } for token_address, balance in zip(token_addresses, balances)]
+
+        # Add ether balance response
+        return [{
+            'token_address': None,
+            'balance': self.ethereum_client.get_balance(address)
+        }] + return_balances
 
     def get_name(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
@@ -588,9 +716,9 @@ class Erc721Manager:
         :param token_addresses: token addresses to check
         :return:
         """
-        balances = self.ethereum_client.batch_call(
-            [get_erc721_contract(self.ethereum_client.w3, token_address).functions.balanceOf(address)
-             for token_address in token_addresses],
+        balances = self.ethereum_client.batch_call_same_function(
+            get_erc721_contract(self.ethereum_client.w3).functions.balanceOf(address).
+            token_addresses,
             raise_exception=False
         )
         return [TokenBalance(token_address, 0 if balance is None else balance)
@@ -977,6 +1105,7 @@ class EthereumClient:
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
         self.parity: ParityManager = ParityManager(self)
+        self.batch_call_manager: BatchCallManager = BatchCallManager(self)
         try:
             if self.get_network() != EthereumNetwork.MAINNET:
                 self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -1023,6 +1152,40 @@ class EthereumClient:
             logger.warning('Multicall not supported for this network')
             return None
 
+    def batch_call(self, contract_functions: Iterable[ContractFunction],
+                   from_address: Optional[ChecksumAddress] = None,
+                   raise_exception: bool = True,
+                   block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
+        if self.multicall:  # Multicall is more optimal
+            return [result.return_data_decoded
+                    for result in self.multicall.try_aggregate(contract_functions,
+                                                               require_success=raise_exception,
+                                                               block_identifier=block_identifier)]
+        else:
+            return self.batch_call_manager.batch_call(contract_functions,
+                                                      from_address=from_address,
+                                                      raise_exception=raise_exception,
+                                                      block_identifier=block_identifier)
+
+    def batch_call_same_function(self, contract_function: ContractFunction,
+                                 contract_addresses: Sequence[ChecksumAddress],
+                                 from_address: Optional[ChecksumAddress] = None,
+                                 raise_exception: bool = True,
+                                 block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
+        if self.multicall:  # Multicall is more optimal
+            return [result.return_data_decoded
+                    for result in self.multicall.try_aggregate_same_function(contract_function,
+                                                              contract_addresses,
+                                                              require_success=raise_exception,
+                                                              block_identifier=block_identifier)]
+        else:
+            return self.batch_call_manager.batch_call(contract_function,
+                                                      contract_addresses,
+                                                      from_address=from_address,
+                                                      raise_exception=raise_exception,
+                                                      block_identifier=block_identifier)
+
+
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
                                        check_receipt: bool = True):
@@ -1049,114 +1212,14 @@ class EthereumClient:
 
     def get_nonce_for_account(self, address: ChecksumAddress, block_identifier: Optional[BlockIdentifier] = 'latest'):
         """
-        Get nonce for account. `getTransactionCount` is the only method for what `pending` is currently working
-        (Geth and Parity)
+           Get nonce for account. `getTransactionCount` is the only method for what `pending` is currently working
+           (Geth and Parity)
 
-        :param address:
-        :param block_identifier:
-        :return:
-        """
+           :param address:
+           :param block_identifier:
+           :return:
+           """
         return self.w3.eth.get_transaction_count(address, block_identifier=block_identifier)
-
-    def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
-                          raise_exception: bool = True,
-                          block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
-        """
-        Do batch requests of multiple contract calls
-
-        :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
-            'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
-            `fn_name` is provided it will be used for debugging purposes
-        :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
-            be returned as the value
-        :param block_identifier: `latest` by default
-        :return: List with the ABI decoded return values
-        :raises: ValueError if raise_exception=True
-        """
-        if not payloads:
-            return []
-
-        queries = []
-        for i, payload in enumerate(payloads):
-            assert 'data' in payload, '`data` not present'
-            assert 'to' in payload, '`to` not present'
-            assert 'output_type' in payload, '`output-type` not present'
-
-            query_params = {'to': payload['to'],  # Balance of
-                            'data': payload['data']
-                            }
-            if 'from' in payload:
-                query_params['from'] = payload['from']
-
-            queries.append({'jsonrpc': '2.0',
-                            'method': 'eth_call',
-                            'params': [query_params,
-                                       hex(block_identifier) if isinstance(block_identifier,
-                                                                           int) else block_identifier],
-                            'id': i})
-
-        response = self.http_session.post(self.ethereum_node_url, json=queries)
-        if not response.ok:
-            raise ConnectionError(f'Error connecting to {self.ethereum_node_url}: {response.text}')
-
-        return_values: List[Optional[Any]] = []
-        errors = []
-        for payload, result in zip(payloads, sorted(response.json(), key=lambda x: x['id'])):
-            if 'error' in result:
-                fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
-                errors.append(f'`{fn_name}`: {result["error"]}')
-                return_values.append(None)
-            else:
-                output_type = payload['output_type']
-                try:
-                    decoded_values = self.w3.codec.decode_abi(output_type, HexBytes(result['result']))
-                    normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_type, decoded_values)
-                    if len(normalized_data) == 1:
-                        return_values.append(normalized_data[0])
-                    else:
-                        return_values.append(normalized_data)
-                except (DecodingError, OverflowError):
-                    fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
-                    errors.append(f'`{fn_name}`: DecodingError, cannot decode')
-                    return_values.append(None)
-
-        if errors and raise_exception:
-            raise ValueError(f'Errors returned {errors}')
-        else:
-            return return_values
-
-    def batch_call(self, contract_functions: Iterable[ContractFunction], from_address: Optional[str] = None,
-                   raise_exception: bool = True,
-                   block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
-        """
-        Do batch requests of multiple contract calls
-
-        :param contract_functions: Iterable of contract functions using web3.py contracts. For instance, a valid
-            argument would be [erc20_contract.functions.balanceOf(address), erc20_contract.functions.decimals()]
-        :param from_address: Use this address as `from` in every call if provided
-        :param block_identifier: `latest` by default
-        :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
-            be returned as the value.
-        :return: List with the ABI decoded return values
-        """
-        if not contract_functions:
-            return []
-        payloads = []
-        params: TxParams = {'gas': Wei(0), 'gasPrice': Wei(0)}
-        for _, contract_function in enumerate(contract_functions):
-            if not contract_function.address:
-                raise ValueError(f'Missing address for batch_call in `{contract_function.fn_name}`')
-
-            payload = {'to': contract_function.address,
-                       'data': contract_function.buildTransaction(params)['data'],
-                       'output_type': [output['type'] for output in contract_function.abi['outputs']],
-                       'fn_name': contract_function.fn_name,  # For debugging purposes
-                       }
-            if from_address:
-                payload['from'] = from_address
-            payloads.append(payload)
-
-        return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
 
     def estimate_gas(self, to: str, from_: Optional[str] = None, value: Optional[int] = None,
                      data: Optional[EthereumData] = None, gas: Optional[int] = None, gas_price: Optional[int] = None,
