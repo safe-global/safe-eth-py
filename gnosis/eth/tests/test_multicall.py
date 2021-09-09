@@ -83,14 +83,14 @@ class TestMulticallNode(EthereumTestCaseMixin, TestCase):
         self.assertEqual(results, expected_results)
         self.assertGreater(block_number, 0)
 
-        expected_results = [b'']
+        expected_results = [None]
         block_number, results = self.multicall.aggregate([
             self.not_existing_contract.functions.name(),
         ])
         self.assertEqual(results, expected_results)
         self.assertGreater(block_number, 0)
 
-        expected_results = ['Gnosis Token', b'', 'GNO', 18]
+        expected_results = ['Gnosis Token', None, 'GNO', 18]
         block_number, results = self.multicall.aggregate([
             self.gno_contract.functions.name(),
             self.not_existing_contract.functions.name(),
@@ -129,7 +129,7 @@ class TestMulticallNode(EthereumTestCaseMixin, TestCase):
         ])
         expected_results = [
             MulticallDecodedResult(success=True, return_data_decoded='Gnosis Token'),
-            MulticallDecodedResult(success=False, return_data_decoded=b''),
+            MulticallDecodedResult(success=False, return_data_decoded=None),
             MulticallDecodedResult(success=True, return_data_decoded='GNO'),
             MulticallDecodedResult(success=True, return_data_decoded=18)
         ]

@@ -124,7 +124,8 @@ class Multicall:
                 else:
                     return normalized_data
             except DecodingError:
-                return None
+                logger.warning('Cannot decode %s using output-type %s', data, output_type)
+                return data
 
     def _aggregate(self, targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
                    block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[BlockNumber, List[Optional[Any]]]:
