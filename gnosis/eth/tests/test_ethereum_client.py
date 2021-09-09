@@ -11,15 +11,19 @@ from web3.net import Net
 
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..ethereum_client import (BatchCallException, EthereumClientProvider,
-                               EthereumNetwork, FromAddressNotFound,
-                               InsufficientFunds, InvalidERC20Info,
-                               InvalidNonce, ParityManager,
+from ..ethereum_client import (BatchCallException, EthereumClient,
+                               EthereumClientProvider, EthereumNetwork,
+                               FromAddressNotFound, InsufficientFunds,
+                               InvalidERC20Info, InvalidNonce, ParityManager,
                                SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import (creation_internal_txs,
                                       internal_txs_errored)
+from .mocks.mock_trace_block import (trace_block_2191709_mock,
+                                     trace_block_13191781_mock)
+from .mocks.mock_trace_transaction import trace_transaction_mocks
+from .utils import just_test_if_mainnet_node
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
@@ -981,3 +985,33 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         fake_tx_hash = self.w3.keccak(0)
         self.assertIsNone(self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=None))
         self.assertIsNone(self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=1))
+
+
+class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        mainnet_node = just_test_if_mainnet_node()
+        cls.ethereum_client = EthereumClient(mainnet_node)
+
+    def test_trace_block(self):
+        block_number = 2191709
+        self.assertEqual(self.ethereum_client.parity.trace_block(block_number), trace_block_2191709_mock)
+
+    def test_trace_blocks(self):
+        block_numbers = [13191781, 2191709]
+        self.assertEqual(self.ethereum_client.parity.trace_blocks(block_numbers),
+                         [trace_block_13191781_mock, trace_block_2191709_mock])
+
+    def test_trace_transaction(self):
+        tx_hash = '0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f'  # Safe 1.3.0 deployment
+        self.assertEqual(self.ethereum_client.parity.trace_transaction(tx_hash),
+                         trace_transaction_mocks[tx_hash])
+
+    def test_trace_transactions(self):
+        tx_hashes = [
+            '0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f',   # Safe 1.3.0 deployment
+            '0xf325b4e52d0649593e8c82f35bd389c13c13b21b61bc17de295979a21e5cfdc0',  # Safe 1.1.0 setup
+        ]
+        self.assertEqual(self.ethereum_client.parity.trace_transactions(tx_hashes),
+                         [trace_transaction_mocks[tx_hash]for tx_hash in tx_hashes])
