@@ -146,6 +146,14 @@ class InvalidERC721Info(EthereumClientException):
     pass
 
 
+class BatchCallException(EthereumClientException):
+    pass
+
+
+class BatchCallFunctionFailed(BatchCallException):
+    pass
+
+
 def tx_with_exception_handling(func):
     """
     Parity
@@ -223,11 +231,16 @@ class EthereumClientProvider:
         return cls.instance
 
 
-class BatchCallManager:
+class EthereumClientManager:
     def __init__(self, ethereum_client: 'EthereumClient'):
         self.ethereum_client = ethereum_client
+        self.ethereum_node_url = ethereum_client.ethereum_node_url
         self.w3 = ethereum_client.w3
+        self.slow_w3 = ethereum_client.slow_w3
+        self.http_session = ethereum_client.http_session
 
+
+class BatchCallManager(EthereumClientManager):
     def batch_call_custom(self, payloads: Iterable[Dict[str, Any]],
                           raise_exception: bool = True,
                           block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
@@ -286,12 +299,13 @@ class BatchCallManager:
                     else:
                         return_values.append(normalized_data)
                 except (DecodingError, OverflowError):
-                    fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
-                    errors.append(f'`{fn_name}`: DecodingError, cannot decode')
+                    # Don't consider DecodingError an error. Only reverts
+                    # fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
+                    # errors.append(f'`{fn_name}`: DecodingError, cannot decode')
                     return_values.append(None)
 
         if errors and raise_exception:
-            raise ValueError(f'Errors returned {errors}')
+            raise BatchCallFunctionFailed(f'Errors returned {errors}')
         else:
             return return_values
 
@@ -372,19 +386,13 @@ class BatchCallManager:
         return self.batch_call_custom(payloads, raise_exception=raise_exception, block_identifier=block_identifier)
 
 
-class Erc20Manager:
+class Erc20Manager(EthereumClientManager):
     """
     Manager for ERC20 operations
     """
     # keccak('Transfer(address,address,uint256)')
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
-
-    def __init__(self, ethereum_client: 'EthereumClient'):
-        self.ethereum_client = ethereum_client
-        self.w3 = ethereum_client.w3
-        self.slow_w3 = ethereum_client.slow_w3
-        self.http_session = ethereum_client.http_session
 
     def decode_logs(self, logs: List[Dict[str, Any]]):
         decoded_logs = []
@@ -445,9 +453,9 @@ class Erc20Manager:
         )
 
         return_balances = [{
-                'token_address': token_address,
-                'balance': 0 if balance is None else balance,
-            } for token_address, balance in zip(token_addresses, balances)]
+            'token_address': token_address,
+            'balance': 0 if balance is None else balance,
+        } for token_address, balance in zip(token_addresses, balances)]
 
         # Add ether balance response
         return [{
@@ -688,15 +696,10 @@ class Erc20Manager:
         return self.ethereum_client.send_unsigned_transaction(tx, private_key=private_key)
 
 
-class Erc721Manager:
+class Erc721Manager(EthereumClientManager):
     # keccak('Transfer(address,address,uint256)')
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = Erc20Manager.TRANSFER_TOPIC
-
-    def __init__(self, ethereum_client: 'EthereumClient'):
-        self.ethereum_client = ethereum_client
-        self.w3 = ethereum_client.w3
-        self.slow_w3 = ethereum_client.slow_w3
 
     def get_balance(self, address: str, token_address: str) -> int:
         """
@@ -766,14 +769,7 @@ class Erc721Manager:
         ))
 
 
-class ParityManager:
-    def __init__(self, ethereum_client: 'EthereumClient'):
-        self.ethereum_client = ethereum_client
-        self.w3 = ethereum_client.w3
-        self.slow_w3 = ethereum_client.slow_w3
-        self.ethereum_node_url = ethereum_client.ethereum_node_url
-        self.http_session = ethereum_client.http_session
-
+class ParityManager(EthereumClientManager):
     # TODO Test with mock
     def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
         decoded = {
@@ -1145,7 +1141,7 @@ class EthereumClient:
         return EthereumNetwork(int(self.w3.net.version))
 
     @cached_property
-    def multicall(self) -> 'Multicall':
+    def multicall(self) -> 'Multicall':  # noqa F821
         from .multicall import Multicall
         try:
             return Multicall(self)
@@ -1156,8 +1152,21 @@ class EthereumClient:
     def batch_call(self, contract_functions: Iterable[ContractFunction],
                    from_address: Optional[ChecksumAddress] = None,
                    raise_exception: bool = True,
+                   force_batch_call: bool = False,
                    block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
-        if self.multicall:  # Multicall is more optimal
+        """
+        Call multiple functions. Multicall contract by MakerDAO will be used by default if available
+
+        :param contract_functions:
+        :param from_address: Only available when ``Multicall`` is not used
+        :param raise_exception: If ``True``, raise ``BatchCallException`` if one of the calls fails
+        :param force_batch_call: If ``True``, ignore multicall and always use batch calls to get the
+            result (less optimal). If ``False``, more optimal way will be tried.
+        :param block_identifier:
+        :return:
+        :raises: BatchCallException
+        """
+        if self.multicall and not force_batch_call:  # Multicall is more optimal
             return [result.return_data_decoded
                     for result in self.multicall.try_aggregate(contract_functions,
                                                                require_success=raise_exception,
@@ -1172,20 +1181,34 @@ class EthereumClient:
                                  contract_addresses: Sequence[ChecksumAddress],
                                  from_address: Optional[ChecksumAddress] = None,
                                  raise_exception: bool = True,
+                                 force_batch_call: bool = False,
                                  block_identifier: Optional[BlockIdentifier] = 'latest') -> List[Optional[Any]]:
-        if self.multicall:  # Multicall is more optimal
+        """
+        Call the same function in multiple contracts. Way more optimal than using `batch_call` generating multiple
+        ``ContractFunction`` objects.
+
+        :param contract_function:
+        :param contract_addresses:
+        :param from_address: Only available when ``Multicall`` is not used
+        :param raise_exception: If ``True``, raise ``BatchCallException`` if one of the calls fails
+        :param force_batch_call: If ``True``, ignore multicall and always use batch calls to get the
+            result (less optimal). If ``False``, more optimal way will be tried.
+        :param block_identifier:
+        :return:
+        :raises: BatchCallException
+        """
+        if self.multicall and not force_batch_call:  # Multicall is more optimal
             return [result.return_data_decoded
                     for result in self.multicall.try_aggregate_same_function(contract_function,
-                                                              contract_addresses,
-                                                              require_success=raise_exception,
-                                                              block_identifier=block_identifier)]
+                                                                             contract_addresses,
+                                                                             require_success=raise_exception,
+                                                                             block_identifier=block_identifier)]
         else:
             return self.batch_call_manager.batch_call(contract_function,
                                                       contract_addresses,
                                                       from_address=from_address,
                                                       raise_exception=raise_exception,
                                                       block_identifier=block_identifier)
-
 
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',

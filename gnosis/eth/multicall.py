@@ -16,7 +16,7 @@ from web3.contract import ContractFunction
 from web3.exceptions import ContractLogicError
 
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
-from .ethereum_client import EthereumTxSent
+from .ethereum_client import BatchCallFunctionFailed, EthereumTxSent
 from .oracles.abis.makerdao import multicall_v2_abi, multicall_v2_bytecode
 
 logger = logging.getLogger(__name__)
@@ -32,14 +32,6 @@ class MulticallResult:
 class MulticallDecodedResult:
     success: bool
     return_data_decoded: Optional[Any]
-
-
-class MulticallException(Exception):
-    pass
-
-
-class MulticallFunctionFailed(MulticallException):
-    pass
 
 
 class Multicall:
@@ -122,7 +114,6 @@ class Multicall:
         :param data:
         :return:
         :raises: DecodingError
-        :raises: OverflowError
         """
         if data:
             try:
@@ -142,13 +133,13 @@ class Multicall:
         :param targets_with_data: List of target `addresses` and `data` to be called in each Contract
         :param block_identifier:
         :return:
-        :raises: MulticallFunctionFailed
+        :raises: BatchCallFunctionFailed
         """
         aggregate_parameter = [{'target': target, 'callData': data} for target, data in targets_with_data]
         try:
             return self.contract.functions.aggregate(aggregate_parameter).call(block_identifier=block_identifier)
-        except ContractLogicError:
-            raise MulticallFunctionFailed
+        except (ContractLogicError, OverflowError):
+            raise BatchCallFunctionFailed
 
     def aggregate(self, contract_functions: Sequence[ContractFunction],
                   block_identifier: Optional[BlockIdentifier] = 'latest') -> Tuple[BlockNumber, List[Optional[Any]]]:
@@ -158,7 +149,7 @@ class Multicall:
         :param contract_functions:
         :param block_identifier:
         :return: A tuple with the ``blockNumber`` and a list with the decoded return values
-        :raises: MulticallFunctionFailed
+        :raises: BatchCallFunctionFailed
         """
         targets_with_data, output_types = self._build_payload(contract_functions)
         block_number, results = self._aggregate(targets_with_data, block_identifier=block_identifier)
@@ -177,8 +168,8 @@ class Multicall:
                 aggregate_parameter
             ).call(block_identifier=block_identifier)
             return [MulticallResult(success, data if data else None) for success, data in result]
-        except ContractLogicError:
-            raise MulticallFunctionFailed
+        except (ContractLogicError, OverflowError):
+            raise BatchCallFunctionFailed
 
     def try_aggregate(self,
                       contract_functions: Sequence[ContractFunction],

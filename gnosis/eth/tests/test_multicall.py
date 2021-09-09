@@ -6,8 +6,8 @@ from django.test import TestCase
 from .. import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from ..constants import NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..multicall import (Multicall, MulticallDecodedResult,
-                         MulticallFunctionFailed)
+from ..ethereum_client import BatchCallFunctionFailed
+from ..multicall import Multicall, MulticallDecodedResult
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -100,7 +100,7 @@ class TestMulticallNode(EthereumTestCaseMixin, TestCase):
         self.assertEqual(results, expected_results)
         self.assertGreater(block_number, 0)
 
-        with self.assertRaises(MulticallFunctionFailed):
+        with self.assertRaises(BatchCallFunctionFailed):
             self.multicall.aggregate([
                 self.gno_contract.functions.name(),
                 self.gno_contract.functions.transfer(NULL_ADDRESS, 1),
@@ -135,7 +135,7 @@ class TestMulticallNode(EthereumTestCaseMixin, TestCase):
         ]
         self.assertEqual(results, expected_results)
 
-        with self.assertRaises(MulticallFunctionFailed):
+        with self.assertRaises(BatchCallFunctionFailed):
             self.multicall.try_aggregate([
                 self.gno_contract.functions.name(),
                 self.gno_contract.functions.transfer(NULL_ADDRESS, 1),
