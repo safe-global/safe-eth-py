@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 from web3.net import Net
 
+from .mocks.mock_trace_filter import trace_filter_mock_1
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (BatchCallException, EthereumClient,
@@ -1015,3 +1016,12 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         ]
         self.assertEqual(self.ethereum_client.parity.trace_transactions(tx_hashes),
                          [trace_transaction_mocks[tx_hash]for tx_hash in tx_hashes])
+
+    def test_trace_filter(self):
+        safe_1_3_0_address = '0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552'
+        self.assertEqual(
+            self.ethereum_client.parity.trace_filter(
+                from_block=12504268, to_block=12504268, to_address=[safe_1_3_0_address]
+            ),
+            trace_filter_mock_1
+        )
