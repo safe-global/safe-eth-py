@@ -1,7 +1,9 @@
 cached-property==1.5.2
+django-filter==2.4.0
 django==3.2.7
 django-filter==2.4.0
 djangorestframework==3.12.4
+eip712-structs==1.1.0
 ethereum==2.3.2
 hexbytes==0.2.2
 packaging
