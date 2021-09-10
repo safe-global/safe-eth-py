@@ -31,6 +31,20 @@ the possibility of doing ``batch_calls`` (a single request making read-only call
                       erc721_contract.functions.symbol(),
                   ])
 
+More optimal in case you want to call the same function in multiple contracts
+
+.. code-block:: python
+
+  from gnosis.eth import EthereumClient
+  from gnosis.eth.contracts import get_erc20_contract
+  ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
+  erc20_contract = get_erc20_contract(self.w3, token_address)
+  my_account = '0xD0E03B027A367fED4fd0E7834a82CD8A73E76B45'
+  name, symbol = ethereum_client.batch_call_same_function(
+                      erc20_contract.functions.balanceOf(my_account),
+                      ['0x6810e776880C02933D47DB1b9fc05908e5386b96', '0x6B175474E89094C44Da98b954EedeAC495271d0F']
+                  )
+
 If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>`_ library:
 
 .. code-block:: python

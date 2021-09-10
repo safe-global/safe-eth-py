@@ -581,6 +581,8 @@ class BalancerOracle(PricePoolOracle):
                 balancer_pool_contract.functions.getCurrentTokens(),
                 balancer_pool_contract.functions.totalSupply(),
             ])
+            if not current_tokens:
+                raise ValueError
             number_tokens = len(current_tokens)
             # denormalized_weight = self.ethereum_client.batch_call([
             #    balancer_pool_contract.functions.getReserves(current_token)
@@ -620,6 +622,8 @@ class MooniswapOracle(BalancerOracle):
                 balancer_pool_contract.functions.getTokens(),
                 balancer_pool_contract.functions.totalSupply(),
             ])
+            if not tokens:
+                raise ValueError
             if len(tokens) == 1 or any([token == NULL_ADDRESS for token in tokens]):  # One of the tokens is ether
                 ethereum_amount = self.ethereum_client.get_balance(pool_token_address)
                 return ethereum_amount * 2 / total_supply

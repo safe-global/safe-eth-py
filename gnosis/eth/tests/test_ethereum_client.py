@@ -9,11 +9,12 @@ from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 from web3.net import Net
 
-from ..constants import GAS_CALL_DATA_BYTE
+from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..ethereum_client import (EthereumClientProvider, EthereumNetwork,
-                               FromAddressNotFound, InsufficientFunds,
-                               InvalidERC20Info, InvalidNonce, ParityManager,
+from ..ethereum_client import (BatchCallException, EthereumClientProvider,
+                               EthereumNetwork, FromAddressNotFound,
+                               InsufficientFunds, InvalidERC20Info,
+                               InvalidNonce, ParityManager,
                                SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
@@ -231,6 +232,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
                                ])
 
     def test_batch_call(self):
+        self.assertTrue(self.ethereum_client.multicall)
         account_address = Account.create().address
         tokens_value = 12
         erc20 = self.deploy_example_erc20(tokens_value, account_address)
@@ -243,16 +245,61 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.assertEqual(balance_of, tokens_value)
 
         invalid_erc20 = get_erc20_contract(self.ethereum_client.w3, Account.create().address)
-        with self.assertRaises(ValueError):
-            self.ethereum_client.batch_call([invalid_erc20.functions.decimals(),
-                                             invalid_erc20.functions.symbol(),
-                                             invalid_erc20.functions.balanceOf(account_address)])
+        self.assertEqual(self.ethereum_client.batch_call([invalid_erc20.functions.decimals(),
+                                                          invalid_erc20.functions.symbol(),
+                                                          invalid_erc20.functions.balanceOf(account_address)]),
+                         [None, None, None])
         # It shouldn't raise error and instead return None
         self.assertEqual(self.ethereum_client.batch_call([invalid_erc20.functions.decimals(),
                                                           invalid_erc20.functions.symbol(),
                                                           invalid_erc20.functions.balanceOf(account_address)],
                                                          raise_exception=False),
                          [None, None, None])
+
+        with self.assertRaises(BatchCallException):
+            self.ethereum_client.batch_call([erc20.functions.decimals(),
+                                             erc20.functions.transfer(NULL_ADDRESS, 1),
+                                             erc20.functions.symbol(),
+                                             erc20.functions.balanceOf(account_address)],
+                                            raise_exception=True)
+
+    def test_legacy_batch_call(self):
+        account_address = Account.create().address
+        tokens_value = 12
+        erc20 = self.deploy_example_erc20(tokens_value, account_address)
+        results = self.ethereum_client.batch_call_manager.batch_call([erc20.functions.decimals(),
+                                                                      erc20.functions.symbol(),
+                                                                      erc20.functions.balanceOf(account_address)])
+        decimals, symbol, balance_of = results
+        self.assertEqual(decimals, erc20.functions.decimals().call())
+        self.assertEqual(symbol, erc20.functions.symbol().call())
+        self.assertEqual(balance_of, tokens_value)
+
+        invalid_erc20 = get_erc20_contract(self.ethereum_client.w3, Account.create().address)
+        self.assertEqual(
+            self.ethereum_client.batch_call_manager.batch_call([
+                invalid_erc20.functions.decimals(),
+                invalid_erc20.functions.symbol(),
+                invalid_erc20.functions.balanceOf(account_address)
+            ]),
+            [None, None, None])
+
+        # It shouldn't raise error and instead return None
+        self.assertEqual(
+            self.ethereum_client.batch_call_manager.batch_call(
+                [invalid_erc20.functions.decimals(),
+                 invalid_erc20.functions.symbol(),
+                 invalid_erc20.functions.balanceOf(account_address)
+                 ],
+                raise_exception=False),
+            [None, None, None])
+
+        with self.assertRaises(BatchCallException):
+            self.ethereum_client.batch_call([erc20.functions.decimals(),
+                                             erc20.functions.transfer(NULL_ADDRESS, 1),
+                                             erc20.functions.symbol(),
+                                             erc20.functions.balanceOf(account_address)],
+                                            raise_exception=True)
 
     def test_get_blocks(self):
         self.assertEqual(self.ethereum_client.get_blocks([]), [])
