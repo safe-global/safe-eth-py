@@ -299,9 +299,8 @@ class BatchCallManager(EthereumClientManager):
                     else:
                         return_values.append(normalized_data)
                 except (DecodingError, OverflowError):
-                    # Don't consider DecodingError an error. Only reverts
-                    # fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
-                    # errors.append(f'`{fn_name}`: DecodingError, cannot decode')
+                    fn_name = payload.get('fn_name', HexBytes(payload['data']).hex())
+                    errors.append(f'`{fn_name}`: DecodingError, cannot decode')
                     return_values.append(None)
 
         if errors and raise_exception:
