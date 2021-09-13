@@ -11,10 +11,11 @@ from web3.net import Net
 
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..ethereum_client import (BatchCallException, EthereumClient,
-                               EthereumClientProvider, EthereumNetwork,
-                               FromAddressNotFound, InsufficientFunds,
-                               InvalidERC20Info, InvalidNonce, ParityManager,
+from ..ethereum_client import (BatchCallException, Erc20Manager,
+                               EthereumClient, EthereumClientProvider,
+                               EthereumNetwork, FromAddressNotFound,
+                               InsufficientFunds, InvalidERC20Info,
+                               InvalidNonce, ParityManager,
                                SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
@@ -235,6 +236,20 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
                                {'token_address': erc20.address, 'balance': tokens_value},
                                {'token_address': erc20_2.address, 'balance': tokens_value_2}
                                ])
+
+        with mock.patch.object(EthereumClient, 'batch_call_same_function', return_value=[
+            b'\x08\xc3y\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x17Only the proxy can call\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            5,
+        ]):
+            token_addresses = [
+                '0x57Ab1E02fEE23774580C119740129eAC7081e9D3',
+                '0x6810e776880C02933D47DB1b9fc05908e5386b96'
+            ]
+            self.assertCountEqual(self.ethereum_client.erc20.get_balances(account_address, token_addresses),
+                                  [{'token_address': None, 'balance': value},
+                                   {'token_address': '0x57Ab1E02fEE23774580C119740129eAC7081e9D3', 'balance': 0},
+                                   {'token_address': '0x6810e776880C02933D47DB1b9fc05908e5386b96', 'balance': 5},
+                                   ])
 
     def test_get_total_transfer_history(self):
         amount = 50

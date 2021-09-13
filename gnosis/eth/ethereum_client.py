@@ -453,7 +453,7 @@ class Erc20Manager(EthereumClientManager):
 
         return_balances = [{
             'token_address': token_address,
-            'balance': 0 if balance is None else balance,
+            'balance': balance if isinstance(balance, int) else 0,  # A `revert` with bytes can be returned
         } for token_address, balance in zip(token_addresses, balances)]
 
         # Add ether balance response
@@ -724,7 +724,7 @@ class Erc721Manager(EthereumClientManager):
             token_addresses,
             raise_exception=False
         )
-        return [TokenBalance(token_address, 0 if balance is None else balance)
+        return [TokenBalance(token_address, balance if isinstance(balance, int) else 0)
                 for (token_address, balance) in zip(token_addresses, balances)]
 
     def get_info(self, token_address: str) -> Erc721Info:
