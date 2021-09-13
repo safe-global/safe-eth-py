@@ -162,12 +162,27 @@ class Multicall:
                        require_success: bool = False,
                        block_identifier: Optional[BlockIdentifier] = 'latest'
                        ) -> List[MulticallResult]:
+        """
+       Calls ``try_aggregate`` on MakerDAO's Multicall contract.
+
+       :param targets_with_data:
+       :param require_success: If ``True``, an exception in any of the functions will stop the execution. Also, an
+           invalid decoded value will stop the execution
+       :param block_identifier:
+       :return: A list with the decoded return values
+       """
+
         aggregate_parameter = [{'target': target, 'callData': data} for target, data in targets_with_data]
         try:
             result = self.contract.functions.tryAggregate(
                 require_success,
                 aggregate_parameter
             ).call(block_identifier=block_identifier)
+
+            if require_success and b'' in (data for _, data in result):
+                # `b''` values are decoding errors/missing contracts/missing functions
+                raise BatchCallFunctionFailed
+
             return [MulticallResult(success, data if data else None) for success, data in result]
         except (ContractLogicError, OverflowError):
             raise BatchCallFunctionFailed
@@ -186,7 +201,11 @@ class Multicall:
         :return: A list with the decoded return values
         """
         targets_with_data, output_types = self._build_payload(contract_functions)
-        results = self._try_aggregate(targets_with_data, require_success=require_success)
+        results = self._try_aggregate(
+            targets_with_data,
+            require_success=require_success,
+            block_identifier=block_identifier
+        )
         return [
             MulticallDecodedResult(
                 multicall_result.success,
