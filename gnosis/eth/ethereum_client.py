@@ -1203,11 +1203,11 @@ class EthereumClient:
                                                                              require_success=raise_exception,
                                                                              block_identifier=block_identifier)]
         else:
-            return self.batch_call_manager.batch_call(contract_function,
-                                                      contract_addresses,
-                                                      from_address=from_address,
-                                                      raise_exception=raise_exception,
-                                                      block_identifier=block_identifier)
+            return self.batch_call_manager.batch_call_same_function(contract_function,
+                                                                    contract_addresses,
+                                                                    from_address=from_address,
+                                                                    raise_exception=raise_exception,
+                                                                    block_identifier=block_identifier)
 
     def deploy_and_initialize_contract(self, deployer_account: LocalAccount,
                                        constructor_data: bytes, initializer_data: bytes = b'',
