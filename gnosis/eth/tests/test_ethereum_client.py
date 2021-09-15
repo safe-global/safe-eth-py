@@ -919,7 +919,9 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_batch_call(self):
         account_address = Account.create().address
         tokens_value = 12
+        tokens_value_2 = 25
         erc20 = self.deploy_example_erc20(tokens_value, account_address)
+        erc20_2 = self.deploy_example_erc20(tokens_value_2, account_address)
 
         for batch_call_manager in (self.ethereum_client, self.ethereum_client.batch_call_manager):
             with self.subTest(batch_call_manager=batch_call_manager):
@@ -932,6 +934,12 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
                 self.assertEqual(decimals, erc20.functions.decimals().call())
                 self.assertEqual(symbol, erc20.functions.symbol().call())
                 self.assertEqual(balance_of, tokens_value)
+
+                results = batch_call_manager.batch_call_same_function(
+                    erc20.functions.balanceOf(account_address),
+                    [erc20.address, erc20_2.address]
+                )
+                self.assertEqual([tokens_value, tokens_value_2], results)
 
                 invalid_erc20 = get_erc20_contract(self.ethereum_client.w3, Account.create().address)
                 with self.assertRaises(BatchCallException):
