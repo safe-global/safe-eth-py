@@ -23,6 +23,18 @@ If you want django ethereum utils (models, serializers, filters...) you need to 
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
 
+
+Contributing to gnosis-py
+-------------------------
+Clone the repo, then to set it up:
+
+.. code-block:: bash
+
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements-dev.txt
+    pre-commit install -f
+
 Ethereum utils
 --------------
 gnosis.eth

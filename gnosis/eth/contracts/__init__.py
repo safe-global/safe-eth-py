@@ -1,3 +1,21 @@
+"""
+Safe Addresses. Should be the same for every chain. Check:
+https://github.com/gnosis/safe-contracts/blob/development/zos.mainnet.json
+https://github.com/gnosis/safe-contracts/blob/development/zos.rinkeby.json
+
+GnosisSafeV1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
+GnosisSafeV1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
+GnosisSafeV1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
+
+Factories
+ProxyFactoryV1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
+ProxyFactoryV1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
+
+Libraries
+CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
+MultiSend: 0xD4B7B161E4779629C2717385114Bf78D612aEa72
+"""
+
 import json
 import os
 import sys
@@ -23,25 +41,6 @@ def _load_json_file(path):
 
 
 current_module = sys.modules[__name__]
-
-"""
-Safe Addresses. Should be the same for every chain. Check:
-https://github.com/gnosis/safe-contracts/blob/development/zos.mainnet.json
-https://github.com/gnosis/safe-contracts/blob/development/zos.rinkeby.json
-
-GnosisSafeV1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
-GnosisSafeV1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
-GnosisSafeV1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
-
-Factories
-ProxyFactoryV1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
-ProxyFactoryV1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
-
-Libraries
-CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
-MultiSend: 0xD4B7B161E4779629C2717385114Bf78D612aEa72
-"""
-
 contracts = {
     'safe': 'GnosisSafe_V1_1_1.json',
     'safe_V1_3_0': 'GnosisSafe_V1_3_0.json',

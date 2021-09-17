@@ -11,11 +11,10 @@ from web3.net import Net
 
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..ethereum_client import (BatchCallException, Erc20Manager,
-                               EthereumClient, EthereumClientProvider,
-                               EthereumNetwork, FromAddressNotFound,
-                               InsufficientFunds, InvalidERC20Info,
-                               InvalidNonce, ParityManager,
+from ..ethereum_client import (BatchCallException, EthereumClient,
+                               EthereumClientProvider, EthereumNetwork,
+                               FromAddressNotFound, InsufficientFunds,
+                               InvalidERC20Info, InvalidNonce, ParityManager,
                                SenderAccountNotFoundInNode)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
