@@ -104,9 +104,7 @@ It includes:
 
 Contributors
 ------------
-- Denís Graña (denis@gnosis.pm)
-- Giacomo Licari (giacomo.licari@gnosis.pm)
-- Uxío Fuentefría (uxio@gnosis.pm)
+`See contributors <https://github.com/gnosis/gnosis-py/graphs/contributors>`_
 
 .. |ci| image:: https://github.com/gnosis/gnosis-py/workflows/Python%20CI/badge.svg?branch=master
     :alt: Github Actions CI build
