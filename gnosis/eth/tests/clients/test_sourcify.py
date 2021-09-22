@@ -2,8 +2,8 @@ from typing import List
 
 from django.test import TestCase
 
+from ... import EthereumNetwork
 from ...clients import Sourcify
-from ...ethereum_client import EthereumNetwork
 
 
 class TestSourcify(TestCase):
