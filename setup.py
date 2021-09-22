@@ -13,7 +13,7 @@ requirements = [
     "ethereum>=2.3.2",
     "packaging",
     "py-eth-sig-utils>=0.3.0",
-    "typing-extensions==3.10.0.0; python_version < '3.8'",
+    "typing-extensions>=3.10; python_version < '3.8'",
     "requests>=2",
     "web3>=5.23.0",
 ]
