@@ -13,14 +13,13 @@ from web3 import Web3
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 
-from .. import EthereumClient
+from .. import EthereumClient, EthereumNetwork
 from ..constants import NULL_ADDRESS
 from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_factory_contract,
                          get_uniswap_v2_factory_contract,
                          get_uniswap_v2_pair_contract,
                          get_uniswap_v2_router_contract)
-from ..ethereum_client import EthereumNetwork
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.mooniswap_abis import mooniswap_abi

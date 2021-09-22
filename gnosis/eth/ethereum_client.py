@@ -1,4 +1,3 @@
-from enum import Enum
 from functools import wraps
 from logging import getLogger
 from typing import (Any, Dict, Iterable, List, NamedTuple, Optional, Sequence,
@@ -30,6 +29,7 @@ from web3.types import (BlockData, BlockIdentifier, FilterParams, LogReceipt,
 from .constants import (ERC20_721_TRANSFER_TOPIC, GAS_CALL_DATA_BYTE,
                         GAS_CALL_DATA_ZERO_BYTE, NULL_ADDRESS)
 from .contracts import get_erc20_contract, get_erc721_contract
+from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .typing import BalanceDict, EthereumData, EthereumHash
 from .utils import decode_string_or_bytes32
 
@@ -47,39 +47,6 @@ except ImportError:
 
 
 logger = getLogger(__name__)
-
-
-class EthereumNetwork(Enum):
-    UNKNOWN = -1
-    OLYMPIC = 0
-    MAINNET = 1
-    ROPSTEN = 3
-    OPTIMISTIC = 10
-    RINKEBY = 4
-    GOERLI = 5
-    KOVAN = 42
-    BINANCE = 56
-    XDAI = 100
-    MATIC = 137
-    ENERGY_WEB_CHAIN = 246
-    FANTOM = 250
-    FANTOM_TESTNET = 4002
-    GANACHE = 1337
-    ARBITRUM = 42161
-    AVALANCHE = 43114
-    VOLTA = 73799
-    MUMBAI = 80001
-    ARBITRUM_TESTNET = 421611
-    OLYMPUS = 333999
-    default = UNKNOWN
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class EthereumNetworkNotSupported(Exception):
-    pass
 
 
 class EthereumClientException(ValueError):

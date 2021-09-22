@@ -1,6 +1,5 @@
 # flake8: noqa F401
 from .ethereum_client import (EthereumClient, EthereumClientProvider,
-                              EthereumNetwork, EthereumNetworkNotSupported,
                               FromAddressNotFound, GasLimitExceeded,
                               InsufficientFunds, InvalidERC20Info,
                               InvalidERC721Info, InvalidNonce, NonceTooHigh,
@@ -9,3 +8,4 @@ from .ethereum_client import (EthereumClient, EthereumClientProvider,
                               SenderAccountNotFoundInNode,
                               TransactionAlreadyImported,
                               TransactionQueueLimitReached, UnknownAccount)
+from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
