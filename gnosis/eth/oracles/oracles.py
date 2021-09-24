@@ -516,6 +516,13 @@ class PoolTogetherOracle(ZerionComposedOracle):
     ZERION_ADAPTER_ADDRESS = '0xb4E0E1672fFd9b128784dB9f3BE9158fac3f1DFc'   # Mainnet address
 
 
+class EnzymeOracle(ZerionComposedOracle):
+    """
+    Enzyme pool Oracle. More info on https://enzyme.finance/
+    """
+    ZERION_ADAPTER_ADDRESS = '0x9e71455D748C23566b19493D09435574097C7D67'   # Mainnet address
+
+
 class YearnOracle(ComposedPriceOracle):
     """
     Yearn oracle. More info on https://docs.yearn.finance
