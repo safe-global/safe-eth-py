@@ -48,6 +48,9 @@ class ErrorResponse(TypedDict):
 
 
 class GnosisProtocolAPI:
+    """
+    Client for GnosisProtocol API. More info: https://docs.cowswap.exchange/
+    """
     settlement_contract_addresses = {
         EthereumNetwork.MAINNET: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
         EthereumNetwork.RINKEBY: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
@@ -99,7 +102,7 @@ class GnosisProtocolAPI:
 
         url = self.base_url + 'orders/'
         order['feeAmount'] = order['feeAmount'] or self.get_fee(order)
-        signable_bytes = order.signable_bytes(self.domain_separator)
+        signable_bytes = order.signable_bytes(domain=self.domain_separator)
         signable_hash = Web3.keccak(signable_bytes)
         message = encode_defunct(primitive=signable_hash)
         signed_message = Account.from_key(private_key).sign_message(message)
