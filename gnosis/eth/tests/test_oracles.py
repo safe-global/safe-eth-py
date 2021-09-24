@@ -9,7 +9,7 @@ from .. import EthereumClient
 from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
                        KyberOracle, MooniswapOracle, SushiswapOracle,
                        UniswapOracle, UniswapV2Oracle, YearnOracle)
-from ..oracles.oracles import (AaveOracle, PoolTogetherOracle,
+from ..oracles.oracles import (AaveOracle, EnzymeOracle, PoolTogetherOracle,
                                ZerionComposedOracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
@@ -335,3 +335,26 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, 'It is not a mooniswap pool token'):
             mooniswap_oracle.get_pool_token_price(Account.create().address)
+
+
+class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_underlying_tokens(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        enzyme_oracle = EnzymeOracle(ethereum_client)
+        mln_vault_token_address = '0x45c45799Bcf6C7Eb2Df0DA1240BE04cE1D18CC69'
+        mln_vault_underlying_token = '0xec67005c4E498Ec7f55E092bd1d35cbC47C91892'
+        usf_fund_token_address = '0x86FB84E92c1EEDc245987D28a42E123202bd6701'
+        usf_fund_underlying_tokens = ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', '0x182B723a58739a9c974cFDB385ceaDb237453c28', '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32', '0xD533a949740bb3306d119CC777fa900bA034cd52', '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84']
+
+        underlying_tokens = enzyme_oracle.get_underlying_tokens(mln_vault_token_address)
+        self.assertEqual(len(underlying_tokens), 1)
+        underlying_token = underlying_tokens[0]
+        self.assertEqual(underlying_token.quantity, 1.)
+        self.assertEqual(underlying_token.address, mln_vault_underlying_token)
+
+        underlying_tokens = enzyme_oracle.get_underlying_tokens(usf_fund_token_address)
+        self.assertEqual(len(underlying_tokens), 5)
+        for underlying_token in underlying_tokens:
+            self.assertIn(underlying_token.address, usf_fund_underlying_tokens)
+            self.assertAlmostEqual(underlying_token.quantity, 0.5, delta=0.5)
