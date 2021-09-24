@@ -91,11 +91,14 @@ class GnosisProtocolAPI:
 
     def place_order(self, order: Order, private_key: HexStr) -> Union[HexStr, ErrorResponse]:
         """
+        Place order. If `feeAmount=0` in Order it will be calculated calling `get_fee(order)`
+
         :return: UUID for the order as an hex hash
         """
+        assert order['buyAmount'] and order['sellAmount'], 'Order buyAmount and sellAmount cannot be empty'
+
         url = self.base_url + 'orders/'
-        if not order['feeAmount']:
-            order['feeAmount'] = self.get_fee(order)
+        order['feeAmount'] = order['feeAmount'] or self.get_fee(order)
         signable_bytes = order.signable_bytes(self.domain_separator)
         signable_hash = Web3.keccak(signable_bytes)
         message = encode_defunct(primitive=signable_hash)
@@ -132,7 +135,11 @@ class GnosisProtocolAPI:
         elif owner:
             url += f'owner={owner}'
 
-        return cast(List[TradeResponse], requests.get(url).json())
+        response = requests.get(url)
+        if response.ok:
+            return cast(List[TradeResponse], response.json())
+        else:
+            return []
 
     def get_estimated_amount(self,
                              base_token: ChecksumAddress,

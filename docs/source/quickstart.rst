@@ -12,7 +12,7 @@ If you have issues building **coincurve** maybe
 Ethereum utils
 --------------
 gnosis.eth
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 - ``class EthereumClient (ethereum_node_url: str)``: Class to connect and do operations
   with a ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
   Only ``http/https`` urls are suppored for the node url.
@@ -62,7 +62,6 @@ gnosis.eth.constants
 
 gnosis.eth.oracles
 ~~~~~~~~~~~~~~~~~~
-
 Price oracles for Uniswap, UniswapV2, Kyber, SushiSwap, Aave, Balancer, Curve, Mooniswap, Yearn...
 Example:
 
@@ -101,3 +100,61 @@ It includes:
 - **gnosis.eth.django.validators**: Ethereum related validators.
 - **gnosis.safe.serializers**: Serializers for Gnosis Safe (signature, transaction...).
 - All the tests are written using Django Test suite.
+
+Gnosis Products
+---------------
+Gnosis Safe
+~~~~~~~~~~~
+On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://gnosis-safe.io/>`_
+
+.. code-block:: python
+
+  from gnosis.eth import EthereumClient
+  from gnosis.safe import Safe
+  safe_address = ''  # Fill with checksummed version of a Safe address
+  ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
+  safe = Safe(safe_address, ethereum_client)
+  safe_info = safe.retrieve_all_info()
+
+To work with Multisig Transactions:
+
+.. code-block:: python
+
+  safe_tx = safe.build_multisig_tx(to, value, data, operation, safe_tx_gas, base_gas, gas_price, gas_token,
+                                   refund_receiver, signatures, safe_nonce)
+  safe_tx.sign(owner_1_private_key)
+  safe_tx.sign(owner_2_private_key)
+  safe_tx.call()  # Check it works
+  safe_tx.execute(tx_sender_private_key)
+
+Gnosis Protocol
+~~~~~~~~~~~
+On ``gnosis.protocol`` there're classes to work with `Gnosis Protocol v2 <https://docs.cowswap.app>`_
+
+.. code-block:: python
+
+  import time
+  from gnosis.eth import EthereumNetwork
+  from gnosis.protocol import Order, OrderKind, GnosisProtocolAPI
+
+  account_address = ''  # Fill with checksummed version of a Gnosis Protocol user address
+  account_private_key = ''  # Fill with private key of a user address
+  gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.RINKEBY)
+  print(gnosis_protocol_api.get_trades(owner=account_address))
+  buy_amount = gnosis_protocol_api.get_estimated_amount(base_token, quote_token, OrderKind.SELL, sell_amount)
+  valid_to = int(time.time() + (24 * 60 * 60))  # Order valid for 1 day
+  order = Order(
+        sellToken=base_token,
+        buyToken=buyToken,
+        receiver=receiver,
+        sellAmount=sell_amount,
+        buyAmount=buy_amount,
+        validTo=valid_to,  # timestamp
+        appData=ipfs_hash,  # IPFS hash for metadata
+        fee_amount=0,  # If set to `0` it will be autodetected
+        kind='sell',  # `sell` or `buy`
+        partiallyFillable=True,  # `True` or `False`
+        sellTokenBalance='erc20',  # `erc20`, `external` or `internal`
+        buyTokenBalance='erc20',  # `erc20` or `internal`
+    )
+  gnosis_protocol_api.place_order(order, account_private_key)
