@@ -1,0 +1,158 @@
+from typing import List, Optional, Union, cast
+
+import requests
+from eip712_structs import make_domain
+from eth_account import Account
+from eth_account.messages import encode_defunct
+from eth_typing import AnyAddress, ChecksumAddress, HexStr
+from hexbytes import HexBytes
+from web3 import Web3
+
+from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
+
+from .order import Order, OrderKind
+
+try:
+    from typing import TypedDict  # pylint: disable=no-name-in-module
+except ImportError:
+    from typing_extensions import TypedDict
+
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+    cache = lru_cache(maxsize=None)
+
+
+class TradeResponse(TypedDict):
+    blockNumber: int
+    logIndex: int
+    orderUid: HexStr
+    buyAmount: str  # Stringified int
+    sellAmount: str  # Stringified int
+    sellAmountBeforeFees: str  # Stringified int
+    owner: AnyAddress  # Not checksummed
+    buyToken: AnyAddress
+    sellToken: AnyAddress
+    txHash: HexStr
+
+
+class AmountResponse(TypedDict):
+    amount: str
+    token: AnyAddress
+
+
+class ErrorResponse(TypedDict):
+    error_type: str
+    description: str
+
+
+class GnosisProtocolAPI:
+    settlement_contract_addresses = {
+        EthereumNetwork.MAINNET: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+        EthereumNetwork.RINKEBY: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+        EthereumNetwork.XDAI: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+    }
+
+    api_base_urls = {
+        EthereumNetwork.MAINNET: 'https://protocol-mainnet.gnosis.io/api/v1/',
+        EthereumNetwork.RINKEBY: 'https://protocol-rinkeby.gnosis.io/api/v1/',
+        EthereumNetwork.XDAI: 'https://protocol-xdai.gnosis.io/api/v1/',
+    }
+
+    def __init__(self, ethereum_network: EthereumNetwork):
+        self.network = ethereum_network
+        if self.network not in self.api_base_urls:
+            raise EthereumNetworkNotSupported(f'{self.network.name} network not supported by Gnosis Protocol')
+        self.domain_separator = self.build_domain_separator(self.network)
+        self.base_url = self.api_base_urls[self.network]
+
+    @classmethod
+    def build_domain_separator(cls, ethereum_network: EthereumNetwork):
+        return make_domain(
+            name='Gnosis Protocol',
+            version='v2',
+            chainId=str(ethereum_network.value),
+            verifyingContract=cls.settlement_contract_addresses[ethereum_network]
+        )
+
+    def get_fee(self, order: Order) -> int:
+        if order['kind'] == 'sell':
+            amount = order['sellAmount']
+        else:
+            amount = order['buyAmount']
+        url = self.base_url + f'fee/?sellToken={order["sellToken"]}&buyToken={order["buyToken"]}' \
+                              f'&amount={amount}&kind={order["kind"]}'
+        result = requests.get(url).json()
+        if 'amount' in result:
+            return int(result['amount'])
+        else:
+            return 0
+
+    def place_order(self, order: Order, private_key: HexStr) -> Union[HexStr, ErrorResponse]:
+        """
+        Place order. If `feeAmount=0` in Order it will be calculated calling `get_fee(order)`
+
+        :return: UUID for the order as an hex hash
+        """
+        assert order['buyAmount'] and order['sellAmount'], 'Order buyAmount and sellAmount cannot be empty'
+
+        url = self.base_url + 'orders/'
+        order['feeAmount'] = order['feeAmount'] or self.get_fee(order)
+        signable_bytes = order.signable_bytes(self.domain_separator)
+        signable_hash = Web3.keccak(signable_bytes)
+        message = encode_defunct(primitive=signable_hash)
+        signed_message = Account.from_key(private_key).sign_message(message)
+
+        data_json = {
+            'sellToken': order['sellToken'].lower(),
+            'buyToken': order['buyToken'].lower(),
+            'sellAmount': str(order['sellAmount']),
+            'buyAmount': str(order['buyAmount']),
+            'validTo': order['validTo'],
+            'appData': HexBytes(order['appData']).hex() if isinstance(order['appData'], bytes) else order['appData'],
+            'feeAmount': str(order['feeAmount']),
+            'kind': order['kind'],
+            'partiallyFillable': order['partiallyFillable'],
+            'signature': signed_message.signature.hex(),
+            'signingScheme': 'ethsign',
+            'from': Account.from_key(private_key).address,
+        }
+        r = requests.post(url, json=data_json)
+        if r.ok:
+            return HexStr(r.json())
+        else:
+            return ErrorResponse(r.json())
+
+    def get_trades(self,
+                   order_ui: Optional[HexStr] = None,
+                   owner: Optional[ChecksumAddress] = None
+                   ) -> List[TradeResponse]:
+        assert bool(order_ui) ^ bool(owner), 'order_ui or owner must be provided, but not both'
+        url = self.base_url + 'trades/?'
+        if order_ui:
+            url += f'orderUid={order_ui}'
+        elif owner:
+            url += f'owner={owner}'
+
+        response = requests.get(url)
+        if response.ok:
+            return cast(List[TradeResponse], response.json())
+        else:
+            return []
+
+    def get_estimated_amount(self,
+                             base_token: ChecksumAddress,
+                             quote_token: ChecksumAddress,
+                             kind: OrderKind,
+                             amount: int
+                             ) -> Union[AmountResponse, ErrorResponse]:
+        """
+        The estimated amount in quote token for either buying or selling amount of baseToken.
+        """
+        url = self.base_url + f'markets/{base_token}-{quote_token}/{kind.name}/{amount}'
+        response = requests.get(url)
+        if response.ok:
+            return AmountResponse(response.json())
+        else:
+            return ErrorResponse(response.json())
