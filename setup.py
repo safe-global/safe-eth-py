@@ -11,6 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 requirements = [
     "cached-property>=1.5; python_version < '3.8'",
     "ethereum>=2.3.2",
+    "eip712_structs",
     "packaging",
     "py-eth-sig-utils>=0.3.0",
     "typing-extensions>=3.10; python_version < '3.8'",
@@ -24,7 +25,7 @@ extras_require = {
 
 setup(
     name='gnosis-py',
-    version='3.3.4',
+    version='3.4.0',
     packages=find_packages(),
     package_data={'gnosis': ['py.typed']},
     install_requires=requirements,
