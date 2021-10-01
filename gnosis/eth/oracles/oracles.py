@@ -24,6 +24,7 @@ from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.mooniswap_abis import mooniswap_abi
 from .abis.zerion_abis import ZERION_TOKEN_ADAPTER_ABI
+from .helpers.curve_gauge_list import CURVE_GAUGE_TO_LP_TOKEN
 
 try:
     from functools import cached_property
@@ -507,6 +508,17 @@ class CurveOracle(ZerionComposedOracle):
     Curve pool Oracle. More info on https://curve.fi/
     """
     ZERION_ADAPTER_ADDRESS = '0x99b0bEadc3984eab9842AF81f9fad0C2219108cc'   # Mainnet address
+
+    def get_underlying_tokens(self, token_address: ChecksumAddress) -> List[UnderlyingToken]:
+        """
+        Check if passed token address is a Curve gauge deposit token, if it's a gauge we replace the address with
+        the corresponding LP token address
+        More info on https://resources.curve.fi/base-features/understanding-gauges
+        """
+        if CURVE_GAUGE_TO_LP_TOKEN.get(token_address):
+            return super().get_underlying_tokens(CURVE_GAUGE_TO_LP_TOKEN[token_address])
+
+        return super().get_underlying_tokens(token_address)
 
 
 class PoolTogetherOracle(ZerionComposedOracle):

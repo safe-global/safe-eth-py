@@ -215,6 +215,21 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
             curve_oracle.get_underlying_tokens(Account.create().address)
 
+    def test_get_underlying_tokens_gauges(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        curve_oracle = CurveOracle(ethereum_client)
+
+        # 3crv gauge deposit: dai, usdc, usdt
+        gauge_deposit_address = '0xF5194c3325202F456c95c1Cf0cA36f8475C1949F'
+        gauge_lp_token_address = '0x5282a4eF67D9C33135340fB3289cc1711c13638C'
+        lp_token_underlying_tokens = ['0x8e595470Ed749b85C6F7669de83EAe304C2ec68F', '0x76Eb2FE28b36B3ee97F3Adae0C69606eeDB2A37c', '0x48759F220ED983dB51fA7A8C0D2AAb8f3ce4166a']
+
+        underlying_tokens = curve_oracle.get_underlying_tokens(gauge_deposit_address)
+        for underlying_token in underlying_tokens:
+            self.assertIn(underlying_token.address, lp_token_underlying_tokens)
+            self.assertAlmostEqual(underlying_token.quantity, 0.3, delta=0.5)
+
 
 class TestZerionComposedOracle(EthereumTestCaseMixin, TestCase):
     def test_zerion_composed_oracle(self):
@@ -350,7 +365,6 @@ class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
             '0x182B723a58739a9c974cFDB385ceaDb237453c28',
             '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
             '0xD533a949740bb3306d119CC777fa900bA034cd52',
-            '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84'
         ]
 
         underlying_tokens = enzyme_oracle.get_underlying_tokens(mln_vault_token_address)
@@ -360,7 +374,7 @@ class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
         self.assertEqual(underlying_token.address, mln_vault_underlying_token)
 
         underlying_tokens = enzyme_oracle.get_underlying_tokens(usf_fund_token_address)
-        self.assertEqual(len(underlying_tokens), 5)
+        self.assertEqual(len(underlying_tokens), 4)
         for underlying_token in underlying_tokens:
             self.assertIn(underlying_token.address, usf_fund_underlying_tokens)
             self.assertAlmostEqual(underlying_token.quantity, 0.5, delta=0.5)
