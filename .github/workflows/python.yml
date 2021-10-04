@@ -33,10 +33,16 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-test.txt') }}-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-    - name: Install dependencies
-      run: pip install -r requirements-test.txt coveralls wheel
+    - name: Install wheel
+      run: pip install wheel
       env:
         PIP_USE_MIRRORS: true
+    - name: Install dependencies
+      run: pip install -r requirements-test.txt coveralls pre-commit
+      env:
+        PIP_USE_MIRRORS: true
+    - name: Run pre-commit
+      run: pre-commit run --all-files
     - name: Run tests and coverage
       run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
       env:
