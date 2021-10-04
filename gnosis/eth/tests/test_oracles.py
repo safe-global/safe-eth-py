@@ -222,16 +222,11 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
 
         # 3crv gauge deposit: dai, usdc, usdt
         gauge_deposit_address = '0xF5194c3325202F456c95c1Cf0cA36f8475C1949F'
-        lp_token_underlying_tokens = [
-            '0x8e595470Ed749b85C6F7669de83EAe304C2ec68F',
-            '0x76Eb2FE28b36B3ee97F3Adae0C69606eeDB2A37c',
-            '0x48759F220ED983dB51fA7A8C0D2AAb8f3ce4166a'
-        ]
+        gauge_lp_token_address = '0x5282a4eF67D9C33135340fB3289cc1711c13638C'
+        gauge_underlying_tokens = curve_oracle.get_underlying_tokens(gauge_deposit_address)
+        lp_token_underlying_tokens = curve_oracle.get_underlying_tokens(gauge_lp_token_address)
 
-        underlying_tokens = curve_oracle.get_underlying_tokens(gauge_deposit_address)
-        for underlying_token in underlying_tokens:
-            self.assertIn(underlying_token.address, lp_token_underlying_tokens)
-            self.assertAlmostEqual(underlying_token.quantity, 0.3, delta=0.5)
+        self.assertEqual(gauge_underlying_tokens, lp_token_underlying_tokens)
 
 
 class TestZerionComposedOracle(EthereumTestCaseMixin, TestCase):

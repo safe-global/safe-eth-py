@@ -5,3 +5,5 @@ services:
     image: postgres:10-alpine
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
