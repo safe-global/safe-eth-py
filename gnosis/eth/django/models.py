@@ -19,7 +19,7 @@ class EthereumAddressField(models.CharField):
     default_validators = [validate_checksumed_address]
     description = "Ethereum address"
     default_error_messages = {
-        'invalid': _('“%(value)s” value must be an EIP55 checksummed address.'),
+        'invalid': _('"%(value)s" value must be an EIP55 checksummed address.'),
     }
 
     def __init__(self, *args, **kwargs):
