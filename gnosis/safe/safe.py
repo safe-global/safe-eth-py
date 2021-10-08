@@ -18,6 +18,7 @@ from gnosis.eth.constants import (GAS_CALL_DATA_BYTE, NULL_ADDRESS,
 from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
                                   get_safe_contract, get_safe_V0_0_1_contract,
                                   get_safe_V1_0_0_contract,
+                                  get_safe_V1_1_1_contract,
                                   get_safe_V1_3_0_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
@@ -156,19 +157,6 @@ class Safe:
         return ethereum_tx_sent
 
     @classmethod
-    def deploy_master_contract(cls, ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
-        """
-        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
-        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum account
-        :return: deployed contract address
-        """
-
-        return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_contract)
-
-    @classmethod
     def deploy_master_contract_v1_3_0(cls, ethereum_client: EthereumClient,
                                       deployer_account: LocalAccount) -> EthereumTxSent:
         """
@@ -181,6 +169,20 @@ class Safe:
         """
 
         return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_V1_3_0_contract)
+
+    @classmethod
+    def deploy_master_contract_v1_1_1(cls, ethereum_client: EthereumClient,
+                                      deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_V1_1_1_contract)
 
     @staticmethod
     def deploy_master_contract_v1_0_0(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
@@ -212,7 +214,7 @@ class Safe:
         return ethereum_tx_sent
 
     @staticmethod
-    def deploy_old_master_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+    def deploy_master_contract_v0_0_1(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
 
