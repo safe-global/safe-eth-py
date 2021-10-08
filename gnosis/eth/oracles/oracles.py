@@ -22,6 +22,7 @@ from ..contracts import (get_erc20_contract, get_kyber_network_proxy_contract,
                          get_uniswap_v2_router_contract)
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
+from .abis.cream_abis import cream_ctoken_abi
 from .abis.mooniswap_abis import mooniswap_abi
 from .abis.zerion_abis import ZERION_TOKEN_ADAPTER_ABI
 from .helpers.curve_gauge_list import CURVE_GAUGE_TO_LP_TOKEN
@@ -299,6 +300,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         Calculate pair address without querying blockchain.
         https://uniswap.org/docs/v2/smart-contract-integration/getting-pair-addresses/#docs-header
 
+
         :param token_address:
         :param token_address_2:
         :return: Checksummed address for token pair. It could be not created yet
@@ -427,7 +429,7 @@ class AaveOracle(PriceOracle):
     def __init__(self, ethereum_client: EthereumClient, price_oracle: PriceOracle):
         """
         :param ethereum_client:
-        :param price_oracle: Price oracle to get the price for the components of the Balancer Pool, UniswapV2 is
+        :param price_oracle: Price oracle to get the price for the components of Aave Tokens, UniswapV2 is
         recommended
         """
         self.ethereum_client = ethereum_client
@@ -445,6 +447,29 @@ class AaveOracle(PriceOracle):
             return self.price_oracle.get_price(underlying_token)
         except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not an Aaave atoken')
+
+
+class CreamOracle(PriceOracle):
+    def __init__(self, ethereum_client: EthereumClient, price_oracle: PriceOracle):
+        """
+        :param ethereum_client:
+        :param price_oracle: Price oracle to get the price for the components of Cream Tokens, UniswapV2 is
+        recommended
+        """
+        self.ethereum_client = ethereum_client
+        self.w3 = ethereum_client.w3
+        self.price_oracle = price_oracle
+
+    def get_price(self, token_address: str) -> float:
+        try:
+            underlying_token = self.w3.eth.contract(
+                token_address,
+                abi=cream_ctoken_abi
+            ).functions.underlying().call()
+            logger.debug(f'underlying token {underlying_token}')
+            return self.price_oracle.get_price(underlying_token)
+        except (ValueError, BadFunctionCallOutput, DecodingError):
+            raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not a Cream cToken')
 
 
 class ZerionComposedOracle(ComposedPriceOracle):
