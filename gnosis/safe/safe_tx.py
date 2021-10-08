@@ -201,32 +201,53 @@ class SafeTx:
 
     def _raise_safe_vm_exception(self, message: str) -> NoReturn:
         error_with_exception: Dict[str, Type[InvalidMultisigTx]] = {
+            # https://github.com/gnosis/safe-contracts/blob/v1.3.0/docs/error_codes.md
             'Could not pay gas costs with ether': CouldNotPayGasWithEther,
+            'GS011': CouldNotPayGasWithEther,
             'Could not pay gas costs with token': CouldNotPayGasWithToken,
+            'GS012': CouldNotPayGasWithToken,
             'Hash has not been approved': HashHasNotBeenApproved,
             'Hash not approved': HashHasNotBeenApproved,
+            'GS025': HashHasNotBeenApproved,
             'Invalid contract signature location: data not complete': InvalidContractSignatureLocation,
+            'GS023': InvalidContractSignatureLocation,
             'Invalid contract signature location: inside static part': InvalidContractSignatureLocation,
+            'GS021': InvalidContractSignatureLocation,
             'Invalid contract signature location: length not present': InvalidContractSignatureLocation,
+            'GS022': InvalidContractSignatureLocation,
             'Invalid contract signature provided': InvalidContractSignatureLocation,
+            'GS024': InvalidContractSignatureLocation,
             'Invalid owner provided': InvalidOwnerProvided,
             'Invalid owner address provided': InvalidOwnerProvided,
+            'GS026': InvalidOwnerProvided,
             'Invalid signatures provided': InvalidSignaturesProvided,
             'Not enough gas to execute safe transaction': NotEnoughSafeTransactionGas,
+            'GS010': NotEnoughSafeTransactionGas,
             'Only owners can approve a hash': OnlyOwnersCanApproveAHash,
             'Signature not provided by owner': SignatureNotProvidedByOwner,
             'Signatures data too short': SignaturesDataTooShort,
+            'GS020': SignaturesDataTooShort,
             # OwnerManager
             'Address is already an owner': OwnerManagerException,
+            'GS204': OwnerManagerException,
             'Invalid prevOwner, owner pair provided': OwnerManagerException,
+            'GS205': OwnerManagerException,
             'New owner count needs to be larger than new threshold': OwnerManagerException,
             'Threshold cannot exceed owner count': OwnerManagerException,
+            'GS201': OwnerManagerException,
             'Threshold needs to be greater than 0': OwnerManagerException,
+            'GS202': OwnerManagerException,
+            'GS203': OwnerManagerException,  # Invalid ower address provided
             # ModuleManager
             'Invalid module address provided': ModuleManagerException,
+            'GS101': ModuleManagerException,
             'Invalid prevModule, module pair provided': ModuleManagerException,
+            'GS103': ModuleManagerException,
             'Method can only be called from an enabled module': ModuleManagerException,
+            'GS104': ModuleManagerException,
             'Module has already been added': ModuleManagerException,
+            'GS102': ModuleManagerException,
+            # TODO Add missing errors
         }
 
         for reason, custom_exception in error_with_exception.items():

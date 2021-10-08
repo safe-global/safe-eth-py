@@ -106,7 +106,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
 
     def deploy_test_safe(self, number_owners: int = 3, threshold: Optional[int] = None,
                          owners: Optional[List[ChecksumAddress]] = None, initial_funding_wei: int = 0,
-                         fallback_handler: ChecksumAddress = NULL_ADDRESS) -> Safe:
+                         fallback_handler: ChecksumAddress = None) -> Safe:
         """
         Deploy a Safe v1.3.0
 
