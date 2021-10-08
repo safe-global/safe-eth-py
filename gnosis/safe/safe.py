@@ -15,11 +15,11 @@ from web3.types import BlockIdentifier, Wei
 
 from gnosis.eth.constants import (GAS_CALL_DATA_BYTE, NULL_ADDRESS,
                                   SENTINEL_ADDRESS)
-from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
-                                  get_safe_contract, get_safe_V0_0_1_contract,
-                                  get_safe_V1_0_0_contract,
-                                  get_safe_V1_1_1_contract,
-                                  get_safe_V1_3_0_contract)
+from gnosis.eth.contracts import (
+    get_compatibility_fallback_handler_V1_3_0_contract,
+    get_delegate_constructor_proxy_contract, get_safe_contract,
+    get_safe_V0_0_1_contract, get_safe_V1_0_0_contract,
+    get_safe_V1_1_1_contract, get_safe_V1_3_0_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -152,6 +152,31 @@ class Safe:
         ethereum_tx_sent = EthereumTxSent(tx_hash, constructor_tx, tx_receipt['contractAddress'])
         logger.info("Deployed and initialized Safe Master Contract version=%s on address %s by %s",
                     contract_fn(ethereum_client.w3, ethereum_tx_sent.contract_address).functions.VERSION().call(),
+                    ethereum_tx_sent.contract_address,
+                    deployer_account.address)
+        return ethereum_tx_sent
+
+    @classmethod
+    def deploy_compatibility_fallback_handler(cls, ethereum_client: EthereumClient,
+                                              deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy Compatibility Fallback handler v1.3.0
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        contract = get_compatibility_fallback_handler_V1_3_0_contract(ethereum_client.w3)
+        constructor_tx = contract.constructor().buildTransaction()
+        tx_hash = ethereum_client.send_unsigned_transaction(constructor_tx, private_key=deployer_account.key)
+        tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        assert tx_receipt
+        assert tx_receipt['status']
+
+        ethereum_tx_sent = EthereumTxSent(tx_hash, constructor_tx, tx_receipt['contractAddress'])
+        logger.info("Deployed and initialized Compatibility Fallback Handler version=%s on address %s by %s",
+                    '1.3.0',
                     ethereum_tx_sent.contract_address,
                     deployer_account.address)
         return ethereum_tx_sent

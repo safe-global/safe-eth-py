@@ -2,15 +2,18 @@
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
 https://github.com/gnosis/safe-deployments/tree/main/src/assets
 
-GnosisSafeV1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
-GnosisSafeV1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
-GnosisSafeV1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
-GnosisSafeV1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
+GnosisSafe V1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
+GnosisSafe V1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
+GnosisSafe V1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
+GnosisSafe V1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
 
 Factories
-ProxyFactoryV1.3.0: 0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2
-ProxyFactoryV1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
-ProxyFactoryV1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
+ProxyFactory V1.3.0: 0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2
+ProxyFactory V1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
+ProxyFactory V1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
+
+FallbackHandler
+CompatibilityFallBackHandler V1.3.0: 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4
 
 Libraries
 CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
@@ -47,6 +50,7 @@ contracts = {
     'safe_V1_1_1': 'GnosisSafe_V1_1_1.json',
     'safe_V1_0_0': 'GnosisSafe_V1_0_0.json',
     'safe_V0_0_1': 'GnosisSafe_V0_0_1.json',
+    'compatibility_fallback_handler_V1_3_0': 'CompatibilityFallbackHandler_V1_3_0.json',
     'erc20': 'ERC20.json',
     'erc721': 'ERC721.json',
     'example_erc20': 'ERC20TestToken.json',
@@ -104,6 +108,10 @@ def get_safe_V1_0_0_contract(w3: Web3, address: Optional[str] = None) -> Contrac
 
 
 def get_safe_V0_0_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_compatibility_fallback_handler_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
     pass
 
 
