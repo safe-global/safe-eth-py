@@ -1,8 +1,9 @@
+from django.core import exceptions
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-import ethereum.utils
 from hexbytes import HexBytes
+from web3 import Web3
 
 from .validators import validate_checksumed_address
 
@@ -17,6 +18,9 @@ except ImportError:
 class EthereumAddressField(models.CharField):
     default_validators = [validate_checksumed_address]
     description = "Ethereum address"
+    default_error_messages = {
+        'invalid': _('"%(value)s" value must be an EIP55 checksummed address.'),
+    }
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 42
@@ -33,16 +37,20 @@ class EthereumAddressField(models.CharField):
     def to_python(self, value):
         value = super().to_python(value)
         if value:
-            return ethereum.utils.checksum_encode(value)
+            try:
+                return Web3.toChecksumAddress(value)
+            except ValueError:
+                raise exceptions.ValidationError(
+                    self.error_messages['invalid'],
+                    code='invalid',
+                    params={'value': value},
+                )
         else:
             return value
 
     def get_prep_value(self, value):
         value = super().get_prep_value(value)
-        if value:
-            return ethereum.utils.checksum_encode(value)
-        else:
-            return value
+        return self.to_python(value)
 
 
 class Uint256Field(models.DecimalField):

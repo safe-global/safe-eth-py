@@ -94,11 +94,13 @@ class TestGnosisProtocolAPI(TestCase):
             sellTokenBalance='erc20',
             buyTokenBalance='erc20'
         )
+        result = self.gnosis_protocol_api.place_order(order, Account().create().key)
+        self.assertEqual(order['feeAmount'], 0)  # Cannot estimate, as buy token is the same than sell token
         self.assertEqual(
-            self.gnosis_protocol_api.place_order(order, Account().create().key),
+            result,
             {
-                'errorType': 'SameBuyAndSellToken',
-                'description': 'Buy token is the same as the sell token.'
+                'description': 'Order does not include sufficient fee',
+                'errorType': 'InsufficientFee',
             }
         )
 
@@ -108,6 +110,6 @@ class TestGnosisProtocolAPI(TestCase):
             self.gnosis_protocol_api.place_order(order, Account().create().key),
             {
                 'description': 'order owner must have funds worth at least x in his account',
-                'errorType': 'InsufficientFunds'
+                'errorType': 'InsufficientFunds',
             }
         )

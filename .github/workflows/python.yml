@@ -33,12 +33,10 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-test.txt') }}-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-    - name: Install wheel
-      run: pip install wheel
-      env:
-        PIP_USE_MIRRORS: true
     - name: Install dependencies
-      run: pip install -r requirements-test.txt coveralls pre-commit
+      run: |
+        pip install wheel
+        pip install -r requirements-test.txt coveralls pre-commit
       env:
         PIP_USE_MIRRORS: true
     - name: Run pre-commit
