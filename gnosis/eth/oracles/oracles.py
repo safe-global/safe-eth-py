@@ -466,7 +466,6 @@ class CreamOracle(PriceOracle):
                 token_address,
                 abi=cream_ctoken_abi
             ).functions.underlying().call()
-            logger.debug(f'underlying token {underlying_token}')
             return self.price_oracle.get_price(underlying_token)
         except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(f'Cannot get price for {token_address}. It is not a Cream cToken')
