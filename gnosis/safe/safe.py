@@ -31,6 +31,13 @@ from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
 
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+    cache = lru_cache(maxsize=None)
+
+
 logger = getLogger(__name__)
 
 
@@ -77,7 +84,6 @@ class Safe:
         self.ethereum_client = ethereum_client
         self.w3 = self.ethereum_client.w3
         self.address = address
-        self._contract: Optional[Contract] = None
 
     def __str__(self):
         return f'Safe={self.address}'
@@ -620,10 +626,13 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
+    @cache
     def get_contract(self) -> Contract:
-        if not self._contract:
-            self._contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
-        return self._contract
+        version = get_safe_V1_3_0_contract(self.w3, address=self.address).functions.VERSION().call()
+        if version == '1.3.0':
+            return get_safe_V1_3_0_contract(self.w3, address=self.address)
+        else:
+            return get_safe_V1_1_1_contract(self.w3, address=self.address)
 
     def retrieve_all_info(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> SafeInfo:
         """

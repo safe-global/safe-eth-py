@@ -8,8 +8,7 @@ from packaging.version import Version
 from web3 import Web3
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
-from gnosis.eth.contracts import (
-    get_compatibility_fallback_handler_V1_3_0_contract, get_safe_contract)
+from gnosis.eth.contracts import get_safe_contract
 from gnosis.eth.utils import get_eth_address_with_key
 
 from ..exceptions import (CannotEstimateGas, CannotRetrieveSafeInfoException,
@@ -546,12 +545,12 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertFalse(safe.retrieve_is_hash_approved(self.ethereum_test_account.address, another_tx_hash))
 
     def test_retrieve_is_message_signed(self):
-        safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
+        safe = self.deploy_test_safe_v1_1_1(owners=[self.ethereum_test_account.address])
+        safe_contract = safe.get_contract()
         message = b'12345'
-        compatibility_handler = get_compatibility_fallback_handler_V1_3_0_contract(self.w3, safe.address)
-        message_hash = compatibility_handler.functions.getMessageHash(message).call()
+        message_hash = safe_contract.functions.getMessageHash(message).call()
         sign_message_data = HexBytes(
-            compatibility_handler.functions.signMessage(message).buildTransaction({'gas': 0})['data']
+            safe_contract.functions.signMessage(message).buildTransaction({'gas': 0})['data']
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
         safe_tx.sign(self.ethereum_test_account.key)
