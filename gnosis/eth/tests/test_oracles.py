@@ -6,11 +6,11 @@ from django.test import TestCase
 from eth_account import Account
 
 from .. import EthereumClient
-from ..oracles import (BalancerOracle, CannotGetPriceFromOracle, CurveOracle,
-                       KyberOracle, MooniswapOracle, SushiswapOracle,
-                       UniswapOracle, UniswapV2Oracle, YearnOracle)
-from ..oracles.oracles import (AaveOracle, EnzymeOracle, PoolTogetherOracle,
-                               ZerionComposedOracle)
+from ..oracles import (AaveOracle, BalancerOracle, CannotGetPriceFromOracle,
+                       CreamOracle, CurveOracle, EnzymeOracle, KyberOracle,
+                       MooniswapOracle, PoolTogetherOracle, SushiswapOracle,
+                       UniswapOracle, UniswapV2Oracle, YearnOracle,
+                       ZerionComposedOracle)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -180,6 +180,29 @@ class TestAaveOracle(EthereumTestCaseMixin, TestCase):
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
             aave_oracle.get_price(Account.create().address)
+
+
+class TestCreamOracle(EthereumTestCaseMixin, TestCase):
+    def test_get_price(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        sushi_oracle = SushiswapOracle(ethereum_client)
+        cream_oracle = CreamOracle(ethereum_client, sushi_oracle)
+
+        cyusdc_address = '0x76Eb2FE28b36B3ee97F3Adae0C69606eeDB2A37c'
+        price = cream_oracle.get_price(cyusdc_address)
+        self.assertGreater(price, 0.)
+
+        cydai_address = '0x8e595470Ed749b85C6F7669de83EAe304C2ec68F'
+        price = cream_oracle.get_price(cydai_address)
+        self.assertGreater(price, 0.)
+
+        error_message = 'It is not a Cream cToken'
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            cream_oracle.get_price(gno_token_mainnet_address)
+
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
+            cream_oracle.get_price(Account.create().address)
 
 
 class TestCurveOracle(EthereumTestCaseMixin, TestCase):
