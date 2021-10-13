@@ -7,7 +7,7 @@ from django.test import TestCase
 from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
-from web3.net import Net
+from web3.eth import Eth
 
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
@@ -750,18 +750,18 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_get_ethereum_network(self):
         self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
 
-        with mock.patch.object(Net, 'version', return_value='1', new_callable=mock.PropertyMock):
+        with mock.patch.object(Eth, 'chain_id', return_value=1, new_callable=mock.PropertyMock):
             # Test caching
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
             self.ethereum_client.get_network.cache_clear()
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.MAINNET)
             self.ethereum_client.get_network.cache_clear()
 
-        with mock.patch.object(Net, 'version', return_value='4', new_callable=mock.PropertyMock):
+        with mock.patch.object(Eth, 'chain_id', return_value=4, new_callable=mock.PropertyMock):
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.RINKEBY)
             self.ethereum_client.get_network.cache_clear()
 
-        with mock.patch.object(Net, 'version', return_value='4815162342', new_callable=mock.PropertyMock):
+        with mock.patch.object(Eth, 'chain_id', return_value=4815162342, new_callable=mock.PropertyMock):
             self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN)
             self.ethereum_client.get_network.cache_clear()
 
