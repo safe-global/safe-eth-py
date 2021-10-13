@@ -1104,7 +1104,7 @@ class EthereumClient:
 
         :return: The EthereumNetwork enum type
         """
-        return EthereumNetwork(int(self.w3.net.version))
+        return EthereumNetwork(int(self.w3.eth.chain_id))
 
     @cached_property
     def multicall(self) -> 'Multicall':  # noqa F821
