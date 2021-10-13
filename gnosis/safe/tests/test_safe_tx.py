@@ -5,10 +5,9 @@ from django.test import TestCase
 from eth_account import Account
 from hexbytes import HexBytes
 
-from ...eth.contracts import get_safe_contract
 from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
 from ..multi_send import MultiSendOperation, MultiSendTx
-from ..safe import Safe, SafeOperation
+from ..safe import SafeOperation
 from ..safe_tx import SafeTx
 from .safe_test_case import SafeTestCaseMixin
 
@@ -20,10 +19,8 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         owners = [Account.create() for _ in range(2)]
         owner_addresses = [owner.address for owner in owners]
         threshold = 1
-        safe_creation = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
-                                              initial_funding_wei=self.w3.toWei(0.1, 'ether'))
-        safe_address = safe_creation.safe_address
-        safe = Safe(safe_address, self.ethereum_client)
+        safe = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
+                                     initial_funding_wei=self.w3.toWei(0.1, 'ether'))
         safe_contract = safe.get_contract()
         to = self.multi_send_contract.address
         value = 0
@@ -41,9 +38,9 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         data_2 = HexBytes(safe_contract.functions.removeOwner(prev_owner.address, owner_to_remove.address,
                                                               new_threshold).buildTransaction({'gas': 0})['data'])
 
-        multisend_txs = [MultiSendTx(MultiSendOperation.CALL, safe_address, value, d) for d in (data, data_2)]
+        multisend_txs = [MultiSendTx(MultiSendOperation.CALL, safe.address, value, d) for d in (data, data_2)]
         safe_multisend_data = self.multi_send.build_tx_data(multisend_txs)
-        safe_tx = SafeTx(self.ethereum_client, safe_address, to,
+        safe_tx = SafeTx(self.ethereum_client, safe.address, to,
                          0, safe_multisend_data, SafeOperation.DELEGATE_CALL.value,
                          safe_tx_gas, base_gas, self.gas_price, None, None, safe_nonce=0)
         safe_tx.sign(owners[0].key)
@@ -59,15 +56,14 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         owners = [Account.create() for _ in range(2)]
         owner_addresses = [owner.address for owner in owners]
         threshold = 1
-        safe_creation = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
-                                              initial_funding_wei=self.w3.toWei(0.1, 'ether'))
-        safe_address = safe_creation.safe_address
+        safe = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
+                                     initial_funding_wei=self.w3.toWei(0.1, 'ether'))
         to = Account().create().address
         value = self.w3.toWei(0.01, 'ether')
         safe_tx_gas = 200000
         data_gas = 100000
 
-        safe_tx = SafeTx(self.ethereum_client, safe_address, to, value, b'', 0, safe_tx_gas, data_gas, self.gas_price,
+        safe_tx = SafeTx(self.ethereum_client, safe.address, to, value, b'', 0, safe_tx_gas, data_gas, self.gas_price,
                          None, None, safe_nonce=0)
 
         with self.assertRaises(SignaturesDataTooShort):
@@ -94,13 +90,12 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         owners_unsorted = sorted(owners, key=lambda x: int(x.address, 16), reverse=True)
         owner_addresses = [owner.address for owner in owners_unsorted]
         threshold = 1
-        safe_creation = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
-                                              initial_funding_wei=self.w3.toWei(0.1, 'ether'))
-        safe_address = safe_creation.safe_address
+        safe = self.deploy_test_safe(owners=owner_addresses, threshold=threshold,
+                                     initial_funding_wei=self.w3.toWei(0.1, 'ether'))
         to = Account().create().address
         value = self.w3.toWei(0.01, 'ether')
 
-        safe_tx = SafeTx(self.ethereum_client, safe_address, to, value, b'', 0, 200000, 100000, self.gas_price,
+        safe_tx = SafeTx(self.ethereum_client, safe.address, to, value, b'', 0, 200000, 100000, self.gas_price,
                          None, None, safe_nonce=0)
 
         safe_tx.sign(owners_unsorted[0].key)
@@ -190,10 +185,9 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
                          safe_version='1.0.0').safe_tx_hash
         self.assertEqual(expected_hash, tx_hash)
 
-        safe_create2_tx = self.deploy_test_safe()
-        safe_address = safe_create2_tx.safe_address
+        safe = self.deploy_test_safe_v1_1_1()
         # Expected hash must be the same calculated by `getTransactionHash` of the contract
-        expected_hash = get_safe_contract(self.ethereum_client.w3, safe_address).functions.getTransactionHash(
+        expected_hash = safe.get_contract().functions.getTransactionHash(
             '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
             5212459,
             HexBytes(0x00),
@@ -203,19 +197,53 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
             12345,
             '0x' + '2' * 40,
             '0x' + '2' * 40,
-            10789).call()
-        safe_tx_hash = SafeTx(self.ethereum_client, safe_address,
-                              '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
-                              5212459,
-                              HexBytes(0x00),
-                              1,
-                              123456,
-                              122,
-                              12345,
-                              '0x' + '2' * 40,
-                              '0x' + '2' * 40,
-                              safe_nonce=10789,
-                              safe_version='1.0.0').safe_tx_hash
+            10789
+        ).call()
+        safe_tx_hash = SafeTx(
+            self.ethereum_client, safe.address,
+            '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+            5212459,
+            HexBytes(0x00),
+            1,
+            123456,
+            122,
+            12345,
+            '0x' + '2' * 40,
+            '0x' + '2' * 40,
+            safe_nonce=10789,
+            safe_version='1.0.0'
+        ).safe_tx_hash
+        self.assertEqual(HexBytes(expected_hash), safe_tx_hash)
+
+        # Safe v1.3.0
+        safe = self.deploy_test_safe()
+        # Expected hash must be the same calculated by `getTransactionHash` of the contract
+        expected_hash = safe.get_contract().functions.getTransactionHash(
+            '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+            5212459,
+            HexBytes(0x00),
+            1,
+            123456,
+            122,
+            12345,
+            '0x' + '2' * 40,
+            '0x' + '2' * 40,
+            10789
+        ).call()
+        safe_tx_hash = SafeTx(
+            self.ethereum_client, safe.address,
+            '0x5AC255889882aaB35A2aa939679E3F3d4Cea221E',
+            5212459,
+            HexBytes(0x00),
+            1,
+            123456,
+            122,
+            12345,
+            '0x' + '2' * 40,
+            '0x' + '2' * 40,
+            safe_nonce=10789,
+            safe_version='1.3.0'
+        ).safe_tx_hash
         self.assertEqual(HexBytes(expected_hash), safe_tx_hash)
 
     def test_hash_safe_multisig_tx_1_3(self):
@@ -250,7 +278,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
         # Test with ganache master copy contract v1.3.0
         chain_id = self.ethereum_client.w3.eth.chain_id
-        safe_tx_hash = SafeTx(self.ethereum_client, self.safe_contract_V1_3_0_address,
+        safe_tx_hash = SafeTx(self.ethereum_client, self.safe_contract_address,
                               to,
                               value,
                               data,
@@ -264,7 +292,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
                               safe_version='1.3.0',
                               chain_id=chain_id,
                               ).safe_tx_hash
-        expected_hash = self.safe_contract_V1_3_0.functions.getTransactionHash(
+        expected_hash = self.safe_contract.functions.getTransactionHash(
             to,
             value,
             data,

@@ -11,7 +11,7 @@ from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
 
 from gnosis.eth import EthereumClient
-from gnosis.eth.contracts import get_safe_contract
+from gnosis.eth.contracts import get_safe_contract, get_safe_V1_1_1_contract
 from gnosis.safe.signatures import (get_signing_address, signature_split,
                                     signature_to_bytes)
 
@@ -162,7 +162,8 @@ class SafeSignatureContract(SafeSignature):
         return HexBytes(signature_to_bytes(self.v, self.r, 65) + encode_single('bytes', self.contract_signature))
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
-        safe_contract = get_safe_contract(ethereum_client.w3, self.owner)
+        safe_contract = get_safe_V1_1_1_contract(ethereum_client.w3, self.owner)
+        # Newest versions of the Safe contract have `isValidSignature` on the compatibility fallback handler
         for block_identifier in ('pending', 'latest'):
             try:
                 return safe_contract.functions.isValidSignature(

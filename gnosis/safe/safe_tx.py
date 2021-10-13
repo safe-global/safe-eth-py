@@ -12,14 +12,17 @@ from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
-from .exceptions import (CouldNotPayGasWithEther, CouldNotPayGasWithToken,
-                         HashHasNotBeenApproved,
+from .exceptions import (CouldNotFinishInitialization, CouldNotPayGasWithEther,
+                         CouldNotPayGasWithToken, HashHasNotBeenApproved,
                          InvalidContractSignatureLocation, InvalidInternalTx,
                          InvalidMultisigTx, InvalidOwnerProvided,
-                         InvalidSignaturesProvided, ModuleManagerException,
-                         NotEnoughSafeTransactionGas,
+                         InvalidSignaturesProvided,
+                         MethodCanOnlyBeCalledFromThisContract,
+                         ModuleManagerException, NotEnoughSafeTransactionGas,
                          OnlyOwnersCanApproveAHash, OwnerManagerException,
-                         SignatureNotProvidedByOwner, SignaturesDataTooShort)
+                         SafeTransactionFailedWhenGasPriceAndSafeTxGasEmpty,
+                         SignatureNotProvidedByOwner, SignaturesDataTooShort,
+                         ThresholdNeedsToBeDefined)
 from .safe_signature import SafeSignature
 from .signatures import signature_to_bytes
 
@@ -201,32 +204,59 @@ class SafeTx:
 
     def _raise_safe_vm_exception(self, message: str) -> NoReturn:
         error_with_exception: Dict[str, Type[InvalidMultisigTx]] = {
+            # https://github.com/gnosis/safe-contracts/blob/v1.3.0/docs/error_codes.md
+            'GS000': CouldNotFinishInitialization,
+            'GS001': ThresholdNeedsToBeDefined,
             'Could not pay gas costs with ether': CouldNotPayGasWithEther,
+            'GS011': CouldNotPayGasWithEther,
             'Could not pay gas costs with token': CouldNotPayGasWithToken,
+            'GS012': CouldNotPayGasWithToken,
+            'GS013': SafeTransactionFailedWhenGasPriceAndSafeTxGasEmpty,
             'Hash has not been approved': HashHasNotBeenApproved,
             'Hash not approved': HashHasNotBeenApproved,
+            'GS025': HashHasNotBeenApproved,
             'Invalid contract signature location: data not complete': InvalidContractSignatureLocation,
+            'GS023': InvalidContractSignatureLocation,
             'Invalid contract signature location: inside static part': InvalidContractSignatureLocation,
+            'GS021': InvalidContractSignatureLocation,
             'Invalid contract signature location: length not present': InvalidContractSignatureLocation,
+            'GS022': InvalidContractSignatureLocation,
             'Invalid contract signature provided': InvalidContractSignatureLocation,
+            'GS024': InvalidContractSignatureLocation,
             'Invalid owner provided': InvalidOwnerProvided,
             'Invalid owner address provided': InvalidOwnerProvided,
+            'GS026': InvalidOwnerProvided,
             'Invalid signatures provided': InvalidSignaturesProvided,
             'Not enough gas to execute safe transaction': NotEnoughSafeTransactionGas,
+            'GS010': NotEnoughSafeTransactionGas,
             'Only owners can approve a hash': OnlyOwnersCanApproveAHash,
+            'GS030': OnlyOwnersCanApproveAHash,
+            'GS031': MethodCanOnlyBeCalledFromThisContract,
             'Signature not provided by owner': SignatureNotProvidedByOwner,
             'Signatures data too short': SignaturesDataTooShort,
+            'GS020': SignaturesDataTooShort,
+            # ModuleManager
+            'GS100': ModuleManagerException,
+            'Invalid module address provided': ModuleManagerException,
+            'GS101': ModuleManagerException,
+            'GS102': ModuleManagerException,
+            'Invalid prevModule, module pair provided': ModuleManagerException,
+            'GS103': ModuleManagerException,
+            'Method can only be called from an enabled module': ModuleManagerException,
+            'GS104': ModuleManagerException,
+            'Module has already been added': ModuleManagerException,
             # OwnerManager
             'Address is already an owner': OwnerManagerException,
+            'GS200': OwnerManagerException,  # Owners have already been setup
+            'GS201': OwnerManagerException,  # Threshold cannot exceed owner count
+            'GS202': OwnerManagerException,  # Invalid owner address provided
+            'GS203': OwnerManagerException,  # Invalid ower address provided
+            'GS204': OwnerManagerException,  # Address is already an owner
+            'GS205': OwnerManagerException,  # Invalid prevOwner, owner pair provided
             'Invalid prevOwner, owner pair provided': OwnerManagerException,
             'New owner count needs to be larger than new threshold': OwnerManagerException,
             'Threshold cannot exceed owner count': OwnerManagerException,
             'Threshold needs to be greater than 0': OwnerManagerException,
-            # ModuleManager
-            'Invalid module address provided': ModuleManagerException,
-            'Invalid prevModule, module pair provided': ModuleManagerException,
-            'Method can only be called from an enabled module': ModuleManagerException,
-            'Module has already been added': ModuleManagerException,
         }
 
         for reason, custom_exception in error_with_exception.items():

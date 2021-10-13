@@ -10,7 +10,6 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from ...eth.tests.ethereum_test_case import EthereumTestCaseMixin
-from .. import Safe
 from ..safe_signature import (SafeSignature, SafeSignatureApprovedHash,
                               SafeSignatureContract, SafeSignatureEOA,
                               SafeSignatureEthSign, SafeSignatureType)
@@ -131,9 +130,7 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
 class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
     def test_contract_signature(self):
         owner_1 = self.ethereum_test_account
-        deployed_safe = self.deploy_test_safe(owners=[owner_1.address],
-                                              initial_funding_wei=Web3.toWei(0.01, 'ether'))
-        safe = Safe(deployed_safe.safe_address, self.ethereum_client)
+        safe = self.deploy_test_safe_v1_1_1(owners=[owner_1.address], initial_funding_wei=Web3.toWei(0.01, 'ether'))
         safe_contract = safe.get_contract()
         safe_tx_hash = Web3.keccak(text='test')
         signature_r = HexBytes(safe.address.replace('0x', '').rjust(64, '0'))
@@ -178,9 +175,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         Test decode of multiple `CONTRACT_SIGNATURE` together
         """
         owner_1 = self.ethereum_test_account
-        deployed_safe = self.deploy_test_safe(owners=[owner_1.address],
-                                              initial_funding_wei=Web3.toWei(0.01, 'ether'))
-        safe = Safe(deployed_safe.safe_address, self.ethereum_client)
+        safe = self.deploy_test_safe_v1_1_1(owners=[owner_1.address], initial_funding_wei=Web3.toWei(0.01, 'ether'))
         safe_contract = safe.get_contract()
         safe_tx_hash = Web3.keccak(text='test')
 

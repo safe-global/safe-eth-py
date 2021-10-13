@@ -245,9 +245,13 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         self.assertGreater(safe_creation_tx.payment, 0)
         self.assertEqual(safe_creation_tx.payment_ether, safe_creation_tx.gas * safe_creation_tx.gas_price)
 
-        self.send_tx(erc20_contract.functions.transfer(safe_creation_tx.safe_address,
-                                                       safe_creation_tx.payment).buildTransaction({'from': erc20_deployer.address}),
-                     erc20_deployer)
+        self.send_tx(erc20_contract.functions.transfer(
+            safe_creation_tx.safe_address,
+            safe_creation_tx.payment
+        ).buildTransaction(
+            {'from': erc20_deployer.address}),
+            erc20_deployer
+        )
         self.assertEqual(erc20_contract.functions.balanceOf(safe_creation_tx.safe_address).call(),
                          safe_creation_tx.payment)
 
@@ -260,6 +264,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt.status, 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(tx_receipt)
+        self.assertEqual(len(logs), 1)
         log = logs[0]
         self.assertIsNone(tx_receipt.contractAddress)
         self.assertEqual(log['event'], 'ProxyCreation')

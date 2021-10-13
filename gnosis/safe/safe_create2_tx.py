@@ -9,7 +9,9 @@ from web3.types import TxParams, Wei
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import (get_proxy_factory_contract,
-                                  get_safe_contract, get_safe_V1_0_0_contract)
+                                  get_safe_contract, get_safe_V1_0_0_contract,
+                                  get_safe_V1_1_1_contract,
+                                  get_safe_V1_3_0_contract)
 from gnosis.eth.utils import generate_address_2
 
 logger = getLogger(__name__)
@@ -56,12 +58,14 @@ class SafeCreate2TxBuilder:
         self.master_copy_address = master_copy_address
         self.proxy_factory_address = proxy_factory_address
         self.safe_version = get_safe_contract(w3, master_copy_address).functions.VERSION().call()
-        if self.safe_version == '1.1.1':
-            self.master_copy_contract = get_safe_contract(w3, master_copy_address)
+        if self.safe_version == '1.3.0':
+            self.master_copy_contract = get_safe_V1_3_0_contract(w3, master_copy_address)
+        elif self.safe_version == '1.1.1':
+            self.master_copy_contract = get_safe_V1_1_1_contract(w3, master_copy_address)
         elif self.safe_version == '1.0.0':
             self.master_copy_contract = get_safe_V1_0_0_contract(w3, master_copy_address)
         else:
-            raise ValueError('Safe version must be 1.1.1 or 1.0.0')
+            raise ValueError('Safe version must be 1.3.0, 1.1.1 or 1.0.0')
         self.proxy_factory_contract = get_proxy_factory_contract(w3, proxy_factory_address)
 
     def build(self, owners: List[str], threshold: int, salt_nonce: int,
@@ -209,7 +213,7 @@ class SafeCreate2TxBuilder:
             'gasPrice': Wei(1),
         }
 
-        if self.safe_version == '1.1.1':
+        if self.safe_version in ('1.3.0', '1.1.1'):
             return HexBytes(self.master_copy_contract.functions.setup(
                 owners,
                 threshold,
@@ -231,4 +235,4 @@ class SafeCreate2TxBuilder:
                 payment_receiver
             ).buildTransaction(empty_params)['data'])
         else:
-            raise ValueError('Safe version must be 1.1.1 or 1.0.0')
+            raise ValueError('Safe version must be 1.3.0, 1.1.1 or 1.0.0')

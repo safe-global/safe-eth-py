@@ -15,10 +15,11 @@ from web3.types import BlockIdentifier, Wei
 
 from gnosis.eth.constants import (GAS_CALL_DATA_BYTE, NULL_ADDRESS,
                                   SENTINEL_ADDRESS)
-from gnosis.eth.contracts import (get_delegate_constructor_proxy_contract,
-                                  get_safe_contract, get_safe_V0_0_1_contract,
-                                  get_safe_V1_0_0_contract,
-                                  get_safe_V1_3_0_contract)
+from gnosis.eth.contracts import (
+    get_compatibility_fallback_handler_V1_3_0_contract,
+    get_delegate_constructor_proxy_contract, get_safe_contract,
+    get_safe_V0_0_1_contract, get_safe_V1_0_0_contract,
+    get_safe_V1_1_1_contract, get_safe_V1_3_0_contract)
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import get_eth_address_with_key
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -29,6 +30,13 @@ from .exceptions import (CannotEstimateGas, CannotRetrieveSafeInfoException,
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
+
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+    cache = lru_cache(maxsize=None)
+
 
 logger = getLogger(__name__)
 
@@ -76,7 +84,6 @@ class Safe:
         self.ethereum_client = ethereum_client
         self.w3 = self.ethereum_client.w3
         self.address = address
-        self._contract: Optional[Contract] = None
 
     def __str__(self):
         return f'Safe={self.address}'
@@ -156,17 +163,29 @@ class Safe:
         return ethereum_tx_sent
 
     @classmethod
-    def deploy_master_contract(cls, ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+    def deploy_compatibility_fallback_handler(cls, ethereum_client: EthereumClient,
+                                              deployer_account: LocalAccount) -> EthereumTxSent:
         """
-        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
-        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+        Deploy Compatibility Fallback handler v1.3.0
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
         """
 
-        return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_contract)
+        contract = get_compatibility_fallback_handler_V1_3_0_contract(ethereum_client.w3)
+        constructor_tx = contract.constructor().buildTransaction()
+        tx_hash = ethereum_client.send_unsigned_transaction(constructor_tx, private_key=deployer_account.key)
+        tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        assert tx_receipt
+        assert tx_receipt['status']
+
+        ethereum_tx_sent = EthereumTxSent(tx_hash, constructor_tx, tx_receipt['contractAddress'])
+        logger.info("Deployed and initialized Compatibility Fallback Handler version=%s on address %s by %s",
+                    '1.3.0',
+                    ethereum_tx_sent.contract_address,
+                    deployer_account.address)
+        return ethereum_tx_sent
 
     @classmethod
     def deploy_master_contract_v1_3_0(cls, ethereum_client: EthereumClient,
@@ -181,6 +200,20 @@ class Safe:
         """
 
         return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_V1_3_0_contract)
+
+    @classmethod
+    def deploy_master_contract_v1_1_1(cls, ethereum_client: EthereumClient,
+                                      deployer_account: LocalAccount) -> EthereumTxSent:
+        """
+        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        return cls._deploy_master_contract(ethereum_client, deployer_account, get_safe_V1_1_1_contract)
 
     @staticmethod
     def deploy_master_contract_v1_0_0(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
@@ -212,7 +245,7 @@ class Safe:
         return ethereum_tx_sent
 
     @staticmethod
-    def deploy_old_master_contract(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
+    def deploy_master_contract_v0_0_1(ethereum_client: EthereumClient, deployer_account: LocalAccount) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
 
@@ -593,10 +626,14 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
+    @cache
     def get_contract(self) -> Contract:
-        if not self._contract:
-            self._contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
-        return self._contract
+        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
+        version = v_1_3_0_contract.functions.VERSION().call()
+        if version == '1.3.0':
+            return v_1_3_0_contract
+        else:
+            return get_safe_V1_1_1_contract(self.w3, address=self.address)
 
     def retrieve_all_info(self, block_identifier: Optional[BlockIdentifier] = 'latest') -> SafeInfo:
         """

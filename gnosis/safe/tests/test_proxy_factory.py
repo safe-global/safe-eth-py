@@ -20,10 +20,10 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         cls.proxy_factory = ProxyFactory(cls.proxy_factory_contract_address, cls.ethereum_client)
 
     def test_check_proxy_code(self):
-        proxy_contract_address = self.deploy_test_safe().safe_address
+        proxy_contract_address = self.deploy_test_safe().address
         self.assertTrue(self.proxy_factory.check_proxy_code(proxy_contract_address))
 
-        ethereum_tx_sent = Safe.deploy_master_contract(self.ethereum_client, self.ethereum_test_account)
+        ethereum_tx_sent = Safe.deploy_master_contract_v1_3_0(self.ethereum_client, self.ethereum_test_account)
         self.assertFalse(self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address))
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(self.ethereum_test_account,
