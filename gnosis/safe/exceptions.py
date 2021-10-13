@@ -46,6 +46,22 @@ class CouldNotPayGasWithEther(InvalidMultisigTx):
     pass
 
 
+class CouldNotFinishInitialization(InvalidMultisigTx):
+    pass
+
+
+class ThresholdNeedsToBeDefined(InvalidMultisigTx):
+    pass
+
+
+class SafeTransactionFailedWhenGasPriceAndSafeTxGasEmpty(InvalidMultisigTx):
+    pass
+
+
+class MethodCanOnlyBeCalledFromThisContract(InvalidMultisigTx):
+    pass
+
+
 class CouldNotPayGasWithToken(InvalidMultisigTx):
     pass
 

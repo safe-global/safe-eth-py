@@ -628,9 +628,10 @@ class Safe:
 
     @cache
     def get_contract(self) -> Contract:
-        version = get_safe_V1_3_0_contract(self.w3, address=self.address).functions.VERSION().call()
+        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
+        version = v_1_3_0_contract.functions.VERSION().call()
         if version == '1.3.0':
-            return get_safe_V1_3_0_contract(self.w3, address=self.address)
+            return v_1_3_0_contract
         else:
             return get_safe_V1_1_1_contract(self.w3, address=self.address)
 
