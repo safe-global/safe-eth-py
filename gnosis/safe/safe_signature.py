@@ -12,8 +12,11 @@ from web3.exceptions import BadFunctionCallOutput
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_safe_contract, get_safe_V1_1_1_contract
-from gnosis.safe.signatures import (get_signing_address, signature_split,
-                                    signature_to_bytes)
+from gnosis.safe.signatures import (
+    get_signing_address,
+    signature_split,
+    signature_to_bytes,
+)
 
 logger = getLogger(__name__)
 
@@ -54,11 +57,15 @@ class SafeSignature(ABC):
         self.v, self.r, self.s = signature_split(self.signature)
 
     def __str__(self):
-        return f'SafeSignature type={self.signature_type.name} owner={self.owner}'
+        return f"SafeSignature type={self.signature_type.name} owner={self.owner}"
 
     @classmethod
-    def parse_signature(cls, signatures: EthereumBytes, safe_tx_hash: EthereumBytes,
-                        ignore_trailing: bool = True) -> List['SafeSignature']:
+    def parse_signature(
+        cls,
+        signatures: EthereumBytes,
+        safe_tx_hash: EthereumBytes,
+        ignore_trailing: bool = True,
+    ) -> List["SafeSignature"]:
         """
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_tx_hash:
@@ -72,26 +79,36 @@ class SafeSignature(ABC):
             signatures = HexBytes(signatures)
 
         signature_size = 65  # For contract signatures there'll be some data at the end
-        data_position = len(signatures)  # For contract signatures, to stop parsing at data position
+        data_position = len(
+            signatures
+        )  # For contract signatures, to stop parsing at data position
 
         safe_signatures = []
         for i in range(0, len(signatures), signature_size):
-            if i >= data_position:  # If contract signature data position is reached, stop
+            if (
+                i >= data_position
+            ):  # If contract signature data position is reached, stop
                 break
 
-            signature = signatures[i: i + signature_size]
+            signature = signatures[i : i + signature_size]
             if ignore_trailing and len(signature) < 65:
                 # Trailing stuff
                 break
             v, r, s = signature_split(signature)
             signature_type = SafeSignatureType.from_v(v)
-            safe_signature: 'SafeSignature'
+            safe_signature: "SafeSignature"
             if signature_type == SafeSignatureType.CONTRACT_SIGNATURE:
                 if s < data_position:
                     data_position = s
-                contract_signature_len = int.from_bytes(signatures[s:s + 32], 'big')  # Len size is 32 bytes
-                contract_signature = signatures[s + 32: s + 32 + contract_signature_len]  # Skip array size (32 bytes)
-                safe_signature = SafeSignatureContract(signature, safe_tx_hash, contract_signature)
+                contract_signature_len = int.from_bytes(
+                    signatures[s : s + 32], "big"
+                )  # Len size is 32 bytes
+                contract_signature = signatures[
+                    s + 32 : s + 32 + contract_signature_len
+                ]  # Skip array size (32 bytes)
+                safe_signature = SafeSignatureContract(
+                    signature, safe_tx_hash, contract_signature
+                )
             elif signature_type == SafeSignatureType.APPROVED_HASH:
                 safe_signature = SafeSignatureApprovedHash(signature, safe_tx_hash)
             elif signature_type == SafeSignatureType.EOA:
@@ -134,10 +151,15 @@ class SafeSignature(ABC):
 
 
 class SafeSignatureContract(SafeSignature):
-    EIP1271_MAGIC_VALUE = HexBytes(0x20c13b0b)
-    EIP1271_MAGIC_VALUE_UPDATED = HexBytes(0x1626ba7e)
+    EIP1271_MAGIC_VALUE = HexBytes(0x20C13B0B)
+    EIP1271_MAGIC_VALUE_UPDATED = HexBytes(0x1626BA7E)
 
-    def __init__(self, signature: EthereumBytes, safe_tx_hash: EthereumBytes, contract_signature: EthereumBytes):
+    def __init__(
+        self,
+        signature: EthereumBytes,
+        safe_tx_hash: EthereumBytes,
+        contract_signature: EthereumBytes,
+    ):
         super().__init__(signature, safe_tx_hash)
         self.contract_signature = HexBytes(contract_signature)
 
@@ -159,21 +181,27 @@ class SafeSignatureContract(SafeSignature):
         Fix offset (s) and append `contract_signature` at the end of the signature
         :return:
         """
-        return HexBytes(signature_to_bytes(self.v, self.r, 65) + encode_single('bytes', self.contract_signature))
+        return HexBytes(
+            signature_to_bytes(self.v, self.r, 65)
+            + encode_single("bytes", self.contract_signature)
+        )
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
         safe_contract = get_safe_V1_1_1_contract(ethereum_client.w3, self.owner)
         # Newest versions of the Safe contract have `isValidSignature` on the compatibility fallback handler
-        for block_identifier in ('pending', 'latest'):
+        for block_identifier in ("pending", "latest"):
             try:
                 return safe_contract.functions.isValidSignature(
-                    self.safe_tx_hash,
-                    self.contract_signature
-                ).call(block_identifier=block_identifier) in (self.EIP1271_MAGIC_VALUE,
-                                                              self.EIP1271_MAGIC_VALUE_UPDATED)
+                    self.safe_tx_hash, self.contract_signature
+                ).call(block_identifier=block_identifier) in (
+                    self.EIP1271_MAGIC_VALUE,
+                    self.EIP1271_MAGIC_VALUE_UPDATED,
+                )
             except (ValueError, BadFunctionCallOutput, DecodingError):
                 # Error using `pending` block identifier or contract does not exist
-                logger.warning('Cannot check EIP1271 signature from contract %s', self.owner)
+                logger.warning(
+                    "Cannot check EIP1271 signature from contract %s", self.owner
+                )
         return False
 
 
@@ -187,21 +215,25 @@ class SafeSignatureApprovedHash(SafeSignature):
         return SafeSignatureType.APPROVED_HASH
 
     @classmethod
-    def build_for_owner(cls, owner: str, safe_tx_hash: str) -> 'SafeSignatureApprovedHash':
-        r = owner.lower().replace('0x', '').rjust(64, '0')
-        s = '0' * 64
-        v = '01'
+    def build_for_owner(
+        cls, owner: str, safe_tx_hash: str
+    ) -> "SafeSignatureApprovedHash":
+        r = owner.lower().replace("0x", "").rjust(64, "0")
+        s = "0" * 64
+        v = "01"
         return cls(HexBytes(r + s + v), safe_tx_hash)
 
     def is_valid(self, ethereum_client: EthereumClient, safe_address: str) -> bool:
         safe_contract = get_safe_contract(ethereum_client.w3, safe_address)
         exception: Exception
-        for block_identifier in ('pending', 'latest'):
+        for block_identifier in ("pending", "latest"):
             try:
-                return safe_contract.functions.approvedHashes(
-                    self.owner,
-                    self.safe_tx_hash
-                ).call(block_identifier=block_identifier) == 1
+                return (
+                    safe_contract.functions.approvedHashes(
+                        self.owner, self.safe_tx_hash
+                    ).call(block_identifier=block_identifier)
+                    == 1
+                )
             except BadFunctionCallOutput as e:  # Error using `pending` block identifier
                 exception = e
         raise exception  # This should never happen

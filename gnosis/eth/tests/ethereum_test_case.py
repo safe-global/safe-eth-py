@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 _cached_data = {
-    'ethereum_client': None,  # Prevents initializing again
+    "ethereum_client": None,  # Prevents initializing again
 }
 
 
@@ -31,12 +31,12 @@ class EthereumTestCaseMixin:
 
         cls.ethereum_test_account = Account.from_key(settings.ETHEREUM_TEST_PRIVATE_KEY)
         # Caching ethereum_client to prevent initializing again
-        cls.ethereum_client = _cached_data['ethereum_client']
+        cls.ethereum_client = _cached_data["ethereum_client"]
 
         if not cls.ethereum_client:
             cls.ethereum_client = EthereumClientProvider()
             Multicall.deploy_contract(cls.ethereum_client, cls.ethereum_test_account)
-            _cached_data['ethereum_client'] = cls.ethereum_client
+            _cached_data["ethereum_client"] = cls.ethereum_client
 
         cls.w3 = cls.ethereum_client.w3
         cls.multicall = cls.ethereum_client.multicall
@@ -49,20 +49,44 @@ class EthereumTestCaseMixin:
         return send_tx(self.w3, tx, account)
 
     def send_ether(self, to: str, value: int) -> bytes:
-        return send_tx(self.w3, {'to': to, 'value': value}, self.ethereum_test_account)
+        return send_tx(self.w3, {"to": to, "value": value}, self.ethereum_test_account)
 
-    def create_account(self, initial_ether: float = 0, initial_wei: int = 0) -> LocalAccount:
+    def create_account(
+        self, initial_ether: float = 0, initial_wei: int = 0
+    ) -> LocalAccount:
         account = Account.create()
-        if initial_ether > .0 or initial_wei > 0:
-            self.send_tx({'to': account.address,
-                          'value': self.w3.toWei(initial_ether, 'ether') + initial_wei
-                          }, self.ethereum_test_account)
+        if initial_ether > 0.0 or initial_wei > 0:
+            self.send_tx(
+                {
+                    "to": account.address,
+                    "value": self.w3.toWei(initial_ether, "ether") + initial_wei,
+                },
+                self.ethereum_test_account,
+            )
         return account
 
-    def deploy_erc20(self, name: str, symbol: str, owner: str, amount: int, decimals: int = 18, deployer: str = None,
-                     account: LocalAccount = None) -> Contract:
-        return deploy_erc20(self.w3, name, symbol, owner, amount, decimals=decimals, deployer=deployer,
-                            account=account)
+    def deploy_erc20(
+        self,
+        name: str,
+        symbol: str,
+        owner: str,
+        amount: int,
+        decimals: int = 18,
+        deployer: str = None,
+        account: LocalAccount = None,
+    ) -> Contract:
+        return deploy_erc20(
+            self.w3,
+            name,
+            symbol,
+            owner,
+            amount,
+            decimals=decimals,
+            deployer=deployer,
+            account=account,
+        )
 
     def deploy_example_erc20(self, amount: int, owner: str) -> Contract:
-        return deploy_example_erc20(self.w3, amount, owner, account=self.ethereum_test_account)
+        return deploy_example_erc20(
+            self.w3, amount, owner, account=self.ethereum_test_account
+        )
