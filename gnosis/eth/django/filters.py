@@ -8,7 +8,7 @@ from web3 import Web3
 
 class EthereumAddressFieldForm(CharFieldForm):
     default_error_messages = {
-        'invalid': _('Enter a valid checksummed Ethereum Address.'),
+        "invalid": _("Enter a valid checksummed Ethereum Address."),
     }
 
     def prepare_value(self, value):
@@ -19,7 +19,7 @@ class EthereumAddressFieldForm(CharFieldForm):
         if value in self.empty_values:
             return None
         elif not Web3.isChecksumAddress(value):
-            raise ValidationError(self.error_messages['invalid'], code='invalid')
+            raise ValidationError(self.error_messages["invalid"], code="invalid")
         return value
 
 

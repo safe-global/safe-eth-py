@@ -11,17 +11,22 @@ from web3.eth import Eth
 
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..ethereum_client import (BatchCallException, EthereumClient,
-                               EthereumClientProvider, EthereumNetwork,
-                               FromAddressNotFound, InsufficientFunds,
-                               InvalidERC20Info, InvalidNonce, ParityManager,
-                               SenderAccountNotFoundInNode)
+from ..ethereum_client import (
+    BatchCallException,
+    EthereumClient,
+    EthereumClientProvider,
+    EthereumNetwork,
+    FromAddressNotFound,
+    InsufficientFunds,
+    InvalidERC20Info,
+    InvalidNonce,
+    ParityManager,
+    SenderAccountNotFoundInNode,
+)
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
-from .mocks.mock_internal_txs import (creation_internal_txs,
-                                      internal_txs_errored)
-from .mocks.mock_trace_block import (trace_block_2191709_mock,
-                                     trace_block_13191781_mock)
+from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
+from .mocks.mock_trace_block import trace_block_2191709_mock, trace_block_13191781_mock
 from .mocks.mock_trace_filter import trace_filter_mock_1
 from .mocks.mock_trace_transaction import trace_transaction_mocks
 from .utils import just_test_if_mainnet_node
@@ -29,169 +34,380 @@ from .utils import just_test_if_mainnet_node
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
     def test_decode_transfer_log(self):
-        logs = [AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
-                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27')],
-                               'data': '0x000000000000000000000000000000000000000000000003aa2371d700680000',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 13,
-                               'removed': False}),
-                AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
-                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                          HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e')],
-                               'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 14,
-                               'removed': False}),
-                AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
-                               'topics': [HexBytes('0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'),
-                                          HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e'),
-                                          HexBytes('0x00000000000000000000000080cdad25de6b439e866805b2dc6808d23ff57b5d')],
-                               'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 15,
-                               'removed': False}),
-                AttributeDict({'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
-                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                          HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e'),
-                                          HexBytes('0x00000000000000000000000080cdad25de6b439e866805b2dc6808d23ff57b5d')],
-                               'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 16,
-                               'removed': False}),
-                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
-                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                          HexBytes('0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335')],
-                               'data': '0x',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 17,
-                               'removed': False}),
-                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
-                               'topics': [HexBytes('0x2114851a3e2a54429989f46c1ab0743e37ded205d9bbdfd85635aed5bd595a06'),
-                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                          HexBytes('0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335')],
-                               'data': '0x0000000000000000000000000000000000000000000000000000000000000001',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 18,
-                               'removed': False}),
-                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
-                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                          HexBytes('0xe37edda38a308a6fae15178579aab28bc7f9e46e52fde30c3a46b82b7461aa08')],
-                               'data': '0x',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 19,
-                               'removed': False}),
-                AttributeDict({'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
-                               'topics': [HexBytes('0x2114851a3e2a54429989f46c1ab0743e37ded205d9bbdfd85635aed5bd595a06'),
-                                          HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
-                                          HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                          HexBytes('0xe37edda38a308a6fae15178579aab28bc7f9e46e52fde30c3a46b82b7461aa08')],
-                               'data': '0x0000000000000000000000000000000000000000000000000000000000000001',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 20,
-                               'removed': False}),
-                AttributeDict({'address': '0x64DA772DD84965f0Ee58174941d78a9DfBccca2e',
-                               'topics': [HexBytes('0x3c8fbbba495ddb1296f967c80627bcca81b77be0b349ed8ae5f604365c22e9c7')],
-                               'data': '0x6e4f8d9f6517dfa28f202b2e2582943d1bd567dfb0c4a774989715c29e4aed180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000039c4bfa00b6edeccdd00fa9589e1be76de63e862000000000000000000000000000000000000000000000003aa2371d7006800000000000000000000000000000000000000000000000000000000000000000001',
-                               'blockNumber': 4357126,
-                               'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                               'transactionIndex': 14,
-                               'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                               'logIndex': 21,
-                               'removed': False}),
-                AttributeDict({'address': '0xe35F3B71CA90eE2606F64b645D8F4f8DCaA914Bf',
-                               'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')],
-                               'data': '0x0000000000000000000000008683f9c4e856be65f8a38a3a768e8fd6de94d30a000000000000000000000000fd1017c3284a12ac33bc65df12d71721c85931e00000000000000000000000000000000000000000000000000000000000000001',
-                               'blockNumber': 7240557,
-                               'transactionHash': HexBytes('0x1962e296457b16d5221d33623f2db5f617cb54221deb7cfd73611f761ac526a3'),
-                               'transactionIndex': 6,
-                               'blockHash': HexBytes('0xdf3c33d034f1b342820afdfb2612d0794d4a1c15518184d71a047ef1eb151d10'),
-                               'logIndex': 5,
-                               'removed': False}),
-                ]
+        logs = [
+            AttributeDict(
+                {
+                    "address": "0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862",
+                    "topics": [
+                        HexBytes(
+                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                    ],
+                    "data": "0x000000000000000000000000000000000000000000000003aa2371d700680000",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 13,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862",
+                    "topics": [
+                        HexBytes(
+                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e"
+                        ),
+                    ],
+                    "data": "0x000000000000000000000000000000000000000000000001a055690d9db80000",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 14,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862",
+                    "topics": [
+                        HexBytes(
+                            "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000080cdad25de6b439e866805b2dc6808d23ff57b5d"
+                        ),
+                    ],
+                    "data": "0x000000000000000000000000000000000000000000000001a055690d9db80000",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 15,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862",
+                    "topics": [
+                        HexBytes(
+                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000080cdad25de6b439e866805b2dc6808d23ff57b5d"
+                        ),
+                    ],
+                    "data": "0x000000000000000000000000000000000000000000000001a055690d9db80000",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 16,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x99b9F9BA62002a9b43aF6e540428277D5E52EF47",
+                    "topics": [
+                        HexBytes(
+                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                        HexBytes(
+                            "0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335"
+                        ),
+                    ],
+                    "data": "0x",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 17,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x99b9F9BA62002a9b43aF6e540428277D5E52EF47",
+                    "topics": [
+                        HexBytes(
+                            "0x2114851a3e2a54429989f46c1ab0743e37ded205d9bbdfd85635aed5bd595a06"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                        HexBytes(
+                            "0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335"
+                        ),
+                    ],
+                    "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 18,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x99b9F9BA62002a9b43aF6e540428277D5E52EF47",
+                    "topics": [
+                        HexBytes(
+                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                        HexBytes(
+                            "0xe37edda38a308a6fae15178579aab28bc7f9e46e52fde30c3a46b82b7461aa08"
+                        ),
+                    ],
+                    "data": "0x",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 19,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x99b9F9BA62002a9b43aF6e540428277D5E52EF47",
+                    "topics": [
+                        HexBytes(
+                            "0x2114851a3e2a54429989f46c1ab0743e37ded205d9bbdfd85635aed5bd595a06"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47"
+                        ),
+                        HexBytes(
+                            "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                        ),
+                        HexBytes(
+                            "0xe37edda38a308a6fae15178579aab28bc7f9e46e52fde30c3a46b82b7461aa08"
+                        ),
+                    ],
+                    "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 20,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0x64DA772DD84965f0Ee58174941d78a9DfBccca2e",
+                    "topics": [
+                        HexBytes(
+                            "0x3c8fbbba495ddb1296f967c80627bcca81b77be0b349ed8ae5f604365c22e9c7"
+                        )
+                    ],
+                    "data": "0x6e4f8d9f6517dfa28f202b2e2582943d1bd567dfb0c4a774989715c29e4aed180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000039c4bfa00b6edeccdd00fa9589e1be76de63e862000000000000000000000000000000000000000000000003aa2371d7006800000000000000000000000000000000000000000000000000000000000000000001",
+                    "blockNumber": 4357126,
+                    "transactionHash": HexBytes(
+                        "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+                    ),
+                    "transactionIndex": 14,
+                    "blockHash": HexBytes(
+                        "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+                    ),
+                    "logIndex": 21,
+                    "removed": False,
+                }
+            ),
+            AttributeDict(
+                {
+                    "address": "0xe35F3B71CA90eE2606F64b645D8F4f8DCaA914Bf",
+                    "topics": [
+                        HexBytes(
+                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        )
+                    ],
+                    "data": "0x0000000000000000000000008683f9c4e856be65f8a38a3a768e8fd6de94d30a000000000000000000000000fd1017c3284a12ac33bc65df12d71721c85931e00000000000000000000000000000000000000000000000000000000000000001",
+                    "blockNumber": 7240557,
+                    "transactionHash": HexBytes(
+                        "0x1962e296457b16d5221d33623f2db5f617cb54221deb7cfd73611f761ac526a3"
+                    ),
+                    "transactionIndex": 6,
+                    "blockHash": HexBytes(
+                        "0xdf3c33d034f1b342820afdfb2612d0794d4a1c15518184d71a047ef1eb151d10"
+                    ),
+                    "logIndex": 5,
+                    "removed": False,
+                }
+            ),
+        ]
 
         # TODO Test with ganache
         decoded_logs = self.ethereum_client.erc20.decode_logs(logs)
         self.assertEqual(len(decoded_logs), 6)
-        self.assertEqual(len([event for event in decoded_logs if 'tokenId' in event['args']]), 2)
-        self.assertEqual(len([event for event in decoded_logs if 'value' in event['args']]), 3)
-        self.assertEqual(len([event for event in decoded_logs if 'unknown' in event['args']]), 1)
+        self.assertEqual(
+            len([event for event in decoded_logs if "tokenId" in event["args"]]), 2
+        )
+        self.assertEqual(
+            len([event for event in decoded_logs if "value" in event["args"]]), 3
+        )
+        self.assertEqual(
+            len([event for event in decoded_logs if "unknown" in event["args"]]), 1
+        )
 
-        expected_log_1 = {'address': '0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862',
-                          'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                     HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                     HexBytes('0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e')],
-                          'data': '0x000000000000000000000000000000000000000000000001a055690d9db80000',
-                          'blockNumber': 4357126,
-                          'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                          'transactionIndex': 14,
-                          'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'),
-                          'logIndex': 14,
-                          'removed': False,
-                          'args': {'from': '0x94E01661eBaef430fE862f958c03200b0F483f27',
-                                   'to': '0x64DA772DD84965f0Ee58174941d78a9DfBccca2e',
-                                   'value': 30000000000000000000}
-                          }
-        expected_log_3 = {'address': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
-                          'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'),
-                                     HexBytes('0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47'),
-                                     HexBytes('0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27'),
-                                     HexBytes('0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335')],
-                          'data': '0x',
-                          'blockNumber': 4357126,
-                          'transactionHash': HexBytes('0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9'),
-                          'transactionIndex': 14,
-                          'blockHash': HexBytes('0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f'), 'logIndex': 17,
-                          'removed': False,
-                          'args': {'from': '0x99b9F9BA62002a9b43aF6e540428277D5E52EF47',
-                                   'to': '0x94E01661eBaef430fE862f958c03200b0F483f27',
-                                   'tokenId': 92344574081811136966607054691835999266725413506859602442775390826469350798133}}
+        expected_log_1 = {
+            "address": "0x39C4BFa00b6edecCDd00fA9589E1BE76DE63e862",
+            "topics": [
+                HexBytes(
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                ),
+                HexBytes(
+                    "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                ),
+                HexBytes(
+                    "0x00000000000000000000000064da772dd84965f0ee58174941d78a9dfbccca2e"
+                ),
+            ],
+            "data": "0x000000000000000000000000000000000000000000000001a055690d9db80000",
+            "blockNumber": 4357126,
+            "transactionHash": HexBytes(
+                "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+            ),
+            "transactionIndex": 14,
+            "blockHash": HexBytes(
+                "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+            ),
+            "logIndex": 14,
+            "removed": False,
+            "args": {
+                "from": "0x94E01661eBaef430fE862f958c03200b0F483f27",
+                "to": "0x64DA772DD84965f0Ee58174941d78a9DfBccca2e",
+                "value": 30000000000000000000,
+            },
+        }
+        expected_log_3 = {
+            "address": "0x99b9F9BA62002a9b43aF6e540428277D5E52EF47",
+            "topics": [
+                HexBytes(
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                ),
+                HexBytes(
+                    "0x00000000000000000000000099b9f9ba62002a9b43af6e540428277d5e52ef47"
+                ),
+                HexBytes(
+                    "0x00000000000000000000000094e01661ebaef430fe862f958c03200b0f483f27"
+                ),
+                HexBytes(
+                    "0xcc292d3dab2c0fbbf616670ac57ec51162959c2d9cbe938819b6e8bc1c757335"
+                ),
+            ],
+            "data": "0x",
+            "blockNumber": 4357126,
+            "transactionHash": HexBytes(
+                "0x21381484d8f69dcd782560d1fd3cd818e743c79767985d01aec7e61c2a7f1de9"
+            ),
+            "transactionIndex": 14,
+            "blockHash": HexBytes(
+                "0x677ada1a306fc50751001bca6eeaa3f5a87a0bf2c9f6fa27899bfbaf999cca4f"
+            ),
+            "logIndex": 17,
+            "removed": False,
+            "args": {
+                "from": "0x99b9F9BA62002a9b43aF6e540428277D5E52EF47",
+                "to": "0x94E01661eBaef430fE862f958c03200b0F483f27",
+                "tokenId": 92344574081811136966607054691835999266725413506859602442775390826469350798133,
+            },
+        }
 
-        expected_log_5 = {'address': '0xe35F3B71CA90eE2606F64b645D8F4f8DCaA914Bf',
-                          'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')],
-                          'data': '0x0000000000000000000000008683f9c4e856be65f8a38a3a768e8fd6de94d30a000000000000000000000000fd1017c3284a12ac33bc65df12d71721c85931e00000000000000000000000000000000000000000000000000000000000000001',
-                          'blockNumber': 7240557,
-                          'transactionHash': HexBytes(
-                              '0x1962e296457b16d5221d33623f2db5f617cb54221deb7cfd73611f761ac526a3'),
-                          'transactionIndex': 6,
-                          'blockHash': HexBytes('0xdf3c33d034f1b342820afdfb2612d0794d4a1c15518184d71a047ef1eb151d10'),
-                          'logIndex': 5,
-                          'removed': False,
-                          'args': {'from': '0x8683f9c4e856be65f8a38a3a768e8fd6de94d30a',
-                                   'to': '0xfd1017c3284a12ac33bc65df12d71721c85931e0',
-                                   'unknown': 1}
-                          }
+        expected_log_5 = {
+            "address": "0xe35F3B71CA90eE2606F64b645D8F4f8DCaA914Bf",
+            "topics": [
+                HexBytes(
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                )
+            ],
+            "data": "0x0000000000000000000000008683f9c4e856be65f8a38a3a768e8fd6de94d30a000000000000000000000000fd1017c3284a12ac33bc65df12d71721c85931e00000000000000000000000000000000000000000000000000000000000000001",
+            "blockNumber": 7240557,
+            "transactionHash": HexBytes(
+                "0x1962e296457b16d5221d33623f2db5f617cb54221deb7cfd73611f761ac526a3"
+            ),
+            "transactionIndex": 6,
+            "blockHash": HexBytes(
+                "0xdf3c33d034f1b342820afdfb2612d0794d4a1c15518184d71a047ef1eb151d10"
+            ),
+            "logIndex": 5,
+            "removed": False,
+            "args": {
+                "from": "0x8683f9c4e856be65f8a38a3a768e8fd6de94d30a",
+                "to": "0xfd1017c3284a12ac33bc65df12d71721c85931e0",
+                "unknown": 1,
+            },
+        }
 
         self.assertEqual(decoded_logs[1], expected_log_1)
         self.assertEqual(decoded_logs[3], expected_log_3)
@@ -201,11 +417,15 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         amount = 1000
         address = Account.create().address
         erc20_contract = self.deploy_example_erc20(amount, address)
-        token_balance = self.ethereum_client.erc20.get_balance(address, erc20_contract.address)
+        token_balance = self.ethereum_client.erc20.get_balance(
+            address, erc20_contract.address
+        )
         self.assertTrue(token_balance, amount)
 
         another_account = Account.create().address
-        token_balance = self.ethereum_client.erc20.get_balance(another_account, erc20_contract.address)
+        token_balance = self.ethereum_client.erc20.get_balance(
+            another_account, erc20_contract.address
+        )
         self.assertEqual(token_balance, 0)
 
         self.assertTrue(self.ethereum_client.erc20.get_name(erc20_contract.address))
@@ -213,42 +433,69 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
 
     def test_get_balances(self):
         account_address = Account.create().address
-        self.assertEqual(self.ethereum_client.erc20.get_balances(account_address, []),
-                         [{'token_address': None, 'balance': 0}])
+        self.assertEqual(
+            self.ethereum_client.erc20.get_balances(account_address, []),
+            [{"token_address": None, "balance": 0}],
+        )
 
         value = 7
         self.send_ether(account_address, 7)
-        self.assertEqual(self.ethereum_client.erc20.get_balances(account_address, []),
-                         [{'token_address': None, 'balance': value}])
+        self.assertEqual(
+            self.ethereum_client.erc20.get_balances(account_address, []),
+            [{"token_address": None, "balance": value}],
+        )
 
         tokens_value = 12
         erc20 = self.deploy_example_erc20(tokens_value, account_address)
-        self.assertCountEqual(self.ethereum_client.erc20.get_balances(account_address, [erc20.address]),
-                              [{'token_address': None, 'balance': value},
-                               {'token_address': erc20.address, 'balance': tokens_value}])
+        self.assertCountEqual(
+            self.ethereum_client.erc20.get_balances(account_address, [erc20.address]),
+            [
+                {"token_address": None, "balance": value},
+                {"token_address": erc20.address, "balance": tokens_value},
+            ],
+        )
 
         tokens_value_2 = 19
         erc20_2 = self.deploy_example_erc20(tokens_value_2, account_address)
-        self.assertCountEqual(self.ethereum_client.erc20.get_balances(account_address, [erc20.address,
-                                                                                        erc20_2.address]),
-                              [{'token_address': None, 'balance': value},
-                               {'token_address': erc20.address, 'balance': tokens_value},
-                               {'token_address': erc20_2.address, 'balance': tokens_value_2}
-                               ])
+        self.assertCountEqual(
+            self.ethereum_client.erc20.get_balances(
+                account_address, [erc20.address, erc20_2.address]
+            ),
+            [
+                {"token_address": None, "balance": value},
+                {"token_address": erc20.address, "balance": tokens_value},
+                {"token_address": erc20_2.address, "balance": tokens_value_2},
+            ],
+        )
 
-        with mock.patch.object(EthereumClient, 'batch_call_same_function', return_value=[
-            b'\x08\xc3y\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x17Only the proxy can call\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-            5,
-        ]):
+        with mock.patch.object(
+            EthereumClient,
+            "batch_call_same_function",
+            return_value=[
+                b"\x08\xc3y\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x17Only the proxy can call\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+                5,
+            ],
+        ):
             token_addresses = [
-                '0x57Ab1E02fEE23774580C119740129eAC7081e9D3',
-                '0x6810e776880C02933D47DB1b9fc05908e5386b96'
+                "0x57Ab1E02fEE23774580C119740129eAC7081e9D3",
+                "0x6810e776880C02933D47DB1b9fc05908e5386b96",
             ]
-            self.assertCountEqual(self.ethereum_client.erc20.get_balances(account_address, token_addresses),
-                                  [{'token_address': None, 'balance': value},
-                                   {'token_address': '0x57Ab1E02fEE23774580C119740129eAC7081e9D3', 'balance': 0},
-                                   {'token_address': '0x6810e776880C02933D47DB1b9fc05908e5386b96', 'balance': 5},
-                                   ])
+            self.assertCountEqual(
+                self.ethereum_client.erc20.get_balances(
+                    account_address, token_addresses
+                ),
+                [
+                    {"token_address": None, "balance": value},
+                    {
+                        "token_address": "0x57Ab1E02fEE23774580C119740129eAC7081e9D3",
+                        "balance": 0,
+                    },
+                    {
+                        "token_address": "0x6810e776880C02933D47DB1b9fc05908e5386b96",
+                        "balance": 5,
+                    },
+                ],
+            )
 
     def test_get_total_transfer_history(self):
         amount = 50
@@ -258,40 +505,55 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         account_3 = self.create_account(initial_ether=0.01)
         erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
         # `owner` sends `amount // 2` to `account_1` and `account_3`
-        self.send_tx(erc20_contract.functions.transfer(account_1.address,
-                                                       amount // 2).buildTransaction({'from': owner_account.address}),
-                     owner_account)
-        self.send_tx(erc20_contract.functions.transfer(account_3.address,
-                                                       amount // 2).buildTransaction({'from': owner_account.address}),
-                     owner_account)
-        logs = self.ethereum_client.erc20.get_total_transfer_history([account_1.address])
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                account_1.address, amount // 2
+            ).buildTransaction({"from": owner_account.address}),
+            owner_account,
+        )
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                account_3.address, amount // 2
+            ).buildTransaction({"from": owner_account.address}),
+            owner_account,
+        )
+        logs = self.ethereum_client.erc20.get_total_transfer_history(
+            [account_1.address]
+        )
         self.assertEqual(len(logs), 1)
-        self.assertEqual(logs[0]['args']['from'], owner_account.address)
-        self.assertEqual(logs[0]['args']['to'], account_1.address)
-        self.assertEqual(logs[0]['args']['value'], amount // 2)
-        log_0_block_number = logs[0]['blockNumber']
+        self.assertEqual(logs[0]["args"]["from"], owner_account.address)
+        self.assertEqual(logs[0]["args"]["to"], account_1.address)
+        self.assertEqual(logs[0]["args"]["value"], amount // 2)
+        log_0_block_number = logs[0]["blockNumber"]
 
         # `account1` sends `amount // 2` (all) to `account_2`
-        self.send_tx(erc20_contract.functions.transfer(account_2.address,
-                                                       amount // 2).buildTransaction({'from': account_1.address}),
-                     account_1)
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                account_2.address, amount // 2
+            ).buildTransaction({"from": account_1.address}),
+            account_1,
+        )
         # Test `token_address` and `to_block` parameters
-        logs = self.ethereum_client.erc20.get_total_transfer_history([account_1.address],
-                                                                     token_address=erc20_contract.address,
-                                                                     to_block='latest')
+        logs = self.ethereum_client.erc20.get_total_transfer_history(
+            [account_1.address], token_address=erc20_contract.address, to_block="latest"
+        )
         self.assertEqual(len(logs), 2)
-        self.assertEqual(logs[1]['args']['from'], account_1.address)
-        self.assertEqual(logs[1]['args']['to'], account_2.address)
-        self.assertEqual(logs[1]['args']['value'], amount // 2)
-        self.assertGreaterEqual(logs[1]['blockNumber'], log_0_block_number)
+        self.assertEqual(logs[1]["args"]["from"], account_1.address)
+        self.assertEqual(logs[1]["args"]["to"], account_2.address)
+        self.assertEqual(logs[1]["args"]["value"], amount // 2)
+        self.assertGreaterEqual(logs[1]["blockNumber"], log_0_block_number)
 
-        logs = self.ethereum_client.erc20.get_total_transfer_history([account_3.address])
+        logs = self.ethereum_client.erc20.get_total_transfer_history(
+            [account_3.address]
+        )
         self.assertEqual(len(logs), 1)
-        self.assertEqual(logs[0]['args']['from'], owner_account.address)
-        self.assertEqual(logs[0]['args']['to'], account_3.address)
-        self.assertEqual(logs[0]['args']['value'], amount // 2)
+        self.assertEqual(logs[0]["args"]["from"], owner_account.address)
+        self.assertEqual(logs[0]["args"]["to"], account_3.address)
+        self.assertEqual(logs[0]["args"]["value"], amount // 2)
 
-        logs = self.ethereum_client.erc20.get_total_transfer_history([account_2.address, account_3.address])
+        logs = self.ethereum_client.erc20.get_total_transfer_history(
+            [account_2.address, account_3.address]
+        )
         self.assertEqual(len(logs), 2)
 
         logs = self.ethereum_client.erc20.get_total_transfer_history()
@@ -308,54 +570,84 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         receiver3_account = self.create_account(initial_ether=0.01)
         erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
         block_number = self.w3.eth.block_number
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, token_address=erc20_contract.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, token_address=erc20_contract.address
+        )
         self.assertEqual(len(events), 1)  # Event is triggered on minting
 
-        self.send_tx(erc20_contract.functions.transfer(receiver_account.address,
-                                                       amount // 2).buildTransaction({'from': owner_account.address}),
-                     owner_account)
-        self.send_tx(erc20_contract.functions.transfer(receiver2_account.address,
-                                                       amount // 2).buildTransaction({'from': owner_account.address}),
-                     owner_account)
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                receiver_account.address, amount // 2
+            ).buildTransaction({"from": owner_account.address}),
+            owner_account,
+        )
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                receiver2_account.address, amount // 2
+            ).buildTransaction({"from": owner_account.address}),
+            owner_account,
+        )
 
-        self.send_tx(erc20_contract.functions.transfer(receiver3_account.address,
-                                                       amount // 4).buildTransaction({'from': receiver_account.address}),
-                     receiver_account)
-        self.send_tx(erc20_contract.functions.transfer(receiver3_account.address,
-                                                       amount // 4).buildTransaction({'from': receiver2_account.address}),
-                     receiver2_account)
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                receiver3_account.address, amount // 4
+            ).buildTransaction({"from": receiver_account.address}),
+            receiver_account,
+        )
+        self.send_tx(
+            erc20_contract.functions.transfer(
+                receiver3_account.address, amount // 4
+            ).buildTransaction({"from": receiver2_account.address}),
+            receiver2_account,
+        )
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, token_address=erc20_contract.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, token_address=erc20_contract.address
+        )
         self.assertEqual(len(events), 5)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, from_address=owner_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, from_address=owner_account.address
+        )
         self.assertEqual(len(events), 2)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, from_address=receiver_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, from_address=receiver_account.address
+        )
         self.assertEqual(len(events), 1)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, from_address=receiver2_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, from_address=receiver2_account.address
+        )
         self.assertEqual(len(events), 1)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, from_address=receiver3_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, from_address=receiver3_account.address
+        )
         self.assertEqual(len(events), 0)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, to_address=receiver2_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, to_address=receiver2_account.address
+        )
         self.assertEqual(len(events), 1)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number, to_address=receiver3_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number, to_address=receiver3_account.address
+        )
         self.assertEqual(len(events), 2)
         for event in events:
             self.assertEqual(event.args.value, amount // 4)
             self.assertEqual(event.args.to, receiver3_account.address)
 
-        events = self.ethereum_client.erc20.get_transfer_history(block_number,
-                                                                 from_address=receiver2_account.address,
-                                                                 to_address=receiver3_account.address)
+        events = self.ethereum_client.erc20.get_transfer_history(
+            block_number,
+            from_address=receiver2_account.address,
+            to_address=receiver3_account.address,
+        )
         self.assertEqual(len(events), 1)
         event = events[0]
         self.assertEqual(event.args.value, amount // 4)
-        self.assertEqual(event.args['from'], receiver2_account.address)
+        self.assertEqual(event.args["from"], receiver2_account.address)
         self.assertEqual(event.args.to, receiver3_account.address)
 
     def test_get_info(self):
@@ -373,12 +665,22 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         owner = self.ethereum_test_account
         owner_2 = Account.create()
         erc20 = self.deploy_example_erc20(amount, owner.address)
-        self.assertEqual(self.ethereum_client.erc20.get_balance(owner.address, erc20.address), amount)
+        self.assertEqual(
+            self.ethereum_client.erc20.get_balance(owner.address, erc20.address), amount
+        )
 
         amount_2 = 3
-        self.ethereum_client.erc20.send_tokens(owner_2.address, amount_2, erc20.address, owner.key)
-        self.assertEqual(self.ethereum_client.erc20.get_balance(owner.address, erc20.address), amount - amount_2)
-        self.assertEqual(self.ethereum_client.erc20.get_balance(owner_2.address, erc20.address), amount_2)
+        self.ethereum_client.erc20.send_tokens(
+            owner_2.address, amount_2, erc20.address, owner.key
+        )
+        self.assertEqual(
+            self.ethereum_client.erc20.get_balance(owner.address, erc20.address),
+            amount - amount_2,
+        )
+        self.assertEqual(
+            self.ethereum_client.erc20.get_balance(owner_2.address, erc20.address),
+            amount_2,
+        )
 
 
 class TestParityManager(EthereumTestCaseMixin, TestCase):
@@ -391,39 +693,36 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
                     "gas": "0x4c40d",
                     "input": "0x",
                     "to": "0x8bbb73bcb5d553b5a556358d27625323fd781d37",
-                    "value": "0x3f0650ec47fd240000"
+                    "value": "0x3f0650ec47fd240000",
                 },
                 "blockHash": "0x86df301bcdd8248d982dbf039f09faf792684e1aeee99d5b58b77d620008b80f",
                 "blockNumber": 3068183,
-                "result": {
-                    "gasUsed": "0x0",
-                    "output": "0x"
-                },
+                "result": {"gasUsed": "0x0", "output": "0x"},
                 "subtraces": 0,
                 "traceAddress": [],
                 "transactionHash": "0x3321a7708b1083130bd78da0d62ead9f6683033231617c9d268e2c7e3fa6c104",
                 "transactionPosition": 3,
-                "type": "call"
+                "type": "call",
             },
             {
                 "action": {
                     "from": "0x3b169a0fb55ea0b6bafe54c272b1fe4983742bf7",
                     "gas": "0x49b0b",
                     "init": "0x608060405234801561001057600080fd5b5060405161060a38038061060a833981018060405281019080805190602001909291908051820192919060200180519060200190929190805190602001909291908051906020019092919050505084848160008173ffffffffffffffffffffffffffffffffffffffff1614151515610116576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260248152602001807f496e76616c6964206d617374657220636f707920616464726573732070726f7681526020017f696465640000000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506000815111156101a35773ffffffffffffffffffffffffffffffffffffffff60005416600080835160208501846127105a03f46040513d6000823e600082141561019f573d81fd5b5050505b5050600081111561036d57600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156102b7578273ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f1935050505015156102b2576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f206574686572000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b61036c565b6102d1828483610377640100000000026401000000009004565b151561036b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f20746f6b656e000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b5b5b5050505050610490565b600060608383604051602401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506040516020818303038152906040527fa9059cbb000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff19166020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff838183161783525050505090506000808251602084016000896127105a03f16040513d6000823e3d60008114610473576020811461047b5760009450610485565b829450610485565b8151158315171594505b505050509392505050565b61016b8061049f6000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d0410800290000000000000000000000008942595a2dc5181df0465af0d7be08c8f23c93af00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000d9e09beaeb338d81a7c5688358df0071d498811500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b15f91a8c35300000000000000000000000000000000000000000000000000000000000001640ec78d9e00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000004000000000000000000000000f763ea5fbb191d47dc4b083dcdc3cdfb586468f8000000000000000000000000ad25c9717d04c0a12086a1d352c1ccf4bf5fcbf80000000000000000000000000da7155692446c80a4e7ad72018e586f20fa3bfe000000000000000000000000bce0cc48ce44e0ac9ee38df4d586afbacef191fa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-                    "value": "0x0"
+                    "value": "0x0",
                 },
                 "blockHash": "0x03f9f64dfeb7807b5df608e6957dd4d521fd71685aac5533451d27f0abe03660",
                 "blockNumber": 3793534,
                 "result": {
                     "address": "0x61a7cc907c47c133d5ff5b685407201951fcbd08",
                     "code": "0x60806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d041080029",
-                    "gasUsed": "0x4683f"
+                    "gasUsed": "0x4683f",
                 },
                 "subtraces": 2,
                 "traceAddress": [],
                 "transactionHash": "0x6c7e8f8778d33d81b29c4bd7526ee50a4cea340d69eed6c89ada4e6fab731789",
                 "transactionPosition": 1,
-                "type": "create"
+                "type": "create",
             },
             {
                 "action": {
@@ -432,7 +731,7 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
                     "gas": "0x0",
                     "input": "0x",
                     "to": "0x0affccd762f0a7fa1bca40c51afe1a806a74a6f9",
-                    "value": "0x11c290633b7000"
+                    "value": "0x11c290633b7000",
                 },
                 "blockHash": "0xbf3a508137e72b20399852becdee1752c7b9986184f835014d12b10c01746f39",
                 "blockNumber": 7556887,
@@ -441,203 +740,298 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
                 "traceAddress": [],
                 "transactionHash": "0xec7e447ce8eef033a8c85442a281bd34436e576553c7d98fbe859af7754a9064",
                 "transactionPosition": 117,
-                "type": "call"
+                "type": "call",
             },
-            {'action': {'address': '0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac',
-                        'balance': '0xa',
-                        'refundAddress': '0x1240adafbc6c4e45c299451c0eedc7c8b98c2222'},
-             'blockHash': '0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c',
-             'blockNumber': 7829689,
-             'result': None,
-             'subtraces': 0,
-             'traceAddress': [0, 0, 0, 0, 0, 0],
-             'transactionHash': '0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d',
-             'transactionPosition': 35,
-             'type': 'suicide'},
+            {
+                "action": {
+                    "address": "0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac",
+                    "balance": "0xa",
+                    "refundAddress": "0x1240adafbc6c4e45c299451c0eedc7c8b98c2222",
+                },
+                "blockHash": "0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c",
+                "blockNumber": 7829689,
+                "result": None,
+                "subtraces": 0,
+                "traceAddress": [0, 0, 0, 0, 0, 0],
+                "transactionHash": "0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d",
+                "transactionPosition": 35,
+                "type": "suicide",
+            },
         ]
         at_least_one_error = False
         at_least_one_self_destruct = False
         decoded_traces = self.ethereum_client.parity._decode_traces(example_traces)
         for example_trace, decoded_trace in zip(example_traces, decoded_traces):
-            if decoded_trace['type'] == 'suicide':
-                self.assertEqual(decoded_trace['action']['address'], '0x4440AdaFBc6c4E45C299451C0eEdC7C8B98c14Ac')
-                self.assertEqual(decoded_trace['action']['balance'], 10)
-                self.assertEqual(decoded_trace['action']['refundAddress'], '0x1240aDafBC6C4e45C299451C0eEdC7c8B98C2222')
+            if decoded_trace["type"] == "suicide":
+                self.assertEqual(
+                    decoded_trace["action"]["address"],
+                    "0x4440AdaFBc6c4E45C299451C0eEdC7C8B98c14Ac",
+                )
+                self.assertEqual(decoded_trace["action"]["balance"], 10)
+                self.assertEqual(
+                    decoded_trace["action"]["refundAddress"],
+                    "0x1240aDafBC6C4e45C299451C0eEdC7c8B98C2222",
+                )
                 at_least_one_self_destruct = True
             else:
-                self.assertEqual(decoded_trace['action']['gas'], int(example_trace['action']['gas'], 16))
-                self.assertEqual(decoded_trace['action']['value'], int(example_trace['action']['value'], 16))
-                if 'error' in decoded_trace:
-                    self.assertNotIn('result', decoded_trace)
+                self.assertEqual(
+                    decoded_trace["action"]["gas"],
+                    int(example_trace["action"]["gas"], 16),
+                )
+                self.assertEqual(
+                    decoded_trace["action"]["value"],
+                    int(example_trace["action"]["value"], 16),
+                )
+                if "error" in decoded_trace:
+                    self.assertNotIn("result", decoded_trace)
                     at_least_one_error = True
                 else:
-                    self.assertEqual(decoded_trace['result']['gasUsed'], int(example_trace['result']['gasUsed'], 16))
+                    self.assertEqual(
+                        decoded_trace["result"]["gasUsed"],
+                        int(example_trace["result"]["gasUsed"], 16),
+                    )
 
         self.assertTrue(at_least_one_error)
         self.assertTrue(at_least_one_self_destruct)
 
-        self.assertEqual(decoded_traces[0]['result']['output'], HexBytes(''))
-        self.assertEqual(decoded_traces[1]['result']['address'],
-                         self.w3.toChecksumAddress(example_traces[1]['result']['address']))
-        self.assertEqual(decoded_traces[1]['result']['code'],
-                         HexBytes(example_traces[1]['result']['code']))
+        self.assertEqual(decoded_traces[0]["result"]["output"], HexBytes(""))
+        self.assertEqual(
+            decoded_traces[1]["result"]["address"],
+            self.w3.toChecksumAddress(example_traces[1]["result"]["address"]),
+        )
+        self.assertEqual(
+            decoded_traces[1]["result"]["code"],
+            HexBytes(example_traces[1]["result"]["code"]),
+        )
 
-        self.assertEqual(decoded_traces[2]['error'], 'Out of gas')
+        self.assertEqual(decoded_traces[2]["error"], "Out of gas")
 
     def test_filter_out_errored_traces(self):
         self.assertEqual(self.ethereum_client.parity.filter_out_errored_traces([]), [])
         traces = internal_txs_errored
         expected = [
-            {'action': {'from': '0x667dEb5A98f77052cf561658575cF1530Ee42C7a',
-                        'gas': 60066,
-                        'value': 0,
-                        'callType': 'call',
-                        'input': HexBytes('0x6a76120200000000000000000000000090c6e02acc0ff725c0127feac32a53c4b10b03b700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092000000000000000000000000000000000000000000000000000000000000007a44f84885b000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000007600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000003200000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000006200000000000000000000000002eaa9d77ae4d8f9cdd9faacd44016e746485bddb00000000000000000000000000000000000000000000000000000000000000070000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b1400000000000000000000000052201ff1720134bbbbb2f6bc97bf3715490ec19b000000000000000000000000ebf1a11532b93a529b5bc942b4baa98647913002000000000000000000000000ebe09eb3411d18f4ff8d859e096c533cac5c6b60000000000000000000000000d6801a1dffcd0a410336ef88def4320d6df1883e0000000000000000000000005b281a6dda0b271e91ae35de655ad301c976edb10000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000002448ee2641d78cc42d7ad76498917359d961a78300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b14000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000048e13085b1efda7283d958100e4cbfacb0ce5012000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012c00000000000000000000000000000000000000000000000000000000000000020000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041000000000000000000000000667deb5a98f77052cf561658575cf1530ee42c7a00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000'),
-                        'to': '0x47F61944efdB020829caead65AfF8AC024600580'},
-             'blockHash': '0x4c49052fc99be82b91f8a35320826304dfe278dbd7d756edde000d331606358f',
-             'blockNumber': 4735890,
-             'result': {'gasUsed': 21838,
-                        'output': HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')},
-             'subtraces': 1,
-             'traceAddress': [],
-             'transactionHash': '0xf097d5e5dd39a6799fc13dfa49732a115b457386520dc92f99f0135a1d196851',
-             'transactionPosition': 3,
-             'type': 'call'},
-            {'action': {'from': '0x47F61944efdB020829caead65AfF8AC024600580',
-                        'gas': 57726,
-                        'value': 0,
-                        'callType': 'delegatecall',
-                        'input': HexBytes('0x6a76120200000000000000000000000090c6e02acc0ff725c0127feac32a53c4b10b03b700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092000000000000000000000000000000000000000000000000000000000000007a44f84885b000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000007600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000003200000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000006200000000000000000000000002eaa9d77ae4d8f9cdd9faacd44016e746485bddb00000000000000000000000000000000000000000000000000000000000000070000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b1400000000000000000000000052201ff1720134bbbbb2f6bc97bf3715490ec19b000000000000000000000000ebf1a11532b93a529b5bc942b4baa98647913002000000000000000000000000ebe09eb3411d18f4ff8d859e096c533cac5c6b60000000000000000000000000d6801a1dffcd0a410336ef88def4320d6df1883e0000000000000000000000005b281a6dda0b271e91ae35de655ad301c976edb10000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000002448ee2641d78cc42d7ad76498917359d961a78300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b14000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000048e13085b1efda7283d958100e4cbfacb0ce5012000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012c00000000000000000000000000000000000000000000000000000000000000020000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041000000000000000000000000667deb5a98f77052cf561658575cf1530ee42c7a00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000'),
-                        'to': '0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A'},
-             'blockHash': '0x4c49052fc99be82b91f8a35320826304dfe278dbd7d756edde000d331606358f',
-             'blockNumber': 4735890,
-             'result': {'gasUsed': 20369,
-                        'output': HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')},
-             'subtraces': 1,
-             'traceAddress': [0],
-             'transactionHash': '0xf097d5e5dd39a6799fc13dfa49732a115b457386520dc92f99f0135a1d196851',
-             'transactionPosition': 3,
-             'type': 'call'}]
-        self.assertEqual(self.ethereum_client.parity.filter_out_errored_traces(traces), expected)
+            {
+                "action": {
+                    "from": "0x667dEb5A98f77052cf561658575cF1530Ee42C7a",
+                    "gas": 60066,
+                    "value": 0,
+                    "callType": "call",
+                    "input": HexBytes(
+                        "0x6a76120200000000000000000000000090c6e02acc0ff725c0127feac32a53c4b10b03b700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092000000000000000000000000000000000000000000000000000000000000007a44f84885b000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000007600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000003200000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000006200000000000000000000000002eaa9d77ae4d8f9cdd9faacd44016e746485bddb00000000000000000000000000000000000000000000000000000000000000070000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b1400000000000000000000000052201ff1720134bbbbb2f6bc97bf3715490ec19b000000000000000000000000ebf1a11532b93a529b5bc942b4baa98647913002000000000000000000000000ebe09eb3411d18f4ff8d859e096c533cac5c6b60000000000000000000000000d6801a1dffcd0a410336ef88def4320d6df1883e0000000000000000000000005b281a6dda0b271e91ae35de655ad301c976edb10000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000002448ee2641d78cc42d7ad76498917359d961a78300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b14000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000048e13085b1efda7283d958100e4cbfacb0ce5012000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012c00000000000000000000000000000000000000000000000000000000000000020000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041000000000000000000000000667deb5a98f77052cf561658575cf1530ee42c7a00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000"
+                    ),
+                    "to": "0x47F61944efdB020829caead65AfF8AC024600580",
+                },
+                "blockHash": "0x4c49052fc99be82b91f8a35320826304dfe278dbd7d756edde000d331606358f",
+                "blockNumber": 4735890,
+                "result": {
+                    "gasUsed": 21838,
+                    "output": HexBytes(
+                        "0x0000000000000000000000000000000000000000000000000000000000000000"
+                    ),
+                },
+                "subtraces": 1,
+                "traceAddress": [],
+                "transactionHash": "0xf097d5e5dd39a6799fc13dfa49732a115b457386520dc92f99f0135a1d196851",
+                "transactionPosition": 3,
+                "type": "call",
+            },
+            {
+                "action": {
+                    "from": "0x47F61944efdB020829caead65AfF8AC024600580",
+                    "gas": 57726,
+                    "value": 0,
+                    "callType": "delegatecall",
+                    "input": HexBytes(
+                        "0x6a76120200000000000000000000000090c6e02acc0ff725c0127feac32a53c4b10b03b700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092000000000000000000000000000000000000000000000000000000000000007a44f84885b000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000007600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000003200000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000006200000000000000000000000002eaa9d77ae4d8f9cdd9faacd44016e746485bddb00000000000000000000000000000000000000000000000000000000000000070000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b1400000000000000000000000052201ff1720134bbbbb2f6bc97bf3715490ec19b000000000000000000000000ebf1a11532b93a529b5bc942b4baa98647913002000000000000000000000000ebe09eb3411d18f4ff8d859e096c533cac5c6b60000000000000000000000000d6801a1dffcd0a410336ef88def4320d6df1883e0000000000000000000000005b281a6dda0b271e91ae35de655ad301c976edb10000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000002448ee2641d78cc42d7ad76498917359d961a78300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000006d7f0754ffeb405d23c51ce938289d4835be3b14000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000048e13085b1efda7283d958100e4cbfacb0ce5012000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012c00000000000000000000000000000000000000000000000000000000000000020000000000000000000000001a32b1734d964b039320c7712aa65b43c826d4dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041000000000000000000000000667deb5a98f77052cf561658575cf1530ee42c7a00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000"
+                    ),
+                    "to": "0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A",
+                },
+                "blockHash": "0x4c49052fc99be82b91f8a35320826304dfe278dbd7d756edde000d331606358f",
+                "blockNumber": 4735890,
+                "result": {
+                    "gasUsed": 20369,
+                    "output": HexBytes(
+                        "0x0000000000000000000000000000000000000000000000000000000000000000"
+                    ),
+                },
+                "subtraces": 1,
+                "traceAddress": [0],
+                "transactionHash": "0xf097d5e5dd39a6799fc13dfa49732a115b457386520dc92f99f0135a1d196851",
+                "transactionPosition": 3,
+                "type": "call",
+            },
+        ]
+        self.assertEqual(
+            self.ethereum_client.parity.filter_out_errored_traces(traces), expected
+        )
 
         traces = [
             {
-                'traceAddress': [],
+                "traceAddress": [],
             },
             {
-                'traceAddress': [0],
+                "traceAddress": [0],
             },
             {
-                'traceAddress': [0, 0],
+                "traceAddress": [0, 0],
             },
             {
-                'error': 'reverted',
-                'traceAddress': [0, 0, 0],
+                "error": "reverted",
+                "traceAddress": [0, 0, 0],
             },
             {
-                'traceAddress': [0, 0, 0, 0],
+                "traceAddress": [0, 0, 0, 0],
             },
             {
-                'traceAddress': [0, 0, 0, 1],
+                "traceAddress": [0, 0, 0, 1],
             },
             {
-                'traceAddress': [0, 0, 1],
+                "traceAddress": [0, 0, 1],
             },
             {
-                'traceAddress': [0, 0, 1, 0],
+                "traceAddress": [0, 0, 1, 0],
             },
             {
-                'error': 'reverted',
-                'traceAddress': [0, 0, 1, 0, 0],
+                "error": "reverted",
+                "traceAddress": [0, 0, 1, 0, 0],
             },
             {
-                'traceAddress': [0, 0, 1, 0, 1],
+                "traceAddress": [0, 0, 1, 0, 1],
             },
             {
-                'traceAddress': [0, 0, 1, 0, 2],
+                "traceAddress": [0, 0, 1, 0, 2],
             },
             {
-                'error': 'reverted',
-                'traceAddress': [0, 0, 1, 0, 3],
+                "error": "reverted",
+                "traceAddress": [0, 0, 1, 0, 3],
             },
             {
-                'traceAddress': [0, 0, 2],
+                "traceAddress": [0, 0, 2],
             },
         ]
         expected = [
             {
-                'traceAddress': [],
+                "traceAddress": [],
             },
             {
-                'traceAddress': [0],
+                "traceAddress": [0],
             },
             {
-                'traceAddress': [0, 0],
+                "traceAddress": [0, 0],
             },
             {
-                'traceAddress': [0, 0, 1],
+                "traceAddress": [0, 0, 1],
             },
             {
-                'traceAddress': [0, 0, 1, 0],
+                "traceAddress": [0, 0, 1, 0],
             },
             {
-                'traceAddress': [0, 0, 1, 0, 1],
+                "traceAddress": [0, 0, 1, 0, 1],
             },
             {
-                'traceAddress': [0, 0, 1, 0, 2],
+                "traceAddress": [0, 0, 1, 0, 2],
             },
             {
-                'traceAddress': [0, 0, 2],
+                "traceAddress": [0, 0, 2],
             },
         ]
-        self.assertEqual(sorted(traces, key=lambda trace: trace['traceAddress']), traces)
-        self.assertEqual(self.ethereum_client.parity.filter_out_errored_traces(traces), expected)
+        self.assertEqual(
+            sorted(traces, key=lambda trace: trace["traceAddress"]), traces
+        )
+        self.assertEqual(
+            self.ethereum_client.parity.filter_out_errored_traces(traces), expected
+        )
 
-    @mock.patch.object(ParityManager, 'trace_transaction', return_value=internal_txs_errored)
+    @mock.patch.object(
+        ParityManager, "trace_transaction", return_value=internal_txs_errored
+    )
     def test_get_previous_trace(self, trace_transaction_mock: MagicMock):
-        self.assertEqual(self.ethereum_client.parity.get_previous_trace('0x12', [0, 0])['traceAddress'],
-                         [0])
-        self.assertEqual(self.ethereum_client.parity.get_previous_trace('0x12', [0, 0],
-                                                                        number_traces=2)['traceAddress'],
-                         [])
-        self.assertEqual(self.ethereum_client.parity.get_previous_trace('0x12', [0, 0],
-                                                                        skip_delegate_calls=True)['traceAddress'],
-                         [])
-        self.assertIsNone(self.ethereum_client.parity.get_previous_trace('0x12', [0, 0],
-                                                                         number_traces=3))
-        self.assertEqual(self.ethereum_client.parity.get_previous_trace('0x12', [0, 0, 0],
-                                                                        skip_delegate_calls=True)['traceAddress'],
-                         [0, 0])
+        self.assertEqual(
+            self.ethereum_client.parity.get_previous_trace("0x12", [0, 0])[
+                "traceAddress"
+            ],
+            [0],
+        )
+        self.assertEqual(
+            self.ethereum_client.parity.get_previous_trace(
+                "0x12", [0, 0], number_traces=2
+            )["traceAddress"],
+            [],
+        )
+        self.assertEqual(
+            self.ethereum_client.parity.get_previous_trace(
+                "0x12", [0, 0], skip_delegate_calls=True
+            )["traceAddress"],
+            [],
+        )
+        self.assertIsNone(
+            self.ethereum_client.parity.get_previous_trace(
+                "0x12", [0, 0], number_traces=3
+            )
+        )
+        self.assertEqual(
+            self.ethereum_client.parity.get_previous_trace(
+                "0x12", [0, 0, 0], skip_delegate_calls=True
+            )["traceAddress"],
+            [0, 0],
+        )
 
-    @mock.patch.object(ParityManager, 'trace_transaction', return_value=creation_internal_txs)
+    @mock.patch.object(
+        ParityManager, "trace_transaction", return_value=creation_internal_txs
+    )
     def test_get_next_traces(self, trace_transaction_mock: MagicMock):
         def trace_addresses(traces: Sequence[Dict[str, Any]]) -> List[List[int]]:
-            return [trace['traceAddress'] for trace in traces]
+            return [trace["traceAddress"] for trace in traces]
 
-        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [])), [[0], [1]])
-        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [],
-                                                                                     remove_delegate_calls=True)),
-                         [[1]])
-        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [], remove_calls=True)),
-                         [[0]])
-        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [],
-                                                                                     remove_delegate_calls=True,
-                                                                                     remove_calls=True)),
-                         [])
-        self.assertEqual(self.ethereum_client.parity.get_next_traces('0x12', [0]), [])
-        self.assertEqual(trace_addresses(self.ethereum_client.parity.get_next_traces('0x12', [1])), [[1, 0]])
+        self.assertEqual(
+            trace_addresses(self.ethereum_client.parity.get_next_traces("0x12", [])),
+            [[0], [1]],
+        )
+        self.assertEqual(
+            trace_addresses(
+                self.ethereum_client.parity.get_next_traces(
+                    "0x12", [], remove_delegate_calls=True
+                )
+            ),
+            [[1]],
+        )
+        self.assertEqual(
+            trace_addresses(
+                self.ethereum_client.parity.get_next_traces(
+                    "0x12", [], remove_calls=True
+                )
+            ),
+            [[0]],
+        )
+        self.assertEqual(
+            trace_addresses(
+                self.ethereum_client.parity.get_next_traces(
+                    "0x12", [], remove_delegate_calls=True, remove_calls=True
+                )
+            ),
+            [],
+        )
+        self.assertEqual(self.ethereum_client.parity.get_next_traces("0x12", [0]), [])
+        self.assertEqual(
+            trace_addresses(self.ethereum_client.parity.get_next_traces("0x12", [1])),
+            [[1, 0]],
+        )
 
     def test_trace_filter(self):
-        with self.assertRaisesMessage(AssertionError, 'at least'):
+        with self.assertRaisesMessage(AssertionError, "at least"):
             self.ethereum_client.parity.trace_filter()
 
-        with self.assertRaisesMessage(ValueError, 'Method trace_filter not supported'):
-            self.ethereum_client.parity.trace_filter(from_address=Account.create().address)
+        with self.assertRaisesMessage(ValueError, "Method trace_filter not supported"):
+            self.ethereum_client.parity.trace_filter(
+                from_address=Account.create().address
+            )
 
 
 class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
     def test_default_ethereum_network_name(self):
-        self.assertEqual(EthereumNetwork(EthereumNetwork.default), EthereumNetwork.UNKNOWN)
+        self.assertEqual(
+            EthereumNetwork(EthereumNetwork.default), EthereumNetwork.UNKNOWN
+        )
 
     def test_unknown_ethereum_network_name(self):
         self.assertEqual(EthereumNetwork(2), EthereumNetwork.UNKNOWN)
@@ -673,39 +1067,44 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx_hashes = [self.send_ether(to, values[i]) for i in range(3)]
         txs = self.ethereum_client.get_transactions(tx_hashes)
         for i, tx in enumerate(txs):
-            self.assertEqual(tx['to'], to)
-            self.assertEqual(tx['value'], values[i])
+            self.assertEqual(tx["to"], to)
+            self.assertEqual(tx["value"], values[i])
 
         self.assertEqual(self.ethereum_client.get_transaction_receipts([]), [])
         receipts = self.ethereum_client.get_transaction_receipts(tx_hashes)
         for i, receipt in enumerate(receipts):
-            self.assertEqual(receipt['status'], 1)
-            self.assertGreaterEqual(receipt['gasUsed'], 21000)
+            self.assertEqual(receipt["status"], 1)
+            self.assertGreaterEqual(receipt["gasUsed"], 21000)
 
     def test_check_tx_with_confirmations(self):
         value = 1
         to, _ = get_eth_address_with_key()
 
-        tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
-                                                   to=to, gas_price=self.gas_price, value=value)
+        tx_hash = self.ethereum_client.send_eth_to(
+            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
+        )
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
-                                             to=to, gas_price=self.gas_price, value=value)
+        _ = self.ethereum_client.send_eth_to(
+            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
+        )
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
-                                             to=to, gas_price=self.gas_price, value=value)
+        _ = self.ethereum_client.send_eth_to(
+            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
+        )
         self.assertTrue(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
     def test_estimate_gas(self):
         send_ether_gas = 21000
         from_ = self.ethereum_test_account.address
         to, _ = get_eth_address_with_key()
-        gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=None, block_identifier='pending')
+        gas = self.ethereum_client.estimate_gas(
+            to, from_=from_, value=5, data=None, block_identifier="pending"
+        )
         self.assertEqual(gas, send_ether_gas)
 
-        gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=b'')
+        gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=b"")
         self.assertEqual(gas, send_ether_gas)
 
         gas = self.ethereum_client.estimate_gas(to, from_=from_, value=5, data=None)
@@ -720,8 +1119,10 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         to, _ = get_eth_address_with_key()
 
         erc20_contract = self.deploy_example_erc20(amount_tokens, from_)
-        transfer_tx = erc20_contract.functions.transfer(to, amount_to_send).buildTransaction({'from': from_})
-        data = transfer_tx['data']
+        transfer_tx = erc20_contract.functions.transfer(
+            to, amount_to_send
+        ).buildTransaction({"from": from_})
+        data = transfer_tx["data"]
 
         # Ganache does not cares about all this anymore
         # ---------------------------------------------
@@ -733,36 +1134,62 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         # self.assertGreater(gas, send_ether_gas)
         # self.assertLess(gas, send_ether_gas + 2000)
 
-        gas = self.ethereum_client.estimate_gas(erc20_contract.address, from_=from_, value=0, data=data,
-                                                block_identifier='pending')
+        gas = self.ethereum_client.estimate_gas(
+            erc20_contract.address,
+            from_=from_,
+            value=0,
+            data=data,
+            block_identifier="pending",
+        )
         self.assertGreater(gas, send_ether_gas)
 
         # We do the real erc20 transfer for the next test case
         self.send_tx(transfer_tx, from_account)
-        token_balance = self.ethereum_client.erc20.get_balance(to, erc20_contract.address)
+        token_balance = self.ethereum_client.erc20.get_balance(
+            to, erc20_contract.address
+        )
         self.assertTrue(token_balance, amount_to_send)
 
         # Gas will be lowest now because you don't have to pay for storage
-        gas2 = self.ethereum_client.estimate_gas(erc20_contract.address, from_=from_, value=0, data=data,
-                                                 block_identifier='pending')
+        gas2 = self.ethereum_client.estimate_gas(
+            erc20_contract.address,
+            from_=from_,
+            value=0,
+            data=data,
+            block_identifier="pending",
+        )
         self.assertLess(gas2, gas)
 
     def test_get_ethereum_network(self):
         self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
 
-        with mock.patch.object(Eth, 'chain_id', return_value=1, new_callable=mock.PropertyMock):
+        with mock.patch.object(
+            Eth, "chain_id", return_value=1, new_callable=mock.PropertyMock
+        ):
             # Test caching
-            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.GANACHE)
+            self.assertEqual(
+                self.ethereum_client.get_network(), EthereumNetwork.GANACHE
+            )
             self.ethereum_client.get_network.cache_clear()
-            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.MAINNET)
+            self.assertEqual(
+                self.ethereum_client.get_network(), EthereumNetwork.MAINNET
+            )
             self.ethereum_client.get_network.cache_clear()
 
-        with mock.patch.object(Eth, 'chain_id', return_value=4, new_callable=mock.PropertyMock):
-            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.RINKEBY)
+        with mock.patch.object(
+            Eth, "chain_id", return_value=4, new_callable=mock.PropertyMock
+        ):
+            self.assertEqual(
+                self.ethereum_client.get_network(), EthereumNetwork.RINKEBY
+            )
             self.ethereum_client.get_network.cache_clear()
 
-        with mock.patch.object(Eth, 'chain_id', return_value=4815162342, new_callable=mock.PropertyMock):
-            self.assertEqual(self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN)
+        with mock.patch.object(
+            Eth, "chain_id", return_value=4815162342, new_callable=mock.PropertyMock
+        ):
+            self.assertEqual(
+                self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN
+            )
             self.ethereum_client.get_network.cache_clear()
 
     def test_get_nonce(self):
@@ -770,18 +1197,34 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         nonce = self.ethereum_client.get_nonce_for_account(address)
         self.assertEqual(nonce, 0)
 
-        nonce = self.ethereum_client.get_nonce_for_account(address, block_identifier='pending')
+        nonce = self.ethereum_client.get_nonce_for_account(
+            address, block_identifier="pending"
+        )
         self.assertEqual(nonce, 0)
 
     def test_estimate_data_gas(self):
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('')), 0)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x00')), 4)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x000204')), 4 + GAS_CALL_DATA_BYTE * 2)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x050204')), GAS_CALL_DATA_BYTE * 3)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x0502040000')), GAS_CALL_DATA_BYTE * 3 + 4 * 2)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x050204000001')), GAS_CALL_DATA_BYTE * 4 + 4 * 2)
-        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes('0x00050204000001')),
-                         4 + GAS_CALL_DATA_BYTE * 4 + 4 * 2)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes("")), 0)
+        self.assertEqual(self.ethereum_client.estimate_data_gas(HexBytes("0x00")), 4)
+        self.assertEqual(
+            self.ethereum_client.estimate_data_gas(HexBytes("0x000204")),
+            4 + GAS_CALL_DATA_BYTE * 2,
+        )
+        self.assertEqual(
+            self.ethereum_client.estimate_data_gas(HexBytes("0x050204")),
+            GAS_CALL_DATA_BYTE * 3,
+        )
+        self.assertEqual(
+            self.ethereum_client.estimate_data_gas(HexBytes("0x0502040000")),
+            GAS_CALL_DATA_BYTE * 3 + 4 * 2,
+        )
+        self.assertEqual(
+            self.ethereum_client.estimate_data_gas(HexBytes("0x050204000001")),
+            GAS_CALL_DATA_BYTE * 4 + 4 * 2,
+        )
+        self.assertEqual(
+            self.ethereum_client.estimate_data_gas(HexBytes("0x00050204000001")),
+            4 + GAS_CALL_DATA_BYTE * 4 + 4 * 2,
+        )
 
     def test_provider_singleton(self):
         ethereum_client1 = EthereumClientProvider()
@@ -791,7 +1234,9 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_eth_to(self):
         address, _ = get_eth_address_with_key()
         value = 1
-        self.ethereum_client.send_eth_to(self.ethereum_test_account.key, address, self.gas_price, value)
+        self.ethereum_client.send_eth_to(
+            self.ethereum_test_account.key, address, self.gas_price, value
+        )
         self.assertEqual(self.ethereum_client.get_balance(address), value)
 
     def test_send_eth_without_key(self):
@@ -804,30 +1249,30 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         to, _ = get_eth_address_with_key()
         value = 1
         tx = {
-            'to': to,
-            'value': value,
-            'gas': 23000,
-            'gasPrice': self.gas_price,
-            'nonce': self.ethereum_client.get_nonce_for_account(address)
+            "to": to,
+            "value": value,
+            "gas": 23000,
+            "gasPrice": self.gas_price,
+            "nonce": self.ethereum_client.get_nonce_for_account(address),
         }
 
         with self.assertRaises(FromAddressNotFound):
             self.ethereum_client.send_transaction(tx)
 
         # Random address not in the node
-        tx['from'] = Account.create().address
+        tx["from"] = Account.create().address
         with self.assertRaises(SenderAccountNotFoundInNode):
             self.ethereum_client.send_transaction(tx)
 
-        tx['from'] = address
+        tx["from"] = address
         self.ethereum_client.send_transaction(tx)
         self.assertEqual(self.ethereum_client.get_balance(to), 1)
 
         with self.assertRaises(InvalidNonce):
             self.ethereum_client.send_transaction(tx)
 
-        tx['value'] = self.ethereum_client.get_balance(address) + 1
-        tx['nonce'] = self.ethereum_client.get_nonce_for_account(address)
+        tx["value"] = self.ethereum_client.get_balance(address) + 1
+        tx["nonce"] = self.ethereum_client.get_nonce_for_account(address)
         with self.assertRaises(InsufficientFunds):
             self.ethereum_client.send_transaction(tx)
 
@@ -838,33 +1283,39 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         value = 4
 
         tx = {
-            'to': to,
-            'value': value,
-            'gas': 23000,
-            'gasPrice': 1,
+            "to": to,
+            "value": value,
+            "gas": 23000,
+            "gasPrice": 1,
         }
 
-        with self.assertRaisesMessage(ValueError, 'Ethereum account was not configured'):
+        with self.assertRaisesMessage(
+            ValueError, "Ethereum account was not configured"
+        ):
             self.ethereum_client.send_unsigned_transaction(tx)
 
         self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
-        first_nonce = tx['nonce']
+        first_nonce = tx["nonce"]
         self.assertGreaterEqual(first_nonce, 0)
 
         # Will use the same nonce
-        with self.assertRaisesMessage(InvalidNonce, 'correct nonce'):
+        with self.assertRaisesMessage(InvalidNonce, "correct nonce"):
             self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
 
         # With retry, everything should work
-        self.ethereum_client.send_unsigned_transaction(tx, public_key=address, retry=True)
-        self.assertEqual(tx['nonce'], first_nonce + 1)
+        self.ethereum_client.send_unsigned_transaction(
+            tx, public_key=address, retry=True
+        )
+        self.assertEqual(tx["nonce"], first_nonce + 1)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 2)
 
         # We try again with the first nonce, and should work too
-        tx['nonce'] = first_nonce
-        self.ethereum_client.send_unsigned_transaction(tx, public_key=address, retry=True)
-        self.assertEqual(tx['nonce'], first_nonce + 2)
+        tx["nonce"] = first_nonce
+        self.ethereum_client.send_unsigned_transaction(
+            tx, public_key=address, retry=True
+        )
+        self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
     def test_send_unsigned_transaction_with_private_key(self):
@@ -874,46 +1325,51 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         value = 4
 
         tx = {
-            'to': to,
-            'value': value,
-            'gas': 23000,
-            'gasPrice': self.gas_price,
+            "to": to,
+            "value": value,
+            "gas": 23000,
+            "gasPrice": self.gas_price,
         }
 
         self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
-        first_nonce = tx['nonce']
+        first_nonce = tx["nonce"]
         self.assertGreaterEqual(first_nonce, 0)
 
         # Will use the same nonce
-        with self.assertRaisesMessage(InvalidNonce, 'correct nonce'):
+        with self.assertRaisesMessage(InvalidNonce, "correct nonce"):
             self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
 
         # With retry, everything should work
         self.ethereum_client.send_unsigned_transaction(tx, private_key=key, retry=True)
-        self.assertEqual(tx['nonce'], first_nonce + 1)
+        self.assertEqual(tx["nonce"], first_nonce + 1)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 2)
 
         # We try again with the first nonce, and should work too
-        tx['nonce'] = first_nonce
+        tx["nonce"] = first_nonce
         self.ethereum_client.send_unsigned_transaction(tx, private_key=key, retry=True)
-        self.assertEqual(tx['nonce'], first_nonce + 2)
+        self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
     def test_wait_for_tx_receipt(self):
         value = 1
         to = Account.create().address
 
-        tx_hash = self.ethereum_client.send_eth_to(self.ethereum_test_account.key,
-                                                   to=to, gas_price=self.gas_price, value=value)
+        tx_hash = self.ethereum_client.send_eth_to(
+            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
+        )
         receipt1 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None)
         receipt2 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
         self.assertIsNotNone(receipt1)
         self.assertEqual(receipt1, receipt2)
 
         fake_tx_hash = self.w3.keccak(0)
-        self.assertIsNone(self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=None))
-        self.assertIsNone(self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=1))
+        self.assertIsNone(
+            self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=None)
+        )
+        self.assertIsNone(
+            self.ethereum_client.get_transaction_receipt(fake_tx_hash, timeout=1)
+        )
 
     def test_batch_call(self):
         account_address = Account.create().address
@@ -922,13 +1378,18 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         erc20 = self.deploy_example_erc20(tokens_value, account_address)
         erc20_2 = self.deploy_example_erc20(tokens_value_2, account_address)
 
-        for batch_call_manager in (self.ethereum_client, self.ethereum_client.batch_call_manager):
+        for batch_call_manager in (
+            self.ethereum_client,
+            self.ethereum_client.batch_call_manager,
+        ):
             with self.subTest(batch_call_manager=batch_call_manager):
-                results = batch_call_manager.batch_call([
-                    erc20.functions.decimals(),
-                    erc20.functions.symbol(),
-                    erc20.functions.balanceOf(account_address)
-                ])
+                results = batch_call_manager.batch_call(
+                    [
+                        erc20.functions.decimals(),
+                        erc20.functions.symbol(),
+                        erc20.functions.balanceOf(account_address),
+                    ]
+                )
                 decimals, symbol, balance_of = results
                 self.assertEqual(decimals, erc20.functions.decimals().call())
                 self.assertEqual(symbol, erc20.functions.symbol().call())
@@ -936,36 +1397,47 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
                 results = batch_call_manager.batch_call_same_function(
                     erc20.functions.balanceOf(account_address),
-                    [erc20.address, erc20_2.address]
+                    [erc20.address, erc20_2.address],
                 )
                 self.assertEqual([tokens_value, tokens_value_2], results)
 
-                invalid_erc20 = get_erc20_contract(self.ethereum_client.w3, Account.create().address)
+                invalid_erc20 = get_erc20_contract(
+                    self.ethereum_client.w3, Account.create().address
+                )
                 with self.assertRaises(BatchCallException):
-                    batch_call_manager.batch_call([
-                        invalid_erc20.functions.decimals(),
-                        invalid_erc20.functions.symbol(),
-                        erc20.functions.balanceOf(account_address),
-                        invalid_erc20.functions.balanceOf(account_address)
-                    ])
+                    batch_call_manager.batch_call(
+                        [
+                            invalid_erc20.functions.decimals(),
+                            invalid_erc20.functions.symbol(),
+                            erc20.functions.balanceOf(account_address),
+                            invalid_erc20.functions.balanceOf(account_address),
+                        ]
+                    )
 
                 # It shouldn't raise error and instead return None
                 self.assertEqual(
                     batch_call_manager.batch_call(
-                        [invalid_erc20.functions.decimals(),
-                         invalid_erc20.functions.symbol(),
-                         erc20.functions.balanceOf(account_address),
-                         invalid_erc20.functions.balanceOf(account_address)
-                         ],
-                        raise_exception=False),
-                    [None, None, tokens_value, None])
+                        [
+                            invalid_erc20.functions.decimals(),
+                            invalid_erc20.functions.symbol(),
+                            erc20.functions.balanceOf(account_address),
+                            invalid_erc20.functions.balanceOf(account_address),
+                        ],
+                        raise_exception=False,
+                    ),
+                    [None, None, tokens_value, None],
+                )
 
                 with self.assertRaises(BatchCallException):
-                    batch_call_manager.batch_call([erc20.functions.decimals(),
-                                                   erc20.functions.transfer(NULL_ADDRESS, 1),
-                                                   erc20.functions.symbol(),
-                                                   erc20.functions.balanceOf(account_address)],
-                                                  raise_exception=True)
+                    batch_call_manager.batch_call(
+                        [
+                            erc20.functions.decimals(),
+                            erc20.functions.transfer(NULL_ADDRESS, 1),
+                            erc20.functions.symbol(),
+                            erc20.functions.balanceOf(account_address),
+                        ],
+                        raise_exception=True,
+                    )
 
     def test_get_blocks(self):
         self.assertEqual(self.ethereum_client.get_blocks([]), [])
@@ -975,13 +1447,15 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         for _ in range(3):
             self.send_ether(to, value)
 
-        block_numbers = [self.ethereum_client.current_block_number - i for i in range(3)]
+        block_numbers = [
+            self.ethereum_client.current_block_number - i for i in range(3)
+        ]
         blocks = self.ethereum_client.get_blocks(block_numbers, full_transactions=True)
         for i, block in enumerate(blocks):
-            self.assertEqual(block['number'], block_numbers[i])
-            self.assertEqual(len(block['hash']), 32)
-            self.assertEqual(len(block['parentHash']), 32)
-            self.assertGreaterEqual(len(block['transactions']), 0)
+            self.assertEqual(block["number"], block_numbers[i])
+            self.assertEqual(len(block["hash"]), 32)
+            self.assertEqual(len(block["parentHash"]), 32)
+            self.assertGreaterEqual(len(block["transactions"]), 0)
 
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
@@ -993,31 +1467,40 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
 
     def test_trace_block(self):
         block_number = 2191709
-        self.assertEqual(self.ethereum_client.parity.trace_block(block_number), trace_block_2191709_mock)
+        self.assertEqual(
+            self.ethereum_client.parity.trace_block(block_number),
+            trace_block_2191709_mock,
+        )
 
     def test_trace_blocks(self):
         block_numbers = [13191781, 2191709]
-        self.assertEqual(self.ethereum_client.parity.trace_blocks(block_numbers),
-                         [trace_block_13191781_mock, trace_block_2191709_mock])
+        self.assertEqual(
+            self.ethereum_client.parity.trace_blocks(block_numbers),
+            [trace_block_13191781_mock, trace_block_2191709_mock],
+        )
 
     def test_trace_transaction(self):
-        tx_hash = '0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f'  # Safe 1.3.0 deployment
-        self.assertEqual(self.ethereum_client.parity.trace_transaction(tx_hash),
-                         trace_transaction_mocks[tx_hash])
+        tx_hash = "0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f"  # Safe 1.3.0 deployment
+        self.assertEqual(
+            self.ethereum_client.parity.trace_transaction(tx_hash),
+            trace_transaction_mocks[tx_hash],
+        )
 
     def test_trace_transactions(self):
         tx_hashes = [
-            '0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f',   # Safe 1.3.0 deployment
-            '0xf325b4e52d0649593e8c82f35bd389c13c13b21b61bc17de295979a21e5cfdc0',  # Safe 1.1.0 setup
+            "0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f",  # Safe 1.3.0 deployment
+            "0xf325b4e52d0649593e8c82f35bd389c13c13b21b61bc17de295979a21e5cfdc0",  # Safe 1.1.0 setup
         ]
-        self.assertEqual(self.ethereum_client.parity.trace_transactions(tx_hashes),
-                         [trace_transaction_mocks[tx_hash]for tx_hash in tx_hashes])
+        self.assertEqual(
+            self.ethereum_client.parity.trace_transactions(tx_hashes),
+            [trace_transaction_mocks[tx_hash] for tx_hash in tx_hashes],
+        )
 
     def test_trace_filter(self):
-        safe_1_3_0_address = '0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552'
+        safe_1_3_0_address = "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552"
         self.assertEqual(
             self.ethereum_client.parity.trace_filter(
                 from_block=12504268, to_block=12504268, to_address=[safe_1_3_0_address]
             ),
-            trace_filter_mock_1
+            trace_filter_mock_1,
         )

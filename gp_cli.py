@@ -5,7 +5,7 @@ def confirm_prompt(question: str) -> bool:
     return reply == "y"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
     import os
     import sys
@@ -17,17 +17,21 @@ if __name__ == '__main__':
     from gnosis.eth.constants import NULL_ADDRESS
     from gnosis.protocol import GnosisProtocolAPI, Order, OrderKind
 
-    PRIVATE_KEY = os.environ.get('PRIVATE_KEY')
+    PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
     if not PRIVATE_KEY:
-        print('Set PRIVATE_KEY as an environment variable')
+        print("Set PRIVATE_KEY as an environment variable")
         sys.exit(1)
 
-    parser = argparse.ArgumentParser(description='Place orders on Gnosis Protocol V2')
-    parser.add_argument('--network', default=EthereumNetwork.RINKEBY.name, help='Mainnet, Rinkeby or xDAI')
-    parser.add_argument('--from-token', required=True)  # TODO Check checksummed address
-    parser.add_argument('--to-token', required=True)
-    parser.add_argument('--amount-wei', required=True, type=int)
-    parser.add_argument('--require-full-fill', action='store_true', default=False)
+    parser = argparse.ArgumentParser(description="Place orders on Gnosis Protocol V2")
+    parser.add_argument(
+        "--network",
+        default=EthereumNetwork.RINKEBY.name,
+        help="Mainnet, Rinkeby or xDAI",
+    )
+    parser.add_argument("--from-token", required=True)  # TODO Check checksummed address
+    parser.add_argument("--to-token", required=True)
+    parser.add_argument("--amount-wei", required=True, type=int)
+    parser.add_argument("--require-full-fill", action="store_true", default=False)
 
     args = parser.parse_args()
     from_token = args.from_token
@@ -38,9 +42,9 @@ if __name__ == '__main__':
         from_token, to_token, OrderKind.SELL, amount_wei
     )
 
-    buy_amount = int(buy_amount_response.get('amount', '0'))
+    buy_amount = int(buy_amount_response.get("amount", "0"))
     if not buy_amount:
-        print('Cannot calculate amount to receive, maybe token is not supported')
+        print("Cannot calculate amount to receive, maybe token is not supported")
         sys.exit(1)
 
     order = Order(
@@ -50,19 +54,21 @@ if __name__ == '__main__':
         sellAmount=amount_wei,
         buyAmount=buy_amount,
         validTo=int(time.time()) + (60 * 60),  # Valid for 1 hour
-        appData=Web3.keccak(text='gp-cli'),
+        appData=Web3.keccak(text="gp-cli"),
         feeAmount=0,
-        kind='sell',  # `sell` or `buy`
+        kind="sell",  # `sell` or `buy`
         partiallyFillable=not args.require_full_fill,
-        sellTokenBalance='erc20',  # `erc20`, `external` or `internal`
-        buyTokenBalance='erc20',  # `erc20` or `internal`
+        sellTokenBalance="erc20",  # `erc20`, `external` or `internal`
+        buyTokenBalance="erc20",  # `erc20` or `internal`
     )
 
-    order['feeAmount'] = gnosis_protocol_api.get_fee(order)
+    order["feeAmount"] = gnosis_protocol_api.get_fee(order)
 
-    if confirm_prompt(f'Exchanging {amount_wei} {from_token} to {buy_amount} {to_token}?'):
+    if confirm_prompt(
+        f"Exchanging {amount_wei} {from_token} to {buy_amount} {to_token}?"
+    ):
         result = gnosis_protocol_api.place_order(order, PRIVATE_KEY)
         if isinstance(result, dict):
-            print(f'Cannot place order {result}')
+            print(f"Cannot place order {result}")
         else:
-            print(f'Placed order with UUID {result}')
+            print(f"Placed order with UUID {result}")

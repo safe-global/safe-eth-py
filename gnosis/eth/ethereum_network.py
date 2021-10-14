@@ -9,6 +9,7 @@ class EthereumNetwork(Enum):
     """
     Use https://chainlist.org/ as a reference
     """
+
     UNKNOWN = -1
     OLYMPIC = 0
     MAINNET = 1

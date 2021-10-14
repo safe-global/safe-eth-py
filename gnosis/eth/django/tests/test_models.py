@@ -24,12 +24,17 @@ class TestModels(TestCase):
         self.assertIsNone(ethereum_address.value)
 
         with self.assertRaises(Exception):
-            EthereumAddress.objects.create(value='0x23')
+            EthereumAddress.objects.create(value="0x23")
 
     def test_uint256_field(self):
-        for value in [2, -2, 2 ** 256, 2 ** 260,
-                      25572735541615049941137326092682691158109824779649981270427004917341670006487,
-                      None]:
+        for value in [
+            2,
+            -2,
+            2 ** 256,
+            2 ** 260,
+            25572735541615049941137326092682691158109824779649981270427004917341670006487,
+            None,
+        ]:
             uint256 = Uint256.objects.create(value=value)
             uint256.refresh_from_db()
             self.assertEqual(uint256.value, value)
@@ -42,7 +47,7 @@ class TestModels(TestCase):
     def test_sha3_hash_field(self):
         value: bytes = sha3(faker.name())
         value_hex_without_0x: str = value.hex()
-        value_hex_with_0x: str = '0x' + value_hex_without_0x
+        value_hex_with_0x: str = "0x" + value_hex_without_0x
         value_hexbytes: HexBytes = HexBytes(value_hex_with_0x)
 
         values = [value, value_hex_without_0x, value_hex_with_0x, value_hexbytes]
@@ -61,6 +66,6 @@ class TestModels(TestCase):
         self.assertIsNone(sha3_hash.value)
 
         # Hash too big
-        value_hex_invalid: str = '0x' + value_hex_without_0x + 'a'
+        value_hex_invalid: str = "0x" + value_hex_without_0x + "a"
         with self.assertRaises(Exception):
             Sha3Hash.objects.create(value=value_hex_invalid)

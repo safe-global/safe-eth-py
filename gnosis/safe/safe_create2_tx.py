@@ -8,10 +8,13 @@ from web3 import Web3
 from web3.types import TxParams, Wei
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
-from gnosis.eth.contracts import (get_proxy_factory_contract,
-                                  get_safe_contract, get_safe_V1_0_0_contract,
-                                  get_safe_V1_1_1_contract,
-                                  get_safe_V1_3_0_contract)
+from gnosis.eth.contracts import (
+    get_proxy_factory_contract,
+    get_safe_contract,
+    get_safe_V1_0_0_contract,
+    get_safe_V1_1_1_contract,
+    get_safe_V1_3_0_contract,
+)
 from gnosis.eth.utils import generate_address_2
 
 logger = getLogger(__name__)
@@ -57,21 +60,39 @@ class SafeCreate2TxBuilder:
         self.w3 = w3
         self.master_copy_address = master_copy_address
         self.proxy_factory_address = proxy_factory_address
-        self.safe_version = get_safe_contract(w3, master_copy_address).functions.VERSION().call()
-        if self.safe_version == '1.3.0':
-            self.master_copy_contract = get_safe_V1_3_0_contract(w3, master_copy_address)
-        elif self.safe_version == '1.1.1':
-            self.master_copy_contract = get_safe_V1_1_1_contract(w3, master_copy_address)
-        elif self.safe_version == '1.0.0':
-            self.master_copy_contract = get_safe_V1_0_0_contract(w3, master_copy_address)
+        self.safe_version = (
+            get_safe_contract(w3, master_copy_address).functions.VERSION().call()
+        )
+        if self.safe_version == "1.3.0":
+            self.master_copy_contract = get_safe_V1_3_0_contract(
+                w3, master_copy_address
+            )
+        elif self.safe_version == "1.1.1":
+            self.master_copy_contract = get_safe_V1_1_1_contract(
+                w3, master_copy_address
+            )
+        elif self.safe_version == "1.0.0":
+            self.master_copy_contract = get_safe_V1_0_0_contract(
+                w3, master_copy_address
+            )
         else:
-            raise ValueError('Safe version must be 1.3.0, 1.1.1 or 1.0.0')
-        self.proxy_factory_contract = get_proxy_factory_contract(w3, proxy_factory_address)
+            raise ValueError("Safe version must be 1.3.0, 1.1.1 or 1.0.0")
+        self.proxy_factory_contract = get_proxy_factory_contract(
+            w3, proxy_factory_address
+        )
 
-    def build(self, owners: List[str], threshold: int, salt_nonce: int,
-              gas_price: int, fallback_handler: Optional[str] = None, payment_receiver: Optional[str] = None,
-              payment_token: Optional[str] = None,
-              payment_token_eth_value: float = 1.0, fixed_creation_cost: Optional[int] = None):
+    def build(
+        self,
+        owners: List[str],
+        threshold: int,
+        salt_nonce: int,
+        gas_price: int,
+        fallback_handler: Optional[str] = None,
+        payment_receiver: Optional[str] = None,
+        payment_token: Optional[str] = None,
+        payment_token_eth_value: float = 1.0,
+        fixed_creation_cost: Optional[int] = None,
+    ):
         """
         Prepare Safe creation
         :param owners: Owners of the Safe
@@ -96,38 +117,63 @@ class SafeCreate2TxBuilder:
         # address paymentToken, uint256 payment, address payable paymentReceiver)`
         # This initializer will be passed to the ProxyFactory to be called right after proxy is deployed
         # We use `payment=0` as safe has no ether yet and estimation will fail
-        safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold, fallback_handler=fallback_handler,
-                                                                   payment_token=payment_token,
-                                                                   payment_receiver=payment_receiver)
+        safe_setup_data: bytes = self._get_initial_setup_safe_data(
+            owners,
+            threshold,
+            fallback_handler=fallback_handler,
+            payment_token=payment_token,
+            payment_receiver=payment_receiver,
+        )
 
         magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
-        estimated_gas: int = self._estimate_gas(safe_setup_data,
-                                                salt_nonce, payment_token, payment_receiver)
-        logger.debug('Magic gas %d - Estimated gas %d' % (magic_gas, estimated_gas))
+        estimated_gas: int = self._estimate_gas(
+            safe_setup_data, salt_nonce, payment_token, payment_receiver
+        )
+        logger.debug("Magic gas %d - Estimated gas %d" % (magic_gas, estimated_gas))
         gas = max(magic_gas, estimated_gas)
 
         # Payment will be safe deploy cost
-        payment = self._calculate_refund_payment(gas,
-                                                 gas_price,
-                                                 fixed_creation_cost,
-                                                 payment_token_eth_value)
+        payment = self._calculate_refund_payment(
+            gas, gas_price, fixed_creation_cost, payment_token_eth_value
+        )
 
         # Now we have a estimate for `payment` so we get initialization data again
-        final_safe_setup_data: bytes = self._get_initial_setup_safe_data(owners, threshold,
-                                                                         fallback_handler=fallback_handler,
-                                                                         payment_token=payment_token, payment=payment,
-                                                                         payment_receiver=payment_receiver)
+        final_safe_setup_data: bytes = self._get_initial_setup_safe_data(
+            owners,
+            threshold,
+            fallback_handler=fallback_handler,
+            payment_token=payment_token,
+            payment=payment,
+            payment_receiver=payment_receiver,
+        )
 
         safe_address = self.calculate_create2_address(final_safe_setup_data, salt_nonce)
-        assert int(safe_address, 16), 'Calculated Safe address cannot be the NULL ADDRESS'
+        assert int(
+            safe_address, 16
+        ), "Calculated Safe address cannot be the NULL ADDRESS"
 
-        return SafeCreate2Tx(salt_nonce, owners, threshold, fallback_handler,
-                             self.master_copy_address, self.proxy_factory_address,
-                             payment_receiver, payment_token, payment, gas, gas_price, payment_token_eth_value,
-                             fixed_creation_cost, safe_address, final_safe_setup_data)
+        return SafeCreate2Tx(
+            salt_nonce,
+            owners,
+            threshold,
+            fallback_handler,
+            self.master_copy_address,
+            self.proxy_factory_address,
+            payment_receiver,
+            payment_token,
+            payment,
+            gas,
+            gas_price,
+            payment_token_eth_value,
+            fixed_creation_cost,
+            safe_address,
+            final_safe_setup_data,
+        )
 
     @staticmethod
-    def _calculate_gas(owners: List[str], safe_setup_data: bytes, payment_token: str) -> int:
+    def _calculate_gas(
+        owners: List[str], safe_setup_data: bytes, payment_token: str
+    ) -> int:
         """
         Calculate gas manually, based on tests of previosly deployed safes
         :param owners: Safe owners
@@ -149,8 +195,12 @@ class SafeCreate2TxBuilder:
         return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
 
     @staticmethod
-    def _calculate_refund_payment(gas: int, gas_price: int, fixed_creation_cost: Optional[int],
-                                  payment_token_eth_value: float) -> int:
+    def _calculate_refund_payment(
+        gas: int,
+        gas_price: int,
+        fixed_creation_cost: Optional[int],
+        payment_token_eth_value: float,
+    ) -> int:
         if fixed_creation_cost is None:
             # Payment will be safe deploy cost + transfer fees for sending ether to the deployer
             base_payment: int = gas * gas_price
@@ -160,14 +210,29 @@ class SafeCreate2TxBuilder:
             return fixed_creation_cost
 
     def calculate_create2_address(self, safe_setup_data: bytes, salt_nonce: int):
-        proxy_creation_code = self.proxy_factory_contract.functions.proxyCreationCode().call()
-        salt = self.w3.keccak(encode_abi_packed(['bytes', 'uint256'], [self.w3.keccak(safe_setup_data), salt_nonce]))
-        deployment_data = encode_abi_packed(['bytes', 'uint256'], [proxy_creation_code,
-                                                                   int(self.master_copy_address, 16)])
-        return generate_address_2(self.proxy_factory_contract.address, salt, deployment_data)
+        proxy_creation_code = (
+            self.proxy_factory_contract.functions.proxyCreationCode().call()
+        )
+        salt = self.w3.keccak(
+            encode_abi_packed(
+                ["bytes", "uint256"], [self.w3.keccak(safe_setup_data), salt_nonce]
+            )
+        )
+        deployment_data = encode_abi_packed(
+            ["bytes", "uint256"],
+            [proxy_creation_code, int(self.master_copy_address, 16)],
+        )
+        return generate_address_2(
+            self.proxy_factory_contract.address, salt, deployment_data
+        )
 
-    def _estimate_gas(self, initializer: bytes, salt_nonce: int,
-                      payment_token: str, payment_receiver: str) -> int:
+    def _estimate_gas(
+        self,
+        initializer: bytes,
+        salt_nonce: int,
+        payment_token: str,
+        payment_receiver: str,
+    ) -> int:
         """
         Gas estimation done using web3 and calling the node
         Payment cannot be estimated, as no ether is in the address. So we add some gas later.
@@ -178,8 +243,9 @@ class SafeCreate2TxBuilder:
         """
 
         # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
-        gas: int = self.proxy_factory_contract.functions.createProxyWithNonce(self.master_copy_address,
-                                                                              initializer, salt_nonce).estimateGas()
+        gas: int = self.proxy_factory_contract.functions.createProxyWithNonce(
+            self.master_copy_address, initializer, salt_nonce
+        ).estimateGas()
 
         # It's not very relevant if is 1 or 9999
         payment: int = 1
@@ -187,7 +253,9 @@ class SafeCreate2TxBuilder:
         # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
             # Same cost to send 1 ether than 1000
-            gas += self.w3.eth.estimate_gas({'to': payment_receiver, 'value': Wei(payment)})
+            gas += self.w3.eth.estimate_gas(
+                {"to": payment_receiver, "value": Wei(payment)}
+            )
         else:
             # Top should be around 52000 when storage is needed (funder no previous owner of token),
             # we use value 1 as we are simulating an internal call, and in that calls you don't pay for the data.
@@ -203,36 +271,44 @@ class SafeCreate2TxBuilder:
 
         return gas
 
-    def _get_initial_setup_safe_data(self, owners: List[str], threshold: int,
-                                     fallback_handler: str = NULL_ADDRESS,
-                                     payment_token: str = NULL_ADDRESS,
-                                     payment: int = 0,
-                                     payment_receiver: str = NULL_ADDRESS) -> bytes:
+    def _get_initial_setup_safe_data(
+        self,
+        owners: List[str],
+        threshold: int,
+        fallback_handler: str = NULL_ADDRESS,
+        payment_token: str = NULL_ADDRESS,
+        payment: int = 0,
+        payment_receiver: str = NULL_ADDRESS,
+    ) -> bytes:
         empty_params: TxParams = {
-            'gas': Wei(1),
-            'gasPrice': Wei(1),
+            "gas": Wei(1),
+            "gasPrice": Wei(1),
         }
 
-        if self.safe_version in ('1.3.0', '1.1.1'):
-            return HexBytes(self.master_copy_contract.functions.setup(
-                owners,
-                threshold,
-                NULL_ADDRESS,  # Contract address for optional delegate call
-                b'',            # Data payload for optional delegate call
-                fallback_handler,  # Handler for fallback calls to this contract
-                payment_token,
-                payment,
-                payment_receiver
-            ).buildTransaction(empty_params)['data'])
-        elif self.safe_version == '1.0.0':
-            return HexBytes(self.master_copy_contract.functions.setup(
-                owners,
-                threshold,
-                NULL_ADDRESS,  # Contract address for optional delegate call
-                b'',  # Data payload for optional delegate call
-                payment_token,
-                payment,
-                payment_receiver
-            ).buildTransaction(empty_params)['data'])
+        if self.safe_version in ("1.3.0", "1.1.1"):
+            return HexBytes(
+                self.master_copy_contract.functions.setup(
+                    owners,
+                    threshold,
+                    NULL_ADDRESS,  # Contract address for optional delegate call
+                    b"",  # Data payload for optional delegate call
+                    fallback_handler,  # Handler for fallback calls to this contract
+                    payment_token,
+                    payment,
+                    payment_receiver,
+                ).buildTransaction(empty_params)["data"]
+            )
+        elif self.safe_version == "1.0.0":
+            return HexBytes(
+                self.master_copy_contract.functions.setup(
+                    owners,
+                    threshold,
+                    NULL_ADDRESS,  # Contract address for optional delegate call
+                    b"",  # Data payload for optional delegate call
+                    payment_token,
+                    payment,
+                    payment_receiver,
+                ).buildTransaction(empty_params)["data"]
+            )
         else:
-            raise ValueError('Safe version must be 1.3.0, 1.1.1 or 1.0.0')
+            raise ValueError("Safe version must be 1.3.0, 1.1.1 or 1.0.0")

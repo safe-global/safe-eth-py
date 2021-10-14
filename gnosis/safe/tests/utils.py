@@ -23,33 +23,50 @@ def generate_valid_s() -> int:
             return s
 
 
-def deploy_safe(w3: Web3, safe_creation_tx: SafeCreationTx, funder: str, initial_funding_wei: int = 0,
-                funder_account=None) -> str:
+def deploy_safe(
+    w3: Web3,
+    safe_creation_tx: SafeCreationTx,
+    funder: str,
+    initial_funding_wei: int = 0,
+    funder_account=None,
+) -> str:
     if funder_account:
-        send_tx(w3, {
-            'to': safe_creation_tx.deployer_address,
-            'value': safe_creation_tx.payment,
-        }, funder_account)
+        send_tx(
+            w3,
+            {
+                "to": safe_creation_tx.deployer_address,
+                "value": safe_creation_tx.payment,
+            },
+            funder_account,
+        )
 
-        send_tx(w3, {
-            'to': safe_creation_tx.safe_address,
-            'value': safe_creation_tx.payment + initial_funding_wei,
-        }, funder_account)
+        send_tx(
+            w3,
+            {
+                "to": safe_creation_tx.safe_address,
+                "value": safe_creation_tx.payment + initial_funding_wei,
+            },
+            funder_account,
+        )
     else:
         w3.eth.wait_for_transaction_receipt(
-            w3.eth.send_transaction({
-                'from': funder,
-                'to': safe_creation_tx.deployer_address,
-                'value': safe_creation_tx.payment
-            })
+            w3.eth.send_transaction(
+                {
+                    "from": funder,
+                    "to": safe_creation_tx.deployer_address,
+                    "value": safe_creation_tx.payment,
+                }
+            )
         )
 
         w3.eth.wait_for_transaction_receipt(
-            w3.eth.send_transaction({
-                'from': funder,
-                'to': safe_creation_tx.safe_address,
-                'value': safe_creation_tx.payment + initial_funding_wei
-            })
+            w3.eth.send_transaction(
+                {
+                    "from": funder,
+                    "to": safe_creation_tx.safe_address,
+                    "value": safe_creation_tx.payment + initial_funding_wei,
+                }
+            )
         )
 
     tx_hash = w3.eth.send_raw_transaction(bytes(safe_creation_tx.tx_raw))

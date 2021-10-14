@@ -19,17 +19,21 @@ class Sourcify:
         comments can be different and especially the NatSpec comments could have been modified.
 
     """
-    def __init__(self, network: EthereumNetwork = EthereumNetwork.MAINNET,
-                 base_url: str = 'https://repo.sourcify.dev/'):
+
+    def __init__(
+        self,
+        network: EthereumNetwork = EthereumNetwork.MAINNET,
+        base_url: str = "https://repo.sourcify.dev/",
+    ):
         self.network = network
         self.base_url = base_url
         self.http_session = requests.session()
 
     def _get_abi_from_metadata(self, metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return metadata['output']['abi']
+        return metadata["output"]["abi"]
 
     def _get_name_from_metadata(self, metadata: Dict[str, Any]) -> Optional[str]:
-        values = list(metadata['settings'].get('compilationTarget', {}).values())
+        values = list(metadata["settings"].get("compilationTarget", {}).values())
         if values:
             return values[0]
 
@@ -40,15 +44,21 @@ class Sourcify:
 
         return response.json()
 
-    def get_contract_metadata(self, contract_address: str) -> Optional[ContractMetadata]:
-        assert Web3.isChecksumAddress(contract_address), 'Expecting a checksummed address'
+    def get_contract_metadata(
+        self, contract_address: str
+    ) -> Optional[ContractMetadata]:
+        assert Web3.isChecksumAddress(
+            contract_address
+        ), "Expecting a checksummed address"
 
-        for match_type in ('full_match', 'partial_match'):
-            url = urljoin(self.base_url,
-                          f'/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json')
+        for match_type in ("full_match", "partial_match"):
+            url = urljoin(
+                self.base_url,
+                f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
+            )
             metadata = self._do_request(url)
             if metadata:
                 abi = self._get_abi_from_metadata(metadata)
                 name = self._get_name_from_metadata(metadata)
-                return ContractMetadata(name, abi, match_type == 'partial_match')
+                return ContractMetadata(name, abi, match_type == "partial_match")
         return None

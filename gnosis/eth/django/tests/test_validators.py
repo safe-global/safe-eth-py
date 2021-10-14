@@ -11,4 +11,6 @@ class TestValidators(TestCase):
 
         self.assertIsNone(validate_checksumed_address(eth_address))
 
-        self.assertRaises(ValidationError, validate_checksumed_address, eth_address.lower())
+        self.assertRaises(
+            ValidationError, validate_checksumed_address, eth_address.lower()
+        )

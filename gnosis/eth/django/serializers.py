@@ -7,9 +7,14 @@ from hexbytes import HexBytes
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from ..constants import (SIGNATURE_R_MAX_VALUE, SIGNATURE_R_MIN_VALUE,
-                         SIGNATURE_S_MAX_VALUE, SIGNATURE_S_MIN_VALUE,
-                         SIGNATURE_V_MAX_VALUE, SIGNATURE_V_MIN_VALUE)
+from ..constants import (
+    SIGNATURE_R_MAX_VALUE,
+    SIGNATURE_R_MIN_VALUE,
+    SIGNATURE_S_MAX_VALUE,
+    SIGNATURE_S_MIN_VALUE,
+    SIGNATURE_V_MAX_VALUE,
+    SIGNATURE_V_MIN_VALUE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +28,12 @@ class EthereumAddressField(serializers.Field):
     https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md
     """
 
-    def __init__(self, allow_zero_address: bool = False, allow_sentinel_address: bool = False, **kwargs):
+    def __init__(
+        self,
+        allow_zero_address: bool = False,
+        allow_sentinel_address: bool = False,
+        **kwargs
+    ):
         self.allow_zero_address = allow_zero_address
         self.allow_sentinel_address = allow_sentinel_address
         super().__init__(**kwargs)
@@ -54,25 +64,29 @@ class HexadecimalField(serializers.Field):
     """
 
     default_error_messages = {
-        'invalid': _('{value} is not an hexadecimal value.'),
-        'blank': _('This field may not be blank.'),
-        'max_length': _('Ensure this field has no more than {max_length} hexadecimal chars (not counting 0x).'),
-        'min_length': _('Ensure this field has at least {min_length} hexadecimal chars (not counting 0x).'),
+        "invalid": _("{value} is not an hexadecimal value."),
+        "blank": _("This field may not be blank."),
+        "max_length": _(
+            "Ensure this field has no more than {max_length} hexadecimal chars (not counting 0x)."
+        ),
+        "min_length": _(
+            "Ensure this field has at least {min_length} hexadecimal chars (not counting 0x)."
+        ),
     }
 
     def __init__(self, **kwargs):
-        self.allow_blank = kwargs.pop('allow_blank', False)
-        self.max_length = kwargs.pop('max_length', None)
-        self.min_length = kwargs.pop('min_length', None)
+        self.allow_blank = kwargs.pop("allow_blank", False)
+        self.max_length = kwargs.pop("max_length", None)
+        self.min_length = kwargs.pop("min_length", None)
         super().__init__(**kwargs)
 
     def to_representation(self, obj):
         if not obj:
-            return '0x'
+            return "0x"
 
         # We can get another types like `memoryview` from django models. `to_internal_value` is not used
         # when you provide an object instead of a json using `data`. Make sure everything is HexBytes.
-        if hasattr(obj, 'hex'):
+        if hasattr(obj, "hex"):
             obj = HexBytes(obj.hex())
         elif not isinstance(obj, HexBytes):
             obj = HexBytes(obj)
@@ -83,35 +97,35 @@ class HexadecimalField(serializers.Field):
             data = data.hex()
         elif isinstance(data, str):
             data = data.strip()  # Trim spaces
-            if data.startswith('0x'):  # Remove 0x prefix
+            if data.startswith("0x"):  # Remove 0x prefix
                 data = data[2:]
         elif data is None:
             pass
         else:
-            self.fail('invalid', value=data)
+            self.fail("invalid", value=data)
 
         if not data:
             if self.allow_blank:
                 return None
             else:
-                self.fail('blank')
+                self.fail("blank")
 
         try:
             data_hex = HexBytes(data)
             data_len = len(data_hex)
             if self.min_length and data_len < self.min_length:
-                self.fail('min_length', min_length=data_len)
+                self.fail("min_length", min_length=data_len)
             elif self.max_length and data_len > self.max_length:
-                self.fail('max_length', max_length=data_len)
+                self.fail("max_length", max_length=data_len)
             return data_hex
         except ValueError:
-            self.fail('invalid', value=data)
+            self.fail("invalid", value=data)
 
 
 class Sha3HashField(HexadecimalField):
     def __init__(self, **kwargs):
-        kwargs['max_length'] = 32
-        kwargs['min_length'] = 32
+        kwargs["max_length"] = 32
+        kwargs["min_length"] = 32
         super().__init__(**kwargs)
 
 
@@ -119,12 +133,15 @@ class Sha3HashField(HexadecimalField):
 #                Base Serializers
 # ================================================ #
 class SignatureSerializer(serializers.Serializer):
-    v = serializers.IntegerField(min_value=SIGNATURE_V_MIN_VALUE,
-                                 max_value=SIGNATURE_V_MAX_VALUE)
-    r = serializers.IntegerField(min_value=SIGNATURE_R_MIN_VALUE,
-                                 max_value=SIGNATURE_R_MAX_VALUE)
-    s = serializers.IntegerField(min_value=SIGNATURE_S_MIN_VALUE,
-                                 max_value=SIGNATURE_S_MAX_VALUE)
+    v = serializers.IntegerField(
+        min_value=SIGNATURE_V_MIN_VALUE, max_value=SIGNATURE_V_MAX_VALUE
+    )
+    r = serializers.IntegerField(
+        min_value=SIGNATURE_R_MIN_VALUE, max_value=SIGNATURE_R_MAX_VALUE
+    )
+    s = serializers.IntegerField(
+        min_value=SIGNATURE_S_MIN_VALUE, max_value=SIGNATURE_S_MAX_VALUE
+    )
 
 
 class TransactionSerializer(serializers.Serializer):
@@ -138,8 +155,8 @@ class TransactionSerializer(serializers.Serializer):
     def get_fields(self):
         result = super().get_fields()
         # Rename `from_` to `from`
-        from_ = result.pop('from_')
-        result['from'] = from_
+        from_ = result.pop("from_")
+        result["from"] = from_
         return result
 
 
@@ -147,6 +164,7 @@ class TransactionResponseSerializer(serializers.Serializer):
     """
     Use chars to avoid problems with big ints (i.e. JavaScript)
     """
+
     from_ = EthereumAddressField()
     value = serializers.IntegerField(min_value=0)
     data = serializers.CharField()
@@ -157,6 +175,6 @@ class TransactionResponseSerializer(serializers.Serializer):
     def get_fields(self):
         result = super().get_fields()
         # Rename `from_` to `from`
-        from_ = result.pop('from_')
-        result['from'] = from_
+        from_ = result.pop("from_")
+        result["from"] = from_
         return result
