@@ -30,6 +30,13 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+
+    cache = lru_cache(maxsize=None)
+
 
 def load_contract_interface(file_name):
     return _load_json_file(_abi_file_path(file_name))
@@ -197,12 +204,24 @@ def get_cpk_factory_contract(w3: Web3, address: Optional[str] = None) -> Contrac
     pass
 
 
-def get_paying_proxy_deployed_bytecode() -> bytes:
-    return HexBytes(load_contract_interface("PayingProxy.json")["deployedBytecode"])
+@cache
+def get_proxy_1_3_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_3_0.json")["deployedBytecode"])
 
 
+@cache
+def get_proxy_1_1_1_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_1_1.json")["deployedBytecode"])
+
+
+@cache
 def get_proxy_1_0_0_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface("Proxy_V1_0_0.json")["deployedBytecode"])
+
+
+@cache
+def get_paying_proxy_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("PayingProxy.json")["deployedBytecode"])
 
 
 for contract_name, json_contract_filename in contracts.items():
