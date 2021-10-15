@@ -78,6 +78,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             "proxy_factory_V1_0_0"
         ]
         settings.SAFE_VALID_CONTRACT_ADDRESSES = {
+            settings.SAFE_CONTRACT_ADDRESS,
             settings.SAFE_V1_1_1_CONTRACT_ADDRESS,
             settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
             settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
