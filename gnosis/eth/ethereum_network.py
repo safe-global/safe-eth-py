@@ -70,7 +70,8 @@ class EthereumNetwork(Enum):
     TT = 108
     XPR_TESTNET = 110
     ETL = 111
-    FUSE = 122
+    FUSE_MAINNET = 122
+    FUSE_SPARK = 123
     DWU = 124
     FETH_FACTORY127 = 127
     HECO = 128
