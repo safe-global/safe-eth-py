@@ -4,6 +4,8 @@ from django.test import TestCase
 
 from eth_account import Account
 
+from gnosis.eth import EthereumClient
+from gnosis.eth.tests.utils import just_test_if_mainnet_node
 from gnosis.safe import Safe
 
 from ..proxy_factory import ProxyFactory
@@ -63,6 +65,24 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         self.assertTrue(
             self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
         )
+
+    def test_check_proxy_code_mainnet(self):
+        mainnet_node = just_test_if_mainnet_node()
+        ethereum_client = EthereumClient(mainnet_node)
+        last_proxy_factory_address = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2"
+        proxy_factory = ProxyFactory(last_proxy_factory_address, ethereum_client)
+
+        # Random Safes deployed by the proxy_factory
+        safes = [
+            "0x7f2722741F997c63133e656a70aE5Ae0614aD7f5",  # v1.0.0
+            "0x655A9e6b044d6B62F393f9990ec3eA877e966e18",  # v1.1.1
+            # '',  # v1.2.0
+            "0xDaB5dc22350f9a6Aff03Cf3D9341aAD0ba42d2a6",  # v1.3.0
+        ]
+
+        for safe in safes:
+            with self.subTest(safe=safe):
+                self.assertTrue(proxy_factory.check_proxy_code(safe))
 
     def test_deploy_proxy_contract(self):
         s = 15
