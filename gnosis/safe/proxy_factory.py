@@ -11,6 +11,7 @@ from gnosis.eth.contracts import (
     get_paying_proxy_deployed_bytecode,
     get_proxy_1_0_0_deployed_bytecode,
     get_proxy_1_1_1_deployed_bytecode,
+    get_proxy_1_1_1_mainnet_deployed_bytecode,
     get_proxy_1_3_0_deployed_bytecode,
     get_proxy_factory_contract,
     get_proxy_factory_V1_0_0_contract,
@@ -31,7 +32,7 @@ logger = getLogger(__name__)
 
 
 class ProxyFactory:
-    def __init__(self, address: str, ethereum_client: EthereumClient):
+    def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert Web3.isChecksumAddress(address), (
             "%s proxy factory address not valid" % address
         )
@@ -121,6 +122,7 @@ class ProxyFactory:
         proxy_code_fns = (
             get_proxy_1_3_0_deployed_bytecode,
             get_proxy_1_1_1_deployed_bytecode,
+            get_proxy_1_1_1_mainnet_deployed_bytecode,
             get_proxy_1_0_0_deployed_bytecode,
             get_paying_proxy_deployed_bytecode,
             self.get_proxy_runtime_code,
@@ -133,7 +135,7 @@ class ProxyFactory:
     def deploy_proxy_contract(
         self,
         deployer_account: LocalAccount,
-        master_copy: str,
+        master_copy: ChecksumAddress,
         initializer: bytes = b"",
         gas: Optional[int] = None,
         gas_price: Optional[int] = None,
@@ -172,7 +174,7 @@ class ProxyFactory:
     def deploy_proxy_contract_with_nonce(
         self,
         deployer_account: LocalAccount,
-        master_copy: str,
+        master_copy: ChecksumAddress,
         initializer: bytes,
         salt_nonce: int,
         gas: Optional[int] = None,
@@ -216,12 +218,14 @@ class ProxyFactory:
         )
         return EthereumTxSent(tx_hash, tx, contract_address)
 
-    def get_contract(self):
-        return get_proxy_factory_contract(self.ethereum_client.w3, self.address)
+    def get_contract(self, address: Optional[ChecksumAddress] = None):
+        address = address or self.address
+        return get_proxy_factory_contract(self.ethereum_client.w3, address)
 
     @cache
-    def get_proxy_runtime_code(self):
+    def get_proxy_runtime_code(self, address: Optional[ChecksumAddress] = None):
         """
         Get runtime code for current proxy factory
         """
-        return self.get_contract().functions.proxyRuntimeCode().call()
+        address = address or self.address
+        return self.get_contract(address=address).functions.proxyRuntimeCode().call()
