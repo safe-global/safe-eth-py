@@ -138,7 +138,7 @@ class SafeTx:
             return self.contract.functions.VERSION().call()
 
     @property
-    def safe_tx_hash(self) -> HexBytes:
+    def safe_tx_data(self) -> Dict:
         data = self.data.hex() if self.data else ""
 
         # Safes >= 1.0.0 Renamed `baseGas` to `dataGas`
@@ -189,7 +189,11 @@ class SafeTx:
             )
             structured_data["domain"]["chainId"] = self.chain_id
 
-        return HexBytes(encode_typed_data(structured_data))
+        return structured_data
+
+    @property
+    def safe_tx_hash(self) -> HexBytes:
+        return HexBytes(encode_typed_data(self.safe_tx_data))
 
     @property
     def signers(self) -> List[str]:
