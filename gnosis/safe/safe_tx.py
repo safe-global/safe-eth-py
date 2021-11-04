@@ -1,17 +1,17 @@
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
+from eip712_structs import Address, Bytes, EIP712Struct, Uint, make_domain
+from eip712_structs.struct import StructTuple
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
+from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput, ContractLogicError
 from web3.types import BlockIdentifier, TxParams, Wei
-from web3 import Web3
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
-from eip712_structs import EIP712Struct, Address, Bytes, Uint, make_domain
-from eip712_structs.struct import StructTuple
 
 from .exceptions import (
     CouldNotFinishInitialization,
@@ -142,19 +142,34 @@ class SafeTx:
     def _eip712_payload(self) -> StructTuple:
         data = self.data.hex() if self.data else ""
         safe_version = Version(self.safe_version)
-        assert safe_version >= Version("1.0.0"), f"Unsupported Safe version: {safe_version}"
-        
-        class SafeTx(EIP712Struct):
-            to = Address()
-            value = Uint(256)
-            data = Bytes()
-            operation = Uint(8)
-            safeTxGas = Uint(256)
-            baseGas = Uint(256)
-            gasPrice = Uint(256)
-            gasToken = Address()
-            refundReceiver = Address()
-            nonce = Uint(256)
+
+        if safe_version >= Version("1.0.0"):
+
+            class SafeTx(EIP712Struct):
+                to = Address()
+                value = Uint(256)
+                data = Bytes()
+                operation = Uint(8)
+                safeTxGas = Uint(256)
+                baseGas = Uint(256)  # `dataGas` was renamed to `baseGas` in 1.0.0
+                gasPrice = Uint(256)
+                gasToken = Address()
+                refundReceiver = Address()
+                nonce = Uint(256)
+
+        else:
+
+            class SafeTx(EIP712Struct):
+                to = Address()
+                value = Uint(256)
+                data = Bytes()
+                operation = Uint(8)
+                safeTxGas = Uint(256)
+                dataGas = Uint(256)
+                gasPrice = Uint(256)
+                gasToken = Address()
+                refundReceiver = Address()
+                nonce = Uint(256)
 
         message = SafeTx(
             to=self.to,
@@ -163,10 +178,11 @@ class SafeTx:
             operation=self.operation,
             safeTxGas=self.safe_tx_gas,
             baseGas=self.base_gas,
+            dataGas=self.base_gas,
             gasPrice=self.gas_price,
             gasToken=self.gas_token,
             refundReceiver=self.refund_receiver,
-            nonce=self.safe_nonce
+            nonce=self.safe_nonce,
         )
         domain = make_domain(
             verifyingContract=self.safe_address,
