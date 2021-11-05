@@ -5,12 +5,9 @@ from .ethereum_client import (
     FromAddressNotFound,
     GasLimitExceeded,
     InsufficientFunds,
-    InvalidERC20Info,
-    InvalidERC721Info,
     InvalidNonce,
     NonceTooHigh,
     NonceTooLow,
-    ParityTraceDecodeException,
     ReplacementTransactionUnderpriced,
     SenderAccountNotFoundInNode,
     TransactionAlreadyImported,
@@ -18,3 +15,4 @@ from .ethereum_client import (
     UnknownAccount,
 )
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
+from .exceptions import InvalidERC20Info, InvalidERC721Info, ParityTraceDecodeException
