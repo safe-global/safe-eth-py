@@ -8,21 +8,21 @@ from eth_account import Account
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 from web3.eth import Eth
+from web3.types import TxParams
 
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (
-    BatchCallException,
     EthereumClient,
     EthereumClientProvider,
     EthereumNetwork,
     FromAddressNotFound,
     InsufficientFunds,
-    InvalidERC20Info,
     InvalidNonce,
     ParityManager,
     SenderAccountNotFoundInNode,
 )
+from ..exceptions import BatchCallException, InvalidERC20Info
 from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
@@ -1457,6 +1457,16 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
 
+    def test_set_eip1159_fees(self):
+        with mock.patch.object(
+            EthereumClient, "estimate_fee_eip1159", return_value=(2, 5)
+        ):
+            tx: TxParams = {"to": Account.create(), "value": 1, "gasPrice": 5}
+            self.ethereum_client.set_eip1159_fees(tx)
+            self.assertNotIn("gasPrice", tx)
+            self.assertEqual(tx["maxPriorityFeePerGas"], 5)
+            self.assertEqual(tx["maxFeePerGas"], 7)
+
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
     @classmethod
@@ -1464,6 +1474,17 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         super().setUpClass()
         mainnet_node = just_test_if_mainnet_node()
         cls.ethereum_client = EthereumClient(mainnet_node)
+
+    def test_estimate_fee_eip1159(self):
+        """
+        EIP1159 is still not supported on Ganache
+        """
+        (
+            base_fee_per_gas,
+            max_priority_fee_per_gas,
+        ) = self.ethereum_client.estimate_fee_eip1159()
+        self.assertGreater(base_fee_per_gas, 0)
+        self.assertGreater(max_priority_fee_per_gas, 0)
 
     def test_trace_block(self):
         block_number = 2191709

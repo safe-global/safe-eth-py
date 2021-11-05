@@ -6,7 +6,7 @@ from django.test import TestCase
 from .. import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from ..constants import NULL_ADDRESS
 from ..contracts import get_erc20_contract
-from ..ethereum_client import BatchCallFunctionFailed
+from ..exceptions import BatchCallFunctionFailed
 from ..multicall import Multicall, MulticallDecodedResult
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node

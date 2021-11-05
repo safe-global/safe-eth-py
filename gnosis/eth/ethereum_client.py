@@ -1,3 +1,4 @@
+from enum import Enum
 from functools import wraps
 from logging import getLogger
 from typing import (
@@ -66,6 +67,24 @@ from .constants import (
 )
 from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
+from .exceptions import (
+    BatchCallFunctionFailed,
+    FromAddressNotFound,
+    GasLimitExceeded,
+    InsufficientFunds,
+    InvalidERC20Info,
+    InvalidERC721Info,
+    InvalidNonce,
+    NonceTooHigh,
+    NonceTooLow,
+    ParityTraceDecodeException,
+    ReplacementTransactionUnderpriced,
+    SenderAccountNotFoundInNode,
+    TransactionAlreadyImported,
+    TransactionGasPriceTooLow,
+    TransactionQueueLimitReached,
+    UnknownAccount,
+)
 from .typing import BalanceDict, EthereumData, EthereumHash
 from .utils import decode_string_or_bytes32
 
@@ -84,78 +103,6 @@ except ImportError:
 
 
 logger = getLogger(__name__)
-
-
-class EthereumClientException(ValueError):
-    pass
-
-
-class TransactionAlreadyImported(EthereumClientException):
-    pass
-
-
-class ReplacementTransactionUnderpriced(EthereumClientException):
-    pass
-
-
-class TransactionQueueLimitReached(EthereumClientException):
-    pass
-
-
-class FromAddressNotFound(EthereumClientException):
-    pass
-
-
-class InvalidNonce(EthereumClientException):
-    pass
-
-
-class NonceTooLow(InvalidNonce):
-    pass
-
-
-class NonceTooHigh(InvalidNonce):
-    pass
-
-
-class InsufficientFunds(EthereumClientException):
-    pass
-
-
-class SenderAccountNotFoundInNode(EthereumClientException):
-    pass
-
-
-class UnknownAccount(EthereumClientException):
-    pass
-
-
-class GasLimitExceeded(EthereumClientException):
-    pass
-
-
-class TransactionGasPriceTooLow(EthereumClientException):
-    pass
-
-
-class ParityTraceDecodeException(EthereumClientException):
-    pass
-
-
-class InvalidERC20Info(EthereumClientException):
-    pass
-
-
-class InvalidERC721Info(EthereumClientException):
-    pass
-
-
-class BatchCallException(EthereumClientException):
-    pass
-
-
-class BatchCallFunctionFailed(BatchCallException):
-    pass
 
 
 def tx_with_exception_handling(func):
@@ -226,6 +173,16 @@ class Erc721Info(NamedTuple):
 class TokenBalance(NamedTuple):
     token_address: str
     balance: int
+
+
+class TxSpeed(Enum):
+    SLOWEST = 0
+    VERY_SLOW = 1
+    SLOW = 2
+    NORMAL = 3
+    FAST = 4
+    VERY_FAST = 5
+    FASTEST = 6
 
 
 class EthereumClientProvider:
@@ -1547,6 +1504,45 @@ class EthereumClient:
                 gas += GAS_CALL_DATA_BYTE
         return gas
 
+    def estimate_fee_eip1159(
+        self, tx_speed: TxSpeed = TxSpeed.NORMAL
+    ) -> Tuple[int, int]:
+        """
+        Check https://github.com/ethereum/execution-apis/blob/main/src/eth/fee_market.json#L15
+
+        :return: Tuple[BaseFeePerGas, MaxPriorityFeePerGas]
+        :raises: ValueError if not supported on the network
+        """
+        if tx_speed == TxSpeed.SLOWEST:
+            percentile = 0
+        elif tx_speed == TxSpeed.VERY_SLOW:
+            percentile = 10
+        elif tx_speed == TxSpeed.SLOW:
+            percentile = 25
+        elif tx_speed == TxSpeed.NORMAL:
+            percentile = 50
+        elif tx_speed == TxSpeed.FAST:
+            percentile = 75
+        elif tx_speed == TxSpeed.VERY_FAST:
+            percentile = 90
+        elif tx_speed == TxSpeed.FASTEST:
+            percentile = 100
+
+        result = self.w3.eth.fee_history(1, "latest", reward_percentiles=[percentile])
+        # Get next block `base_fee_per_gas`
+        base_fee_per_gas = result["baseFeePerGas"][-1]
+        max_priority_fee_per_gas = result["reward"][0][0]
+        return base_fee_per_gas, max_priority_fee_per_gas
+
+    def set_eip1159_fees(self, tx: TxParams, tx_speed: TxSpeed = TxSpeed.NORMAL):
+        if "gasPrice" in tx:
+            del tx["gasPrice"]
+
+        base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1159(tx_speed)
+        tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
+        tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas
+        return tx
+
     def get_balance(
         self,
         address: ChecksumAddress,
@@ -1791,6 +1787,7 @@ class EthereumClient:
         """
         Send ether using configured account
 
+        :param private_key: to
         :param to: to
         :param gas_price: gas_price
         :param value: value(wei)

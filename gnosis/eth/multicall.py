@@ -16,7 +16,8 @@ from web3.contract import ContractFunction
 from web3.exceptions import ContractLogicError
 
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
-from .ethereum_client import BatchCallFunctionFailed, EthereumTxSent
+from .ethereum_client import EthereumTxSent
+from .exceptions import BatchCallFunctionFailed
 from .oracles.abis.makerdao import multicall_v2_abi, multicall_v2_bytecode
 
 logger = logging.getLogger(__name__)
