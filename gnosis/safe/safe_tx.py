@@ -42,6 +42,36 @@ except ImportError:
     from cached_property import cached_property
 
 
+class EIP712SafeTx(EIP712Struct):
+    to = Address()
+    value = Uint(256)
+    data = Bytes()
+    operation = Uint(8)
+    safeTxGas = Uint(256)
+    baseGas = Uint(256)  # `dataGas` was renamed to `baseGas` in 1.0.0
+    gasPrice = Uint(256)
+    gasToken = Address()
+    refundReceiver = Address()
+    nonce = Uint(256)
+
+
+class EIP712LegacySafeTx(EIP712Struct):
+    to = Address()
+    value = Uint(256)
+    data = Bytes()
+    operation = Uint(8)
+    safeTxGas = Uint(256)
+    dataGas = Uint(256)
+    gasPrice = Uint(256)
+    gasToken = Address()
+    refundReceiver = Address()
+    nonce = Uint(256)
+
+
+EIP712SafeTx.type_name = "SafeTx"
+EIP712LegacySafeTx.type_name = "SafeTx"
+
+
 class SafeTx:
     tx: TxParams  # If executed, `tx` is set
     tx_hash: bytes  # If executed, `tx_hash` is set
@@ -142,36 +172,8 @@ class SafeTx:
     def _eip712_payload(self) -> StructTuple:
         data = self.data.hex() if self.data else ""
         safe_version = Version(self.safe_version)
-
-        if safe_version >= Version("1.0.0"):
-
-            class SafeTx(EIP712Struct):
-                to = Address()
-                value = Uint(256)
-                data = Bytes()
-                operation = Uint(8)
-                safeTxGas = Uint(256)
-                baseGas = Uint(256)  # `dataGas` was renamed to `baseGas` in 1.0.0
-                gasPrice = Uint(256)
-                gasToken = Address()
-                refundReceiver = Address()
-                nonce = Uint(256)
-
-        else:
-
-            class SafeTx(EIP712Struct):
-                to = Address()
-                value = Uint(256)
-                data = Bytes()
-                operation = Uint(8)
-                safeTxGas = Uint(256)
-                dataGas = Uint(256)
-                gasPrice = Uint(256)
-                gasToken = Address()
-                refundReceiver = Address()
-                nonce = Uint(256)
-
-        message = SafeTx(
+        cls = EIP712SafeTx if safe_version >= Version("1.0.0") else EIP712LegacySafeTx
+        message = cls(
             to=self.to,
             value=self.value,
             data=data,
