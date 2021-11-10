@@ -29,6 +29,7 @@ class EthereumNetwork(Enum):
     TCH_THAIFI = 17
     TST_TESTNET = 18
     SGB_SONGBIRD = 19
+    BOBA_RINKEBY = 28
     RSK = 30
     RSK_TESTNET = 31
     GOOD_TESTNET = 32
@@ -85,6 +86,7 @@ class EthereumNetwork(Enum):
     FANTOM = 250
     HECO_TESTNET = 256
     HPB = 269
+    BOBA = 288
     KCC_TESTNET = 322
     THETA = 361
     THETA_TESTNET_SAPPHIRE = 363
