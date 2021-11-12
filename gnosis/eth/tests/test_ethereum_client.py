@@ -1465,6 +1465,9 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             eip_1159_tx = self.ethereum_client.set_eip1159_fees(tx)
             self.assertIn("gasPrice", tx)  # Provided tx is not modified
             self.assertNotIn("gasPrice", eip_1159_tx)
+            self.assertEqual(
+                eip_1159_tx["chainId"], self.ethereum_client.get_network().value
+            )
             self.assertEqual(eip_1159_tx["maxPriorityFeePerGas"], 5)
             self.assertEqual(eip_1159_tx["maxFeePerGas"], 7)
 

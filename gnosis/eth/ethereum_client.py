@@ -1546,6 +1546,9 @@ class EthereumClient:
         if "gasPrice" in tx:
             del tx["gasPrice"]
 
+        if "chainId" not in tx:
+            tx["chainId"] = self.get_network().value
+
         tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
         tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas
         return tx
