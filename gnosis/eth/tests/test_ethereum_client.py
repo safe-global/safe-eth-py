@@ -1462,10 +1462,11 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             EthereumClient, "estimate_fee_eip1159", return_value=(2, 5)
         ):
             tx: TxParams = {"to": Account.create(), "value": 1, "gasPrice": 5}
-            self.ethereum_client.set_eip1159_fees(tx)
-            self.assertNotIn("gasPrice", tx)
-            self.assertEqual(tx["maxPriorityFeePerGas"], 5)
-            self.assertEqual(tx["maxFeePerGas"], 7)
+            eip_1159_tx = self.ethereum_client.set_eip1159_fees(tx)
+            self.assertIn("gasPrice", tx)  # Provided tx is not modified
+            self.assertNotIn("gasPrice", eip_1159_tx)
+            self.assertEqual(eip_1159_tx["maxPriorityFeePerGas"], 5)
+            self.assertEqual(eip_1159_tx["maxFeePerGas"], 7)
 
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
