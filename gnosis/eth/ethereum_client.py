@@ -1504,7 +1504,7 @@ class EthereumClient:
                 gas += GAS_CALL_DATA_BYTE
         return gas
 
-    def estimate_fee_eip1159(
+    def estimate_fee_eip1559(
         self, tx_speed: TxSpeed = TxSpeed.NORMAL
     ) -> Tuple[int, int]:
         """
@@ -1534,17 +1534,20 @@ class EthereumClient:
         max_priority_fee_per_gas = result["reward"][0][0]
         return base_fee_per_gas, max_priority_fee_per_gas
 
-    def set_eip1159_fees(
+    def set_eip1559_fees(
         self, tx: TxParams, tx_speed: TxSpeed = TxSpeed.NORMAL
     ) -> TxParams:
         """
-        :return: TxParams in EIP1159 format
-        :raises: ValueError if EIP1159 not supported
+        :return: TxParams in EIP1559 format
+        :raises: ValueError if EIP1559 not supported
         """
-        base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1159(tx_speed)
+        base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1559(tx_speed)
         tx = dict(tx)  # Don't modify provided tx
         if "gasPrice" in tx:
             del tx["gasPrice"]
+
+        if "chainId" not in tx:
+            tx["chainId"] = self.get_network().value
 
         tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
         tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas

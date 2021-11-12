@@ -51,7 +51,6 @@ jobs:
     - name: Test setup.py
       run: pip install -e .
     - name: Send results to coveralls
-      if: ${{ env.COVERALLS_REPO_TOKEN }}
       run: coveralls --service=github
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
