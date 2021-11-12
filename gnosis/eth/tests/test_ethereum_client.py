@@ -1457,16 +1457,19 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
 
-    def test_set_eip1159_fees(self):
+    def test_set_eip1559_fees(self):
         with mock.patch.object(
-            EthereumClient, "estimate_fee_eip1159", return_value=(2, 5)
+            EthereumClient, "estimate_fee_eip1559", return_value=(2, 5)
         ):
             tx: TxParams = {"to": Account.create(), "value": 1, "gasPrice": 5}
-            eip_1159_tx = self.ethereum_client.set_eip1159_fees(tx)
+            eip_1559_tx = self.ethereum_client.set_eip1559_fees(tx)
             self.assertIn("gasPrice", tx)  # Provided tx is not modified
-            self.assertNotIn("gasPrice", eip_1159_tx)
-            self.assertEqual(eip_1159_tx["maxPriorityFeePerGas"], 5)
-            self.assertEqual(eip_1159_tx["maxFeePerGas"], 7)
+            self.assertNotIn("gasPrice", eip_1559_tx)
+            self.assertEqual(
+                eip_1559_tx["chainId"], self.ethereum_client.get_network().value
+            )
+            self.assertEqual(eip_1559_tx["maxPriorityFeePerGas"], 5)
+            self.assertEqual(eip_1559_tx["maxFeePerGas"], 7)
 
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
@@ -1476,14 +1479,14 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         mainnet_node = just_test_if_mainnet_node()
         cls.ethereum_client = EthereumClient(mainnet_node)
 
-    def test_estimate_fee_eip1159(self):
+    def test_estimate_fee_eip1559(self):
         """
-        EIP1159 is still not supported on Ganache
+        EIP1559 is still not supported on Ganache
         """
         (
             base_fee_per_gas,
             max_priority_fee_per_gas,
-        ) = self.ethereum_client.estimate_fee_eip1159()
+        ) = self.ethereum_client.estimate_fee_eip1559()
         self.assertGreater(base_fee_per_gas, 0)
         self.assertGreater(max_priority_fee_per_gas, 0)
 
