@@ -1534,11 +1534,18 @@ class EthereumClient:
         max_priority_fee_per_gas = result["reward"][0][0]
         return base_fee_per_gas, max_priority_fee_per_gas
 
-    def set_eip1159_fees(self, tx: TxParams, tx_speed: TxSpeed = TxSpeed.NORMAL):
+    def set_eip1159_fees(
+        self, tx: TxParams, tx_speed: TxSpeed = TxSpeed.NORMAL
+    ) -> TxParams:
+        """
+        :return: TxParams in EIP1159 format
+        :raises: ValueError if EIP1159 not supported
+        """
+        base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1159(tx_speed)
+        tx = dict(tx)  # Don't modify provided tx
         if "gasPrice" in tx:
             del tx["gasPrice"]
 
-        base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1159(tx_speed)
         tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
         tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas
         return tx
