@@ -8,5 +8,5 @@ hexbytes==0.2.2
 packaging
 psycopg2-binary==2.9.2
 requests==2.26.0
-typing-extensions==3.10.0.2
+typing-extensions==4.0.0
 web3==5.24.0
