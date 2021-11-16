@@ -87,6 +87,7 @@ class EthereumNetwork(Enum):
     HECO_TESTNET = 256
     HPB = 269
     BOBA = 288
+    KCC = 321
     KCC_TESTNET = 322
     THETA = 361
     THETA_TESTNET_SAPPHIRE = 363
