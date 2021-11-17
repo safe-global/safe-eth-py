@@ -201,6 +201,7 @@ class EthereumClientManager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = ethereum_client.slow_w3
         self.http_session = ethereum_client.http_session
+        self.timeout = ethereum_client.timeout
 
 
 class BatchCallManager(EthereumClientManager):
@@ -249,7 +250,9 @@ class BatchCallManager(EthereumClientManager):
                 }
             )
 
-        response = self.http_session.post(self.ethereum_node_url, json=queries)
+        response = self.http_session.post(
+            self.ethereum_node_url, json=queries, timeout=self.timeout
+        )
         if not response.ok:
             raise ConnectionError(
                 f"Error connecting to {self.ethereum_node_url}: {response.text}"
@@ -530,7 +533,7 @@ class Erc20Manager(EthereumClientManager):
             for i, data in enumerate(datas)
         ]
         response = self.http_session.post(
-            self.ethereum_client.ethereum_node_url, json=payload
+            self.ethereum_client.ethereum_node_url, json=payload, timeout=self.timeout
         )
         if not response.ok:
             raise InvalidERC20Info(response.content)
@@ -1052,7 +1055,9 @@ class ParityManager(EthereumClientManager):
             }
             for i, block_identifier in enumerate(block_identifiers)
         ]
-        response = self.http_session.post(self.ethereum_node_url, json=payload)
+        response = self.http_session.post(
+            self.ethereum_node_url, json=payload, timeout=self.timeout
+        )
         if not response.ok:
             message = (
                 f"Problem calling batch `trace_block` on blocks={block_identifiers} "
@@ -1108,7 +1113,9 @@ class ParityManager(EthereumClientManager):
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
-        response = self.http_session.post(self.ethereum_node_url, json=payload)
+        response = self.http_session.post(
+            self.ethereum_node_url, json=payload, timeout=self.timeout
+        )
         if not response.ok:
             message = (
                 f"Problem calling batch `trace_transaction` on tx_hashes={tx_hashes} "
@@ -1250,8 +1257,13 @@ class EthereumClient:
         ethereum_node_url: URI = URI("http://localhost:8545"),
         slow_provider_timeout: int = 60,
     ):
+        """
+        :param ethereum_node_url: Ethereum RPC uri
+        :param slow_provider_timeout: Timeout for slow and custom queries
+        """
         self.http_session = self._prepare_http_session()
         self.ethereum_node_url: str = ethereum_node_url
+        self.timeout = slow_provider_timeout
         self.w3_provider = HTTPProvider(
             self.ethereum_node_url, session=self.http_session
         )
@@ -1286,8 +1298,10 @@ class EthereumClient:
         session = requests.Session()
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=1,  # Doing all the connections to the same url
-            pool_maxsize=100,
-        )  # Do many requests to the same host
+            pool_maxsize=100,  # Number of concurrent connections
+            max_retries=3,  # Nodes are not very responsive some times
+            pool_block=False,
+        )
         session.mount("http://", adapter)
         session.mount("https://", adapter)
         return session
@@ -1578,7 +1592,9 @@ class EthereumClient:
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
-        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
+        results = self.http_session.post(
+            self.ethereum_node_url, json=payload, timeout=self.timeout
+        ).json()
         txs = []
         for result in sorted(results, key=lambda x: x["id"]):
             raw_tx = result["result"]
@@ -1625,7 +1641,9 @@ class EthereumClient:
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
-        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
+        results = self.http_session.post(
+            self.ethereum_node_url, json=payload, timeout=self.timeout
+        ).json()
         receipts = []
         for result in sorted(results, key=lambda x: x["id"]):
             tx_receipt = result["result"]
@@ -1667,7 +1685,9 @@ class EthereumClient:
             }
             for i, block_identifier in enumerate(block_identifiers)
         ]
-        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
+        results = self.http_session.post(
+            self.ethereum_node_url, json=payload, timeout=self.timeout
+        ).json()
         blocks = []
         for result in sorted(results, key=lambda x: x["id"]):
             raw_block = result["result"]
