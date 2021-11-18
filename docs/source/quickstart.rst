@@ -54,6 +54,17 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
   ethereum_client.w3.eth.get_block(57)
 
 
+``EthereumClient`` supports `EIP1559 <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md>`_ fees:
+
+.. code-block:: python
+
+  from gnosis.eth import TxSpeed
+  base_fee, priority_fee = ethereum_client.estimate_fee_eip1559(tx_speed=TxSpeed.NORMAL)
+  # If you want to convert a legacy tx to a EIP1559 one
+  eip1559_tx = ethereum_client.set_eip1559_fees(legacy_tx, tx_speed=TxSpeed.NORMAL)
+
+
+
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
@@ -103,8 +114,8 @@ It includes:
 
 Gnosis Products
 ---------------
-Gnosis Safe
-~~~~~~~~~~~
+Safe
+~~~~
 On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://gnosis-safe.io/>`_
 
 .. code-block:: python
@@ -127,8 +138,8 @@ To work with Multisig Transactions:
   safe_tx.call()  # Check it works
   safe_tx.execute(tx_sender_private_key)
 
-Gnosis Protocol
-~~~~~~~~~~~
+Protocol
+~~~~~~~~
 On ``gnosis.protocol`` there're classes to work with `Gnosis Protocol v2 <https://docs.cowswap.app>`_
 
 .. code-block:: python
