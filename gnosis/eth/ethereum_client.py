@@ -1319,6 +1319,17 @@ class EthereumClient:
         """
         return EthereumNetwork(int(self.w3.eth.chain_id))
 
+    @cache
+    def is_eip1559_supported(self) -> EthereumNetwork:
+        """
+        :return: `True` if EIP1559 is supported by the node, `False` otherwise
+        """
+        try:
+            self.w3.eth.fee_history(1, "latest", reward_percentiles=[50])
+            return True
+        except ValueError:
+            return False
+
     @cached_property
     def multicall(self) -> "Multicall":  # noqa F821
         from .multicall import Multicall

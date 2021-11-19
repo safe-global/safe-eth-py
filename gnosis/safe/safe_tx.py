@@ -13,6 +13,7 @@ from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
+from ..eth.ethereum_client import TxSpeed
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -357,25 +358,34 @@ class SafeTx:
         tx_gas_price: Optional[int] = None,
         tx_nonce: Optional[int] = None,
         block_identifier: Optional[BlockIdentifier] = "latest",
+        eip1559_speed: Optional[TxSpeed] = None,
     ) -> Tuple[HexBytes, TxParams]:
         """
         Send multisig tx to the Safe
+
         :param tx_sender_private_key: Sender private key
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + base_gas) * 2` will be used
         :param tx_gas_price: Gas price of the external tx. If not, `gas_price` will be used
         :param tx_nonce: Force nonce for `tx_sender`
         :param block_identifier: `latest` or `pending`
+        :param eip1559_speed: If provided, use EIP1559 transaction
         :return: Tuple(tx_hash, tx)
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
         sender_account = Account.from_key(tx_sender_private_key)
-        tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gas_price
-
-        tx_parameters = {
-            "from": sender_account.address,
-            "gasPrice": tx_gas_price,
-        }
+        if eip1559_speed and self.ethereum_client.is_eip1559_supported():
+            tx_parameters = self.ethereum_client.set_eip1559_fees(
+                {
+                    "from": sender_account.address,
+                },
+                tx_speed=eip1559_speed,
+            )
+        else:
+            tx_parameters = {
+                "from": sender_account.address,
+                "gasPrice": tx_gas_price or self.gas_price or self.w3.eth.gas_price,
+            }
 
         if tx_gas:
             tx_parameters["gas"] = tx_gas
