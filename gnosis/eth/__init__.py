@@ -12,6 +12,7 @@ from .ethereum_client import (
     SenderAccountNotFoundInNode,
     TransactionAlreadyImported,
     TransactionQueueLimitReached,
+    TxSpeed,
     UnknownAccount,
 )
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported

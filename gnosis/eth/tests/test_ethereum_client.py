@@ -1457,6 +1457,9 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
 
+    def test_is_eip1559_supported(self):
+        self.assertFalse(self.ethereum_client.is_eip1559_supported())
+
     def test_set_eip1559_fees(self):
         with mock.patch.object(
             EthereumClient, "estimate_fee_eip1559", return_value=(2, 5)
@@ -1478,6 +1481,9 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         super().setUpClass()
         mainnet_node = just_test_if_mainnet_node()
         cls.ethereum_client = EthereumClient(mainnet_node)
+
+    def test_is_eip1559_supported(self):
+        self.assertTrue(self.ethereum_client.is_eip1559_supported())
 
     def test_estimate_fee_eip1559(self):
         """
