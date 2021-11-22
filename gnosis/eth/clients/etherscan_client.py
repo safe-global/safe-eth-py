@@ -31,6 +31,7 @@ class EtherscanClient:
         EthereumNetwork.BINANCE: "https://bscscan.com",
         EthereumNetwork.MATIC: "https://polygonscan.com",
         EthereumNetwork.OPTIMISTIC: "https://optimistic.etherscan.io",
+        EthereumNetwork.ARBITRUM: "https://arbiscan.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -42,6 +43,7 @@ class EtherscanClient:
         EthereumNetwork.BINANCE: "https://api.bscscan.com",
         EthereumNetwork.MATIC: "https://api.polygonscan.com",
         EthereumNetwork.OPTIMISTIC: "https://api-optimistic.etherscan.io",
+        EthereumNetwork.ARBITRUM: "https://api.arbiscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
