@@ -39,7 +39,6 @@ class Multicall:
     ADDRESSES = {
         EthereumNetwork.MAINNET: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.ARBITRUM: "0x021CeAC7e681dBCE9b5039d2535ED97590eB395c",
-        EthereumNetwork.ARBITRUM_TESTNET: "0xC80E33a6f02CF08557a0CA3D94d1474D73F64Bc1",
         EthereumNetwork.BINANCE: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
         EthereumNetwork.GOERLI: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.KOVAN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
@@ -48,6 +47,8 @@ class Multicall:
         EthereumNetwork.RINKEBY: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.ROPSTEN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.XDAI: "0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7",
+        EthereumNetwork.FANTOM: "0xD98e3dBE5950Ca8Ce5a4b59630a5652110403E5c",
+        EthereumNetwork.AVALANCHE: "0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7",
     }
 
     def __init__(
