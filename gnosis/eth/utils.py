@@ -65,11 +65,12 @@ def decode_string_or_bytes32(data: bytes) -> str:
 def remove_swarm_metadata(code: bytes) -> bytes:
     """
     Remove swarm metadata from Solidity bytecode
+
     :param code:
     :return: Code without metadata
     """
     swarm = b"\xa1\x65bzzr0"
-    position = code.find(swarm)
+    position = code.rfind(swarm)
     if position == -1:
         raise ValueError("Swarm metadata not found in code %s" % code.hex())
     return code[:position]
@@ -78,6 +79,7 @@ def remove_swarm_metadata(code: bytes) -> bytes:
 def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
     """
     Compare code, removing swarm metadata if necessary
+
     :param code_1:
     :param code_2:
     :return: True if same code, False otherwise
