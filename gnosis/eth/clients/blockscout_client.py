@@ -29,7 +29,7 @@ class BlockscoutClient:
         EthereumNetwork.BOBA: "https://blockexplorer.boba.network/",
         EthereumNetwork.GATHER_DEVNET: "https://devnet-explorer.gather.network/",
         EthereumNetwork.GATHER_TESTNET: "https://testnet-explorer.gather.network/",
-        EthereumNetwork.GATHER_MAINNET: "https://explorer.gather.network/"
+        EthereumNetwork.GATHER_MAINNET: "https://explorer.gather.network/",
     }
 
     def __init__(self, network: EthereumNetwork):
