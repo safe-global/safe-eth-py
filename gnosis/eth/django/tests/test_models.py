@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.test import TestCase
 
 from eth_account import Account
@@ -5,26 +7,40 @@ from faker import Faker
 from hexbytes import HexBytes
 from web3 import Web3
 
-from .models import EthereumAddress, Sha3Hash, Uint256
+
+from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
+from .models import EthereumAddress, EthereumAddressV2, Sha3Hash, Uint256
 
 faker = Faker()
 
 
 class TestModels(TestCase):
     def test_ethereum_address_field(self):
-        address = Account.create().address
-        self.assertTrue(Web3.isChecksumAddress(address))
-        ethereum_address = EthereumAddress.objects.create(value=address)
-        ethereum_address.refresh_from_db()
-        self.assertTrue(Web3.isChecksumAddress(ethereum_address.value))
-        self.assertEqual(address, ethereum_address.value)
+        for EthereumAddressModel in (EthereumAddress, EthereumAddressV2):
+            with self.subTest(EthereumAddressModel=EthereumAddressModel):
+                address = Account.create().address
+                self.assertTrue(Web3.isChecksumAddress(address))
+                ethereum_address = EthereumAddressModel.objects.create(value=address)
+                ethereum_address.refresh_from_db()
+                self.assertTrue(Web3.isChecksumAddress(ethereum_address.value))
+                self.assertEqual(address, ethereum_address.value)
 
-        ethereum_address = EthereumAddress.objects.create(value=None)
-        ethereum_address.refresh_from_db()
-        self.assertIsNone(ethereum_address.value)
+                EthereumAddressModel.objects.create(value=None)
+                self.assertIsNone(EthereumAddressModel.objects.get(value=None).value)
 
-        with self.assertRaises(Exception):
-            EthereumAddress.objects.create(value="0x23")
+                # Test special addresses
+                for special_address in (NULL_ADDRESS, SENTINEL_ADDRESS):
+                    EthereumAddressModel.objects.create(value=special_address)
+                    self.assertIsNotNone(
+                        EthereumAddressModel.objects.get(value=special_address)
+                    )
+
+                with self.assertRaisesMessage(
+                    ValidationError,
+                    '"0x23" value must be an EIP55 checksummed address.',
+                ):
+                    with transaction.atomic():
+                        EthereumAddressModel.objects.create(value="0x23")
 
     def test_uint256_field(self):
         for value in [
