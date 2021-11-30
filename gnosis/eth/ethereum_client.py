@@ -20,12 +20,7 @@ from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
-from ethereum.utils import (
-    check_checksum,
-    checksum_encode,
-    mk_contract_address,
-    privtoaddr,
-)
+from ethereum.utils import mk_contract_address
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
@@ -1450,7 +1445,9 @@ class EthereumClient:
 
                 if not contract_address:
                     contract_address = ChecksumAddress(
-                        checksum_encode(mk_contract_address(tx["from"], tx["nonce"]))
+                        Web3.toChecksumAddress(
+                            mk_contract_address(tx["from"], tx["nonce"])
+                        )
                     )
 
         return EthereumTxSent(tx_hash, tx, contract_address)
@@ -1745,7 +1742,7 @@ class EthereumClient:
 
         # TODO Refactor this method, it's not working well with new version of the nodes
         if private_key:
-            address = self.private_key_to_address(private_key)
+            address = Account.from_key(private_key).address
         elif public_key:
             address = public_key
         else:
@@ -1839,7 +1836,7 @@ class EthereumClient:
         :return: tx_hash
         """
 
-        assert check_checksum(to)
+        assert Web3.isChecksumAddress(to)
 
         tx: TxParams = {
             "to": to,
@@ -1876,4 +1873,4 @@ class EthereumClient:
 
     @staticmethod
     def private_key_to_address(private_key):
-        return checksum_encode(privtoaddr(private_key))
+        return Account.from_key(private_key).address
