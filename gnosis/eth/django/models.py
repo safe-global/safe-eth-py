@@ -1,9 +1,12 @@
+from typing import Optional
+
 from django.core import exceptions
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from eth_typing import ChecksumAddress
+from eth_utils import to_checksum_address
 from hexbytes import HexBytes
-from web3 import Web3
 
 from .validators import validate_checksumed_address
 
@@ -19,7 +22,7 @@ except ImportError:
 
 class EthereumAddressField(models.CharField):
     default_validators = [validate_checksumed_address]
-    description = "Ethereum address"
+    description = "Ethereum address (EIP55)"
     default_error_messages = {
         "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
     }
@@ -40,7 +43,7 @@ class EthereumAddressField(models.CharField):
         value = super().to_python(value)
         if value:
             try:
-                return Web3.toChecksumAddress(value)
+                return to_checksum_address(value)
             except ValueError:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
@@ -53,6 +56,44 @@ class EthereumAddressField(models.CharField):
     def get_prep_value(self, value):
         value = super().get_prep_value(value)
         return self.to_python(value)
+
+
+class EthereumAddressV2Field(models.BinaryField):
+    default_validators = [validate_checksumed_address]
+    description = "Ethereum address (EIP55)"
+    default_error_messages = {
+        "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["max_length"] = 20
+        super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs["max_length"]
+        return name, path, args, kwargs
+
+    def from_db_value(
+        self, value: memoryview, expression, connection
+    ) -> Optional[ChecksumAddress]:
+        if value:
+            return to_checksum_address(value.hex())
+
+    def get_prep_value(self, value: ChecksumAddress) -> Optional[bytes]:
+        if value:
+            return HexBytes(self.to_python(value))
+
+    def to_python(self, value) -> Optional[ChecksumAddress]:
+        if value is not None:
+            try:
+                return to_checksum_address(value)
+            except ValueError:
+                raise exceptions.ValidationError(
+                    self.error_messages["invalid"],
+                    code="invalid",
+                    params={"value": value},
+                )
 
 
 class Uint256Field(models.DecimalField):
