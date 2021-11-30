@@ -1,7 +1,8 @@
 from typing import List, Tuple, Union
 
-from ethereum.utils import checksum_encode, ecrecover_to_pub, sha3
+from ethereum.utils import ecrecover_to_pub
 from hexbytes import HexBytes
+from web3 import Web3
 
 
 def signature_split(
@@ -56,5 +57,5 @@ def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) 
     :rtype: str
     """
     encoded_64_address = ecrecover_to_pub(HexBytes(signed_hash), v, r, s)
-    address_bytes = sha3(encoded_64_address)[-20:]
-    return checksum_encode(address_bytes)
+    address_bytes = Web3.keccak(encoded_64_address)[-20:]
+    return Web3.toChecksumAddress(address_bytes)

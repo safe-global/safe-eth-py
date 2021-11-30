@@ -1,10 +1,10 @@
 from django.test import TestCase
 
-from ethereum.utils import check_checksum, sha3
+from eth_account import Account
 from faker import Faker
 from hexbytes import HexBytes
+from web3 import Web3
 
-from ...utils import get_eth_address_with_key
 from .models import EthereumAddress, Sha3Hash, Uint256
 
 faker = Faker()
@@ -12,11 +12,11 @@ faker = Faker()
 
 class TestModels(TestCase):
     def test_ethereum_address_field(self):
-        address, _ = get_eth_address_with_key()
-        self.assertTrue(check_checksum(address))
+        address = Account.create().address
+        self.assertTrue(Web3.isChecksumAddress(address))
         ethereum_address = EthereumAddress.objects.create(value=address)
         ethereum_address.refresh_from_db()
-        self.assertTrue(check_checksum(ethereum_address.value))
+        self.assertTrue(Web3.isChecksumAddress(ethereum_address.value))
         self.assertEqual(address, ethereum_address.value)
 
         ethereum_address = EthereumAddress.objects.create(value=None)
@@ -45,9 +45,9 @@ class TestModels(TestCase):
             Uint256.objects.create(value=value)
 
     def test_sha3_hash_field(self):
-        value: bytes = sha3(faker.name())
-        value_hex_without_0x: str = value.hex()
-        value_hex_with_0x: str = "0x" + value_hex_without_0x
+        value: bytes = Web3.keccak(text=faker.name())
+        value_hex_with_0x: str = value.hex()
+        value_hex_without_0x: str = value.hex()[2:]
         value_hexbytes: HexBytes = HexBytes(value_hex_with_0x)
 
         values = [value, value_hex_without_0x, value_hex_with_0x, value_hexbytes]

@@ -10,8 +10,8 @@ from web3 import Web3
 def get_eth_address_with_key() -> Tuple[str, bytes]:
     # import secp256k1
     # private_key = secp256k1.PrivateKey().private_key
-    private_key = utils.sha3(os.urandom(4096))
-    public_key = utils.checksum_encode(utils.privtoaddr(private_key))
+    private_key = Web3.keccak(os.urandom(4096))
+    public_key = Web3.toChecksumAddress(utils.privtoaddr(private_key))
     # If you want to use secp256k1 to calculate public_key
     # utils.checksum_encode(utils.sha3(p.pubkey.serialize(compressed=False)[1:])[-20:])
 

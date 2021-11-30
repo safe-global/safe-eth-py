@@ -2,10 +2,10 @@ import logging
 
 from django.utils.translation import gettext_lazy as _
 
-from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from web3 import Web3
 
 from ..constants import (
     SIGNATURE_R_MAX_VALUE,
@@ -44,7 +44,7 @@ class EthereumAddressField(serializers.Field):
     def to_internal_value(self, data):
         # Check if address is valid
         try:
-            if checksum_encode(data) != data:
+            if Web3.toChecksumAddress(data) != data:
                 raise ValueError
             elif int(data, 16) == 0 and not self.allow_zero_address:
                 raise ValidationError("0x0 address is not allowed")
