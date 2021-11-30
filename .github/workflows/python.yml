@@ -50,7 +50,7 @@ jobs:
     - name: Run pre-commit
       run: pre-commit run --all-files
     - name: Run tests and coverage
-      run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs
+      run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs --reruns 3
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
