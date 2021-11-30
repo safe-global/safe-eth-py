@@ -1,11 +1,14 @@
 from django.test import TestCase
 
+import pytest
+
 from ... import EthereumNetwork
 from ...clients import BlockscoutClient, BlockScoutConfigurationProblem
 from .mocks import sourcify_safe_metadata
 
 
 class TestBlockscoutClient(TestCase):
+    @pytest.mark.flaky(reruns=5)
     def test_blockscout_client(self):
         with self.assertRaises(BlockScoutConfigurationProblem):
             BlockscoutClient(EthereumNetwork.MAINNET)
