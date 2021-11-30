@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import DataError, transaction
 from django.test import TestCase
 
 from eth_account import Account
@@ -7,9 +7,8 @@ from faker import Faker
 from hexbytes import HexBytes
 from web3 import Web3
 
-
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
-from .models import EthereumAddress, EthereumAddressV2, Sha3Hash, Uint256
+from .models import EthereumAddress, EthereumAddressV2, Keccak256Hash, Sha3Hash, Uint256
 
 faker = Faker()
 
@@ -61,10 +60,10 @@ class TestModels(TestCase):
             Uint256.objects.create(value=value)
 
     def test_sha3_hash_field(self):
-        value: bytes = Web3.keccak(text=faker.name())
-        value_hex_with_0x: str = value.hex()
-        value_hex_without_0x: str = value.hex()[2:]
-        value_hexbytes: HexBytes = HexBytes(value_hex_with_0x)
+        value_hexbytes = Web3.keccak(text=faker.name())
+        value_hex_with_0x: str = value_hexbytes.hex()
+        value_hex_without_0x: str = value_hex_with_0x[2:]
+        value: bytes = bytes(value_hexbytes)
 
         values = [value, value_hex_without_0x, value_hex_with_0x, value_hexbytes]
 
@@ -83,5 +82,58 @@ class TestModels(TestCase):
 
         # Hash too big
         value_hex_invalid: str = "0x" + value_hex_without_0x + "a"
-        with self.assertRaises(Exception):
-            Sha3Hash.objects.create(value=value_hex_invalid)
+        with self.assertRaisesMessage(
+            DataError, "value too long for type character varying(64)"
+        ):
+            with transaction.atomic():
+                Sha3Hash.objects.create(value=value_hex_invalid)
+
+    def test_keccak256_field(self):
+        value_hexbytes = Web3.keccak(text=faker.name())
+        value_hex_with_0x: str = value_hexbytes.hex()
+        value_hex_without_0x: str = value_hex_with_0x[2:]
+        value: bytes = bytes(value_hexbytes)
+
+        values = [value, value_hex_without_0x, value_hex_with_0x, value_hexbytes]
+
+        for v in values:
+            with self.subTest(v=v):
+                keccak256_hash = Keccak256Hash.objects.create(value=v)
+                keccak256_hash.refresh_from_db()
+                self.assertEqual(keccak256_hash.value, value_hex_with_0x)
+
+        for v in values:
+            with self.subTest(v=v):
+                self.assertEqual(
+                    Keccak256Hash.objects.filter(value=v).count(), len(values)
+                )
+
+        # Hash null
+        keccak256_hash = Keccak256Hash.objects.create(value=None)
+        keccak256_hash.refresh_from_db()
+        self.assertIsNone(keccak256_hash.value)
+
+        # Hash too big
+        value_hex_invalid: str = "0x" + value_hex_without_0x + "a"
+        with self.assertRaisesMessage(
+            ValidationError, f'"{value_hex_invalid}" hash must have exactly 32 bytes.'
+        ):
+            with transaction.atomic():
+                Keccak256Hash.objects.create(value=value_hex_invalid)
+
+        # Hash too small
+        value_hex_invalid: str = "0x" + "a1"
+        with self.assertRaisesMessage(
+            ValidationError, f'"{value_hex_invalid}" hash must have exactly 32 bytes.'
+        ):
+            with transaction.atomic():
+                Keccak256Hash.objects.create(value=value_hex_invalid)
+
+        # Invalid hash
+        value_hex_invalid: str = "UX/IO"
+        with self.assertRaisesMessage(
+            ValidationError,
+            f'"{value_hex_invalid}" hash must be a 32 bytes hexadecimal.',
+        ):
+            with transaction.atomic():
+                Keccak256Hash.objects.create(value=value_hex_invalid)
