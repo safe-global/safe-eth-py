@@ -4,7 +4,6 @@ from django.test import TestCase
 
 from eth_account import Account
 from faker import Faker
-from hexbytes import HexBytes
 from web3 import Web3
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS

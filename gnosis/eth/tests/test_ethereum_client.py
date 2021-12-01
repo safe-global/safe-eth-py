@@ -1494,7 +1494,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             max_priority_fee_per_gas,
         ) = self.ethereum_client.estimate_fee_eip1559()
         self.assertGreater(base_fee_per_gas, 0)
-        self.assertGreater(max_priority_fee_per_gas, 0)
+        self.assertGreaterEqual(max_priority_fee_per_gas, 0)
 
     def test_trace_block(self):
         block_number = 2191709
