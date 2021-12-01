@@ -23,15 +23,19 @@ class TestModels(TestCase):
                 self.assertTrue(Web3.isChecksumAddress(ethereum_address.value))
                 self.assertEqual(address, ethereum_address.value)
 
-                EthereumAddressModel.objects.create(value=None)
-                self.assertIsNone(EthereumAddressModel.objects.get(value=None).value)
-
-                # Test special addresses
-                for special_address in (NULL_ADDRESS, SENTINEL_ADDRESS):
-                    EthereumAddressModel.objects.create(value=special_address)
-                    self.assertIsNotNone(
-                        EthereumAddressModel.objects.get(value=special_address)
-                    )
+                # Test addresses
+                for addresss in (
+                    None,
+                    NULL_ADDRESS,
+                    SENTINEL_ADDRESS,
+                    Account.create().address,
+                ):
+                    with self.subTest(special_address=addresss):
+                        EthereumAddressModel.objects.create(value=addresss)
+                        self.assertEqual(
+                            EthereumAddressModel.objects.get(value=addresss).value,
+                            addresss,
+                        )
 
                 with self.assertRaisesMessage(
                     ValidationError,
