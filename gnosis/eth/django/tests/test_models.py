@@ -44,6 +44,9 @@ class TestModels(TestCase):
                     with transaction.atomic():
                         EthereumAddressModel.objects.create(value="0x23")
 
+                ethereum_address = EthereumAddressModel(value=Account.create().address)
+                self.assertIsNone(ethereum_address.full_clean())
+
     def test_uint256_field(self):
         for value in [
             2,
@@ -101,7 +104,9 @@ class TestModels(TestCase):
 
         for v in values:
             with self.subTest(v=v):
-                keccak256_hash = Keccak256Hash.objects.create(value=v)
+                keccak256_hash = Keccak256Hash(value=v)
+                self.assertIsNone(keccak256_hash.full_clean())
+                keccak256_hash.save()
                 keccak256_hash.refresh_from_db()
                 self.assertEqual(keccak256_hash.value, value_hex_with_0x)
 
