@@ -66,15 +66,6 @@ class EthereumAddressV2Field(models.BinaryField):
         "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["max_length"] = 20
-        super().__init__(*args, **kwargs)
-
-    def deconstruct(self):
-        name, path, args, kwargs = super().deconstruct()
-        del kwargs["max_length"]
-        return name, path, args, kwargs
-
     def from_db_value(
         self, value: memoryview, expression, connection
     ) -> Optional[ChecksumAddress]:
@@ -184,15 +175,6 @@ class Keccak256Field(models.BinaryField):
         "invalid": _('"%(value)s" hash must be a 32 bytes hexadecimal.'),
         "length": _('"%(value)s" hash must have exactly 32 bytes.'),
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["max_length"] = 32
-        super().__init__(*args, **kwargs)
-
-    def deconstruct(self):
-        name, path, args, kwargs = super().deconstruct()
-        del kwargs["max_length"]
-        return name, path, args, kwargs
 
     def to_bytes(self, value) -> Optional[bytes]:
         if value is None:
