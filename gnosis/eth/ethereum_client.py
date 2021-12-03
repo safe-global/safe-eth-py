@@ -1672,6 +1672,14 @@ class EthereumClient:
         except BlockNotFound:
             return None
 
+    def _parse_block_identifier(self, block_identifier: BlockIdentifier) -> str:
+        if isinstance(block_identifier, int):
+            return hex(block_identifier)
+        elif isinstance(block_identifier, bytes):
+            return HexBytes(block_identifier).hex()
+        else:
+            return block_identifier
+
     def get_blocks(
         self,
         block_identifiers: Iterable[BlockIdentifier],
@@ -1683,11 +1691,11 @@ class EthereumClient:
             {
                 "id": i,
                 "jsonrpc": "2.0",
-                "method": "eth_getBlockByNumber",
+                "method": "eth_getBlockByNumber"
+                if isinstance(block_identifier, int)
+                else "eth_getBlockByHash",
                 "params": [
-                    hex(block_identifier)
-                    if isinstance(block_identifier, int)
-                    else block_identifier,
+                    self._parse_block_identifier(block_identifier),
                     full_transactions,
                 ],
             }
