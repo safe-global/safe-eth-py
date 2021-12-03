@@ -1451,8 +1451,26 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.current_block_number - i for i in range(3)
         ]
         blocks = self.ethereum_client.get_blocks(block_numbers, full_transactions=True)
-        for i, block in enumerate(blocks):
-            self.assertEqual(block["number"], block_numbers[i])
+        block_hashes = [block["hash"] for block in blocks]
+        block_hashes_hex = [block_hash.hex() for block_hash in block_hashes]
+        for block_number, block in zip(block_numbers, blocks):
+            self.assertEqual(block["number"], block_number)
+            self.assertEqual(len(block["hash"]), 32)
+            self.assertEqual(len(block["parentHash"]), 32)
+            self.assertGreaterEqual(len(block["transactions"]), 0)
+
+        blocks = self.ethereum_client.get_blocks(block_hashes, full_transactions=True)
+        for block_number, block in zip(block_numbers, blocks):
+            self.assertEqual(block["number"], block_number)
+            self.assertEqual(len(block["hash"]), 32)
+            self.assertEqual(len(block["parentHash"]), 32)
+            self.assertGreaterEqual(len(block["transactions"]), 0)
+
+        blocks = self.ethereum_client.get_blocks(
+            block_hashes_hex, full_transactions=True
+        )
+        for block_number, block in zip(block_numbers, blocks):
+            self.assertEqual(block["number"], block_number)
             self.assertEqual(len(block["hash"]), 32)
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
