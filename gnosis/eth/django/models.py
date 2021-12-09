@@ -9,6 +9,7 @@ from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 
+from .filters import EthereumAddressFieldForm, Keccak256FieldForm
 from .validators import validate_checksumed_address
 
 try:
@@ -59,12 +60,15 @@ class EthereumAddressField(models.CharField):
         return self.to_python(value)
 
 
-class EthereumAddressV2Field(models.BinaryField):
+class EthereumAddressV2Field(models.Field):
     default_validators = [validate_checksumed_address]
     description = "Ethereum address (EIP55)"
     default_error_messages = {
         "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
     }
+
+    def get_internal_type(self):
+        return "BinaryField"
 
     def from_db_value(
         self, value: memoryview, expression, connection
@@ -86,6 +90,14 @@ class EthereumAddressV2Field(models.BinaryField):
                     code="invalid",
                     params={"value": value},
                 )
+
+    def formfield(self, **kwargs):
+        defaults = {
+            "form_class": EthereumAddressFieldForm,
+            "max_length": 2 + 40,
+        }
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
 
 
 class Uint256Field(models.DecimalField):
@@ -176,7 +188,7 @@ class Keccak256Field(models.BinaryField):
         "length": _('"%(value)s" hash must have exactly 32 bytes.'),
     }
 
-    def to_bytes(self, value) -> Optional[bytes]:
+    def _to_bytes(self, value) -> Optional[bytes]:
         if value is None:
             return
         else:
@@ -204,15 +216,23 @@ class Keccak256Field(models.BinaryField):
 
     def get_prep_value(self, value: Union[bytes, str]) -> Optional[bytes]:
         if value:
-            return self.to_bytes(value)
+            return self._to_bytes(value)
 
     def to_python(self, value) -> Optional[str]:
         if value is not None:
             try:
-                return self.to_bytes(value)
+                return self._to_bytes(value)
             except (ValueError, binascii.Error):
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
                 )
+
+    def formfield(self, **kwargs):
+        defaults = {
+            "form_class": Keccak256FieldForm,
+            "max_length": 2 + 64,
+        }
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
