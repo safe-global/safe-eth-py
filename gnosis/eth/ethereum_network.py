@@ -95,6 +95,7 @@ class EthereumNetwork(Enum):
     CRO = 385
     RUPX = 499
     TAO_CORE = 558
+    METIS_TESTNET = 588
     MACA_TESTNET = 595
     KAR = 686
     FETH_FACTORY127_TESTNET = 721
@@ -111,6 +112,7 @@ class EthereumNetwork(Enum):
     SAKURA = 1022
     CLOVER_TESTNET = 1023
     CLOVER = 1024
+    METIS = 1088
     MATH = 1139
     MATH_TESTNET = 1140
     MOON_MOONBEAM = 1284
