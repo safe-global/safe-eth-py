@@ -109,6 +109,6 @@ class TestGnosisProtocolAPI(TestCase):
             self.gnosis_protocol_api.place_order(order, Account().create().key),
             {
                 "description": "order owner must have funds worth at least x in his account",
-                "errorType": "InsufficientFunds",
+                "errorType": "InsufficientBalance",
             },
         )
