@@ -1,5 +1,5 @@
 cached-property==1.5.2
-django==3.2.10
+django==4.0.1
 django-filter==21.1
 djangorestframework==3.12.4
 eip712-structs==1.1.0
