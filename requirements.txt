@@ -1,7 +1,7 @@
 cached-property==1.5.2
 django==3.2.10
 django-filter==21.1
-djangorestframework==3.12.4
+djangorestframework==3.13.1
 eip712-structs==1.1.0
 ethereum==2.3.2
 hexbytes==0.2.2
