@@ -185,6 +185,8 @@ class EthereumNetwork(Enum):
     GATHER_DEVNET = 486217935
     GATHER_TESTNET = 356256156
     GATHER_MAINNET = 192837465
+    EVMOS_TESTNET = 9000
+    EVMOS_MAINNET = 9001
     default = UNKNOWN
 
     @classmethod
