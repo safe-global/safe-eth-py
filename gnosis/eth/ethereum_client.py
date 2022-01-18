@@ -818,14 +818,14 @@ class Erc721Manager(EthereumClientManager):
 
     def get_owners(
         self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]
-    ) -> List[Optional[str]]:
+    ) -> List[Optional[ChecksumAddress]]:
         """
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of owner addresses, `None` if not found
         """
-        return cast(
-            List[Optional[str]],
-            self.ethereum_client.batch_call(
+        return [
+            ChecksumAddress(owner) if isinstance(owner, str) else None
+            for owner in self.ethereum_client.batch_call(
                 [
                     get_erc721_contract(
                         self.ethereum_client.w3, token_address
@@ -833,8 +833,8 @@ class Erc721Manager(EthereumClientManager):
                     for token_address, token_id in token_addresses_with_token_ids
                 ],
                 raise_exception=False,
-            ),
-        )
+            )
+        ]
 
     def get_token_uris(
         self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]
@@ -843,9 +843,9 @@ class Erc721Manager(EthereumClientManager):
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of token_uris, `None` if not found
         """
-        return cast(
-            List[Optional[str]],
-            self.ethereum_client.batch_call(
+        return [
+            token_uri if isinstance(token_uri, str) else None
+            for token_uri in self.ethereum_client.batch_call(
                 [
                     get_erc721_contract(
                         self.ethereum_client.w3, token_address
@@ -853,8 +853,8 @@ class Erc721Manager(EthereumClientManager):
                     for token_address, token_id in token_addresses_with_token_ids
                 ],
                 raise_exception=False,
-            ),
-        )
+            )
+        ]
 
 
 class ParityManager(EthereumClientManager):
@@ -1342,7 +1342,7 @@ class EthereumClient:
         raise_exception: bool = True,
         force_batch_call: bool = False,
         block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+    ) -> List[Optional[Union[bytes, Any]]]:
         """
         Call multiple functions. Multicall contract by MakerDAO will be used by default if available
 
@@ -1352,7 +1352,8 @@ class EthereumClient:
         :param force_batch_call: If ``True``, ignore multicall and always use batch calls to get the
             result (less optimal). If ``False``, more optimal way will be tried.
         :param block_identifier:
-        :return:
+        :return: List of elements decoded to their types, ``None`` if they cannot be decoded and
+            bytes if a revert error is returned and ``raise_exception=False``
         :raises: BatchCallException
         """
         if self.multicall and not force_batch_call:  # Multicall is more optimal
@@ -1380,7 +1381,7 @@ class EthereumClient:
         raise_exception: bool = True,
         force_batch_call: bool = False,
         block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+    ) -> List[Optional[Union[bytes, Any]]]:
         """
         Call the same function in multiple contracts. Way more optimal than using `batch_call` generating multiple
         ``ContractFunction`` objects.
@@ -1392,7 +1393,8 @@ class EthereumClient:
         :param force_batch_call: If ``True``, ignore multicall and always use batch calls to get the
             result (less optimal). If ``False``, more optimal way will be tried.
         :param block_identifier:
-        :return:
+        :return: List of elements decoded to the same type, ``None`` if they cannot be decoded and
+            bytes if a revert error is returned and ``raise_exception=False``
         :raises: BatchCallException
         """
         if self.multicall and not force_batch_call:  # Multicall is more optimal
