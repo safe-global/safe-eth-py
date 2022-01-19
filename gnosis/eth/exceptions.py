@@ -68,3 +68,7 @@ class BatchCallException(EthereumClientException):
 
 class BatchCallFunctionFailed(BatchCallException):
     pass
+
+
+class EthereumRPCResponseException(EthereumClientException):
+    pass

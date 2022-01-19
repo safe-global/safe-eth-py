@@ -1,10 +1,12 @@
+import itertools
+import logging
 from enum import Enum
 from functools import wraps
-from logging import getLogger
 from typing import (
     Any,
     Dict,
     Iterable,
+    Iterator,
     List,
     NamedTuple,
     Optional,
@@ -64,6 +66,7 @@ from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .exceptions import (
     BatchCallFunctionFailed,
+    EthereumRPCResponseException,
     FromAddressNotFound,
     GasLimitExceeded,
     InsufficientFunds,
@@ -97,7 +100,7 @@ except ImportError:
     cache = lru_cache(maxsize=None)
 
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def tx_with_exception_handling(func):
@@ -232,17 +235,15 @@ class BatchCallManager(EthereumClientManager):
                 query_params["from"] = payload["from"]
 
             queries.append(
-                {
-                    "jsonrpc": "2.0",
-                    "method": "eth_call",
-                    "params": [
+                self.ethereum_client.encode_rpc_request(
+                    "eth_call",
+                    [
                         query_params,
                         hex(block_identifier)
                         if isinstance(block_identifier, int)
                         else block_identifier,
                     ],
-                    "id": i,
-                }
+                )
             )
 
         response = self.http_session.post(
@@ -519,13 +520,10 @@ class Erc20Manager(EthereumClientManager):
             erc20.functions.decimals().buildTransaction(params)["data"],
         ]
         payload = [
-            {
-                "id": i,
-                "jsonrpc": "2.0",
-                "method": "eth_call",
-                "params": [{"to": erc20_address, "data": data}, "latest"],
-            }
-            for i, data in enumerate(datas)
+            self.ethereum_client.encode_rpc_request(
+                "eth_call", [{"to": erc20_address, "data": data}, "latest"]
+            )
+            for data in datas
         ]
         response = self.http_session.post(
             self.ethereum_client.ethereum_node_url, json=payload, timeout=self.timeout
@@ -1038,42 +1036,24 @@ class ParityManager(EthereumClientManager):
         if not block_identifiers:
             return []
         payload = [
-            {
-                "id": i,
-                "jsonrpc": "2.0",
-                "method": "trace_block",
-                "params": [
+            self.ethereum_client.encode_rpc_request(
+                "trace_block",
+                [
                     hex(block_identifier)
                     if isinstance(block_identifier, int)
                     else block_identifier
                 ],
-            }
-            for i, block_identifier in enumerate(block_identifiers)
-        ]
-        response = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
-        )
-        if not response.ok:
-            message = (
-                f"Problem calling batch `trace_block` on blocks={block_identifiers} "
-                f"status_code={response.status_code} result={response.content}"
             )
-            logger.error(message)
-            raise ValueError(message)
-        results = sorted(response.json(), key=lambda x: x["id"])
+            for block_identifier in block_identifiers
+        ]
         traces = []
-        for block_identifier, result in zip(block_identifiers, results):
-            if "result" not in result:
-                message = f"Problem calling batch `trace_block` on block={block_identifier}, result={result}"
-                logger.error(message)
-                raise ValueError(message)
-            raw_tx = result["result"]
-            if raw_tx:
+        for raw_traces in self.ethereum_client.make_request(payload):
+            if raw_traces:
                 try:
-                    decoded_traces = self._decode_traces(raw_tx)
+                    decoded_traces = self._decode_traces(raw_traces)
                 except ParityTraceDecodeException as exc:
                     logger.warning("Problem decoding trace: %s - Retrying", exc)
-                    decoded_traces = self._decode_traces(raw_tx)
+                    decoded_traces = self._decode_traces(raw_traces)
                 traces.append(decoded_traces)
             else:
                 traces.append([])
@@ -1100,28 +1080,13 @@ class ParityManager(EthereumClientManager):
         if not tx_hashes:
             return []
         payload = [
-            {
-                "id": i,
-                "jsonrpc": "2.0",
-                "method": "trace_transaction",
-                "params": [HexBytes(tx_hash).hex()],
-            }
-            for i, tx_hash in enumerate(tx_hashes)
-        ]
-        response = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
-        )
-        if not response.ok:
-            message = (
-                f"Problem calling batch `trace_transaction` on tx_hashes={tx_hashes} "
-                f"status_code={response.status_code} result={response.content}"
+            self.ethereum_client.encode_rpc_request(
+                "trace_transaction", [HexBytes(tx_hash).hex()]
             )
-            logger.error(message)
-            raise ValueError(message)
-        results = sorted(response.json(), key=lambda x: x["id"])
+            for tx_hash in tx_hashes
+        ]
         traces = []
-        for result in results:
-            raw_tx = result["result"]
+        for raw_tx in self.ethereum_client.make_request(payload):
             if raw_tx:
                 try:
                     decoded_traces = self._decode_traces(raw_tx)
@@ -1256,6 +1221,10 @@ class EthereumClient:
         :param ethereum_node_url: Ethereum RPC uri
         :param slow_provider_timeout: Timeout for slow and custom queries
         """
+        self.http_logger = logging.getLogger(
+            "web3.providers.HTTPProvider"
+        )  # Use same logger that web3.py
+        self.http_request_counter = itertools.count()
         self.http_session = self._prepare_http_session()
         self.ethereum_node_url: str = ethereum_node_url
         self.timeout = slow_provider_timeout
@@ -1286,9 +1255,9 @@ class EthereumClient:
     def _prepare_http_session(self) -> requests.Session:
         """
         Prepare http session with custom pooling. See:
-        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
-        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
+            - https://urllib3.readthedocs.io/en/stable/advanced-usage.html
+            - https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
+            - https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
         """
         session = requests.Session()
         adapter = requests.adapters.HTTPAdapter(
@@ -1300,6 +1269,47 @@ class EthereumClient:
         session.mount("http://", adapter)
         session.mount("https://", adapter)
         return session
+
+    def make_request(
+        self, payload: Dict[str, Any], timeout: Optional[int] = None
+    ) -> Iterator[Any]:
+        """
+        Make HTTP request for RPC calls not supported by web3.py
+        """
+        self.http_logger.debug(
+            "Making request HTTP. URI: %s Payload: %s", self.ethereum_node_url, payload
+        )
+        timeout = self.timeout if timeout is None else timeout
+        response = self.http_session.post(
+            self.ethereum_node_url, json=payload, timeout=timeout
+        )
+        if not response.ok:
+            message = (
+                f"HTTP response code {response.status_code} making HTTP request. "
+                f"URI: {self.ethereum_node_url} "
+                f"Result: {response.content} "
+                f"Payload: {payload}"
+            )
+            self.http_logger.warning(message)
+            raise EthereumRPCResponseException(message)
+        results = response.json()
+        self.http_logger.debug(
+            "Getting response HTTP. URI: %s " "Response: %s",
+            self.ethereum_node_url,
+            results,
+        )
+        return (result["result"] for result in sorted(results, key=lambda x: x["id"]))
+
+    def encode_rpc_request(self, method: str, params: List[Any]) -> Dict[str, Any]:
+        """
+        Helper to encode rpc request as JSON compatible dictionary
+        """
+        return {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params or [],
+            "id": next(self.http_request_counter),
+        }
 
     @property
     def current_block_number(self):
@@ -1594,20 +1604,14 @@ class EthereumClient:
         if not tx_hashes:
             return []
         payload = [
-            {
-                "id": i,
-                "jsonrpc": "2.0",
-                "method": "eth_getTransactionByHash",
-                "params": [HexBytes(tx_hash).hex()],
-            }
-            for i, tx_hash in enumerate(tx_hashes)
+            self.encode_rpc_request(
+                "eth_getTransactionByHash", [HexBytes(tx_hash).hex()]
+            )
+            for tx_hash in tx_hashes
         ]
-        results = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
-        ).json()
+
         txs = []
-        for result in sorted(results, key=lambda x: x["id"]):
-            raw_tx = result["result"]
+        for raw_tx in self.make_request(payload):
             if raw_tx:
                 txs.append(transaction_result_formatter(raw_tx))
             else:
@@ -1643,26 +1647,19 @@ class EthereumClient:
         if not tx_hashes:
             return []
         payload = [
-            {
-                "id": i,
-                "jsonrpc": "2.0",
-                "method": "eth_getTransactionReceipt",
-                "params": [HexBytes(tx_hash).hex()],
-            }
-            for i, tx_hash in enumerate(tx_hashes)
+            self.encode_rpc_request(
+                "eth_getTransactionReceipt", [HexBytes(tx_hash).hex()]
+            )
+            for tx_hash in tx_hashes
         ]
-        results = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
-        ).json()
-        receipts = []
-        for result in sorted(results, key=lambda x: x["id"]):
-            tx_receipt = result["result"]
+        tx_receipts = []
+        for tx_receipt in self.make_request(payload):
             # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
             if tx_receipt and tx_receipt["blockNumber"] is not None:
-                receipts.append(receipt_formatter(tx_receipt))
+                tx_receipts.append(receipt_formatter(tx_receipt))
             else:
-                receipts.append(None)
-        return receipts
+                tx_receipts.append(None)
+        return tx_receipts
 
     def get_block(
         self, block_identifier: BlockIdentifier, full_transactions: bool = False
@@ -1690,25 +1687,20 @@ class EthereumClient:
         if not block_identifiers:
             return []
         payload = [
-            {
-                "id": i,
-                "jsonrpc": "2.0",
-                "method": "eth_getBlockByNumber"
+            self.encode_rpc_request(
+                "eth_getBlockByNumber"
                 if isinstance(block_identifier, int)
                 else "eth_getBlockByHash",
-                "params": [
+                [
                     self._parse_block_identifier(block_identifier),
                     full_transactions,
                 ],
-            }
-            for i, block_identifier in enumerate(block_identifiers)
+            )
+            for block_identifier in block_identifiers
         ]
-        results = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
-        ).json()
-        blocks = []
-        for result in sorted(results, key=lambda x: x["id"]):
-            raw_block = result["result"]
+
+        blocks: List[Optional[BlockData]] = []
+        for raw_block in self.make_request(payload):
             if raw_block:
                 if "extraData" in raw_block:
                     del raw_block[
