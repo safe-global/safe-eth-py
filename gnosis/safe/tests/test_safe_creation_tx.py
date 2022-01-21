@@ -108,7 +108,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
             funder_account,
         )
 
-        with self.assertRaisesMessage(ValueError, "enough funds"):
+        with self.assertRaisesMessage(ValueError, "insufficient funds"):
             w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
 
     def test_safe_creation_tx_builder_with_payment(self):

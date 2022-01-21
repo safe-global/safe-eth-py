@@ -374,17 +374,27 @@ class SafeTx:
         """
 
         sender_account = Account.from_key(tx_sender_private_key)
-        if eip1559_speed and self.ethereum_client.is_eip1559_supported():
-            tx_parameters = self.ethereum_client.set_eip1559_fees(
-                {
-                    "from": sender_account.address,
-                },
-                tx_speed=eip1559_speed,
-            )
+        if tx_gas_price:
+            tx_parameters = {"from": sender_account.address, "gasPrice": tx_gas_price}
+        elif self.ethereum_client.is_eip1559_supported():
+            if eip1559_speed:
+                tx_parameters = self.ethereum_client.set_eip1559_fees(
+                    {
+                        "from": sender_account.address,
+                    },
+                    tx_speed=eip1559_speed,
+                )
+            else:
+                tx_parameters = self.ethereum_client.set_eip1559_fees(
+                    {
+                        "from": sender_account.address,
+                    },
+                    tx_speed=TxSpeed.NORMAL,
+                )
         else:
             tx_parameters = {
                 "from": sender_account.address,
-                "gasPrice": tx_gas_price or self.gas_price or self.w3.eth.gas_price,
+                "gasPrice": self.gas_price or self.w3.eth.gas_price,
             }
 
         if tx_gas:
