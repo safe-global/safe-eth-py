@@ -1323,7 +1323,15 @@ class EthereumClient:
             self.w3.eth.fee_history(1, "latest", reward_percentiles=[50])
             return True
         except ValueError:
-            return False
+            # Hardcoded EIP1559 supported networks
+            return self.get_network() in [
+                EthereumNetwork.MAINNET,
+                EthereumNetwork.RINKEBY,
+                EthereumNetwork.GOERLI,
+                EthereumNetwork.GANACHE,
+                EthereumNetwork.XDAI,
+                EthereumNetwork.MATIC,
+            ]
 
     @cached_property
     def multicall(self) -> "Multicall":  # noqa F821

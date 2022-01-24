@@ -682,8 +682,14 @@ class Safe:
             response_data = response.json()
             error_data: Optional[str] = None
             if "error" in response_data and "data" in response_data["error"]:
-                error_data = response_data["error"]["data"]
-            elif "result" in response_data:  # Ganache-cli
+                if "result" in response_data["error"]["data"]:
+                    # TODO: remove this Ganache-specific code once https://github.com/trufflesuite/ganache/issues/2133 is resolved
+                    error_data = response_data["error"]["data"][
+                        "result"
+                    ]  # Ganache v7.0.0
+                else:
+                    error_data = response_data["error"]["data"]
+            elif "result" in response_data:  # Ganache-cli v6
                 error_data = response_data["result"]
 
             if error_data:
