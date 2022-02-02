@@ -4,9 +4,11 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from ethereum.exceptions import InvalidTransaction
-from ethereum.transactions import Transaction, secpk1n
-from ethereum.utils import checksum_encode, mk_contract_address
+from eth._utils.address import generate_contract_address
+from eth.constants import SECPK1_N
+from eth.vm.forks.frontier.transactions import FrontierTransaction
+from eth_keys.exceptions import BadSignature
+from eth_utils import to_canonical_address, to_checksum_address
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
@@ -100,20 +102,26 @@ class SafeCreationTx:
             gas_price=gas_price,
         )
 
-        self.tx_pyethereum: Transaction = (
+        self.tx_pyethereum: FrontierTransaction = (
             self._build_contract_creation_tx_with_valid_signature(self.tx_dict, self.s)
         )
         self.tx_raw = rlp.encode(self.tx_pyethereum)
         self.tx_hash = self.tx_pyethereum.hash
-        self.deployer_address = checksum_encode(self.tx_pyethereum.sender)
-        self.safe_address = checksum_encode(self.tx_pyethereum.creates)
+        self.deployer_address = to_checksum_address(self.tx_pyethereum.sender)
+        self.safe_address = to_checksum_address(
+            generate_contract_address(self.tx_pyethereum.sender, 0)
+        )
 
         self.v = self.tx_pyethereum.v
         self.r = self.tx_pyethereum.r
         self.safe_setup_data = safe_setup_data
 
         assert (
-            checksum_encode(mk_contract_address(self.deployer_address, nonce=0))
+            to_checksum_address(
+                generate_contract_address(
+                    to_canonical_address(self.deployer_address), nonce=0
+                )
+            )
             == self.safe_address
         )
 
@@ -131,12 +139,12 @@ class SafeCreationTx:
         for _ in range(10000):
             r = int(os.urandom(31).hex(), 16)
             v = (r % 2) + 27
-            if r < secpk1n:
-                tx = Transaction(0, 1, 21000, b"", 0, b"", v=v, r=r, s=s)
+            if r < SECPK1_N:
+                tx = FrontierTransaction(0, 1, 21000, b"", 0, b"", v=v, r=r, s=s)
                 try:
                     tx.sender
                     return v, r
-                except (InvalidTransaction, ValueError):
+                except (BadSignature, ValueError):
                     logger.debug("Cannot find signature with v=%d r=%d s=%d", v, r, s)
 
         raise ValueError("Valid signature not found with s=%d", s)
@@ -243,7 +251,7 @@ class SafeCreationTx:
 
     def _build_contract_creation_tx_with_valid_signature(
         self, tx_dict: Dict[str, Any], s: int
-    ) -> Transaction:
+    ) -> FrontierTransaction:
         """
         Use pyethereum `Transaction` to generate valid tx using a random signature
         :param tx_dict: Web3 tx dictionary
@@ -261,18 +269,18 @@ class SafeCreationTx:
         for _ in range(100):
             try:
                 v, r = self.find_valid_random_signature(s)
-                contract_creation_tx = Transaction(
+                contract_creation_tx = FrontierTransaction(
                     nonce, gas_price, gas, to, value, HexBytes(data), v=v, r=r, s=s
                 )
                 sender_address = contract_creation_tx.sender
-                contract_address = contract_creation_tx.creates
+                contract_address = generate_contract_address(sender_address, nonce)
                 if sender_address in (zero_address, f_address) or contract_address in (
                     zero_address,
                     f_address,
                 ):
-                    raise InvalidTransaction
+                    raise ValueError("Invalid transaction")
                 return contract_creation_tx
-            except InvalidTransaction:
+            except BadSignature:
                 pass
         raise ValueError("Valid signature not found with s=%d", s)
 

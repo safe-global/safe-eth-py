@@ -2,7 +2,7 @@ import os
 import random
 from logging import getLogger
 
-from ethereum.transactions import secpk1n
+from eth.constants import SECPK1_N
 from web3 import Web3
 
 from gnosis.eth.tests.utils import send_tx
@@ -19,7 +19,7 @@ def generate_salt_nonce() -> int:
 def generate_valid_s() -> int:
     while True:
         s = int(os.urandom(30).hex(), 16)
-        if s <= (secpk1n // 2):
+        if s <= (SECPK1_N // 2):
             return s
 
 

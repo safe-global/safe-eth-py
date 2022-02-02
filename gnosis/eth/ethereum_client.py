@@ -16,11 +16,12 @@ from typing import (
 
 import eth_abi
 import requests
+from eth._utils.address import generate_contract_address
 from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
-from ethereum.utils import mk_contract_address
+from eth_utils import to_canonical_address, to_checksum_address
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
@@ -1447,8 +1448,10 @@ class EthereumClient:
 
                 if not contract_address:
                     contract_address = ChecksumAddress(
-                        Web3.toChecksumAddress(
-                            mk_contract_address(tx["from"], tx["nonce"])
+                        to_checksum_address(
+                            generate_contract_address(
+                                to_canonical_address(tx["from"]), tx["nonce"]
+                            )
                         )
                     )
 
