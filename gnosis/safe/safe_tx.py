@@ -206,12 +206,15 @@ class SafeTx:
 
     @property
     def signers(self) -> List[str]:
-        return [
-            safe_signature.owner
-            for safe_signature in SafeSignature.parse_signature(
-                self.signatures, self.safe_tx_hash
-            )
-        ]
+        if not self.signatures:
+            return []
+        else:
+            return [
+                safe_signature.owner
+                for safe_signature in SafeSignature.parse_signature(
+                    self.signatures, self.safe_tx_hash
+                )
+            ]
 
     @property
     def sorted_signers(self):
