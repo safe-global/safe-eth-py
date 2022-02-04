@@ -51,8 +51,8 @@ class TestModels(TestCase):
         for value in [
             2,
             -2,
-            2 ** 256,
-            2 ** 260,
+            2**256,
+            2**260,
             25572735541615049941137326092682691158109824779649981270427004917341670006487,
             None,
         ]:
@@ -62,7 +62,7 @@ class TestModels(TestCase):
 
         # Overflow
         with self.assertRaises(Exception):
-            value = 2 ** 263
+            value = 2**263
             Uint256.objects.create(value=value)
 
     def test_sha3_hash_field(self):

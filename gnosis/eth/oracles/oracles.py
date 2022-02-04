@@ -127,7 +127,7 @@ class KyberOracle(PriceOracle):
         try:
             # Get decimals for token, estimation will be more accurate
             decimals = self.ethereum_client.erc20.get_decimals(token_address_1)
-            token_unit = int(10 ** decimals)
+            token_unit = int(10**decimals)
             (
                 expected_rate,
                 _,
@@ -446,13 +446,13 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 reserves_2, reserves_1 = reserves_1, reserves_2
 
             # Check liquidity. Require at least 2 units of every token to be on the pool
-            if reserves_1 / 10 ** decimals_1 < 2 or reserves_2 / 10 ** decimals_2 < 2:
+            if reserves_1 / 10**decimals_1 < 2 or reserves_2 / 10**decimals_2 < 2:
                 raise CannotGetPriceFromOracle(
                     f"Not enough liquidity for pair token_1={token_address} "
                     f"token_2={token_address_2}"
                 )
-            decimals_normalized_reserves_1 = reserves_1 * 10 ** decimals_2
-            decimals_normalized_reserves_2 = reserves_2 * 10 ** decimals_1
+            decimals_normalized_reserves_1 = reserves_1 * 10**decimals_2
+            decimals_normalized_reserves_2 = reserves_2 * 10**decimals_1
 
             return decimals_normalized_reserves_2 / decimals_normalized_reserves_1
         except (
@@ -517,7 +517,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             ):
                 try:
                     price = self.get_price(token_address)
-                    total_value = (reserves / 10 ** decimals_1) * price
+                    total_value = (reserves / 10**decimals_1) * price
                     return (total_value * 2) / (total_supply / 1e18)
                 except CannotGetPriceFromOracle:
                     continue
@@ -822,7 +822,7 @@ class BalancerOracle(PricePoolOracle):
             for token_balance, token_decimal, token_price in zip(
                 token_balances, token_decimals, token_prices
             ):
-                total_eth_value += (token_balance / 10 ** token_decimal) * token_price
+                total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
         except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(
@@ -868,7 +868,7 @@ class MooniswapOracle(BalancerOracle):
                                 token_contract.functions.decimals(),
                             ]
                         )
-                        total_value = (token_balance / 10 ** token_decimals) * price
+                        total_value = (token_balance / 10**token_decimals) * price
                         return (total_value * 2) / (total_supply / 1e18)
                     except CannotGetPriceFromOracle:
                         continue
