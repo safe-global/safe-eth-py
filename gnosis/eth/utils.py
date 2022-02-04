@@ -2,7 +2,9 @@ from secrets import token_bytes
 from typing import Tuple, Union
 
 import eth_abi
+from eth._utils.address import generate_contract_address
 from eth_keys import keys
+from eth_utils import to_canonical_address, to_checksum_address
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -90,3 +92,9 @@ def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
                 codes.append(code)
 
         return codes[0] == codes[1]
+
+
+def mk_contract_address(address: Union[str, bytes], nonce: int) -> str:
+    return to_checksum_address(
+        generate_contract_address(to_canonical_address(address), nonce)
+    )

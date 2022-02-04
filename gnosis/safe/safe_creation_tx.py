@@ -4,7 +4,6 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from eth._utils.address import generate_contract_address
 from eth.constants import SECPK1_N
 from eth.vm.forks.frontier.transactions import FrontierTransaction
 from eth_keys.exceptions import BadSignature
@@ -19,6 +18,7 @@ from gnosis.eth.contracts import (
     get_paying_proxy_contract,
     get_safe_V0_0_1_contract,
 )
+from gnosis.eth.utils import mk_contract_address
 
 logger = getLogger(__name__)
 
@@ -108,22 +108,13 @@ class SafeCreationTx:
         self.tx_raw = rlp.encode(self.tx_pyethereum)
         self.tx_hash = self.tx_pyethereum.hash
         self.deployer_address = to_checksum_address(self.tx_pyethereum.sender)
-        self.safe_address = to_checksum_address(
-            generate_contract_address(self.tx_pyethereum.sender, 0)
-        )
+        self.safe_address = mk_contract_address(self.tx_pyethereum.sender, 0)
 
         self.v = self.tx_pyethereum.v
         self.r = self.tx_pyethereum.r
         self.safe_setup_data = safe_setup_data
 
-        assert (
-            to_checksum_address(
-                generate_contract_address(
-                    to_canonical_address(self.deployer_address), nonce=0
-                )
-            )
-            == self.safe_address
-        )
+        assert mk_contract_address(self.deployer_address, nonce=0) == self.safe_address
 
     @property
     def payment_ether(self):
@@ -273,7 +264,9 @@ class SafeCreationTx:
                     nonce, gas_price, gas, to, value, HexBytes(data), v=v, r=r, s=s
                 )
                 sender_address = contract_creation_tx.sender
-                contract_address = generate_contract_address(sender_address, nonce)
+                contract_address: bytes = to_canonical_address(
+                    mk_contract_address(sender_address, nonce)
+                )
                 if sender_address in (zero_address, f_address) or contract_address in (
                     zero_address,
                     f_address,

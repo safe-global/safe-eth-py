@@ -16,12 +16,10 @@ from typing import (
 
 import eth_abi
 import requests
-from eth._utils.address import generate_contract_address
 from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
-from eth_utils import to_canonical_address, to_checksum_address
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
@@ -54,6 +52,8 @@ from web3.types import (
     TxReceipt,
     Wei,
 )
+
+from gnosis.eth.utils import mk_contract_address
 
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
@@ -1448,11 +1448,7 @@ class EthereumClient:
 
                 if not contract_address:
                     contract_address = ChecksumAddress(
-                        to_checksum_address(
-                            generate_contract_address(
-                                to_canonical_address(tx["from"]), tx["nonce"]
-                            )
-                        )
+                        mk_contract_address(tx["from"], tx["nonce"])
                     )
 
         return EthereumTxSent(tx_hash, tx, contract_address)
