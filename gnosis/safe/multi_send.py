@@ -177,6 +177,7 @@ class MultiSend:
     def from_bytes(cls, encoded_multisend_txs: Union[str, bytes]) -> List[MultiSendTx]:
         """
         Decodes one or more multisend transactions from `bytes transactions` (Abi decoded)
+
         :param encoded_multisend_txs:
         :return: List of MultiSendTxs
         """
@@ -206,6 +207,7 @@ class MultiSend:
     ) -> List[MultiSendTx]:
         """
         Decodes multisend transactions from transaction data (ABI encoded with selector)
+
         :return:
         """
         try:
@@ -222,6 +224,7 @@ class MultiSend:
     ) -> EthereumTxSent:
         """
         Deploy proxy factory contract
+
         :param ethereum_client:
         :param deployer_account: Ethereum Account
         :return: deployed contract address
@@ -249,6 +252,7 @@ class MultiSend:
     def build_tx_data(self, multi_send_txs: List[MultiSendTx]) -> bytes:
         """
         Txs don't need to be valid to get through
+
         :param multi_send_txs:
         :param sender:
         :return:

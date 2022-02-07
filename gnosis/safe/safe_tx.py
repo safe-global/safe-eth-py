@@ -81,16 +81,16 @@ class SafeTx:
         self,
         ethereum_client: EthereumClient,
         safe_address: str,
-        to: str,
+        to: Optional[str],
         value: int,
         data: bytes,
         operation: int,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
-        gas_token: str,
-        refund_receiver: str,
-        signatures: bytes = b"",
+        gas_token: Optional[str],
+        refund_receiver: Optional[str],
+        signatures: Optional[bytes] = None,
         safe_nonce: Optional[int] = None,
         safe_version: str = None,
         chain_id: Optional[int] = None,
@@ -115,7 +115,6 @@ class SafeTx:
         it will be retrieved from the provided ethereum_client
         """
 
-        assert isinstance(signatures, bytes), "Signatures must be bytes"
         self.ethereum_client = ethereum_client
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
@@ -127,7 +126,7 @@ class SafeTx:
         self.gas_price = gas_price
         self.gas_token = gas_token or NULL_ADDRESS
         self.refund_receiver = refund_receiver or NULL_ADDRESS
-        self.signatures = signatures
+        self.signatures = signatures or b""
         self._safe_nonce = safe_nonce
         self._safe_version = safe_version
         self._chain_id = chain_id
