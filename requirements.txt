@@ -3,10 +3,10 @@ django==3.2.11
 django-filter==21.1
 djangorestframework==3.13.1
 eip712-structs==1.1.0
-ethereum==2.3.2
 hexbytes==0.2.2
 packaging
 psycopg2-binary==2.9.3
+py-evm==0.5.0a3
 requests==2.27.1
 typing-extensions==3.10.0.2
 web3==5.24.0

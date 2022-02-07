@@ -1,4 +1,4 @@
-from ethereum.transactions import secpk1n
+from eth.constants import SECPK1_N
 
 NULL_ADDRESS: str = "0x" + "0" * 40
 SENTINEL_ADDRESS: str = "0x" + "0" * 39 + "1"
@@ -9,9 +9,9 @@ ERC20_721_TRANSFER_TOPIC: str = (
 )
 
 SIGNATURE_R_MIN_VALUE: int = 1
-SIGNATURE_R_MAX_VALUE: int = secpk1n - 1
+SIGNATURE_R_MAX_VALUE: int = SECPK1_N - 1
 SIGNATURE_S_MIN_VALUE: int = 1
-SIGNATURE_S_MAX_VALUE: int = secpk1n // 2
+SIGNATURE_S_MAX_VALUE: int = SECPK1_N // 2
 SIGNATURE_V_MIN_VALUE: int = 27
 SIGNATURE_V_MAX_VALUE: int = 28
 

@@ -1,21 +1,18 @@
-import os
+from secrets import token_bytes
 from typing import Tuple, Union
 
 import eth_abi
-from ethereum import utils
+from eth._utils.address import generate_contract_address
+from eth_keys import keys
+from eth_utils import to_canonical_address, to_checksum_address
 from hexbytes import HexBytes
 from web3 import Web3
 
 
 def get_eth_address_with_key() -> Tuple[str, bytes]:
-    # import secp256k1
-    # private_key = secp256k1.PrivateKey().private_key
-    private_key = Web3.keccak(os.urandom(4096))
-    public_key = Web3.toChecksumAddress(utils.privtoaddr(private_key))
-    # If you want to use secp256k1 to calculate public_key
-    # utils.checksum_encode(utils.sha3(p.pubkey.serialize(compressed=False)[1:])[-20:])
-
-    return public_key, private_key
+    private_key = keys.PrivateKey(token_bytes(32))
+    address = private_key.public_key.to_checksum_address()
+    return address, private_key.to_bytes()
 
 
 def get_eth_address_with_invalid_checksum() -> str:
@@ -95,3 +92,9 @@ def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
                 codes.append(code)
 
         return codes[0] == codes[1]
+
+
+def mk_contract_address(address: Union[str, bytes], nonce: int) -> str:
+    return to_checksum_address(
+        generate_contract_address(to_canonical_address(address), nonce)
+    )

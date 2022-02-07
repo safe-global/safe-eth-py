@@ -3,10 +3,10 @@ from enum import Enum
 from logging import getLogger
 from typing import List, Union
 
-from eth_abi import encode_single
+from eth_abi import decode_single, encode_single
 from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
-from ethereum.utils import checksum_encode
+from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
 
@@ -169,8 +169,9 @@ class SafeSignatureContract(SafeSignature):
         :return: Address of contract signing. No further checks to get the owner are needed,
             but it could be a non existing contract
         """
-        contract_address = checksum_encode(self.r)
-        return contract_address
+        return to_checksum_address(
+            decode_single("address", encode_single("uint", self.r))
+        )
 
     @property
     def signature_type(self):
@@ -208,7 +209,9 @@ class SafeSignatureContract(SafeSignature):
 class SafeSignatureApprovedHash(SafeSignature):
     @property
     def owner(self):
-        return checksum_encode(self.r)
+        return to_checksum_address(
+            decode_single("address", encode_single("uint", self.r))
+        )
 
     @property
     def signature_type(self):
