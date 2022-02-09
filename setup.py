@@ -10,9 +10,9 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 requirements = [
     "cached-property>=1.5; python_version < '3.8'",
-    "ethereum>=2.3.2",
     "eip712_structs",
     "packaging",
+    "py-evm>=0.5.0a3",
     "typing-extensions>=3.10; python_version < '3.8'",
     "requests>=2",
     "web3>=5.23.0",
@@ -22,7 +22,7 @@ extras_require = {"django": ["django>=2", "django-filter>=2", "djangorestframewo
 
 setup(
     name="gnosis-py",
-    version="3.7.8",
+    version="3.8.0",
     packages=find_packages(),
     package_data={"gnosis": ["py.typed"]},
     install_requires=requirements,
