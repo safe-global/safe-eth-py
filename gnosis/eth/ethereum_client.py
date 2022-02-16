@@ -388,7 +388,7 @@ class Erc20Manager(EthereumClientManager):
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
 
-    def decode_logs(self, logs: List[Dict[str, Any]]):
+    def decode_logs(self, logs: List[LogReceipt]):
         decoded_logs = []
         for log in logs:
             decoded = self._decode_transfer_log(log["data"], log["topics"])
@@ -413,13 +413,29 @@ class Erc20Manager(EthereumClientManager):
             elif topics_len == 3:
                 # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
                 # 3 topics (transfer topic + from + to)
-                value = eth_abi.decode_single("uint256", HexBytes(data))
-                _from, to = [
-                    Web3.toChecksumAddress(address)
-                    for address in eth_abi.decode_abi(
-                        ["address", "address"], b"".join(topics[1:])
+                try:
+                    value_data = HexBytes(data)
+                    value = eth_abi.decode_single("uint256", value_data)
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `uint256 value` from data=%s",
+                        value_data.hex(),
                     )
-                ]
+                    return None
+                try:
+                    from_to_data = b"".join(topics[1:])
+                    _from, to = (
+                        Web3.toChecksumAddress(address)
+                        for address in eth_abi.decode_abi(
+                            ["address", "address"], from_to_data
+                        )
+                    )
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to` from topics=%s",
+                        HexBytes(from_to_data).hex(),
+                    )
+                    return None
                 return {"from": _from, "to": to, "value": value}
             elif topics_len == 4:
                 # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
