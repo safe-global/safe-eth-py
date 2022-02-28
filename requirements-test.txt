@@ -1,6 +1,6 @@
 -r requirements.txt
 coverage==6.3.1
-faker==12.3.0
+faker==13.2.0
 pytest==6.2.5
 pytest-django==4.5.2
 pytest-rerunfailures==10.2
