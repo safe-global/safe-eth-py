@@ -98,8 +98,8 @@ class TestGnosisProtocolAPI(TestCase):
         self.assertEqual(
             result,
             {
-                "description": "Order does not include sufficient fee",
-                "errorType": "InsufficientFee",
+                "description": "Buy token is the same as the sell token.",
+                "errorType": "SameBuyAndSellToken",
             },
         )
 
