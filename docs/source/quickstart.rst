@@ -64,6 +64,11 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
   eip1559_tx = ethereum_client.set_eip1559_fees(legacy_tx, tx_speed=TxSpeed.NORMAL)
 
 
+You can modify timeouts (in seconds) for the RPC endpoints by setting
+`ETHEREUM_RPC_TIMEOUT` and `ETHEREUM_RPC_SLOW_TIMEOUT` as environment variables.
+
+By default every RPC request will be retried `3` times. You can modify that by setting `ETHEREUM_RPC_RETRY_COUNT`.
+
 
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
