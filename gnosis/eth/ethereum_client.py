@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from functools import wraps
 from logging import getLogger
@@ -186,7 +187,14 @@ class EthereumClientProvider:
         if not hasattr(cls, "instance"):
             from django.conf import settings
 
-            cls.instance = EthereumClient(settings.ETHEREUM_NODE_URL)
+            cls.instance = EthereumClient(
+                settings.ETHEREUM_NODE_URL,
+                provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
+                slow_provider_timeout=int(
+                    os.environ.get("ETHEREUM_RPC_SLOW_TIMEOUT", 60)
+                ),
+                retry_count=int(os.environ.get("ETHEREUM_RPC_RETRY_COUNT", 60)),
+            )
         return cls.instance
 
 
@@ -197,7 +205,7 @@ class EthereumClientManager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = ethereum_client.slow_w3
         self.http_session = ethereum_client.http_session
-        self.timeout = ethereum_client.timeout
+        self.slow_timeout = ethereum_client.timeout
 
 
 class BatchCallManager(EthereumClientManager):
@@ -247,7 +255,7 @@ class BatchCallManager(EthereumClientManager):
             )
 
         response = self.http_session.post(
-            self.ethereum_node_url, json=queries, timeout=self.timeout
+            self.ethereum_node_url, json=queries, timeout=self.slow_timeout
         )
         if not response.ok:
             raise ConnectionError(
@@ -545,7 +553,9 @@ class Erc20Manager(EthereumClientManager):
             for i, data in enumerate(datas)
         ]
         response = self.http_session.post(
-            self.ethereum_client.ethereum_node_url, json=payload, timeout=self.timeout
+            self.ethereum_client.ethereum_node_url,
+            json=payload,
+            timeout=self.slow_timeout,
         )
         if not response.ok:
             raise InvalidERC20Info(response.content)
@@ -1068,7 +1078,7 @@ class ParityManager(EthereumClientManager):
             for i, block_identifier in enumerate(block_identifiers)
         ]
         response = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
+            self.ethereum_node_url, json=payload, timeout=self.slow_timeout
         )
         if not response.ok:
             message = (
@@ -1126,7 +1136,7 @@ class ParityManager(EthereumClientManager):
             for i, tx_hash in enumerate(tx_hashes)
         ]
         response = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
+            self.ethereum_node_url, json=payload, timeout=self.slow_timeout
         )
         if not response.ok:
             message = (
@@ -1267,17 +1277,23 @@ class EthereumClient:
     def __init__(
         self,
         ethereum_node_url: URI = URI("http://localhost:8545"),
+        provider_timeout: int = 15,
         slow_provider_timeout: int = 60,
+        retry_count: int = 3,
     ):
         """
         :param ethereum_node_url: Ethereum RPC uri
-        :param slow_provider_timeout: Timeout for slow and custom queries
+        :param slow_provider_timeout: Timeout for regular RPC queries
+        :param slow_provider_timeout: Timeout for slow (tracing, logs...) and custom RPC queries
         """
-        self.http_session = self._prepare_http_session()
+        self.http_session = self._prepare_http_session(retry_count)
         self.ethereum_node_url: str = ethereum_node_url
-        self.timeout = slow_provider_timeout
+        self.timeout = provider_timeout
+        self.slow_timeout = slow_provider_timeout
         self.w3_provider = HTTPProvider(
-            self.ethereum_node_url, session=self.http_session
+            self.ethereum_node_url,
+            request_kwargs={"timeout": provider_timeout},
+            session=self.http_session,
         )
         self.w3_slow_provider = HTTPProvider(
             self.ethereum_node_url,
@@ -1300,7 +1316,7 @@ class EthereumClient:
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
 
-    def _prepare_http_session(self) -> requests.Session:
+    def _prepare_http_session(self, retry_count: int) -> requests.Session:
         """
         Prepare http session with custom pooling. See:
         https://urllib3.readthedocs.io/en/stable/advanced-usage.html
@@ -1311,7 +1327,7 @@ class EthereumClient:
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=1,  # Doing all the connections to the same url
             pool_maxsize=100,  # Number of concurrent connections
-            max_retries=3,  # Nodes are not very responsive some times
+            max_retries=retry_count,  # Nodes are not very responsive some times
             pool_block=False,
         )
         session.mount("http://", adapter)
@@ -1618,7 +1634,7 @@ class EthereumClient:
             for i, tx_hash in enumerate(tx_hashes)
         ]
         results = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
+            self.ethereum_node_url, json=payload, timeout=self.slow_timeout
         ).json()
         txs = []
         for result in sorted(results, key=lambda x: x["id"]):
@@ -1667,7 +1683,7 @@ class EthereumClient:
             for i, tx_hash in enumerate(tx_hashes)
         ]
         results = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
+            self.ethereum_node_url, json=payload, timeout=self.slow_timeout
         ).json()
         receipts = []
         for result in sorted(results, key=lambda x: x["id"]):
@@ -1719,7 +1735,7 @@ class EthereumClient:
             for i, block_identifier in enumerate(block_identifiers)
         ]
         results = self.http_session.post(
-            self.ethereum_node_url, json=payload, timeout=self.timeout
+            self.ethereum_node_url, json=payload, timeout=self.slow_timeout
         ).json()
         blocks = []
         for result in sorted(results, key=lambda x: x["id"]):
