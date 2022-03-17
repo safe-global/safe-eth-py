@@ -14,8 +14,8 @@ from gnosis.eth.utils import get_eth_address_with_key
 from ..exceptions import (
     CannotEstimateGas,
     CannotRetrieveSafeInfoException,
-    CouldNotPayGasWithEther,
     CouldNotPayGasWithToken,
+    InvalidInternalTx,
 )
 from ..safe import Safe, SafeOperation
 from ..signatures import signature_to_bytes, signatures_to_bytes
@@ -208,7 +208,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertEqual(set(contract_owners), set(owners))
         self.assertEqual(w3.eth.get_balance(owners[0]), owner0_balance)
 
-        with self.assertRaises(CouldNotPayGasWithEther):
+        # with self.assertRaises(CouldNotPayGasWithEther):
+        # Ganache v7 does not raise CouldNotPayGasWithEther anymore
+        with self.assertRaises(InvalidInternalTx):
             safe.send_multisig_tx(
                 to,
                 value,

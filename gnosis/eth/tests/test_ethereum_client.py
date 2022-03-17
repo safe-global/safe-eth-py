@@ -755,7 +755,9 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
         with self.assertRaisesMessage(AssertionError, "at least"):
             self.ethereum_client.parity.trace_filter()
 
-        with self.assertRaisesMessage(ValueError, "Method trace_filter not supported"):
+        with self.assertRaisesMessage(
+            ValueError, "The method trace_filter does not exist/is not available"
+        ):
             self.ethereum_client.parity.trace_filter(
                 from_address=Account.create().address
             )
