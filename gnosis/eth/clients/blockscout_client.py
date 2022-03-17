@@ -32,6 +32,7 @@ class BlockscoutClient:
         EthereumNetwork.GATHER_MAINNET: "https://explorer.gather.network/",
         EthereumNetwork.METIS_TESTNET: "https://stardust-explorer.metis.io/",
         EthereumNetwork.METIS: "https://andromeda-explorer.metis.io/",
+        EthereumNetwork.FUSE_MAINNET: "https://explorer.fuse.io/",
     }
 
     def __init__(self, network: EthereumNetwork):
