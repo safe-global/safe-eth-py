@@ -236,7 +236,7 @@ class Multicall:
                 MulticallResult(success, data if data else None)
                 for success, data in result
             ]
-        except (ContractLogicError, OverflowError):
+        except (ContractLogicError, OverflowError, ValueError):
             raise BatchCallFunctionFailed
 
     def try_aggregate(

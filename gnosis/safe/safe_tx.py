@@ -325,7 +325,7 @@ class SafeTx:
                     "Success bit is %d, should be equal to 1" % success
                 )
             return success
-        except (ContractLogicError, BadFunctionCallOutput) as exc:
+        except (ContractLogicError, BadFunctionCallOutput, ValueError) as exc:
             # e.g. web3.exceptions.ContractLogicError: execution reverted: Invalid owner provided
             return self._raise_safe_vm_exception(str(exc))
         except ValueError as exc:  # Parity
