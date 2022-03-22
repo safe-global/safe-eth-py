@@ -20,7 +20,7 @@ class TestRealNodes(TestCase):
                         "value": 0,
                         "data": b"",
                         "gas": 25000,
-                        "gasPrice": 1,
+                        "gasPrice": ethereum_service.w3.eth.gas_price,
                     },
                     private_key=random_sender_account.key,
                 )

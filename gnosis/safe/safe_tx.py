@@ -386,7 +386,7 @@ class SafeTx:
         else:
             tx_parameters = {
                 "from": sender_account.address,
-                "gasPrice": tx_gas_price or self.gas_price or self.w3.eth.gas_price,
+                "gasPrice": tx_gas_price or self.w3.eth.gas_price,
             }
 
         if tx_gas:

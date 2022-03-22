@@ -1022,7 +1022,6 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             "to": to,
             "value": value,
             "gas": 23000,
-            "gasPrice": 1,
         }
 
         with self.assertRaisesMessage(
