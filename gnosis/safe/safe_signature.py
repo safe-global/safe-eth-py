@@ -6,6 +6,7 @@ from typing import List, Union
 from eth_abi import decode_single, encode_single
 from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
+from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
@@ -48,6 +49,19 @@ class SafeSignatureType(Enum):
             return SafeSignatureType.ETH_SIGN
         else:
             return SafeSignatureType.EOA
+
+
+def uint_to_address(value: int) -> ChecksumAddress:
+    """
+    Convert a Solidity `uint` value to a checksummed `address`, removing
+    invalid padding bytes if present
+
+    :return: Checksummed address
+    """
+    encoded = encode_single("uint", value)
+    # Remove padding bytes, as Solidity will ignore it but `eth_abi` will not
+    encoded_without_padding_bytes = b"\x00" * 12 + encoded[-20:]
+    return to_checksum_address(decode_single("address", encoded_without_padding_bytes))
 
 
 class SafeSignature(ABC):
@@ -164,17 +178,16 @@ class SafeSignatureContract(SafeSignature):
         self.contract_signature = HexBytes(contract_signature)
 
     @property
-    def owner(self):
+    def owner(self) -> ChecksumAddress:
         """
         :return: Address of contract signing. No further checks to get the owner are needed,
             but it could be a non existing contract
         """
-        return to_checksum_address(
-            decode_single("address", encode_single("uint", self.r))
-        )
+
+        return uint_to_address(self.r)
 
     @property
-    def signature_type(self):
+    def signature_type(self) -> SafeSignatureType:
         return SafeSignatureType.CONTRACT_SIGNATURE
 
     def export_signature(self) -> HexBytes:
@@ -209,9 +222,7 @@ class SafeSignatureContract(SafeSignature):
 class SafeSignatureApprovedHash(SafeSignature):
     @property
     def owner(self):
-        return to_checksum_address(
-            decode_single("address", encode_single("uint", self.r))
-        )
+        return uint_to_address(self.r)
 
     @property
     def signature_type(self):
