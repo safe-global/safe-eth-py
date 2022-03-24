@@ -1858,7 +1858,7 @@ class EthereumClient:
         to: str,
         gas_price: int,
         value: Wei,
-        gas: int = 23000,
+        gas: Optional[int] = None,
         nonce: Optional[int] = None,
         retry: bool = False,
         block_identifier: Optional[BlockIdentifier] = "pending",
@@ -1879,10 +1879,13 @@ class EthereumClient:
 
         assert Web3.isChecksumAddress(to)
 
+        account = Account.from_key(private_key)
+
         tx: TxParams = {
+            "from": account.address,
             "to": to,
             "value": value,
-            "gas": Wei(gas),
+            "gas": gas or Wei(self.estimate_gas(to, account.address, value)),
             "gasPrice": Wei(gas_price),
         }
 
