@@ -764,11 +764,6 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
 
 
 class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
-    def test_default_ethereum_network_name(self):
-        self.assertEqual(
-            EthereumNetwork(EthereumNetwork.default), EthereumNetwork.UNKNOWN
-        )
-
     def test_unknown_ethereum_network_name(self):
         self.assertEqual(EthereumNetwork(2), EthereumNetwork.UNKNOWN)
 
@@ -906,11 +901,11 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.GANACHE
             )
-            self.ethereum_client.get_network.cache_clear()
+            self.ethereum_client.get_chain_id.cache_clear()
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.MAINNET
             )
-            self.ethereum_client.get_network.cache_clear()
+            self.ethereum_client.get_chain_id.cache_clear()
 
         with mock.patch.object(
             Eth, "chain_id", return_value=4, new_callable=mock.PropertyMock
@@ -918,7 +913,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.RINKEBY
             )
-            self.ethereum_client.get_network.cache_clear()
+            self.ethereum_client.get_chain_id.cache_clear()
 
         with mock.patch.object(
             Eth, "chain_id", return_value=4815162342, new_callable=mock.PropertyMock
@@ -926,7 +921,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN
             )
-            self.ethereum_client.get_network.cache_clear()
+            self.ethereum_client.get_chain_id.cache_clear()
 
     def test_get_nonce(self):
         address = Account.create().address

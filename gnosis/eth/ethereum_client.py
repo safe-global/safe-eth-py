@@ -1339,13 +1339,20 @@ class EthereumClient:
         return self.w3.eth.block_number
 
     @cache
+    def get_chain_id(self) -> int:
+        """
+        :return: ChainId returned by the RPC `eth_chainId` method. It should never change, so it's cached.
+        """
+        return int(self.w3.eth.chain_id)
+
     def get_network(self) -> EthereumNetwork:
         """
-        Get network name based on the network version id. It should never change, so it's cached
+        Get network name based on the chainId
 
-        :return: The EthereumNetwork enum type
+        :return: EthereumNetwork based on the chainId. If network is not
+            on our list, `EthereumNetwork.UNKOWN` is returned
         """
-        return EthereumNetwork(int(self.w3.eth.chain_id))
+        return EthereumNetwork(self.get_chain_id())
 
     @cache
     def is_eip1559_supported(self) -> EthereumNetwork:
@@ -1602,7 +1609,7 @@ class EthereumClient:
             del tx["gasPrice"]
 
         if "chainId" not in tx:
-            tx["chainId"] = self.get_network().value
+            tx["chainId"] = self.get_chain_id()
 
         tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
         tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas

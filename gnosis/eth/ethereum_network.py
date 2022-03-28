@@ -1,10 +1,11 @@
-from enum import Enum
+from enum import Enum, unique
 
 
 class EthereumNetworkNotSupported(Exception):
     pass
 
 
+@unique
 class EthereumNetwork(Enum):
     """
     Use https://chainlist.org/ as a reference
@@ -189,7 +190,6 @@ class EthereumNetwork(Enum):
     GATHER_MAINNET = 192837465
     EVMOS_TESTNET = 9000
     EVMOS_MAINNET = 9001
-    default = UNKNOWN
 
     @classmethod
     def _missing_(cls, value):
