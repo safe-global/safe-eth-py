@@ -22,7 +22,7 @@ extras_require = {"django": ["django>=2", "django-filter>=2", "djangorestframewo
 
 setup(
     name="gnosis-py",
-    version="3.9.1",
+    version="3.9.2",
     packages=find_packages(),
     package_data={"gnosis": ["py.typed"]},
     install_requires=requirements,
