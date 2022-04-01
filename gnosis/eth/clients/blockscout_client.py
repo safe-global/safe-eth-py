@@ -65,10 +65,10 @@ class BlockscoutClient:
         query = '{address(hash: "%s") { hash, smartContract {name, abi} }}' % address
         result = self._do_request(self.grahpql_url, query)
         if (
-            result and
-            "error" not in result and
-            result.get("data", {}).get("address", {}) and
-            result["data"]["address"]["smartContract"]
+            result
+            and "error" not in result
+            and result.get("data", {}).get("address", {})
+            and result["data"]["address"]["smartContract"]
         ):
             smart_contract = result["data"]["address"]["smartContract"]
             return ContractMetadata(
