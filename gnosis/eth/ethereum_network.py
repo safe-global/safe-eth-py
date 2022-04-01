@@ -69,8 +69,10 @@ class EthereumNetwork(Enum):
     POA_CORE = 99
     XDAI = 100
     WEB3GAMES_TESTNET = 102
+    VELAS_MAINNET = 106
     TT = 108
     XPR_TESTNET = 110
+    VELAS_TESTNET = 111
     ETL = 111
     FUSE_MAINNET = 122
     FUSE_SPARK = 123
