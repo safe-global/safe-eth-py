@@ -34,7 +34,6 @@ class BlockscoutClient:
         EthereumNetwork.METIS: "https://andromeda-explorer.metis.io/",
         EthereumNetwork.FUSE_MAINNET: "https://explorer.fuse.io/",
         EthereumNetwork.VELAS_MAINNET: "https://evmexplorer.velas.com/",
-        EthereumNetwork.VELAS_TESTNET: "https://evmexplorer.testnet.velas.com/",
         EthereumNetwork.REI_MAINNET: "https://scan.rei.network/",
         EthereumNetwork.REI_TESTNET: "https://scan-test.rei.network/",
     }

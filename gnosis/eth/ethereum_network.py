@@ -72,7 +72,6 @@ class EthereumNetwork(Enum):
     VELAS_MAINNET = 106
     TT = 108
     XPR_TESTNET = 110
-    VELAS_TESTNET = 111
     ETL = 111
     FUSE_MAINNET = 122
     FUSE_SPARK = 123
