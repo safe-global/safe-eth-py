@@ -109,6 +109,7 @@ class EthereumNetwork(Enum):
     WAN_TESTNET = 999
     KLAY_BAOBAB = 1001
     NEW_TESTNET = 1007
+    EURUS_MAINNET = 1008
     EVC_EVRICE = 1010
     NEW = 1012
     SAKURA = 1022
@@ -124,6 +125,7 @@ class EthereumNetwork(Enum):
     MOON_MOONSHADOW = 1288
     GANACHE = 1337
     CATECHAIN = 1618
+    EURUS_TESTNET = 1984
     EGEM = 1987
     EDG = 2021
     EDG_BERESHEET = 2022
