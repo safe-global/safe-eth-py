@@ -152,7 +152,7 @@ class SafeTx:
         if self._chain_id is not None:
             return self._chain_id
         else:
-            return self.w3.eth.chain_id
+            return self.ethereum_client.get_chain_id()
 
     @cached_property
     def safe_nonce(self) -> str:
