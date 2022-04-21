@@ -38,7 +38,7 @@ from web3.exceptions import (
     TimeExhausted,
     TransactionNotFound,
 )
-from web3.middleware import geth_poa_middleware
+from web3.middleware import geth_poa_middleware, simple_cache_middleware
 from web3.types import (
     BlockData,
     BlockIdentifier,
@@ -1280,11 +1280,14 @@ class EthereumClient:
         provider_timeout: int = 15,
         slow_provider_timeout: int = 60,
         retry_count: int = 3,
+        use_caching_middleware: bool = True,
     ):
         """
         :param ethereum_node_url: Ethereum RPC uri
-        :param slow_provider_timeout: Timeout for regular RPC queries
+        :param provider_timeout: Timeout for regular RPC queries
         :param slow_provider_timeout: Timeout for slow (tracing, logs...) and custom RPC queries
+        :param retry_count: Retry count for failed requests
+        :param use_caching_middleware: Use web3 simple cache middleware: https://web3py.readthedocs.io/en/stable/middleware.html#web3.middleware.construct_simple_cache_middleware
         """
         self.http_session = self._prepare_http_session(retry_count)
         self.ethereum_node_url: str = ethereum_node_url
@@ -1312,6 +1315,9 @@ class EthereumClient:
             # For tests using dummy connections (like IPC)
         except (ConnectionError, FileNotFoundError):
             self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+        if use_caching_middleware:
+            self.w3.middleware_onion.add(simple_cache_middleware)
 
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
@@ -1344,6 +1350,13 @@ class EthereumClient:
         :return: ChainId returned by the RPC `eth_chainId` method. It should never change, so it's cached.
         """
         return int(self.w3.eth.chain_id)
+
+    @cache
+    def get_client_version(self) -> str:
+        """
+        :return: RPC version information
+        """
+        return self.w3.clientVersion
 
     def get_network(self) -> EthereumNetwork:
         """
