@@ -205,7 +205,8 @@ class EthereumClientManager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = ethereum_client.slow_w3
         self.http_session = ethereum_client.http_session
-        self.slow_timeout = ethereum_client.timeout
+        self.timeout = ethereum_client.timeout
+        self.slow_timeout = ethereum_client.slow_timeout
 
 
 class BatchCallManager(EthereumClientManager):

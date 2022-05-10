@@ -518,7 +518,7 @@ class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
         self.assertEqual(underlying_token.address, mln_vault_underlying_token)
 
         underlying_tokens = enzyme_oracle.get_underlying_tokens(usf_fund_token_address)
-        self.assertEqual(len(underlying_tokens), 1)
+        self.assertEqual(len(underlying_tokens), 2)
         for underlying_token in underlying_tokens:
             self.assertIn(underlying_token.address, usf_fund_underlying_tokens)
             self.assertAlmostEqual(underlying_token.quantity, 0.5, delta=0.5)
