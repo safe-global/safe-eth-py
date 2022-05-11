@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 
 from .. import EthereumClient
@@ -497,6 +498,7 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.xfail(reason="Flaky because of external dependency on Enzyme")
     def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
