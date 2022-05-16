@@ -34,7 +34,7 @@ setup(
     long_description=README,
     url="https://github.com/safe-global/safe-eth-py",
     author="Uxío",
-    author_email="uxio@gnosis.pm",
+    author_email="uxio@safe.global",
     keywords=["ethereum", "web3", "django", "rest", "gnosis"],
     classifiers=[
         "Environment :: Web Environment",
