@@ -239,7 +239,7 @@ class SafeTx:
 
     def _raise_safe_vm_exception(self, message: str) -> NoReturn:
         error_with_exception: Dict[str, Type[InvalidMultisigTx]] = {
-            # https://github.com/gnosis/safe-contracts/blob/v1.3.0/docs/error_codes.md
+            # https://github.com/safe-global/safe-contracts/blob/v1.3.0/docs/error_codes.md
             "GS000": CouldNotFinishInitialization,
             "GS001": ThresholdNeedsToBeDefined,
             "Could not pay gas costs with ether": CouldNotPayGasWithEther,
