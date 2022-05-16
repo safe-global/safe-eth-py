@@ -25,7 +25,7 @@ If you have issues building **coincurve** maybe
 
 
 Contributing to safe-eth-py
--------------------------
+---------------------------
 Clone the repo, then to set it up:
 
 .. code-block:: bash
