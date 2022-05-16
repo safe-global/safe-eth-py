@@ -21,8 +21,8 @@ requirements = [
 extras_require = {"django": ["django>=2", "django-filter>=2", "djangorestframework>=2"]}
 
 setup(
-    name="gnosis-py",
-    version="3.9.4",
+    name="safe-eth-py",
+    version="4.0.0",
     packages=find_packages(),
     package_data={"gnosis": ["py.typed"]},
     install_requires=requirements,
@@ -32,7 +32,7 @@ setup(
     license="MIT License",
     description="Gnosis libraries for Python Projects",
     long_description=README,
-    url="https://github.com/gnosis/gnosis-py",
+    url="https://github.com/safe-global/safe-eth-py",
     author="Uxío",
     author_email="uxio@gnosis.pm",
     keywords=["ethereum", "web3", "django", "rest", "gnosis"],
@@ -40,6 +40,8 @@ setup(
         "Environment :: Web Environment",
         "Framework :: Django",
         "Framework :: Django :: 2.0",
+        "Framework :: Django :: 3.0",
+        "Framework :: Django :: 4.0",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",

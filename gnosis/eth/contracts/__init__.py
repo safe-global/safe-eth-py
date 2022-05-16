@@ -1,6 +1,6 @@
 """
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
-https://github.com/gnosis/safe-deployments/tree/main/src/assets
+https://github.com/safe-global/safe-deployments/tree/main/src/assets
 
 GnosisSafe V1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
 GnosisSafe V1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F

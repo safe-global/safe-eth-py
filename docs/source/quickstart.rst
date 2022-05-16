@@ -1,10 +1,10 @@
 Quick start
 -----------
 
-Just run ``pip install gnosis-py`` or add it to your **requirements.txt**
+Just run ``pip install safe-eth-py`` or add it to your **requirements.txt**
 
 If you want django ethereum utils (models, serializers, filters...) you need to run
-``pip install gnosis-py[django]``
+``pip install safe-eth-py[django]``
 
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
@@ -121,7 +121,7 @@ Gnosis Products
 ---------------
 Safe
 ~~~~
-On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://gnosis-safe.io/>`_
+On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://safe.global/>`_
 
 .. code-block:: python
 
