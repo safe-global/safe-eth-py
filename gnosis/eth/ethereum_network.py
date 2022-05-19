@@ -61,6 +61,7 @@ class EthereumNetwork(Enum):
     PC = 78
     GENECHAIN = 80
     METER = 82
+    METER_TESTNET = 83
     GTTEST_TESTNET = 85
     GT = 86
     TOMO = 88
