@@ -38,7 +38,7 @@ class BlockscoutClient:
         EthereumNetwork.REI_TESTNET: "https://scan-test.rei.network/",
         EthereumNetwork.METER: "https://scan.meter.io/",
         EthereumNetwork.METER_TESTNET: "https://scan-warringstakes.meter.io/",
-        EthereumNetwork.GODWOKEN_TESTNET: "https://gw-explorer.nervosdao.community/",
+        EthereumNetwork.GODWOKEN_TESTNET: "https://v1.betanet.gwscan.com/",
     }
 
     def __init__(self, network: EthereumNetwork):
