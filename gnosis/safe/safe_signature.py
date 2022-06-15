@@ -7,12 +7,12 @@ from eth_abi import decode_single, encode_single
 from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
 from eth_typing import ChecksumAddress
-from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 from web3.exceptions import BadFunctionCallOutput
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_safe_contract, get_safe_V1_1_1_contract
+from gnosis.eth.utils import fast_to_checksum_address
 from gnosis.safe.signatures import (
     get_signing_address,
     signature_split,
@@ -61,7 +61,9 @@ def uint_to_address(value: int) -> ChecksumAddress:
     encoded = encode_single("uint", value)
     # Remove padding bytes, as Solidity will ignore it but `eth_abi` will not
     encoded_without_padding_bytes = b"\x00" * 12 + encoded[-20:]
-    return to_checksum_address(decode_single("address", encoded_without_padding_bytes))
+    return fast_to_checksum_address(
+        decode_single("address", encoded_without_padding_bytes)
+    )
 
 
 class SafeSignature(ABC):

@@ -24,7 +24,11 @@ from gnosis.eth.contracts import (
     get_safe_V1_3_0_contract,
 )
 from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
-from gnosis.eth.utils import get_eth_address_with_key
+from gnosis.eth.utils import (
+    fast_bytes_to_checksum_address,
+    fast_is_checksum_address,
+    get_eth_address_with_key,
+)
 from gnosis.safe.proxy_factory import ProxyFactory
 
 from ..eth.typing import EthereumData
@@ -91,7 +95,7 @@ class Safe:
         :param address: Safe address
         :param ethereum_client: Initialized ethereum client
         """
-        assert Web3.isChecksumAddress(address), "%s is not a valid address" % address
+        assert fast_is_checksum_address(address), "%s is not a valid address" % address
 
         self.ethereum_client = ethereum_client
         self.w3 = self.ethereum_client.w3
@@ -888,9 +892,9 @@ class Safe:
             self.address,
             self.FALLBACK_HANDLER_STORAGE_SLOT,
             block_identifier=block_identifier,
-        )[-20:]
+        )[-20:].rjust(20, b"\0")
         if len(address) == 20:
-            return Web3.toChecksumAddress(address)
+            return fast_bytes_to_checksum_address(address)
         else:
             return NULL_ADDRESS
 
@@ -899,20 +903,19 @@ class Safe:
     ) -> ChecksumAddress:
         address = self.ethereum_client.w3.eth.get_storage_at(
             self.address, self.GUARD_STORAGE_SLOT, block_identifier=block_identifier
-        )[-20:]
+        )[-20:].rjust(20, b"\0")
         if len(address) == 20:
-            return Web3.toChecksumAddress(address)
+            return fast_bytes_to_checksum_address(address)
         else:
             return NULL_ADDRESS
 
     def retrieve_master_copy_address(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> ChecksumAddress:
-        bytes_address = self.w3.eth.get_storage_at(
+        address = self.w3.eth.get_storage_at(
             self.address, "0x00", block_identifier=block_identifier
-        )[-20:]
-        int_address = int.from_bytes(bytes_address, byteorder="big")
-        return Web3.toChecksumAddress("{:#042x}".format(int_address))
+        )[-20:].rjust(20, b"\0")
+        return fast_bytes_to_checksum_address(address)
 
     def retrieve_modules(
         self,

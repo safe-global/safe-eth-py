@@ -2,9 +2,9 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import requests
-from web3 import Web3
 
 from .. import EthereumNetwork
+from ..utils import fast_is_checksum_address
 from .contract_metadata import ContractMetadata
 
 
@@ -47,7 +47,7 @@ class Sourcify:
     def get_contract_metadata(
         self, contract_address: str
     ) -> Optional[ContractMetadata]:
-        assert Web3.isChecksumAddress(
+        assert fast_is_checksum_address(
             contract_address
         ), "Expecting a checksummed address"
 

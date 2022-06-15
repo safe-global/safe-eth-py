@@ -13,8 +13,9 @@ requirements = [
     "eip712_structs",
     "packaging",
     "py-evm>=0.5.0a3",
-    "typing-extensions>=3.10; python_version < '3.8'",
+    "pysha3>=1.0.0",
     "requests>=2",
+    "typing-extensions>=3.10; python_version < '3.8'",
     "web3>=5.23.0",
 ]
 

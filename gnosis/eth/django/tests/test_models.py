@@ -7,6 +7,7 @@ from faker import Faker
 from web3 import Web3
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
+from ...utils import fast_is_checksum_address
 from .models import EthereumAddress, EthereumAddressV2, Keccak256Hash, Sha3Hash, Uint256
 
 faker = Faker()
@@ -17,10 +18,10 @@ class TestModels(TestCase):
         for EthereumAddressModel in (EthereumAddress, EthereumAddressV2):
             with self.subTest(EthereumAddressModel=EthereumAddressModel):
                 address = Account.create().address
-                self.assertTrue(Web3.isChecksumAddress(address))
+                self.assertTrue(fast_is_checksum_address(address))
                 ethereum_address = EthereumAddressModel.objects.create(value=address)
                 ethereum_address.refresh_from_db()
-                self.assertTrue(Web3.isChecksumAddress(ethereum_address.value))
+                self.assertTrue(fast_is_checksum_address(ethereum_address.value))
                 self.assertEqual(address, ethereum_address.value)
 
                 # Test addresses

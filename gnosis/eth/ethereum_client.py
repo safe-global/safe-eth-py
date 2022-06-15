@@ -54,7 +54,11 @@ from web3.types import (
     Wei,
 )
 
-from gnosis.eth.utils import mk_contract_address
+from gnosis.eth.utils import (
+    fast_is_checksum_address,
+    fast_to_checksum_address,
+    mk_contract_address,
+)
 
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
@@ -434,7 +438,7 @@ class Erc20Manager(EthereumClientManager):
                 try:
                     from_to_data = b"".join(topics[1:])
                     _from, to = (
-                        Web3.toChecksumAddress(address)
+                        fast_to_checksum_address(address)
                         for address in eth_abi.decode_abi(
                             ["address", "address"], from_to_data
                         )
@@ -452,7 +456,9 @@ class Erc20Manager(EthereumClientManager):
                 _from, to, token_id = eth_abi.decode_abi(
                     ["address", "address", "uint256"], b"".join(topics[1:])
                 )
-                _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
+                _from, to = [
+                    fast_to_checksum_address(address) for address in (_from, to)
+                ]
                 return {"from": _from, "to": to, "tokenId": token_id}
         return None
 
@@ -892,7 +898,7 @@ class ParityManager(EthereumClientManager):
 
         # CALL, DELEGATECALL, CREATE or CREATE2
         if "from" in action:
-            decoded["from"] = self.w3.toChecksumAddress(action["from"])
+            decoded["from"] = fast_to_checksum_address(action["from"])
         if "gas" in action:
             decoded["gas"] = int(action["gas"], 16)
         if "value" in action:
@@ -904,7 +910,7 @@ class ParityManager(EthereumClientManager):
         if "input" in action:
             decoded["input"] = HexBytes(action["input"])
         if "to" in action:
-            decoded["to"] = self.w3.toChecksumAddress(action["to"])
+            decoded["to"] = fast_to_checksum_address(action["to"])
 
         # CREATE or CREATE2
         if "init" in action:
@@ -912,13 +918,11 @@ class ParityManager(EthereumClientManager):
 
         # SELF-DESTRUCT
         if "address" in action:
-            decoded["address"] = self.w3.toChecksumAddress(action["address"])
+            decoded["address"] = fast_to_checksum_address(action["address"])
         if "balance" in action:
             decoded["balance"] = int(action["balance"], 16)
         if "refundAddress" in action:
-            decoded["refundAddress"] = self.w3.toChecksumAddress(
-                action["refundAddress"]
-            )
+            decoded["refundAddress"] = fast_to_checksum_address(action["refundAddress"])
 
         return decoded
 
@@ -935,7 +939,7 @@ class ParityManager(EthereumClientManager):
         if "code" in result:
             decoded["code"] = HexBytes(result["code"])
         if "address" in result:
-            decoded["address"] = self.w3.toChecksumAddress(result["address"])
+            decoded["address"] = fast_to_checksum_address(result["address"])
 
         return decoded
 
@@ -1898,7 +1902,7 @@ class EthereumClient:
         :return: tx_hash
         """
 
-        assert Web3.isChecksumAddress(to)
+        assert fast_is_checksum_address(to)
 
         account = Account.from_key(private_key)
 

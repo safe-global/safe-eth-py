@@ -3,7 +3,6 @@ from typing import Optional
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
-from web3 import Web3
 from web3.contract import Contract
 
 from gnosis.eth import EthereumClient
@@ -18,7 +17,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_1_1_contract,
 )
 from gnosis.eth.ethereum_client import EthereumTxSent
-from gnosis.eth.utils import compare_byte_code
+from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 
 try:
     from functools import cache
@@ -33,7 +32,7 @@ logger = getLogger(__name__)
 
 class ProxyFactory:
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
-        assert Web3.isChecksumAddress(address), (
+        assert fast_is_checksum_address(address), (
             "%s proxy factory address not valid" % address
         )
 
