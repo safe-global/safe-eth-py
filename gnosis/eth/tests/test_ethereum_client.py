@@ -22,7 +22,7 @@ from ..ethereum_client import (
     SenderAccountNotFoundInNode,
 )
 from ..exceptions import BatchCallException, InvalidERC20Info
-from ..utils import get_eth_address_with_key
+from ..utils import fast_to_checksum_address, get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -531,7 +531,7 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
         self.assertEqual(decoded_traces[0]["result"]["output"], HexBytes(""))
         self.assertEqual(
             decoded_traces[1]["result"]["address"],
-            self.w3.toChecksumAddress(example_traces[1]["result"]["address"]),
+            fast_to_checksum_address(example_traces[1]["result"]["address"]),
         )
         self.assertEqual(
             decoded_traces[1]["result"]["code"],

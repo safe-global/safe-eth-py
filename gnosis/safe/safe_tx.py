@@ -5,7 +5,6 @@ from eip712_structs.struct import StructTuple
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
-from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput, ContractLogicError
 from web3.types import BlockIdentifier, TxParams, Wei
 
@@ -14,6 +13,7 @@ from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
 from ..eth.ethereum_client import TxSpeed
+from ..eth.utils import fast_keccak
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -201,7 +201,7 @@ class SafeTx:
     def safe_tx_hash(self) -> HexBytes:
         message, domain = self._eip712_payload
         signable_bytes = message.signable_bytes(domain)
-        return HexBytes(Web3.keccak(signable_bytes))
+        return HexBytes(fast_keccak(signable_bytes))
 
     @property
     def signers(self) -> List[str]:

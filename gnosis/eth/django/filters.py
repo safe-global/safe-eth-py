@@ -6,7 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 import django_filters
 from hexbytes import HexBytes
-from web3 import Web3
+
+from ..utils import fast_is_checksum_address
 
 
 class EthereumAddressFieldForm(CharFieldForm):
@@ -21,7 +22,7 @@ class EthereumAddressFieldForm(CharFieldForm):
         value = super().to_python(value)
         if value in self.empty_values:
             return None
-        elif not Web3.isChecksumAddress(value):
+        elif not fast_is_checksum_address(value):
             raise ValidationError(self.error_messages["invalid"], code="invalid")
         return value
 

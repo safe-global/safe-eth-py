@@ -6,9 +6,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from eth_typing import ChecksumAddress
-from eth_utils import to_checksum_address
+from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 
+from ..utils import fast_bytes_to_checksum_address, fast_to_checksum_address
 from .filters import EthereumAddressFieldForm, Keccak256FieldForm
 from .validators import validate_checksumed_address
 
@@ -45,7 +46,7 @@ class EthereumAddressField(models.CharField):
         value = super().to_python(value)
         if value:
             try:
-                return to_checksum_address(value)
+                return fast_to_checksum_address(value)
             except ValueError:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
@@ -74,16 +75,23 @@ class EthereumAddressV2Field(models.Field):
         self, value: memoryview, expression, connection
     ) -> Optional[ChecksumAddress]:
         if value:
-            return to_checksum_address(value.hex())
+            return fast_bytes_to_checksum_address(value)
 
     def get_prep_value(self, value: ChecksumAddress) -> Optional[bytes]:
         if value:
-            return HexBytes(self.to_python(value))
+            try:
+                return HexBytes(to_normalized_address(value))
+            except (TypeError, ValueError):
+                raise exceptions.ValidationError(
+                    self.error_messages["invalid"],
+                    code="invalid",
+                    params={"value": value},
+                )
 
     def to_python(self, value) -> Optional[ChecksumAddress]:
         if value is not None:
             try:
-                return to_checksum_address(value)
+                return fast_to_checksum_address(value)
             except ValueError:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
@@ -101,11 +109,12 @@ class EthereumAddressV2Field(models.Field):
 
 
 class Uint256Field(models.DecimalField):
-    description = _("Ethereum uint256 number")
     """
     Field to store ethereum uint256 values. Uses Decimal db type without decimals to store
     in the database, but retrieve as `int` instead of `Decimal` (https://docs.python.org/3/library/decimal.html)
     """
+
+    description = _("Ethereum uint256 number")
 
     def __init__(self, *args, **kwargs):
         kwargs["max_digits"] = 79  # 2 ** 256 is 78 digits

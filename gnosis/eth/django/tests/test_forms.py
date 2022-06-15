@@ -16,7 +16,7 @@ class Keccak256Form(forms.Form):
 
 class TestForms(TestCase):
     def test_ethereum_address_field_form(self):
-        form = EthereumAddressForm(data={"value": "not a ethereum address"})
+        form = EthereumAddressForm(data={"value": "not an ethereum address"})
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["value"], ["Enter a valid checksummed Ethereum Address."]

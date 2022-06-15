@@ -10,6 +10,7 @@ from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_multi_send_contract
 from gnosis.eth.ethereum_client import EthereumTxSent
 from gnosis.eth.typing import EthereumData
+from gnosis.eth.utils import fast_bytes_to_checksum_address, fast_is_checksum_address
 
 logger = getLogger(__name__)
 
@@ -115,7 +116,7 @@ class MultiSendTx:
         """
         encoded_multisend_tx = HexBytes(encoded_multisend_tx)
         operation = MultiSendOperation(encoded_multisend_tx[0])
-        to = Web3.toChecksumAddress(encoded_multisend_tx[1 : 1 + 20])
+        to = fast_bytes_to_checksum_address(encoded_multisend_tx[1 : 1 + 20])
         value = int.from_bytes(encoded_multisend_tx[21 : 21 + 32], byteorder="big")
         data_length = int.from_bytes(
             encoded_multisend_tx[21 + 32 : 21 + 32 * 2], byteorder="big"
@@ -149,7 +150,7 @@ class MultiSendTx:
         operation = MultiSendOperation(
             int.from_bytes(encoded_multisend_tx[:32], byteorder="big")
         )
-        to = Web3.toChecksumAddress(encoded_multisend_tx[32:64][-20:])
+        to = fast_bytes_to_checksum_address(encoded_multisend_tx[32:64][-20:])
         value = int.from_bytes(encoded_multisend_tx[64:96], byteorder="big")
         data_length = int.from_bytes(encoded_multisend_tx[128:160], byteorder="big")
         data = encoded_multisend_tx[160 : 160 + data_length]
@@ -165,7 +166,7 @@ class MultiSend:
     dummy_w3 = Web3()
 
     def __init__(self, address: str, ethereum_client: EthereumClient):
-        assert Web3.isChecksumAddress(address), (
+        assert fast_is_checksum_address(address), (
             "%s proxy factory address not valid" % address
         )
 

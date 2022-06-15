@@ -15,7 +15,7 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
 )
-from gnosis.eth.utils import generate_address_2
+from gnosis.eth.utils import fast_is_checksum_address, mk_contract_address_2
 
 logger = getLogger(__name__)
 
@@ -54,8 +54,8 @@ class SafeCreate2TxBuilder:
         :param master_copy_address: `Gnosis Safe` master copy address
         :param proxy_factory_address: `Gnosis Proxy Factory` address
         """
-        assert Web3.isChecksumAddress(master_copy_address)
-        assert Web3.isChecksumAddress(proxy_factory_address)
+        assert fast_is_checksum_address(master_copy_address)
+        assert fast_is_checksum_address(proxy_factory_address)
 
         self.w3 = w3
         self.master_copy_address = master_copy_address
@@ -110,8 +110,8 @@ class SafeCreate2TxBuilder:
         fallback_handler = fallback_handler or NULL_ADDRESS
         payment_receiver = payment_receiver or NULL_ADDRESS
         payment_token = payment_token or NULL_ADDRESS
-        assert Web3.isChecksumAddress(payment_receiver)
-        assert Web3.isChecksumAddress(payment_token)
+        assert fast_is_checksum_address(payment_receiver)
+        assert fast_is_checksum_address(payment_token)
 
         # Get bytes for `setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data,
         # address paymentToken, uint256 payment, address payable paymentReceiver)`
@@ -222,7 +222,7 @@ class SafeCreate2TxBuilder:
             ["bytes", "uint256"],
             [proxy_creation_code, int(self.master_copy_address, 16)],
         )
-        return generate_address_2(
+        return mk_contract_address_2(
             self.proxy_factory_contract.address, salt, deployment_data
         )
 

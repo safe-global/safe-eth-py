@@ -1,12 +1,103 @@
+import warnings
 from secrets import token_bytes
 from typing import Tuple, Union
 
 import eth_abi
 from eth._utils.address import generate_contract_address
 from eth_keys import keys
-from eth_utils import to_canonical_address, to_checksum_address
+from eth_typing import AnyAddress, ChecksumAddress, HexStr
+from eth_utils import to_normalized_address
 from hexbytes import HexBytes
-from web3 import Web3
+from sha3 import keccak_256
+
+
+def fast_keccak(value: bytes) -> bytes:
+    """
+    Calculates ethereum keccak256 using fast library `pysha3`
+    :param value:
+    :return: Keccak256 used by ethereum as `bytes`
+    """
+    return keccak_256(value).digest()
+
+
+def fast_keccak_hex(value: bytes) -> HexStr:
+    """
+    Same as `fast_keccak`, but it's a little more optimal calling `hexdigest()`
+    than calling `digest()` and then `hex()`
+
+    :param value:
+    :return: Keccak256 used by ethereum as an hex string (not 0x prefixed)
+    """
+    return HexStr(keccak_256(value).hexdigest())
+
+
+def _build_checksum_address(
+    norm_address: HexStr, address_hash: HexStr
+) -> ChecksumAddress:
+    """
+    https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md
+
+    :param norm_address: address in lowercase (not 0x prefixed)
+    :param address_hash: keccak256 of `norm_address` (not 0x prefixed)
+    :return:
+    """
+    return ChecksumAddress(
+        "0x"
+        + (
+            "".join(
+                (
+                    norm_address[i].upper()
+                    if int(address_hash[i], 16) > 7
+                    else norm_address[i]
+                )
+                for i in range(0, 40)
+            )
+        )
+    )
+
+
+def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAddress:
+    """
+    Converts to checksum_address. Uses more optimal `pysha3` instead of `eth_utils` for keccak256 calculation
+
+    :param value:
+    :return:
+    """
+    norm_address = to_normalized_address(value)[2:]
+    address_hash = fast_keccak_hex(norm_address.encode())
+    return _build_checksum_address(norm_address, address_hash)
+
+
+def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
+    """
+    Converts to checksum_address. Uses more optimal `pysha3` instead of `eth_utils` for keccak256 calculation.
+    As input is already in bytes, some checks and conversions can be skipped, providing a speedup of ~50%
+
+    :param value:
+    :return:
+    """
+    if len(value) != 20:
+        raise ValueError(
+            "Cannot convert %s to a checksum address, 20 bytes were expected"
+        )
+    norm_address = bytes(value).hex()
+    address_hash = fast_keccak_hex(norm_address.encode())
+    return _build_checksum_address(norm_address, address_hash)
+
+
+def fast_is_checksum_address(value: Union[AnyAddress, str, bytes]) -> bool:
+    """
+    Fast version to check if an address is a checksum_address
+
+    :param value:
+    :return: `True` if checksummed, `False` otherwise
+    """
+    if not isinstance(value, str) or len(value) != 42 or not value.startswith("0x"):
+        return False
+    try:
+        return fast_to_checksum_address(value) == value
+    except ValueError:
+        return False
 
 
 def get_eth_address_with_key() -> Tuple[str, bytes]:
@@ -20,31 +111,6 @@ def get_eth_address_with_invalid_checksum() -> str:
     return "0x" + "".join(
         [c.lower() if c.isupper() else c.upper() for c in address[2:]]
     )
-
-
-def generate_address_2(
-    from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]
-) -> str:
-    """
-    Generates an address for a contract created using CREATE2.
-
-    :param from_: The address which is creating this new address (need to be 20 bytes)
-    :param salt: A salt (32 bytes)
-    :param init_code: A init code of the contract being created
-    :return: Address of the new contract
-    """
-
-    from_ = HexBytes(from_)
-    salt = HexBytes(salt)
-    init_code = HexBytes(init_code)
-
-    assert len(from_) == 20, f"Address {from_.hex()} is not valid. Must be 20 bytes"
-    assert len(salt) == 32, f"Salt {salt.hex()} is not valid. Must be 32 bytes"
-    assert len(init_code) > 0, f"Init code {init_code.hex()} is not valid"
-
-    init_code_hash = Web3.keccak(init_code)
-    contract_address = Web3.keccak(HexBytes("ff") + from_ + salt + init_code_hash)
-    return Web3.toChecksumAddress(contract_address[12:])
 
 
 def decode_string_or_bytes32(data: bytes) -> str:
@@ -94,7 +160,56 @@ def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
         return codes[0] == codes[1]
 
 
-def mk_contract_address(address: Union[str, bytes], nonce: int) -> str:
-    return to_checksum_address(
-        generate_contract_address(to_canonical_address(address), nonce)
+def mk_contract_address(address: Union[str, bytes], nonce: int) -> ChecksumAddress:
+    """
+    Generate expected contract address when using EVM CREATE
+
+    :param address:
+    :param nonce:
+    :return:
+    """
+    return fast_to_checksum_address(generate_contract_address(HexBytes(address), nonce))
+
+
+def mk_contract_address_2(
+    from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]
+) -> ChecksumAddress:
+
+    """
+    Generate expected contract address when using EVM CREATE2.
+
+    :param from_: The address which is creating this new address (need to be 20 bytes)
+    :param salt: A salt (32 bytes)
+    :param init_code: A init code of the contract being created
+    :return: Address of the new contract
+    """
+
+    from_ = HexBytes(from_)
+    salt = HexBytes(salt)
+    init_code = HexBytes(init_code)
+
+    assert len(from_) == 20, f"Address {from_.hex()} is not valid. Must be 20 bytes"
+    assert len(salt) == 32, f"Salt {salt.hex()} is not valid. Must be 32 bytes"
+    assert len(init_code) > 0, f"Init code {init_code.hex()} is not valid"
+
+    init_code_hash = fast_keccak(init_code)
+    contract_address = fast_keccak(HexBytes("ff") + from_ + salt + init_code_hash)
+    return fast_bytes_to_checksum_address(contract_address[12:])
+
+
+def generate_address_2(
+    from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]
+) -> ChecksumAddress:
+    """
+    .. deprecated:: use mk_contract_address_2
+
+    :param from_:
+    :param salt:
+    :param init_code:
+    :return:
+    """
+    warnings.warn(
+        "`generate_address_2` is deprecated, use `mk_contract_address_2`",
+        DeprecationWarning,
     )
+    return mk_contract_address_2(from_, salt, init_code)

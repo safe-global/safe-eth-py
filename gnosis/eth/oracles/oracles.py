@@ -9,7 +9,6 @@ from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_abi_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3 import Web3
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 
@@ -23,6 +22,7 @@ from ..contracts import (
     get_uniswap_v2_pair_contract,
     get_uniswap_v2_router_contract,
 )
+from ..utils import fast_bytes_to_checksum_address, fast_keccak
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.cream_abis import cream_ctoken_abi
@@ -380,16 +380,16 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         if token_address.lower() > token_address_2.lower():
             token_address, token_address_2 = token_address_2, token_address
-        salt = Web3.keccak(
+        salt = fast_keccak(
             encode_abi_packed(["address", "address"], [token_address, token_address_2])
         )
-        address = Web3.keccak(
+        address = fast_keccak(
             encode_abi_packed(
                 ["bytes", "address", "bytes", "bytes"],
                 [HexBytes("ff"), self.factory_address, salt, self.pair_init_code],
             )
         )[-20:]
-        return Web3.toChecksumAddress(address)
+        return fast_bytes_to_checksum_address(address)
 
     def get_decimals(self, token_address: str, token_address_2: str) -> Tuple[int, int]:
         if not (

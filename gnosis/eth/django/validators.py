@@ -1,10 +1,10 @@
 from django.core.exceptions import ValidationError
 
-from web3 import Web3
+from ..utils import fast_is_checksum_address
 
 
 def validate_checksumed_address(address):
-    if not Web3.isChecksumAddress(address):
+    if not fast_is_checksum_address(address):
         raise ValidationError(
             "%(address)s has an invalid checksum",
             params={"address": address},
