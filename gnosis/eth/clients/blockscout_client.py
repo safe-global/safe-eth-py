@@ -39,6 +39,8 @@ class BlockscoutClient:
         EthereumNetwork.METER: "https://scan.meter.io/",
         EthereumNetwork.METER_TESTNET: "https://scan-warringstakes.meter.io/",
         EthereumNetwork.GODWOKEN_TESTNET: "https://v1.betanet.gwscan.com/",
+        EthereumNetwork.VENIDIUM_TESTNET: "https://evm-testnet.venidiumexplorer.com/",
+        EthereumNetwork.VENIDIUM: "https://evm.venidiumexplorer.com/",
     }
 
     def __init__(self, network: EthereumNetwork):
