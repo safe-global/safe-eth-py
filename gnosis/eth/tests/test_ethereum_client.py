@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 from hexbytes import HexBytes
 from web3.eth import Eth
@@ -1048,6 +1049,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
+    @pytest.mark.xfail(reason="Last ganache-cli version broke the test")
     def test_send_unsigned_transaction_with_private_key(self):
         account = self.create_account(initial_ether=0.1)
         key = account.key
