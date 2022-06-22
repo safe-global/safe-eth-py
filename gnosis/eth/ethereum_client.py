@@ -1323,6 +1323,7 @@ class EthereumClient:
 
         if use_caching_middleware:
             self.w3.middleware_onion.add(simple_cache_middleware)
+            self.slow_w3.middleware_onion.add(simple_cache_middleware)
 
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
