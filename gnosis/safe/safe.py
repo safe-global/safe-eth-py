@@ -128,7 +128,7 @@ class Safe:
         """
 
         assert owners, "At least one owner must be set"
-        assert threshold >= len(owners), "Threshold=%d must be >= %d" % (
+        assert 1 <= threshold <= len(owners), "Threshold=%d must be <= %d" % (
             threshold,
             len(owners),
         )
