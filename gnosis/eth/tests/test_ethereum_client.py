@@ -21,6 +21,7 @@ from ..ethereum_client import (
     InvalidNonce,
     ParityManager,
     SenderAccountNotFoundInNode,
+    parse_rpc_result_or_raise,
 )
 from ..exceptions import BatchCallException, InvalidERC20Info
 from ..utils import fast_to_checksum_address, get_eth_address_with_key
@@ -776,6 +777,19 @@ class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
 
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
+    def test_parse_rpc_result_or_raise(self):
+        self.assertEqual(parse_rpc_result_or_raise({"result": "test"}, "", ""), "test")
+
+        with self.assertRaisesMessage(
+            ValueError,
+            "Problem calling `trace_transaction` on 0x230b7f018951818c2a4545654d43a086ed2a3ed7c5b7c03990f4ac22ffae3840, result={'error': 'Something bad happened'}",
+        ):
+            parse_rpc_result_or_raise(
+                {"error": "Something bad happened"},
+                "trace_transaction",
+                "0x230b7f018951818c2a4545654d43a086ed2a3ed7c5b7c03990f4ac22ffae3840",
+            )
+
     def test_ethereum_client_str(self):
         self.assertTrue(str(self.ethereum_client))
 
