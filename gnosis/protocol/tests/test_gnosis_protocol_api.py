@@ -33,9 +33,12 @@ class TestGnosisProtocolAPI(TestCase):
         response = self.gnosis_protocol_api.get_estimated_amount(
             self.gno_token_address, self.gno_token_address, OrderKind.SELL, 1
         )
-        self.assertEqual(
+        self.assertDictEqual(
             response,
-            {"amount": "1", "token": "0x6810e776880c02933d47db1b9fc05908e5386b96"},
+            {
+                "errorType": "SameBuyAndSellToken",
+                "description": "Buy token is the same as the sell token.",
+            },
         )
 
         response = self.gnosis_protocol_api.get_estimated_amount(
