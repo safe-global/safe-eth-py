@@ -204,6 +204,9 @@ class EthereumNetwork(Enum):
     SHIDEN = 336
     CRONOS_MAINNET = 25
     CRONOS_TESTNET = 338
+    ACALA = 787
+    KARURA = 686
+    MANDALA = 595
 
     @classmethod
     def _missing_(cls, value):
