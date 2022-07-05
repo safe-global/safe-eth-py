@@ -2,6 +2,10 @@ class EthereumClientException(ValueError):
     pass
 
 
+class ChainIdIsRequired(EthereumClientException):
+    pass
+
+
 class TransactionAlreadyImported(EthereumClientException):
     pass
 

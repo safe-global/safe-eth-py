@@ -70,6 +70,7 @@ from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .exceptions import (
     BatchCallFunctionFailed,
+    ChainIdIsRequired,
     FromAddressNotFound,
     GasLimitExceeded,
     InsufficientFunds,
@@ -120,6 +121,7 @@ def tx_with_exception_handling(func):
     :return:
     """
     error_with_exception: Dict[str, Exception] = {
+        "EIP-155": ChainIdIsRequired,
         "Transaction with the same hash was already imported": TransactionAlreadyImported,
         "replacement transaction underpriced": ReplacementTransactionUnderpriced,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L72
         "There is another transaction with same nonce in the queue": ReplacementTransactionUnderpriced,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L374
