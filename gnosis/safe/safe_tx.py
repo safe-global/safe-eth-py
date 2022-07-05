@@ -118,18 +118,18 @@ class SafeTx:
         self.ethereum_client = ethereum_client
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
-        self.value = value
+        self.value = int(value)
         self.data = HexBytes(data) if data else b""
-        self.operation = operation
-        self.safe_tx_gas = safe_tx_gas
-        self.base_gas = base_gas
-        self.gas_price = gas_price
+        self.operation = int(operation)
+        self.safe_tx_gas = int(safe_tx_gas)
+        self.base_gas = int(base_gas)
+        self.gas_price = int(gas_price)
         self.gas_token = gas_token or NULL_ADDRESS
         self.refund_receiver = refund_receiver or NULL_ADDRESS
         self.signatures = signatures or b""
-        self._safe_nonce = safe_nonce
+        self._safe_nonce = safe_nonce and int(safe_nonce)
         self._safe_version = safe_version
-        self._chain_id = chain_id
+        self._chain_id = chain_id and int(chain_id)
 
     def __str__(self):
         return (
