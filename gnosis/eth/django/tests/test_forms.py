@@ -1,17 +1,22 @@
 from django.forms import forms
 from django.test import TestCase
 
+from hexbytes import HexBytes
 from web3 import Web3
 
-from ..filters import EthereumAddressFieldForm, Keccak256FieldForm
+from ..forms import EthereumAddressFieldForm, HexFieldForm, Keccak256FieldForm
 
 
 class EthereumAddressForm(forms.Form):
     value = EthereumAddressFieldForm()
 
 
+class HexForm(forms.Form):
+    value = HexFieldForm(required=False)
+
+
 class Keccak256Form(forms.Form):
-    value = Keccak256FieldForm()
+    value = Keccak256FieldForm(required=False)
 
 
 class TestForms(TestCase):
@@ -35,6 +40,22 @@ class TestForms(TestCase):
         )
         self.assertTrue(form.is_valid())
 
+    def test_hex_field_form(self):
+        form = HexForm(data={"value": "not an hexadecimal"})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors["value"], ["Enter a valid hexadecimal."])
+
+        form = HexForm(data={"value": "0xabcd"})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["value"], HexBytes("0xabcd"))
+
+        form = HexForm(initial={"value": memoryview(bytes.fromhex("cdef"))})
+        self.assertIn('value="0xcdef"', form.as_p())
+
+        form = HexForm(data={"value": ""})
+        self.assertTrue(form.is_valid())
+        self.assertIsNone(form.cleaned_data["value"])
+
     def test_keccak256_field_form(self):
         form = Keccak256Form(data={"value": "not a hash"})
         self.assertFalse(form.is_valid())
@@ -50,3 +71,7 @@ class TestForms(TestCase):
 
         form = Keccak256Form(data={"value": Web3.keccak(text="testing").hex()})
         self.assertTrue(form.is_valid())
+
+        form = Keccak256Form(data={"value": ""})
+        self.assertTrue(form.is_valid())
+        self.assertIsNone(form.cleaned_data["value"])
