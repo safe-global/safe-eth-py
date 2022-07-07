@@ -11,8 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 requirements = [
     "cached-property>=1.5; python_version < '3.8'",
     "eip712_structs",
-    "packaging",
-    "py-evm>=0.5.0a3",
+    "py-evm==0.5.0a3",
     "pysha3>=1.0.0",
     "requests>=2",
     "typing-extensions>=3.10; python_version < '3.8'",
