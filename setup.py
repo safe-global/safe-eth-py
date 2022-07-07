@@ -11,6 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 requirements = [
     "cached-property>=1.5; python_version < '3.8'",
     "eip712_structs",
+    "packaging",
     "py-evm==0.5.0a3",
     "pysha3>=1.0.0",
     "requests>=2",
@@ -22,7 +23,7 @@ extras_require = {"django": ["django>=2", "django-filter>=2", "djangorestframewo
 
 setup(
     name="safe-eth-py",
-    version="4.1.2",
+    version="4.1.3",
     packages=find_packages(),
     package_data={"gnosis": ["py.typed"]},
     install_requires=requirements,
