@@ -4,14 +4,13 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from eth.constants import SECPK1_N
 from eth.vm.forks.frontier.transactions import FrontierTransaction
 from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
 
-from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SECPK1_N
 from gnosis.eth.contracts import (
     get_erc20_contract,
     get_paying_proxy_contract,
