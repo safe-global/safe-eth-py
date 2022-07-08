@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
@@ -7,10 +8,12 @@ from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth.ethereum_client import EthereumNetwork
+from gnosis.eth import EthereumNetwork
 from gnosis.safe import SafeTx
 
 from .base_api import SafeAPIException, SafeBaseAPI
+
+logger = logging.getLogger(__name__)
 
 
 class TransactionServiceApi(SafeBaseAPI):
@@ -115,6 +118,10 @@ class TransactionServiceApi(SafeBaseAPI):
             result = response.json()
             # TODO return tx-hash if executed
             signatures = self.parse_signatures(result)
+            if not self.ethereum_client:
+                logger.warning(
+                    "EthereumClient should be defined to get a executable SafeTx"
+                )
             return (
                 SafeTx(
                     self.ethereum_client,
@@ -130,6 +137,7 @@ class TransactionServiceApi(SafeBaseAPI):
                     result["refundReceiver"],
                     signatures=signatures if signatures else b"",
                     safe_nonce=int(result["nonce"]),
+                    chain_id=self.network.value,
                 ),
                 HexBytes(result["transactionHash"])
                 if result["transactionHash"]

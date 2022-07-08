@@ -9,7 +9,7 @@ from ...api.transaction_service_api import TransactionServiceApi
 class TestTransactionServiceAPI(EthereumTestCaseMixin, unittest.TestCase):
     def setUp(self) -> None:
         self.transaction_service = TransactionServiceApi(
-            self.ethereum_client, EthereumNetwork.RINKEBY
+            EthereumNetwork.RINKEBY, ethereum_client=self.ethereum_client
         )
         self.safe_address = "0x7552Ed65a45E27740a15B8D5415E90d8ca64C109"
 

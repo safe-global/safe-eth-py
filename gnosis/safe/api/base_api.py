@@ -14,9 +14,11 @@ class SafeAPIException(Exception):
 class SafeBaseAPI(ABC):
     URL_BY_NETWORK: Dict[EthereumNetwork, str] = {}
 
-    def __init__(self, ethereum_client: EthereumClient, network: EthereumNetwork):
-        self.ethereum_client = ethereum_client
+    def __init__(
+        self, network: EthereumNetwork, ethereum_client: Optional[EthereumClient] = None
+    ):
         self.network = network
+        self.ethereum_client = ethereum_client
         self.base_url = self.URL_BY_NETWORK[network]
 
     @classmethod
@@ -25,7 +27,7 @@ class SafeBaseAPI(ABC):
     ) -> Optional["SafeBaseAPI"]:
         ethereum_network = ethereum_client.get_network()
         if ethereum_network in cls.URL_BY_NETWORK:
-            return cls(ethereum_client, ethereum_network)
+            return cls(ethereum_network, ethereum_client=ethereum_client)
 
     def _get_request(self, url: str) -> requests.Response:
         full_url = urljoin(self.base_url, url)
