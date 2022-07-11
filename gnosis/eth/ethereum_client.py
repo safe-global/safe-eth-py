@@ -1338,7 +1338,7 @@ class EthereumClient:
             if self.get_network() != EthereumNetwork.MAINNET:
                 self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             # For tests using dummy connections (like IPC)
-        except (ConnectionError, FileNotFoundError):
+        except (IOError, FileNotFoundError):
             self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if use_caching_middleware:

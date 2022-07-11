@@ -112,7 +112,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.multi_send_contract = get_multi_send_contract(
             cls.w3, _contract_addresses["multi_send"]
         )
-        cls.multi_send = MultiSend(cls.multi_send_contract.address, cls.ethereum_client)
+        cls.multi_send = MultiSend(
+            cls.ethereum_client, address=cls.multi_send_contract.address
+        )
 
     def build_test_safe(
         self,
