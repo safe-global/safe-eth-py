@@ -31,7 +31,7 @@ from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
 from .mocks.mock_trace_block import trace_block_2191709_mock, trace_block_13191781_mock
 from .mocks.mock_trace_filter import trace_filter_mock_1
 from .mocks.mock_trace_transaction import trace_transaction_mocks
-from .utils import just_test_if_mainnet_node
+from .utils import deploy_example_erc20, just_test_if_mainnet_node
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
@@ -1220,6 +1220,16 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(len(block["hash"]), 32)
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
+
+    def test_is_contract(self):
+        self.assertFalse(
+            self.ethereum_client.is_contract(self.ethereum_test_account.address)
+        )
+
+        erc20 = deploy_example_erc20(
+            self.ethereum_client.w3, 2, self.ethereum_test_account.address
+        )
+        self.assertTrue(self.ethereum_client.is_contract(erc20.address))
 
     def test_is_eip1559_supported(self):
         self.assertFalse(self.ethereum_client.is_eip1559_supported())
