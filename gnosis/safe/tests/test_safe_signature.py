@@ -196,7 +196,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
         # Check with previously signedMessage
-        tx = safe_contract.functions.signMessage(safe_tx_hash).buildTransaction(
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
             {"from": safe.address}
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
@@ -244,7 +244,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_contract = safe.get_contract()
         safe_tx_hash = Web3.keccak(text="test")
 
-        tx = safe_contract.functions.signMessage(safe_tx_hash).buildTransaction(
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
             {"from": safe.address}
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])

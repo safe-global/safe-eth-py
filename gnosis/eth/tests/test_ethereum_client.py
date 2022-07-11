@@ -244,13 +244,13 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 account_1.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
         self.send_tx(
             erc20_contract.functions.transfer(
                 account_3.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
         logs = self.ethereum_client.erc20.get_total_transfer_history(
@@ -266,7 +266,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 account_2.address, amount // 2
-            ).buildTransaction({"from": account_1.address}),
+            ).build_transaction({"from": account_1.address}),
             account_1,
         )
         # Test `token_address` and `to_block` parameters
@@ -314,26 +314,26 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver_account.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver2_account.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
 
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver3_account.address, amount // 4
-            ).buildTransaction({"from": receiver_account.address}),
+            ).build_transaction({"from": receiver_account.address}),
             receiver_account,
         )
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver3_account.address, amount // 4
-            ).buildTransaction({"from": receiver2_account.address}),
+            ).build_transaction({"from": receiver2_account.address}),
             receiver2_account,
         )
 
@@ -867,7 +867,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         erc20_contract = self.deploy_example_erc20(amount_tokens, from_)
         transfer_tx = erc20_contract.functions.transfer(
             to, amount_to_send
-        ).buildTransaction({"from": from_})
+        ).build_transaction({"from": from_})
         data = transfer_tx["data"]
 
         # Ganache does not cares about all this anymore

@@ -231,7 +231,9 @@ class MultiSend:
         :return: deployed contract address
         """
         contract = get_multi_send_contract(ethereum_client.w3)
-        tx = contract.constructor().buildTransaction({"from": deployer_account.address})
+        tx = contract.constructor().build_transaction(
+            {"from": deployer_account.address}
+        )
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
@@ -262,4 +264,4 @@ class MultiSend:
         encoded_multisend_data = b"".join([x.encoded_data for x in multi_send_txs])
         return multisend_contract.functions.multiSend(
             encoded_multisend_data
-        ).buildTransaction({"gas": 1, "gasPrice": 1})["data"]
+        ).build_transaction({"gas": 1, "gasPrice": 1})["data"]
