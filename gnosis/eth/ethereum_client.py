@@ -353,7 +353,7 @@ class BatchCallManager(EthereumClientManager):
 
             payload = {
                 "to": contract_function.address,
-                "data": contract_function.buildTransaction(params)["data"],
+                "data": contract_function.build_transaction(params)["data"],
                 "output_type": [
                     output["type"] for output in contract_function.abi["outputs"]
                 ],
@@ -395,7 +395,7 @@ class BatchCallManager(EthereumClientManager):
 
         contract_function.address = NULL_ADDRESS  # It's required by web3.py
         params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
-        data = contract_function.buildTransaction(params)["data"]
+        data = contract_function.build_transaction(params)["data"]
         output_type = [output["type"] for output in contract_function.abi["outputs"]]
         fn_name = contract_function.fn_name
 
@@ -537,7 +537,7 @@ class Erc20Manager(EthereumClientManager):
 
     def get_name(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        data = erc20.functions.name().buildTransaction(
+        data = erc20.functions.name().build_transaction(
             {"gas": Wei(0), "gasPrice": Wei(0)}
         )["data"]
         result = self.w3.eth.call({"to": erc20_address, "data": data})
@@ -545,7 +545,7 @@ class Erc20Manager(EthereumClientManager):
 
     def get_symbol(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        data = erc20.functions.symbol().buildTransaction(
+        data = erc20.functions.symbol().build_transaction(
             {"gas": Wei(0), "gasPrice": Wei(0)}
         )["data"]
         result = self.w3.eth.call({"to": erc20_address, "data": data})
@@ -570,9 +570,9 @@ class Erc20Manager(EthereumClientManager):
             "gasPrice": Wei(0),
         }  # Prevent executing tx, we are just interested on `data`
         datas = [
-            erc20.functions.name().buildTransaction(params)["data"],
-            erc20.functions.symbol().buildTransaction(params)["data"],
-            erc20.functions.decimals().buildTransaction(params)["data"],
+            erc20.functions.name().build_transaction(params)["data"],
+            erc20.functions.symbol().build_transaction(params)["data"],
+            erc20.functions.decimals().build_transaction(params)["data"],
         ]
         payload = [
             {
@@ -804,7 +804,7 @@ class Erc20Manager(EthereumClientManager):
         if gas:
             tx_options["gas"] = Wei(gas)
 
-        tx = erc20.functions.transfer(to, amount).buildTransaction(tx_options)
+        tx = erc20.functions.transfer(to, amount).build_transaction(tx_options)
         return self.ethereum_client.send_unsigned_transaction(
             tx, private_key=private_key
         )

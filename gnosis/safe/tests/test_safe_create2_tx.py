@@ -335,7 +335,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 safe_creation_tx.safe_address, safe_creation_tx.payment
-            ).buildTransaction({"from": erc20_deployer.address}),
+            ).build_transaction({"from": erc20_deployer.address}),
             erc20_deployer,
         )
         self.assertEqual(

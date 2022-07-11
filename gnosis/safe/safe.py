@@ -145,7 +145,7 @@ class Safe:
                 payment,
                 payment_receiver,
             )
-            .buildTransaction({"gas": Wei(1), "gasPrice": Wei(1)})["data"]
+            .build_transaction({"gas": Wei(1), "gasPrice": Wei(1)})["data"]
         )
 
         if proxy_factory_address:
@@ -157,7 +157,7 @@ class Safe:
         proxy_contract = get_delegate_constructor_proxy_contract(ethereum_client.w3)
         tx = proxy_contract.constructor(
             master_copy_address, initializer
-        ).buildTransaction({"from": deployer_account.address})
+        ).build_transaction({"from": deployer_account.address})
         tx["gas"] = tx["gas"] * 100000
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
@@ -185,7 +185,7 @@ class Safe:
         :return: deployed contract address
         """
         safe_contract = contract_fn(ethereum_client.w3)
-        constructor_tx = safe_contract.constructor().buildTransaction()
+        constructor_tx = safe_contract.constructor().build_transaction()
         tx_hash = ethereum_client.send_unsigned_transaction(
             constructor_tx, private_key=deployer_account.key
         )
@@ -221,7 +221,7 @@ class Safe:
         contract = get_compatibility_fallback_handler_V1_3_0_contract(
             ethereum_client.w3
         )
-        constructor_tx = contract.constructor().buildTransaction()
+        constructor_tx = contract.constructor().build_transaction()
         tx_hash = ethereum_client.send_unsigned_transaction(
             constructor_tx, private_key=deployer_account.key
         )
@@ -287,7 +287,7 @@ class Safe:
         """
 
         safe_contract = get_safe_V1_0_0_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().buildTransaction({"gas": 0})[
+        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
             "data"
         ]
         initializer_data = safe_contract.functions.setup(
@@ -302,7 +302,7 @@ class Safe:
             NULL_ADDRESS,  # Payment token
             0,  # Payment
             NULL_ADDRESS,  # Refund receiver
-        ).buildTransaction({"to": NULL_ADDRESS})["data"]
+        ).build_transaction({"to": NULL_ADDRESS})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -327,7 +327,7 @@ class Safe:
         """
 
         safe_contract = get_safe_V0_0_1_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().buildTransaction({"gas": 0})[
+        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
             "data"
         ]
         initializer_data = safe_contract.functions.setup(
@@ -339,7 +339,7 @@ class Safe:
             2,  # Threshold. Maximum security
             NULL_ADDRESS,  # Address for optional DELEGATE CALL
             b"",  # Data for optional DELEGATE CALL
-        ).buildTransaction({"to": NULL_ADDRESS})["data"]
+        ).build_transaction({"to": NULL_ADDRESS})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -577,7 +577,7 @@ class Safe:
                 gas_token,
                 refund_receiver,
                 signatures,
-            ).buildTransaction({"gas": 1, "gasPrice": 1})["data"]
+            ).build_transaction({"gas": 1, "gasPrice": 1})["data"]
         )
 
         # If nonce == 0, nonce storage has to be initialized
@@ -654,7 +654,7 @@ class Safe:
         tx = (
             self.get_contract()
             .functions.requiredTxGas(to, value, data, operation)
-            .buildTransaction(
+            .build_transaction(
                 {
                     "from": safe_address,
                     "gas": 0,  # Don't call estimate

@@ -245,7 +245,7 @@ class SafeCreate2TxBuilder:
         # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
         gas: int = self.proxy_factory_contract.functions.createProxyWithNonce(
             self.master_copy_address, initializer, salt_nonce
-        ).estimateGas()
+        ).estimate_gas()
 
         # It's not very relevant if is 1 or 9999
         payment: int = 1
@@ -264,7 +264,7 @@ class SafeCreate2TxBuilder:
             # try:
             #     gas += get_erc20_contract(self.w3,
             #                               payment_token).functions.transfer(payment_receiver,
-            #                                                                 payment).estimateGas({'from':
+            #                                                                 payment).estimate_gas({'from':
             #                                                                                      payment_token})
             # except ValueError as exc:
             #     raise InvalidERC20Token from exc
@@ -296,7 +296,7 @@ class SafeCreate2TxBuilder:
                     payment_token,
                     payment,
                     payment_receiver,
-                ).buildTransaction(empty_params)["data"]
+                ).build_transaction(empty_params)["data"]
             )
         elif self.safe_version == "1.0.0":
             return HexBytes(
@@ -308,7 +308,7 @@ class SafeCreate2TxBuilder:
                     payment_token,
                     payment,
                     payment_receiver,
-                ).buildTransaction(empty_params)["data"]
+                ).build_transaction(empty_params)["data"]
             )
         else:
             raise ValueError("Safe version must be 1.3.0, 1.1.1 or 1.0.0")

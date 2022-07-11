@@ -39,12 +39,12 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         data = HexBytes(
             safe_contract.functions.addOwnerWithThreshold(
                 new_owner.address, new_threshold
-            ).buildTransaction({"gas": 0})["data"]
+            ).build_transaction({"gas": 0})["data"]
         )
         data_2 = HexBytes(
             safe_contract.functions.removeOwner(
                 prev_owner.address, owner_to_remove.address, new_threshold
-            ).buildTransaction({"gas": 0})["data"]
+            ).build_transaction({"gas": 0})["data"]
         )
 
         multisend_txs = [
