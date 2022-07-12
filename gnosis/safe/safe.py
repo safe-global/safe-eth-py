@@ -13,6 +13,7 @@ from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 from web3.types import BlockIdentifier, Wei
 
+from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from gnosis.eth.contracts import (
     get_compatibility_fallback_handler_V1_3_0_contract,
@@ -23,7 +24,6 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
 )
-from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
