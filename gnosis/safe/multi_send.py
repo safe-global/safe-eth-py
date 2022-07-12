@@ -6,9 +6,8 @@ from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth import EthereumClient
+from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import get_multi_send_contract
-from gnosis.eth.ethereum_client import EthereumTxSent
 from gnosis.eth.typing import EthereumData
 from gnosis.eth.utils import fast_bytes_to_checksum_address, fast_is_checksum_address
 

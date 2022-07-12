@@ -5,7 +5,7 @@ from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
 from web3.contract import Contract
 
-from gnosis.eth import EthereumClient
+from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import (
     get_paying_proxy_deployed_bytecode,
     get_proxy_1_0_0_deployed_bytecode,
@@ -16,7 +16,6 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
 )
-from gnosis.eth.ethereum_client import EthereumTxSent
 from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 
 try:

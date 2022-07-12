@@ -22,3 +22,27 @@ from .oracles import (
     YearnOracle,
     ZerionComposedOracle,
 )
+
+__all__ = [
+    "AaveOracle",
+    "BalancerOracle",
+    "CannotGetPriceFromOracle",
+    "ComposedPriceOracle",
+    "CreamOracle",
+    "CurveOracle",
+    "EnzymeOracle",
+    "InvalidPriceFromOracle",
+    "KyberOracle",
+    "MooniswapOracle",
+    "OracleException",
+    "PoolTogetherOracle",
+    "PriceOracle",
+    "PricePoolOracle",
+    "SushiswapOracle",
+    "UnderlyingToken",
+    "UniswapOracle",
+    "UniswapV2Oracle",
+    "UsdPricePoolOracle",
+    "YearnOracle",
+    "ZerionComposedOracle",
+]

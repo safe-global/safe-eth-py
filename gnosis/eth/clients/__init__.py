@@ -12,3 +12,15 @@ from .etherscan_client import (
     EtherscanRateLimitError,
 )
 from .sourcify import Sourcify
+
+__all__ = [
+    "BlockscoutClient",
+    "BlockscoutClientException",
+    "BlockScoutConfigurationProblem",
+    "ContractMetadata",
+    "EtherscanClient",
+    "EtherscanClientConfigurationProblem",
+    "EtherscanClientException",
+    "EtherscanRateLimitError",
+    "Sourcify",
+]
