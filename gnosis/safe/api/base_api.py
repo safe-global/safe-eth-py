@@ -4,7 +4,11 @@ from urllib.parse import urljoin
 
 import requests
 
-from gnosis.eth.ethereum_client import EthereumClient, EthereumNetwork
+from gnosis.eth.ethereum_client import (
+    EthereumClient,
+    EthereumNetwork,
+    EthereumNetworkNotSupported,
+)
 
 
 class SafeAPIException(Exception):
@@ -15,19 +19,27 @@ class SafeBaseAPI(ABC):
     URL_BY_NETWORK: Dict[EthereumNetwork, str] = {}
 
     def __init__(
-        self, network: EthereumNetwork, ethereum_client: Optional[EthereumClient] = None
+        self,
+        network: EthereumNetwork,
+        ethereum_client: Optional[EthereumClient] = None,
+        base_url: Optional[str] = None,
     ):
+        """
+        :param network: Network for the transaction service
+        :param ethereum_client:
+        :param base_url: If a custom transaction service is used
+        :raises: EthereumNetworkNotSupported
+        """
         self.network = network
         self.ethereum_client = ethereum_client
-        self.base_url = self.URL_BY_NETWORK[network]
+        self.base_url = base_url or self.URL_BY_NETWORK.get(network)
+        if not self.base_url:
+            raise EthereumNetworkNotSupported(network)
 
     @classmethod
-    def from_ethereum_client(
-        cls, ethereum_client: EthereumClient
-    ) -> Optional["SafeBaseAPI"]:
+    def from_ethereum_client(cls, ethereum_client: EthereumClient) -> "SafeBaseAPI":
         ethereum_network = ethereum_client.get_network()
-        if ethereum_network in cls.URL_BY_NETWORK:
-            return cls(ethereum_network, ethereum_client=ethereum_client)
+        return cls(ethereum_network, ethereum_client=ethereum_client)
 
     def _get_request(self, url: str) -> requests.Response:
         full_url = urljoin(self.base_url, url)

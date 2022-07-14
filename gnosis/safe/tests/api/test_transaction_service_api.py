@@ -1,17 +1,44 @@
-import unittest
+from unittest import mock
 
-from gnosis.eth import EthereumNetwork
+from django.test import TestCase
+
+from gnosis.eth import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 
 from ...api.transaction_service_api import TransactionServiceApi
 
 
-class TestTransactionServiceAPI(EthereumTestCaseMixin, unittest.TestCase):
+class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def setUp(self) -> None:
-        self.transaction_service = TransactionServiceApi(
+        self.transaction_service_api = TransactionServiceApi(
             EthereumNetwork.RINKEBY, ethereum_client=self.ethereum_client
         )
         self.safe_address = "0x7552Ed65a45E27740a15B8D5415E90d8ca64C109"
+
+    def test_constructor(self):
+        ethereum_network = EthereumNetwork.RINKEBY
+        base_url = "https://safe.global"
+        transaction_service_api = TransactionServiceApi(
+            ethereum_network, ethereum_client=None, base_url=base_url
+        )
+        self.assertEqual(transaction_service_api.network, ethereum_network)
+        self.assertIsNone(transaction_service_api.ethereum_client)
+        self.assertEqual(transaction_service_api.base_url, base_url)
+
+    def test_from_ethereum_client(self):
+        with self.assertRaisesMessage(EthereumNetworkNotSupported, "GANACHE"):
+            TransactionServiceApi.from_ethereum_client(self.ethereum_client)
+
+        with mock.patch.object(
+            EthereumClient, "get_network", return_value=EthereumNetwork.RINKEBY
+        ):
+            transaction_service_api = TransactionServiceApi.from_ethereum_client(
+                self.ethereum_client
+            )
+            self.assertEqual(
+                transaction_service_api.ethereum_client, self.ethereum_client
+            )
+            self.assertEqual(transaction_service_api.network, EthereumNetwork.RINKEBY)
 
     def test_data_decoded_to_text(self):
         test_data = {
@@ -58,7 +85,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, unittest.TestCase):
                 }
             ],
         }
-        decoded_data_text = self.transaction_service.data_decoded_to_text(test_data)
+        decoded_data_text = self.transaction_service_api.data_decoded_to_text(test_data)
         self.assertIn(
             "- changeMasterCopy: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F",
             decoded_data_text,
@@ -69,9 +96,9 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, unittest.TestCase):
         )
 
     def test_get_balances(self):
-        balances = self.transaction_service.get_balances(self.safe_address)
+        balances = self.transaction_service_api.get_balances(self.safe_address)
         self.assertIsInstance(balances, list)
 
     def test_get_transactions(self):
-        transactions = self.transaction_service.get_transactions(self.safe_address)
+        transactions = self.transaction_service_api.get_transactions(self.safe_address)
         self.assertIsInstance(transactions, list)
