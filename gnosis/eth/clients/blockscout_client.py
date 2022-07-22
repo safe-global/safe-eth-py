@@ -42,8 +42,8 @@ class BlockscoutClient:
         EthereumNetwork.GODWOKEN: "https://v1.gwscan.com/",
         EthereumNetwork.VENIDIUM_TESTNET: "https://evm-testnet.venidiumexplorer.com/",
         EthereumNetwork.VENIDIUM: "https://evm.venidiumexplorer.com/",
-        EthereumNetwork.KLAYTN_TESTNET: "https://baobab.scope.klaytn.com/",
-        EthereumNetwork.KLAYTN_MAINNET: "https://scope.klaytn.com/",
+        EthereumNetwork.KLAY_BAOBAB: "https://baobab.scope.klaytn.com/",
+        EthereumNetwork.KLAY_CYPRESS: "https://scope.klaytn.com/",
     }
 
     def __init__(self, network: EthereumNetwork):
