@@ -95,6 +95,14 @@
       "created_at": "2022-07-13T11:41:44Z",
       "repoId": 146720563,
       "pullRequestNo": 301
+    },
+    {
+      "name": "toniya-klaytn",
+      "id": 100742846,
+      "comment_id": 1192434120,
+      "created_at": "2022-07-22T10:36:39Z",
+      "repoId": 146720563,
+      "pullRequestNo": 306
     }
   ]
 }
