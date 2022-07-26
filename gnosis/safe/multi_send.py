@@ -1,14 +1,14 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, Union
+from typing import List, Optional, Union
 
 from eth_account.signers.local import LocalAccount
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 
-from gnosis.eth import EthereumClient
+from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import get_multi_send_contract
-from gnosis.eth.ethereum_client import EthereumTxSent
 from gnosis.eth.typing import EthereumData
 from gnosis.eth.utils import fast_bytes_to_checksum_address, fast_is_checksum_address
 
@@ -164,15 +164,41 @@ class MultiSendTx:
 
 class MultiSend:
     dummy_w3 = Web3()
+    MULTISEND_ADDRESSES = (
+        "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
+        "0x998739BFdAAdde7C933B942a68053933098f9EDa",
+    )
 
-    def __init__(self, address: str, ethereum_client: EthereumClient):
-        assert fast_is_checksum_address(address), (
-            "%s proxy factory address not valid" % address
-        )
+    def __init__(
+        self,
+        ethereum_client: Optional[EthereumClient] = None,
+        address: Optional[ChecksumAddress] = None,
+    ):
 
         self.address = address
         self.ethereum_client = ethereum_client
-        self.w3 = ethereum_client.w3
+
+        if address:
+            assert fast_is_checksum_address(address), (
+                "%s proxy factory address not valid" % address
+            )
+        elif ethereum_client:
+            # Try to detect MultiSend address if not provided
+            for address in self.MULTISEND_ADDRESSES:
+                if ethereum_client.is_contract(address):
+                    self.address = address
+                    break
+        else:
+            self.address = self.MULTISEND_ADDRESSES[0]
+
+        if not self.address:
+            raise ValueError(
+                f"Cannot find a MultiSend contract for chainId={self.ethereum_client.get_chain_id()}"
+            )
+
+    @property
+    def w3(self):
+        return (self.ethereum_client and self.ethereum_client.w3) or Web3()
 
     @classmethod
     def from_bytes(cls, encoded_multisend_txs: Union[str, bytes]) -> List[MultiSendTx]:
@@ -231,7 +257,9 @@ class MultiSend:
         :return: deployed contract address
         """
         contract = get_multi_send_contract(ethereum_client.w3)
-        tx = contract.constructor().buildTransaction({"from": deployer_account.address})
+        tx = contract.constructor().build_transaction(
+            {"from": deployer_account.address}
+        )
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
@@ -248,18 +276,17 @@ class MultiSend:
         return EthereumTxSent(tx_hash, tx, contract_address)
 
     def get_contract(self):
-        return get_multi_send_contract(self.ethereum_client.w3, self.address)
+        return get_multi_send_contract(self.w3, self.address)
 
     def build_tx_data(self, multi_send_txs: List[MultiSendTx]) -> bytes:
         """
         Txs don't need to be valid to get through
 
         :param multi_send_txs:
-        :param sender:
         :return:
         """
         multisend_contract = self.get_contract()
         encoded_multisend_data = b"".join([x.encoded_data for x in multi_send_txs])
         return multisend_contract.functions.multiSend(
             encoded_multisend_data
-        ).buildTransaction({"gas": 1, "gasPrice": 1})["data"]
+        ).build_transaction({"gas": 1, "gasPrice": 1})["data"]

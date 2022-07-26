@@ -10,7 +10,7 @@ from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 
 from ..utils import fast_bytes_to_checksum_address, fast_to_checksum_address
-from .filters import EthereumAddressFieldForm, Keccak256FieldForm
+from .forms import EthereumAddressFieldForm, HexFieldForm, Keccak256FieldForm
 from .validators import validate_checksumed_address
 
 try:
@@ -140,7 +140,7 @@ class HexField(models.CharField):
     On Database side a CharField is used.
     """
 
-    description = "Stores a hex value into an CharField"
+    description = "Stores a hex value into a CharField. DEPRECATED, use a BinaryField"
 
     def from_db_value(self, value, expression, connection):
         return self.to_python(value)
@@ -175,6 +175,15 @@ class HexField(models.CharField):
         # Validation didn't work because of `0x`
         self.run_validators(value[2:])
         return value
+
+
+class HexV2Field(models.BinaryField):
+    def formfield(self, **kwargs):
+        defaults = {
+            "form_class": HexFieldForm,
+        }
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
 
 
 class Sha3HashField(HexField):

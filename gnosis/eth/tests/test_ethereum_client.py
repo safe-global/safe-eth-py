@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from django.test import TestCase
 
 import pytest
+import requests
 from eth_account import Account
 from hexbytes import HexBytes
 from web3.eth import Eth
@@ -21,9 +22,8 @@ from ..ethereum_client import (
     InvalidNonce,
     ParityManager,
     SenderAccountNotFoundInNode,
-    parse_rpc_result_or_raise,
 )
-from ..exceptions import BatchCallException, InvalidERC20Info
+from ..exceptions import BatchCallException, ChainIdIsRequired, InvalidERC20Info
 from ..utils import fast_to_checksum_address, get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
@@ -31,7 +31,7 @@ from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
 from .mocks.mock_trace_block import trace_block_2191709_mock, trace_block_13191781_mock
 from .mocks.mock_trace_filter import trace_filter_mock_1
 from .mocks.mock_trace_transaction import trace_transaction_mocks
-from .utils import just_test_if_mainnet_node
+from .utils import deploy_example_erc20, just_test_if_mainnet_node
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
@@ -244,13 +244,13 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 account_1.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
         self.send_tx(
             erc20_contract.functions.transfer(
                 account_3.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
         logs = self.ethereum_client.erc20.get_total_transfer_history(
@@ -266,7 +266,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 account_2.address, amount // 2
-            ).buildTransaction({"from": account_1.address}),
+            ).build_transaction({"from": account_1.address}),
             account_1,
         )
         # Test `token_address` and `to_block` parameters
@@ -314,26 +314,26 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver_account.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver2_account.address, amount // 2
-            ).buildTransaction({"from": owner_account.address}),
+            ).build_transaction({"from": owner_account.address}),
             owner_account,
         )
 
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver3_account.address, amount // 4
-            ).buildTransaction({"from": receiver_account.address}),
+            ).build_transaction({"from": receiver_account.address}),
             receiver_account,
         )
         self.send_tx(
             erc20_contract.functions.transfer(
                 receiver3_account.address, amount // 4
-            ).buildTransaction({"from": receiver2_account.address}),
+            ).build_transaction({"from": receiver2_account.address}),
             receiver2_account,
         )
 
@@ -764,6 +764,87 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
                 from_address=Account.create().address
             )
 
+    @mock.patch.object(requests.Response, "json")
+    def test_raw_batch_request(self, session_post_mock: MagicMock):
+        # Ankr
+        session_post_mock.return_value = {
+            "jsonrpc": "2.0",
+            "error": {
+                "code": 0,
+                "message": "you can't send more than 1000 requests in a batch",
+            },
+            "id": None,
+        }
+        payload = [
+            {
+                "id": 0,
+                "jsonrpc": "2.0",
+                "method": "eth_getTransactionByHash",
+                "params": "0x5afea3f32970a22f4e63a815c174fa989e3b659826e5f52496662bb256baf3b2",
+            },
+            {
+                "id": 1,
+                "jsonrpc": "2.0",
+                "method": "eth_getTransactionByHash",
+                "params": "0x12ab96991ddd4ac55c28ace4e7b59bc64c514b55747e1b0ea3f5b269fbb39f6b",
+            },
+        ]
+        with self.assertRaisesMessage(
+            ValueError,
+            "Batch request error: {'jsonrpc': '2.0', 'error': {'code': 0, 'message': \"you can't send more than 1000 requests in a batch\"}, 'id': None}",
+        ):
+            list(self.ethereum_client.raw_batch_request(payload))
+
+        # Nodereal
+        session_post_mock.return_value = [
+            {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {
+                    "code": -32000,
+                    "message": "batch length does not support more than 500",
+                },
+            }
+        ]
+
+        with self.assertRaisesMessage(
+            ValueError,
+            "Problem with payload=`{'id': 0, 'jsonrpc': '2.0', 'method': 'eth_getTransactionByHash', 'params': '0x5afea3f32970a22f4e63a815c174fa989e3b659826e5f52496662bb256baf3b2'}` result={'jsonrpc': '2.0', 'id': None, 'error': {'code': -32000, 'message': 'batch length does not support more than 500'}}",
+        ):
+            list(self.ethereum_client.raw_batch_request(payload))
+
+        # Test batching chunks
+        session_post_mock.return_value = [
+            {
+                "jsonrpc": "2.0",
+                "id": 0,
+                "result": {
+                    "blockHash": "0x13e9e3262d9cf1c4d07d7324d95e6bddf27f07d7bddbdcc7df4e4ffb42a2e921",
+                    "blockNumber": "0xa81a59",
+                    "from": "0x136ec956eb32364f5016f3f84f56dbff59c6ead5",
+                    "gas": "0x493e0",
+                    "gasPrice": "0x3b9aca0e",
+                    "maxPriorityFeePerGas": "0x3b9aca00",
+                    "maxFeePerGas": "0x3b9aca1e",
+                    "hash": "0x92898917d7bd7a51d40a903f4c55ae988cbac7c661c3e271c54bbda21415501b",
+                    "input": "0x8ea59e1de547ab59caab9379b4b307450a29a0137c7dbbfc7b18c3cd6179d927efbab9ee",
+                    "nonce": "0x1242f",
+                    "to": "0x7e22c795325e76306920293f62a02f353536280b",
+                    "transactionIndex": "0x1e",
+                    "value": "0x0",
+                    "type": "0x2",
+                    "accessList": [],
+                    "chainId": "0x4",
+                    "v": "0x1",
+                    "r": "0x5aaaa2a32326ca4add9a602ffba968c3d991219fde93a2531eb7a82fc61919ed",
+                    "s": "0x1c4bff2abcc671ad2a1dd09f92a9720ac595138c666e59153711056811c1c95c",
+                },
+            }
+        ]
+
+        results = list(self.ethereum_client.raw_batch_request(payload, batch_size=1))
+        self.assertEqual(len(results), 2)
+
 
 class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
     def test_unknown_ethereum_network_name(self):
@@ -777,19 +858,6 @@ class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
 
 
 class TestEthereumClient(EthereumTestCaseMixin, TestCase):
-    def test_parse_rpc_result_or_raise(self):
-        self.assertEqual(parse_rpc_result_or_raise({"result": "test"}, "", ""), "test")
-
-        with self.assertRaisesMessage(
-            ValueError,
-            "Problem calling `trace_transaction` on 0x230b7f018951818c2a4545654d43a086ed2a3ed7c5b7c03990f4ac22ffae3840, result={'error': 'Something bad happened'}",
-        ):
-            parse_rpc_result_or_raise(
-                {"error": "Something bad happened"},
-                "trace_transaction",
-                "0x230b7f018951818c2a4545654d43a086ed2a3ed7c5b7c03990f4ac22ffae3840",
-            )
-
     def test_ethereum_client_str(self):
         self.assertTrue(str(self.ethereum_client))
 
@@ -867,7 +935,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         erc20_contract = self.deploy_example_erc20(amount_tokens, from_)
         transfer_tx = erc20_contract.functions.transfer(
             to, amount_to_send
-        ).buildTransaction({"from": from_})
+        ).build_transaction({"from": from_})
         data = transfer_tx["data"]
 
         # Ganache does not cares about all this anymore
@@ -1221,6 +1289,16 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
 
+    def test_is_contract(self):
+        self.assertFalse(
+            self.ethereum_client.is_contract(self.ethereum_test_account.address)
+        )
+
+        erc20 = deploy_example_erc20(
+            self.ethereum_client.w3, 2, self.ethereum_test_account.address
+        )
+        self.assertTrue(self.ethereum_client.is_contract(erc20.address))
+
     def test_is_eip1559_supported(self):
         self.assertFalse(self.ethereum_client.is_eip1559_supported())
 
@@ -1260,12 +1338,37 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         self.assertGreater(base_fee_per_gas, 0)
         self.assertGreaterEqual(max_priority_fee_per_gas, 0)
 
+    def test_send_unsigned_transaction(self):
+        random_address = Account.create().address
+        random_sender_account = Account.create()
+        tx = {
+            "to": random_address,
+            "value": 0,
+            "data": b"",
+            "gas": 25000,
+            "gasPrice": self.ethereum_client.w3.eth.gas_price,
+        }
+        with self.assertRaises(ChainIdIsRequired):
+            self.ethereum_client.send_unsigned_transaction(
+                tx, private_key=random_sender_account.key
+            )
+
+        tx["chainId"] = 1
+        with self.assertRaises(InsufficientFunds):
+            self.ethereum_client.send_unsigned_transaction(
+                tx, private_key=random_sender_account.key
+            )
+
     def test_trace_block(self):
-        block_number = 2191709
-        self.assertEqual(
-            self.ethereum_client.parity.trace_block(block_number),
-            trace_block_2191709_mock,
-        )
+        block_numbers = [13191781, 2191709]
+        for block_number, trace_block_mock in zip(
+            block_numbers, [trace_block_13191781_mock, trace_block_2191709_mock]
+        ):
+            with self.subTest(block_number=block_number):
+                self.assertEqual(
+                    self.ethereum_client.parity.trace_block(block_number),
+                    trace_block_mock,
+                )
 
     def test_trace_blocks(self):
         block_numbers = [13191781, 2191709]

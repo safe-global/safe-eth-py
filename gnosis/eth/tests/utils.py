@@ -88,7 +88,7 @@ def deploy_erc20(
         erc20_contract = get_example_erc20_contract(w3)
         tx = erc20_contract.constructor(
             name, symbol, decimals, owner, amount
-        ).buildTransaction(
+        ).build_transaction(
             {
                 "nonce": w3.eth.get_transaction_count(
                     account.address, block_identifier="pending"

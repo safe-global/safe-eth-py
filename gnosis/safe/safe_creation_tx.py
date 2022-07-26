@@ -4,14 +4,13 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from eth.constants import SECPK1_N
 from eth.vm.forks.frontier.transactions import FrontierTransaction
 from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
 
-from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SECPK1_N
 from gnosis.eth.contracts import (
     get_erc20_contract,
     get_paying_proxy_contract,
@@ -235,7 +234,7 @@ class SafeCreationTx:
         """
         return self._build_proxy_contract_creation_constructor(
             master_copy, initializer, funder, payment_token, payment
-        ).buildTransaction(
+        ).build_transaction(
             {
                 "gas": gas,
                 "gasPrice": gas_price,
@@ -296,7 +295,7 @@ class SafeCreationTx:
         # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
         gas: int = self._build_proxy_contract_creation_constructor(
             master_copy, initializer, funder, payment_token, 0
-        ).estimateGas()
+        ).estimate_gas()
 
         # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
@@ -310,7 +309,7 @@ class SafeCreationTx:
                 gas += (
                     get_erc20_contract(self.w3, payment_token)
                     .functions.transfer(funder, 1)
-                    .estimateGas({"from": payment_token})
+                    .estimate_gas({"from": payment_token})
                 )
             except ValueError as exc:
                 if "transfer amount exceeds balance" in str(exc):
@@ -328,7 +327,7 @@ class SafeCreationTx:
                 NULL_ADDRESS,  # Contract address for optional delegate call
                 b"",  # Data payload for optional delegate call
             )
-            .buildTransaction(
+            .build_transaction(
                 {
                     "gas": 1,
                     "gasPrice": 1,

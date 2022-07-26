@@ -1,9 +1,12 @@
 import logging
+from unittest import mock
 
 from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
+
+from gnosis.eth import EthereumClient
 
 from ..multi_send import MultiSend, MultiSendOperation, MultiSendTx
 from .safe_test_case import SafeTestCaseMixin
@@ -12,6 +15,25 @@ logger = logging.getLogger(__name__)
 
 
 class TestMultiSend(SafeTestCaseMixin, TestCase):
+    def test_multisend_init(self):
+        # Should try to detect the contract address
+        with self.assertRaisesMessage(
+            ValueError, "Cannot find a MultiSend contract for chainId=1337"
+        ):
+            MultiSend(self.ethereum_client)
+
+        with mock.patch.object(EthereumClient, "is_contract", return_value=True):
+            multisend = MultiSend(self.ethereum_client)
+            self.assertEqual(multisend.address, multisend.MULTISEND_ADDRESSES[0])
+
+        random_address = Account.create().address
+        multisend = MultiSend(self.ethereum_client, address=random_address)
+        self.assertEqual(multisend.address, random_address)
+
+        # Check with no ethereum_client
+        multisend = MultiSend()
+        self.assertEqual(multisend.address, multisend.MULTISEND_ADDRESSES[0])
+
     def test_multi_send_tx_from_bytes(self):
         operation = MultiSendOperation.DELEGATE_CALL
         address = Account.create().address
@@ -138,3 +160,19 @@ class TestMultiSend(SafeTestCaseMixin, TestCase):
             ),
         )
         self.assertEqual(multisend_txs[1].data_length, 164)
+
+    def test_multisend_build_tx_data(self):
+        value = 4
+        multisend_txs = [
+            MultiSendTx(MultiSendOperation.CALL, Account.create().address, value, b"")
+            for _ in range(2)
+        ]
+
+        # Test MultiSend with ethereum client/address and without
+        for multi_send in (self.multi_send, MultiSend()):
+            with self.subTest(multi_send=multi_send):
+                safe_multisend_data = self.multi_send.build_tx_data(multisend_txs)
+                self.assertGreater(len(safe_multisend_data), 0)
+                self.assertEqual(
+                    MultiSend.from_transaction_data(safe_multisend_data), multisend_txs
+                )

@@ -2,11 +2,11 @@ import os
 import random
 from logging import getLogger
 
-from eth.constants import SECPK1_N
 from web3 import Web3
 
 from gnosis.eth.tests.utils import send_tx
 
+from ...eth.constants import SECPK1_N
 from ..safe_creation_tx import SafeCreationTx
 
 logger = getLogger(__name__)

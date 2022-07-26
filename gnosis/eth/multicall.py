@@ -39,16 +39,17 @@ class Multicall:
     ADDRESSES = {
         EthereumNetwork.MAINNET: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.ARBITRUM: "0x021CeAC7e681dBCE9b5039d2535ED97590eB395c",
+        EthereumNetwork.AVALANCHE: "0xAbeC56f92a89eEe33F5194Ca4151DD59785c2C74",
         EthereumNetwork.BINANCE: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
+        EthereumNetwork.FANTOM: "0xD98e3dBE5950Ca8Ce5a4b59630a5652110403E5c",
         EthereumNetwork.GOERLI: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.KOVAN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.MATIC: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
         EthereumNetwork.MUMBAI: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
+        EthereumNetwork.OPTIMISTIC: "0x2DC0E2aa608532Da689e89e237dF582B783E552C",
         EthereumNetwork.RINKEBY: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.ROPSTEN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.XDAI: "0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7",
-        EthereumNetwork.FANTOM: "0xD98e3dBE5950Ca8Ce5a4b59630a5652110403E5c",
-        EthereumNetwork.AVALANCHE: "0xAbeC56f92a89eEe33F5194Ca4151DD59785c2C74",
     }
 
     def __init__(
@@ -83,7 +84,9 @@ class Multicall:
         :return: deployed contract address
         """
         contract = cls.get_contract(cls, ethereum_client.w3)
-        tx = contract.constructor().buildTransaction({"from": deployer_account.address})
+        tx = contract.constructor().build_transaction(
+            {"from": deployer_account.address}
+        )
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
