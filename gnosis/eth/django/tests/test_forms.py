@@ -52,7 +52,15 @@ class TestForms(TestCase):
         form = HexForm(initial={"value": memoryview(bytes.fromhex("cdef"))})
         self.assertIn('value="0xcdef"', form.as_p())
 
+        form = HexForm(data={"value": 1})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["value"], HexBytes(1))
+
         form = HexForm(data={"value": ""})
+        self.assertTrue(form.is_valid())
+        self.assertIsNone(form.cleaned_data["value"])
+
+        form = HexForm(data={"value": None})
         self.assertTrue(form.is_valid())
         self.assertIsNone(form.cleaned_data["value"])
 
@@ -73,5 +81,9 @@ class TestForms(TestCase):
         self.assertTrue(form.is_valid())
 
         form = Keccak256Form(data={"value": ""})
+        self.assertTrue(form.is_valid())
+        self.assertIsNone(form.cleaned_data["value"])
+
+        form = HexForm(data={"value": None})
         self.assertTrue(form.is_valid())
         self.assertIsNone(form.cleaned_data["value"])

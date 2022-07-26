@@ -1,5 +1,5 @@
 import binascii
-from typing import Optional
+from typing import Any, Optional
 
 from django import forms
 from django.core import exceptions
@@ -43,11 +43,12 @@ class HexFieldForm(forms.CharField):
         else:
             return ""
 
-    def to_python(self, value: str) -> Optional[HexBytes]:
-        value = value.strip()
+    def to_python(self, value: Optional[Any]) -> Optional[HexBytes]:
         if value in self.empty_values:
             return self.empty_value
         try:
+            if isinstance(value, str):
+                value = value.strip()
             return HexBytes(value)
         except (binascii.Error, TypeError, ValueError):
             raise exceptions.ValidationError(
@@ -67,7 +68,7 @@ class Keccak256FieldForm(HexFieldForm):
         # Keccak field already returns a hex str
         return value
 
-    def to_python(self, value) -> HexBytes:
+    def to_python(self, value: Optional[Any]) -> HexBytes:
         value: Optional[HexBytes] = super().to_python(value)
         if value and len(value) != 32:
             raise ValidationError(
