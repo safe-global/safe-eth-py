@@ -23,7 +23,7 @@ extras_require = {"django": ["django>=2", "django-filter>=2", "djangorestframewo
 
 setup(
     name="safe-eth-py",
-    version="4.3.0",
+    version="4.3.1",
     packages=find_packages(),
     package_data={"gnosis": ["py.typed"]},
     install_requires=requirements,
