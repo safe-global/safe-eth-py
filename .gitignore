@@ -73,6 +73,7 @@ build/
 venv/
 config/settings/dev.py
 db.sqlite3
+scripts/chainlist/result.txt
 
 .DS_Store
 .vscode
