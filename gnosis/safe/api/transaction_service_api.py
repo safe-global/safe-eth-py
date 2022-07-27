@@ -1,10 +1,11 @@
 import logging
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
 from eth_account.signers.local import LocalAccount
+from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -102,7 +103,7 @@ class TransactionServiceApi(SafeBaseAPI):
             return response.json()
 
     def get_safe_transaction(
-        self, safe_tx_hash: bytes
+        self, safe_tx_hash: Union[bytes, HexStr]
     ) -> Tuple[SafeTx, Optional[HexBytes]]:
         """
         :param safe_tx_hash:
@@ -122,27 +123,30 @@ class TransactionServiceApi(SafeBaseAPI):
                 logger.warning(
                     "EthereumClient should be defined to get a executable SafeTx"
                 )
-            return (
-                SafeTx(
-                    self.ethereum_client,
-                    result["safe"],
-                    result["to"],
-                    int(result["value"]),
-                    HexBytes(result["data"]) if result["data"] else b"",
-                    int(result["operation"]),
-                    int(result["safeTxGas"]),
-                    int(result["baseGas"]),
-                    int(result["gasPrice"]),
-                    result["gasToken"],
-                    result["refundReceiver"],
-                    signatures=signatures if signatures else b"",
-                    safe_nonce=int(result["nonce"]),
-                    chain_id=self.network.value,
-                ),
+            safe_tx = SafeTx(
+                self.ethereum_client,
+                result["safe"],
+                result["to"],
+                int(result["value"]),
+                HexBytes(result["data"]) if result["data"] else b"",
+                int(result["operation"]),
+                int(result["safeTxGas"]),
+                int(result["baseGas"]),
+                int(result["gasPrice"]),
+                result["gasToken"],
+                result["refundReceiver"],
+                signatures=signatures if signatures else b"",
+                safe_nonce=int(result["nonce"]),
+                chain_id=self.network.value,
+            )
+            tx_hash = (
                 HexBytes(result["transactionHash"])
                 if result["transactionHash"]
-                else None,
+                else None
             )
+            if tx_hash:
+                safe_tx.tx_hash = tx_hash
+            return (safe_tx, tx_hash)
 
     def get_transactions(self, safe_address: str) -> List[Dict[str, Any]]:
         response = self._get_request(
