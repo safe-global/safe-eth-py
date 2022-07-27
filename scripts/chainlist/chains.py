@@ -10,6 +10,7 @@ RESULT_FILE_PATH = "result.txt"
 
 
 def clean_resources() -> None:
+    """Removes the intermediate resources used (source repository)"""
     try:
         shutil.rmtree(REPO_DIR)
     except OSError:
@@ -17,6 +18,11 @@ def clean_resources() -> None:
 
 
 def process_chains() -> None:
+    """
+    Reads all JSON files in the REPO_DIR directory and processes the data
+    in order to write one line per JSON to a result.txt file. Each line is
+    formatted as 'CHAIN_NAME = CHAIN_ID'
+    """
     clean_resources()
     result_file = open(RESULT_FILE_PATH, "w")
     Repo.clone_from(GIT_URL, REPO_DIR)
@@ -26,7 +32,7 @@ def process_chains() -> None:
         data = json.load(f)
 
         result_file.write(
-            "{} - {}\n".format(
+            "{} = {}\n".format(
                 data["name"].upper().replace("-", "_").replace(" ", "_"),
                 data["chainId"],
             )
