@@ -77,3 +77,6 @@ db.sqlite3
 .DS_Store
 .vscode
 .mypy_cache
+
+# Scripts results
+scripts/chainlist/result.txt

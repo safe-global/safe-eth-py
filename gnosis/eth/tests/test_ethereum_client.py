@@ -848,7 +848,7 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
 
 class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
     def test_unknown_ethereum_network_name(self):
-        self.assertEqual(EthereumNetwork(2), EthereumNetwork.UNKNOWN)
+        self.assertEqual(EthereumNetwork(123456789), EthereumNetwork.UNKNOWN)
 
     def test_mainnet_ethereum_network_name(self):
         self.assertEqual(EthereumNetwork(1), EthereumNetwork.MAINNET)
