@@ -52,8 +52,6 @@ class EthereumAddressField(serializers.Field):
                 raise ValidationError("0x1 address is not allowed")
         except ValueError:
             raise ValidationError("Address %s is not checksumed" % data)
-        except Exception:
-            raise ValidationError("Address %s is not valid" % data)
 
         return data
 

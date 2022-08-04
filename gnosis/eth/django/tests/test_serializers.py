@@ -62,6 +62,10 @@ class TestSerializers(TestCase):
             serializer = EthereumAddressSerializerTest(data={"value": not_valid_value})
             self.assertFalse(serializer.is_valid())
 
+        serializer = EthereumAddressSerializerTest(data={"value": NULL_ADDRESS})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("0x0 address is not allowed", serializer.errors["value"])
+
     def test_ethereum_zero_address_field(self):
         valid_address, _ = get_eth_address_with_key()
         S = EthereumZeroAddressSerializerTest
