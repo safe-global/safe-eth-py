@@ -23,16 +23,24 @@ class TestMultiSend(SafeTestCaseMixin, TestCase):
             MultiSend(self.ethereum_client)
 
         with mock.patch.object(EthereumClient, "is_contract", return_value=True):
-            multisend = MultiSend(self.ethereum_client)
+            multisend = MultiSend(self.ethereum_client, call_only=False)
             self.assertEqual(multisend.address, multisend.MULTISEND_ADDRESSES[0])
+
+            multisend = MultiSend(self.ethereum_client)
+            self.assertEqual(
+                multisend.address, multisend.MULTISEND_CALL_ONLY_ADDRESSES[0]
+            )
 
         random_address = Account.create().address
         multisend = MultiSend(self.ethereum_client, address=random_address)
         self.assertEqual(multisend.address, random_address)
 
         # Check with no ethereum_client
-        multisend = MultiSend()
+        multisend = MultiSend(call_only=False)
         self.assertEqual(multisend.address, multisend.MULTISEND_ADDRESSES[0])
+
+        multisend = MultiSend()
+        self.assertEqual(multisend.address, multisend.MULTISEND_CALL_ONLY_ADDRESSES[0])
 
     def test_multi_send_tx_from_bytes(self):
         operation = MultiSendOperation.DELEGATE_CALL

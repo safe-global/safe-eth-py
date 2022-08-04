@@ -165,18 +165,35 @@ class MultiSendTx:
 class MultiSend:
     dummy_w3 = Web3()
     MULTISEND_ADDRESSES = (
-        "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
-        "0x998739BFdAAdde7C933B942a68053933098f9EDa",
+        "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",  # MultiSend v1.3.0
+        "0x998739BFdAAdde7C933B942a68053933098f9EDa",  # MultiSend v1.3.0 (EIP-155)
+    )
+    MULTISEND_CALL_ONLY_ADDRESSES = (
+        "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",  # MultiSend Call Only v1.3.0
+        "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",  # MultiSend Call Only v1.3.0 (EIP-155)
     )
 
     def __init__(
         self,
         ethereum_client: Optional[EthereumClient] = None,
         address: Optional[ChecksumAddress] = None,
+        call_only: bool = True,
     ):
+        """
+        :param ethereum_client: Required for detecting the address in the network.
+        :param address: If not provided, will try to detect it from the hardcoded addresses using `ethereum_client`.
+        :param call_only: If `True` use `call only` MultiSend, otherwise use regular one.
+            Only if `address` not provided
+        """
 
         self.address = address
         self.ethereum_client = ethereum_client
+        self.call_only = call_only
+        addresses = (
+            self.MULTISEND_CALL_ONLY_ADDRESSES
+            if call_only
+            else self.MULTISEND_ADDRESSES
+        )
 
         if address:
             assert fast_is_checksum_address(address), (
@@ -184,12 +201,12 @@ class MultiSend:
             )
         elif ethereum_client:
             # Try to detect MultiSend address if not provided
-            for address in self.MULTISEND_ADDRESSES:
+            for address in addresses:
                 if ethereum_client.is_contract(address):
                     self.address = address
                     break
         else:
-            self.address = self.MULTISEND_ADDRESSES[0]
+            self.address = addresses[0]
 
         if not self.address:
             raise ValueError(
