@@ -5,7 +5,6 @@ from eip712_structs.struct import StructTuple
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
-from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput, ContractLogicError
 from web3.types import BlockIdentifier, TxParams, Wei
 
@@ -13,6 +12,8 @@ from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
 
+from ..eth.ethereum_client import TxSpeed
+from ..eth.utils import fast_keccak
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -73,23 +74,20 @@ EIP712LegacySafeTx.type_name = "SafeTx"
 
 
 class SafeTx:
-    tx: TxParams  # If executed, `tx` is set
-    tx_hash: bytes  # If executed, `tx_hash` is set
-
     def __init__(
         self,
         ethereum_client: EthereumClient,
         safe_address: str,
-        to: str,
+        to: Optional[str],
         value: int,
         data: bytes,
         operation: int,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
-        gas_token: str,
-        refund_receiver: str,
-        signatures: bytes = b"",
+        gas_token: Optional[str],
+        refund_receiver: Optional[str],
+        signatures: Optional[bytes] = None,
         safe_nonce: Optional[int] = None,
         safe_version: str = None,
         chain_id: Optional[int] = None,
@@ -114,22 +112,24 @@ class SafeTx:
         it will be retrieved from the provided ethereum_client
         """
 
-        assert isinstance(signatures, bytes), "Signatures must be bytes"
         self.ethereum_client = ethereum_client
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
-        self.value = value
+        self.value = int(value)
         self.data = HexBytes(data) if data else b""
-        self.operation = operation
-        self.safe_tx_gas = safe_tx_gas
-        self.base_gas = base_gas
-        self.gas_price = gas_price
+        self.operation = int(operation)
+        self.safe_tx_gas = int(safe_tx_gas)
+        self.base_gas = int(base_gas)
+        self.gas_price = int(gas_price)
         self.gas_token = gas_token or NULL_ADDRESS
         self.refund_receiver = refund_receiver or NULL_ADDRESS
-        self.signatures = signatures
-        self._safe_nonce = safe_nonce
+        self.signatures = signatures or b""
+        self._safe_nonce = safe_nonce and int(safe_nonce)
         self._safe_version = safe_version
-        self._chain_id = chain_id
+        self._chain_id = chain_id and int(chain_id)
+
+        self.tx: Optional[TxParams] = None  # If executed, `tx` is set
+        self.tx_hash: Optional[bytes] = None  # If executed, `tx_hash` is set
 
     def __str__(self):
         return (
@@ -152,7 +152,7 @@ class SafeTx:
         if self._chain_id is not None:
             return self._chain_id
         else:
-            return self.w3.eth.chain_id
+            return self.ethereum_client.get_chain_id()
 
     @cached_property
     def safe_nonce(self) -> str:
@@ -201,16 +201,19 @@ class SafeTx:
     def safe_tx_hash(self) -> HexBytes:
         message, domain = self._eip712_payload
         signable_bytes = message.signable_bytes(domain)
-        return HexBytes(Web3.keccak(signable_bytes))
+        return HexBytes(fast_keccak(signable_bytes))
 
     @property
     def signers(self) -> List[str]:
-        return [
-            safe_signature.owner
-            for safe_signature in SafeSignature.parse_signature(
-                self.signatures, self.safe_tx_hash
-            )
-        ]
+        if not self.signatures:
+            return []
+        else:
+            return [
+                safe_signature.owner
+                for safe_signature in SafeSignature.parse_signature(
+                    self.signatures, self.safe_tx_hash
+                )
+            ]
 
     @property
     def sorted_signers(self):
@@ -219,7 +222,7 @@ class SafeTx:
     @property
     def w3_tx(self):
         """
-        :return: Web3 contract tx prepared for `call`, `transact` or `buildTransaction`
+        :return: Web3 contract tx prepared for `call`, `transact` or `build_transaction`
         """
         return self.contract.functions.execTransaction(
             self.to,
@@ -236,7 +239,7 @@ class SafeTx:
 
     def _raise_safe_vm_exception(self, message: str) -> NoReturn:
         error_with_exception: Dict[str, Type[InvalidMultisigTx]] = {
-            # https://github.com/gnosis/safe-contracts/blob/v1.3.0/docs/error_codes.md
+            # https://github.com/safe-global/safe-contracts/blob/v1.3.0/docs/error_codes.md
             "GS000": CouldNotFinishInitialization,
             "GS001": ThresholdNeedsToBeDefined,
             "Could not pay gas costs with ether": CouldNotPayGasWithEther,
@@ -322,7 +325,7 @@ class SafeTx:
                     "Success bit is %d, should be equal to 1" % success
                 )
             return success
-        except (ContractLogicError, BadFunctionCallOutput) as exc:
+        except (ContractLogicError, BadFunctionCallOutput, ValueError) as exc:
             # e.g. web3.exceptions.ContractLogicError: execution reverted: Invalid owner provided
             return self._raise_safe_vm_exception(str(exc))
         except ValueError as exc:  # Parity
@@ -357,32 +360,41 @@ class SafeTx:
         tx_gas_price: Optional[int] = None,
         tx_nonce: Optional[int] = None,
         block_identifier: Optional[BlockIdentifier] = "latest",
+        eip1559_speed: Optional[TxSpeed] = None,
     ) -> Tuple[HexBytes, TxParams]:
         """
         Send multisig tx to the Safe
+
         :param tx_sender_private_key: Sender private key
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + base_gas) * 2` will be used
         :param tx_gas_price: Gas price of the external tx. If not, `gas_price` will be used
         :param tx_nonce: Force nonce for `tx_sender`
         :param block_identifier: `latest` or `pending`
+        :param eip1559_speed: If provided, use EIP1559 transaction
         :return: Tuple(tx_hash, tx)
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
         sender_account = Account.from_key(tx_sender_private_key)
-        tx_gas_price = tx_gas_price or self.gas_price or self.w3.eth.gas_price
-
-        tx_parameters = {
-            "from": sender_account.address,
-            "gasPrice": tx_gas_price,
-        }
+        if eip1559_speed and self.ethereum_client.is_eip1559_supported():
+            tx_parameters = self.ethereum_client.set_eip1559_fees(
+                {
+                    "from": sender_account.address,
+                },
+                tx_speed=eip1559_speed,
+            )
+        else:
+            tx_parameters = {
+                "from": sender_account.address,
+                "gasPrice": tx_gas_price or self.w3.eth.gas_price,
+            }
 
         if tx_gas:
             tx_parameters["gas"] = tx_gas
         if tx_nonce is not None:
             tx_parameters["nonce"] = tx_nonce
 
-        self.tx = self.w3_tx.buildTransaction(tx_parameters)
+        self.tx = self.w3_tx.build_transaction(tx_parameters)
         self.tx["gas"] = Wei(
             tx_gas or (max(self.tx["gas"] + 75000, self.recommended_gas()))
         )

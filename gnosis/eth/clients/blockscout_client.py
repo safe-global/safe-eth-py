@@ -27,6 +27,23 @@ class BlockscoutClient:
         EthereumNetwork.OLYMPUS: "https://explorer.polis.tech",
         EthereumNetwork.BOBA_RINKEBY: "https://blockexplorer.rinkeby.boba.network/",
         EthereumNetwork.BOBA: "https://blockexplorer.boba.network/",
+        EthereumNetwork.GATHER_DEVNET: "https://devnet-explorer.gather.network/",
+        EthereumNetwork.GATHER_TESTNET: "https://testnet-explorer.gather.network/",
+        EthereumNetwork.GATHER_MAINNET: "https://explorer.gather.network/",
+        EthereumNetwork.METIS_TESTNET: "https://stardust-explorer.metis.io/",
+        EthereumNetwork.METIS: "https://andromeda-explorer.metis.io/",
+        EthereumNetwork.FUSE_MAINNET: "https://explorer.fuse.io/",
+        EthereumNetwork.VELAS_MAINNET: "https://evmexplorer.velas.com/",
+        EthereumNetwork.REI_MAINNET: "https://scan.rei.network/",
+        EthereumNetwork.REI_TESTNET: "https://scan-test.rei.network/",
+        EthereumNetwork.METER: "https://scan.meter.io/",
+        EthereumNetwork.METER_TESTNET: "https://scan-warringstakes.meter.io/",
+        EthereumNetwork.GODWOKEN_TESTNET: "https://v1.betanet.gwscan.com/",
+        EthereumNetwork.GODWOKEN: "https://v1.gwscan.com/",
+        EthereumNetwork.VENIDIUM_TESTNET: "https://evm-testnet.venidiumexplorer.com/",
+        EthereumNetwork.VENIDIUM: "https://evm.venidiumexplorer.com/",
+        EthereumNetwork.KLAY_BAOBAB: "https://baobab.scope.klaytn.com/",
+        EthereumNetwork.KLAY_CYPRESS: "https://scope.klaytn.com/",
     }
 
     def __init__(self, network: EthereumNetwork):

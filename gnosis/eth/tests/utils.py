@@ -5,6 +5,7 @@ import requests
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.contract import Contract
+from web3.types import TxParams
 
 from ..contracts import get_example_erc20_contract
 
@@ -39,14 +40,14 @@ def just_test_if_mainnet_node() -> str:
     return mainnet_node_url
 
 
-def send_tx(w3: Web3, tx, account: LocalAccount) -> bytes:
+def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:
     tx["from"] = account.address
     if "nonce" not in tx:
         tx["nonce"] = w3.eth.get_transaction_count(
             account.address, block_identifier="pending"
         )
 
-    if "gasPrice" not in tx:
+    if "gasPrice" not in tx and "maxFeePerGas" not in tx:
         tx["gasPrice"] = w3.eth.gas_price
 
     if "gas" not in tx:
@@ -87,7 +88,7 @@ def deploy_erc20(
         erc20_contract = get_example_erc20_contract(w3)
         tx = erc20_contract.constructor(
             name, symbol, decimals, owner, amount
-        ).buildTransaction(
+        ).build_transaction(
             {
                 "nonce": w3.eth.get_transaction_count(
                     account.address, block_identifier="pending"

@@ -4,7 +4,7 @@
 ps aux | grep ganache-cli | grep -v grep > /dev/null
 if [ $? -eq 1 ]; then
     echo 'Running Ganache-Cli'
-    ganache-cli -d --defaultBalanceEther 10000 -a 10 --gasLimit 10000000 --noVMErrorsOnRPCResponse --chainId 1337 > /dev/null &
+    ganache-cli --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --chain.chainId 1337 --chain.networkId 1337 -d > /dev/null &
     GANACHE_PID=$!
     sleep 3
 fi

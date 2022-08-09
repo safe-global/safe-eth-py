@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from functools import wraps
 from logging import getLogger
@@ -20,12 +21,6 @@ from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
-from ethereum.utils import (
-    check_checksum,
-    checksum_encode,
-    mk_contract_address,
-    privtoaddr,
-)
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
@@ -43,7 +38,7 @@ from web3.exceptions import (
     TimeExhausted,
     TransactionNotFound,
 )
-from web3.middleware import geth_poa_middleware
+from web3.middleware import geth_poa_middleware, simple_cache_middleware
 from web3.types import (
     BlockData,
     BlockIdentifier,
@@ -59,6 +54,13 @@ from web3.types import (
     Wei,
 )
 
+from gnosis.eth.utils import (
+    fast_is_checksum_address,
+    fast_to_checksum_address,
+    mk_contract_address,
+)
+from gnosis.util import chunks
+
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
     GAS_CALL_DATA_BYTE,
@@ -69,6 +71,7 @@ from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .exceptions import (
     BatchCallFunctionFailed,
+    ChainIdIsRequired,
     FromAddressNotFound,
     GasLimitExceeded,
     InsufficientFunds,
@@ -119,6 +122,7 @@ def tx_with_exception_handling(func):
     :return:
     """
     error_with_exception: Dict[str, Exception] = {
+        "EIP-155": ChainIdIsRequired,
         "Transaction with the same hash was already imported": TransactionAlreadyImported,
         "replacement transaction underpriced": ReplacementTransactionUnderpriced,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L72
         "There is another transaction with same nonce in the queue": ReplacementTransactionUnderpriced,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L374
@@ -190,7 +194,17 @@ class EthereumClientProvider:
         if not hasattr(cls, "instance"):
             from django.conf import settings
 
-            cls.instance = EthereumClient(settings.ETHEREUM_NODE_URL)
+            cls.instance = EthereumClient(
+                settings.ETHEREUM_NODE_URL,
+                provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
+                slow_provider_timeout=int(
+                    os.environ.get("ETHEREUM_RPC_SLOW_TIMEOUT", 60)
+                ),
+                retry_count=int(os.environ.get("ETHEREUM_RPC_RETRY_COUNT", 60)),
+                batch_request_max_size=int(
+                    os.environ.get("ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE", 500)
+                ),
+            )
         return cls.instance
 
 
@@ -201,6 +215,8 @@ class EthereumClientManager:
         self.w3 = ethereum_client.w3
         self.slow_w3 = ethereum_client.slow_w3
         self.http_session = ethereum_client.http_session
+        self.timeout = ethereum_client.timeout
+        self.slow_timeout = ethereum_client.slow_timeout
 
 
 class BatchCallManager(EthereumClientManager):
@@ -209,9 +225,10 @@ class BatchCallManager(EthereumClientManager):
         payloads: Iterable[Dict[str, Any]],
         raise_exception: bool = True,
         block_identifier: Optional[BlockIdentifier] = "latest",
+        batch_size: Optional[int] = None,
     ) -> List[Optional[Any]]:
         """
-        Do batch requests of multiple contract calls
+        Do batch requests of multiple contract calls (`eth_call`)
 
         :param payloads: Iterable of Dictionaries with at least {'data': '<hex-string>',
             'output_type': <solidity-output-type>, 'to': '<checksummed-address>'}. `from` can also be provided and if
@@ -219,6 +236,8 @@ class BatchCallManager(EthereumClientManager):
         :param raise_exception: If False, exception will not be raised if there's any problem and instead `None` will
             be returned as the value
         :param block_identifier: `latest` by default
+        :param batch_size: If `payload` length is bigger than size, it will be split into smaller chunks before
+            sending to the server
         :return: List with the ABI decoded return values
         :raises: ValueError if raise_exception=True
         """
@@ -249,16 +268,34 @@ class BatchCallManager(EthereumClientManager):
                 }
             )
 
-        response = self.http_session.post(self.ethereum_node_url, json=queries)
-        if not response.ok:
-            raise ConnectionError(
-                f"Error connecting to {self.ethereum_node_url}: {response.text}"
+        batch_size = batch_size or self.ethereum_client.batch_request_max_size
+        all_results = []
+        for chunk in chunks(queries, batch_size):
+            response = self.http_session.post(
+                self.ethereum_node_url, json=chunk, timeout=self.slow_timeout
             )
+            if not response.ok:
+                raise ConnectionError(
+                    f"Error connecting to {self.ethereum_node_url}: {response.text}"
+                )
+
+            results = response.json()
+
+            # If there's an error some nodes return a json instead of a list
+            if isinstance(results, dict) and "error" in results:
+                logger.error(
+                    "Batch call custom problem with payload=%s, result=%s)",
+                    chunk,
+                    results,
+                )
+                raise ValueError(f"Batch request error: {results}")
+
+            all_results.extend(results)
 
         return_values: List[Optional[Any]] = []
         errors = []
         for payload, result in zip(
-            payloads, sorted(response.json(), key=lambda x: x["id"])
+            payloads, sorted(all_results, key=lambda x: x["id"])
         ):
             if "error" in result:
                 fn_name = payload.get("fn_name", HexBytes(payload["data"]).hex())
@@ -317,7 +354,7 @@ class BatchCallManager(EthereumClientManager):
 
             payload = {
                 "to": contract_function.address,
-                "data": contract_function.buildTransaction(params)["data"],
+                "data": contract_function.build_transaction(params)["data"],
                 "output_type": [
                     output["type"] for output in contract_function.abi["outputs"]
                 ],
@@ -359,7 +396,7 @@ class BatchCallManager(EthereumClientManager):
 
         contract_function.address = NULL_ADDRESS  # It's required by web3.py
         params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
-        data = contract_function.buildTransaction(params)["data"]
+        data = contract_function.build_transaction(params)["data"]
         output_type = [output["type"] for output in contract_function.abi["outputs"]]
         fn_name = contract_function.fn_name
 
@@ -389,7 +426,7 @@ class Erc20Manager(EthereumClientManager):
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
 
-    def decode_logs(self, logs: List[Dict[str, Any]]):
+    def decode_logs(self, logs: List[LogReceipt]):
         decoded_logs = []
         for log in logs:
             decoded = self._decode_transfer_log(log["data"], log["topics"])
@@ -414,13 +451,29 @@ class Erc20Manager(EthereumClientManager):
             elif topics_len == 3:
                 # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
                 # 3 topics (transfer topic + from + to)
-                value = eth_abi.decode_single("uint256", HexBytes(data))
-                _from, to = [
-                    Web3.toChecksumAddress(address)
-                    for address in eth_abi.decode_abi(
-                        ["address", "address"], b"".join(topics[1:])
+                try:
+                    value_data = HexBytes(data)
+                    value = eth_abi.decode_single("uint256", value_data)
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `uint256 value` from data=%s",
+                        value_data.hex(),
                     )
-                ]
+                    return None
+                try:
+                    from_to_data = b"".join(topics[1:])
+                    _from, to = (
+                        fast_to_checksum_address(address)
+                        for address in eth_abi.decode_abi(
+                            ["address", "address"], from_to_data
+                        )
+                    )
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to` from topics=%s",
+                        HexBytes(from_to_data).hex(),
+                    )
+                    return None
                 return {"from": _from, "to": to, "value": value}
             elif topics_len == 4:
                 # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
@@ -428,7 +481,9 @@ class Erc20Manager(EthereumClientManager):
                 _from, to, token_id = eth_abi.decode_abi(
                     ["address", "address", "uint256"], b"".join(topics[1:])
                 )
-                _from, to = [Web3.toChecksumAddress(address) for address in (_from, to)]
+                _from, to = [
+                    fast_to_checksum_address(address) for address in (_from, to)
+                ]
                 return {"from": _from, "to": to, "tokenId": token_id}
         return None
 
@@ -483,7 +538,7 @@ class Erc20Manager(EthereumClientManager):
 
     def get_name(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        data = erc20.functions.name().buildTransaction(
+        data = erc20.functions.name().build_transaction(
             {"gas": Wei(0), "gasPrice": Wei(0)}
         )["data"]
         result = self.w3.eth.call({"to": erc20_address, "data": data})
@@ -491,7 +546,7 @@ class Erc20Manager(EthereumClientManager):
 
     def get_symbol(self, erc20_address: str) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
-        data = erc20.functions.symbol().buildTransaction(
+        data = erc20.functions.symbol().build_transaction(
             {"gas": Wei(0), "gasPrice": Wei(0)}
         )["data"]
         result = self.w3.eth.call({"to": erc20_address, "data": data})
@@ -516,9 +571,9 @@ class Erc20Manager(EthereumClientManager):
             "gasPrice": Wei(0),
         }  # Prevent executing tx, we are just interested on `data`
         datas = [
-            erc20.functions.name().buildTransaction(params)["data"],
-            erc20.functions.symbol().buildTransaction(params)["data"],
-            erc20.functions.decimals().buildTransaction(params)["data"],
+            erc20.functions.name().build_transaction(params)["data"],
+            erc20.functions.symbol().build_transaction(params)["data"],
+            erc20.functions.decimals().build_transaction(params)["data"],
         ]
         payload = [
             {
@@ -530,7 +585,9 @@ class Erc20Manager(EthereumClientManager):
             for i, data in enumerate(datas)
         ]
         response = self.http_session.post(
-            self.ethereum_client.ethereum_node_url, json=payload
+            self.ethereum_client.ethereum_node_url,
+            json=payload,
+            timeout=self.slow_timeout,
         )
         if not response.ok:
             raise InvalidERC20Info(response.content)
@@ -748,7 +805,7 @@ class Erc20Manager(EthereumClientManager):
         if gas:
             tx_options["gas"] = Wei(gas)
 
-        tx = erc20.functions.transfer(to, amount).buildTransaction(tx_options)
+        tx = erc20.functions.transfer(to, amount).build_transaction(tx_options)
         return self.ethereum_client.send_unsigned_transaction(
             tx, private_key=private_key
         )
@@ -820,14 +877,14 @@ class Erc721Manager(EthereumClientManager):
 
     def get_owners(
         self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]
-    ) -> List[Optional[str]]:
+    ) -> List[Optional[ChecksumAddress]]:
         """
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of owner addresses, `None` if not found
         """
-        return cast(
-            List[Optional[str]],
-            self.ethereum_client.batch_call(
+        return [
+            ChecksumAddress(owner) if isinstance(owner, str) else None
+            for owner in self.ethereum_client.batch_call(
                 [
                     get_erc721_contract(
                         self.ethereum_client.w3, token_address
@@ -835,8 +892,8 @@ class Erc721Manager(EthereumClientManager):
                     for token_address, token_id in token_addresses_with_token_ids
                 ],
                 raise_exception=False,
-            ),
-        )
+            )
+        ]
 
     def get_token_uris(
         self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]
@@ -845,9 +902,9 @@ class Erc721Manager(EthereumClientManager):
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of token_uris, `None` if not found
         """
-        return cast(
-            List[Optional[str]],
-            self.ethereum_client.batch_call(
+        return [
+            token_uri if isinstance(token_uri, str) else None
+            for token_uri in self.ethereum_client.batch_call(
                 [
                     get_erc721_contract(
                         self.ethereum_client.w3, token_address
@@ -855,8 +912,8 @@ class Erc721Manager(EthereumClientManager):
                     for token_address, token_id in token_addresses_with_token_ids
                 ],
                 raise_exception=False,
-            ),
-        )
+            )
+        ]
 
 
 class ParityManager(EthereumClientManager):
@@ -866,7 +923,7 @@ class ParityManager(EthereumClientManager):
 
         # CALL, DELEGATECALL, CREATE or CREATE2
         if "from" in action:
-            decoded["from"] = self.w3.toChecksumAddress(action["from"])
+            decoded["from"] = fast_to_checksum_address(action["from"])
         if "gas" in action:
             decoded["gas"] = int(action["gas"], 16)
         if "value" in action:
@@ -878,7 +935,7 @@ class ParityManager(EthereumClientManager):
         if "input" in action:
             decoded["input"] = HexBytes(action["input"])
         if "to" in action:
-            decoded["to"] = self.w3.toChecksumAddress(action["to"])
+            decoded["to"] = fast_to_checksum_address(action["to"])
 
         # CREATE or CREATE2
         if "init" in action:
@@ -886,13 +943,11 @@ class ParityManager(EthereumClientManager):
 
         # SELF-DESTRUCT
         if "address" in action:
-            decoded["address"] = self.w3.toChecksumAddress(action["address"])
+            decoded["address"] = fast_to_checksum_address(action["address"])
         if "balance" in action:
             decoded["balance"] = int(action["balance"], 16)
         if "refundAddress" in action:
-            decoded["refundAddress"] = self.w3.toChecksumAddress(
-                action["refundAddress"]
-            )
+            decoded["refundAddress"] = fast_to_checksum_address(action["refundAddress"])
 
         return decoded
 
@@ -909,7 +964,7 @@ class ParityManager(EthereumClientManager):
         if "code" in result:
             decoded["code"] = HexBytes(result["code"])
         if "address" in result:
-            decoded["address"] = self.w3.toChecksumAddress(result["address"])
+            decoded["address"] = fast_to_checksum_address(result["address"])
 
         return decoded
 
@@ -1052,22 +1107,10 @@ class ParityManager(EthereumClientManager):
             }
             for i, block_identifier in enumerate(block_identifiers)
         ]
-        response = self.http_session.post(self.ethereum_node_url, json=payload)
-        if not response.ok:
-            message = (
-                f"Problem calling batch `trace_block` on blocks={block_identifiers} "
-                f"status_code={response.status_code} result={response.content}"
-            )
-            logger.error(message)
-            raise ValueError(message)
-        results = sorted(response.json(), key=lambda x: x["id"])
+
+        results = self.ethereum_client.raw_batch_request(payload)
         traces = []
-        for block_identifier, result in zip(block_identifiers, results):
-            if "result" not in result:
-                message = f"Problem calling batch `trace_block` on block={block_identifier}, result={result}"
-                logger.error(message)
-                raise ValueError(message)
-            raw_tx = result["result"]
+        for raw_tx in results:
             if raw_tx:
                 try:
                     decoded_traces = self._decode_traces(raw_tx)
@@ -1108,18 +1151,9 @@ class ParityManager(EthereumClientManager):
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
-        response = self.http_session.post(self.ethereum_node_url, json=payload)
-        if not response.ok:
-            message = (
-                f"Problem calling batch `trace_transaction` on tx_hashes={tx_hashes} "
-                f"status_code={response.status_code} result={response.content}"
-            )
-            logger.error(message)
-            raise ValueError(message)
-        results = sorted(response.json(), key=lambda x: x["id"])
+        results = self.ethereum_client.raw_batch_request(payload)
         traces = []
-        for result in results:
-            raw_tx = result["result"]
+        for raw_tx in results:
             if raw_tx:
                 try:
                     decoded_traces = self._decode_traces(raw_tx)
@@ -1248,12 +1282,28 @@ class EthereumClient:
     def __init__(
         self,
         ethereum_node_url: URI = URI("http://localhost:8545"),
+        provider_timeout: int = 15,
         slow_provider_timeout: int = 60,
+        retry_count: int = 3,
+        use_caching_middleware: bool = True,
+        batch_request_max_size: int = 500,
     ):
-        self.http_session = self._prepare_http_session()
+        """
+        :param ethereum_node_url: Ethereum RPC uri
+        :param provider_timeout: Timeout for regular RPC queries
+        :param slow_provider_timeout: Timeout for slow (tracing, logs...) and custom RPC queries
+        :param retry_count: Retry count for failed requests
+        :param use_caching_middleware: Use web3 simple cache middleware: https://web3py.readthedocs.io/en/stable/middleware.html#web3.middleware.construct_simple_cache_middleware
+        :param batch_request_max_size: Max size for JSON RPC Batch requests. Some providers have a limitation on 500
+        """
+        self.http_session = self._prepare_http_session(retry_count)
         self.ethereum_node_url: str = ethereum_node_url
+        self.timeout = provider_timeout
+        self.slow_timeout = slow_provider_timeout
         self.w3_provider = HTTPProvider(
-            self.ethereum_node_url, session=self.http_session
+            self.ethereum_node_url,
+            request_kwargs={"timeout": provider_timeout},
+            session=self.http_session,
         )
         self.w3_slow_provider = HTTPProvider(
             self.ethereum_node_url,
@@ -1270,13 +1320,20 @@ class EthereumClient:
             if self.get_network() != EthereumNetwork.MAINNET:
                 self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             # For tests using dummy connections (like IPC)
-        except (ConnectionError, FileNotFoundError):
+        except (IOError, FileNotFoundError):
             self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+        self.use_caching_middleware = use_caching_middleware
+        if self.use_caching_middleware:
+            self.w3.middleware_onion.add(simple_cache_middleware)
+            self.slow_w3.middleware_onion.add(simple_cache_middleware)
+
+        self.batch_request_max_size = batch_request_max_size
 
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
 
-    def _prepare_http_session(self) -> requests.Session:
+    def _prepare_http_session(self, retry_count: int) -> requests.Session:
         """
         Prepare http session with custom pooling. See:
         https://urllib3.readthedocs.io/en/stable/advanced-usage.html
@@ -1286,24 +1343,101 @@ class EthereumClient:
         session = requests.Session()
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=1,  # Doing all the connections to the same url
-            pool_maxsize=100,
-        )  # Do many requests to the same host
+            pool_maxsize=100,  # Number of concurrent connections
+            max_retries=retry_count,  # Nodes are not very responsive some times
+            pool_block=False,
+        )
         session.mount("http://", adapter)
         session.mount("https://", adapter)
         return session
+
+    def raw_batch_request(
+        self, payload: List[Dict[str, Any]], batch_size: Optional[int] = None
+    ) -> Iterable[Optional[Dict[str, Any]]]:
+        """
+        Perform a raw batch JSON RPC call
+
+        :param payload: Batch request payload. Make sure all provided `ids` inside the payload are different
+        :param batch_size: If `payload` length is bigger than size, it will be split into smaller chunks before
+            sending to the server
+        :return:
+        :raises: ValueError
+        """
+
+        batch_size = batch_size or self.batch_request_max_size
+
+        all_results = []
+        for chunk in chunks(payload, batch_size):
+            response = self.http_session.post(
+                self.ethereum_node_url, json=chunk, timeout=self.slow_timeout
+            )
+
+            if not response.ok:
+                logger.error(
+                    "Problem doing raw batch request with payload=%s status_code=%d result=%s",
+                    chunk,
+                    response.status_code,
+                    response.content,
+                )
+                raise ValueError(f"Batch request error: {response.content}")
+
+            results = response.json()
+
+            # If there's an error some nodes return a json instead of a list
+            if isinstance(results, dict) and "error" in results:
+                logger.error(
+                    "Batch request problem with payload=%s, result=%s)", chunk, results
+                )
+                raise ValueError(f"Batch request error: {results}")
+
+            all_results.extend(results)
+
+        # Nodes like Erigon send back results out of order
+        for query, result in zip(payload, sorted(all_results, key=lambda x: x["id"])):
+            if "result" not in result:
+                message = f"Problem with payload=`{query}` result={result}"
+                logger.error(message)
+                raise ValueError(message)
+
+            yield result["result"]
 
     @property
     def current_block_number(self):
         return self.w3.eth.block_number
 
     @cache
+    def get_chain_id(self) -> int:
+        """
+        :return: ChainId returned by the RPC `eth_chainId` method. It should never change, so it's cached.
+        """
+        return int(self.w3.eth.chain_id)
+
+    @cache
+    def get_client_version(self) -> str:
+        """
+        :return: RPC version information
+        """
+        return self.w3.clientVersion
+
     def get_network(self) -> EthereumNetwork:
         """
-        Get network name based on the network version id. It should never change, so it's cached
+        Get network name based on the chainId
 
-        :return: The EthereumNetwork enum type
+        :return: EthereumNetwork based on the chainId. If network is not
+            on our list, `EthereumNetwork.UNKOWN` is returned
         """
-        return EthereumNetwork(int(self.w3.eth.chain_id))
+        return EthereumNetwork(self.get_chain_id())
+
+    @cache
+    def is_eip1559_supported(self) -> EthereumNetwork:
+        """
+        :return: `True` if EIP1559 is supported by the node, `False` otherwise
+        """
+        try:
+            self.w3.eth.fee_history(1, "latest", reward_percentiles=[50])
+            return True
+        except ValueError:
+            return False
 
     @cached_property
     def multicall(self) -> "Multicall":  # noqa F821
@@ -1322,7 +1456,7 @@ class EthereumClient:
         raise_exception: bool = True,
         force_batch_call: bool = False,
         block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+    ) -> List[Optional[Union[bytes, Any]]]:
         """
         Call multiple functions. Multicall contract by MakerDAO will be used by default if available
 
@@ -1332,7 +1466,8 @@ class EthereumClient:
         :param force_batch_call: If ``True``, ignore multicall and always use batch calls to get the
             result (less optimal). If ``False``, more optimal way will be tried.
         :param block_identifier:
-        :return:
+        :return: List of elements decoded to their types, ``None`` if they cannot be decoded and
+            bytes if a revert error is returned and ``raise_exception=False``
         :raises: BatchCallException
         """
         if self.multicall and not force_batch_call:  # Multicall is more optimal
@@ -1360,7 +1495,7 @@ class EthereumClient:
         raise_exception: bool = True,
         force_batch_call: bool = False,
         block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+    ) -> List[Optional[Union[bytes, Any]]]:
         """
         Call the same function in multiple contracts. Way more optimal than using `batch_call` generating multiple
         ``ContractFunction`` objects.
@@ -1372,7 +1507,8 @@ class EthereumClient:
         :param force_batch_call: If ``True``, ignore multicall and always use batch calls to get the
             result (less optimal). If ``False``, more optimal way will be tried.
         :param block_identifier:
-        :return:
+        :return: List of elements decoded to the same type, ``None`` if they cannot be decoded and
+            bytes if a revert error is returned and ``raise_exception=False``
         :raises: BatchCallException
         """
         if self.multicall and not force_batch_call:  # Multicall is more optimal
@@ -1425,7 +1561,7 @@ class EthereumClient:
 
                 if not contract_address:
                     contract_address = ChecksumAddress(
-                        checksum_encode(mk_contract_address(tx["from"], tx["nonce"]))
+                        mk_contract_address(tx["from"], tx["nonce"])
                     )
 
         return EthereumTxSent(tx_hash, tx, contract_address)
@@ -1547,7 +1683,7 @@ class EthereumClient:
             del tx["gasPrice"]
 
         if "chainId" not in tx:
-            tx["chainId"] = self.get_network().value
+            tx["chainId"] = self.get_chain_id()
 
         tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
         tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas
@@ -1578,15 +1714,11 @@ class EthereumClient:
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
-        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
-        txs = []
-        for result in sorted(results, key=lambda x: x["id"]):
-            raw_tx = result["result"]
-            if raw_tx:
-                txs.append(transaction_result_formatter(raw_tx))
-            else:
-                txs.append(None)
-        return txs
+        results = self.raw_batch_request(payload)
+        return [
+            transaction_result_formatter(raw_tx) if raw_tx else None
+            for raw_tx in results
+        ]
 
     def get_transaction_receipt(
         self, tx_hash: EthereumHash, timeout=None
@@ -1625,10 +1757,9 @@ class EthereumClient:
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
-        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
+        results = self.raw_batch_request(payload)
         receipts = []
-        for result in sorted(results, key=lambda x: x["id"]):
-            tx_receipt = result["result"]
+        for tx_receipt in results:
             # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
             if tx_receipt and tx_receipt["blockNumber"] is not None:
                 receipts.append(receipt_formatter(tx_receipt))
@@ -1646,6 +1777,14 @@ class EthereumClient:
         except BlockNotFound:
             return None
 
+    def _parse_block_identifier(self, block_identifier: BlockIdentifier) -> str:
+        if isinstance(block_identifier, int):
+            return hex(block_identifier)
+        elif isinstance(block_identifier, bytes):
+            return HexBytes(block_identifier).hex()
+        else:
+            return block_identifier
+
     def get_blocks(
         self,
         block_identifiers: Iterable[BlockIdentifier],
@@ -1657,20 +1796,19 @@ class EthereumClient:
             {
                 "id": i,
                 "jsonrpc": "2.0",
-                "method": "eth_getBlockByNumber",
+                "method": "eth_getBlockByNumber"
+                if isinstance(block_identifier, int)
+                else "eth_getBlockByHash",
                 "params": [
-                    hex(block_identifier)
-                    if isinstance(block_identifier, int)
-                    else block_identifier,
+                    self._parse_block_identifier(block_identifier),
                     full_transactions,
                 ],
             }
             for i, block_identifier in enumerate(block_identifiers)
         ]
-        results = self.http_session.post(self.ethereum_node_url, json=payload).json()
+        results = self.raw_batch_request(payload)
         blocks = []
-        for result in sorted(results, key=lambda x: x["id"]):
-            raw_block = result["result"]
+        for raw_block in results:
             if raw_block:
                 if "extraData" in raw_block:
                     del raw_block[
@@ -1714,7 +1852,7 @@ class EthereumClient:
 
         # TODO Refactor this method, it's not working well with new version of the nodes
         if private_key:
-            address = self.private_key_to_address(private_key)
+            address = Account.from_key(private_key).address
         elif public_key:
             address = public_key
         else:
@@ -1789,7 +1927,7 @@ class EthereumClient:
         to: str,
         gas_price: int,
         value: Wei,
-        gas: int = 23000,
+        gas: Optional[int] = None,
         nonce: Optional[int] = None,
         retry: bool = False,
         block_identifier: Optional[BlockIdentifier] = "pending",
@@ -1808,12 +1946,15 @@ class EthereumClient:
         :return: tx_hash
         """
 
-        assert check_checksum(to)
+        assert fast_is_checksum_address(to)
+
+        account = Account.from_key(private_key)
 
         tx: TxParams = {
+            "from": account.address,
             "to": to,
             "value": value,
-            "gas": Wei(gas),
+            "gas": gas or Wei(self.estimate_gas(to, account.address, value)),
             "gasPrice": Wei(gas_price),
         }
 
@@ -1845,4 +1986,4 @@ class EthereumClient:
 
     @staticmethod
     def private_key_to_address(private_key):
-        return checksum_encode(privtoaddr(private_key))
+        return Account.from_key(private_key).address

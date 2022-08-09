@@ -3,10 +3,9 @@ from typing import Optional
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
-from web3 import Web3
 from web3.contract import Contract
 
-from gnosis.eth import EthereumClient
+from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import (
     get_paying_proxy_deployed_bytecode,
     get_proxy_1_0_0_deployed_bytecode,
@@ -17,8 +16,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
 )
-from gnosis.eth.ethereum_client import EthereumTxSent
-from gnosis.eth.utils import compare_byte_code
+from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 
 try:
     from functools import cache
@@ -33,7 +31,7 @@ logger = getLogger(__name__)
 
 class ProxyFactory:
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
-        assert Web3.isChecksumAddress(address), (
+        assert fast_is_checksum_address(address), (
             "%s proxy factory address not valid" % address
         )
 
@@ -47,7 +45,9 @@ class ProxyFactory:
         deployer_account: LocalAccount,
         contract: Contract,
     ) -> EthereumTxSent:
-        tx = contract.constructor().buildTransaction({"from": deployer_account.address})
+        tx = contract.constructor().build_transaction(
+            {"from": deployer_account.address}
+        )
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
@@ -163,7 +163,7 @@ class ProxyFactory:
         if gas is not None:
             tx_parameters["gas"] = gas
 
-        tx = create_proxy_fn.buildTransaction(tx_parameters)
+        tx = create_proxy_fn.build_transaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case
         tx["gas"] = tx["gas"] + 50000
         tx_hash = self.ethereum_client.send_unsigned_transaction(
@@ -210,7 +210,7 @@ class ProxyFactory:
         if nonce is not None:
             tx_parameters["nonce"] = nonce
 
-        tx = create_proxy_fn.buildTransaction(tx_parameters)
+        tx = create_proxy_fn.build_transaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case
         tx["gas"] = tx["gas"] + 50000
         tx_hash = self.ethereum_client.send_unsigned_transaction(

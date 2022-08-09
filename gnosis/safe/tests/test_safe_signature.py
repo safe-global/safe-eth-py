@@ -55,6 +55,17 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.APPROVED_HASH)
         self.assertTrue(str(safe_signature))  # Test __str__
 
+        # Problematic signature found on rinkeby tx-hash 0x10df7fd8b75297af360ae335ca7562be92cafbbd39cc72172e17fcaebccc4f42
+        # Note the ff preceding the address
+        signature = HexBytes(
+            "0x0000000000000000000000ffdc5299b629ef24fdecfbb240c00fc79fabb9cf97000000000000000000000000000000000000000000000000000000000000000001"
+        )
+        # Safe tx hash is not relevant for this case, use the same one
+        safe_signature = SafeSignatureApprovedHash(signature, b"")
+        self.assertEqual(
+            safe_signature.owner, "0xdC5299b629Ef24fDECfBb240C00Fc79FAbB9cf97"
+        )
+
     def test_approved_hash_signature_build(self):
         owner = Account.create().address
         safe_tx_hash = Web3.keccak(text="random")
@@ -185,7 +196,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
         # Check with previously signedMessage
-        tx = safe_contract.functions.signMessage(safe_tx_hash).buildTransaction(
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
             {"from": safe.address}
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
@@ -233,7 +244,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_contract = safe.get_contract()
         safe_tx_hash = Web3.keccak(text="test")
 
-        tx = safe_contract.functions.signMessage(safe_tx_hash).buildTransaction(
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
             {"from": safe.address}
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])

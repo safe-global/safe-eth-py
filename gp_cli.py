@@ -1,3 +1,6 @@
+from gnosis.eth.utils import fast_keccak
+
+
 def confirm_prompt(question: str) -> bool:
     reply = None
     while reply not in ("y", "n"):
@@ -10,8 +13,6 @@ if __name__ == "__main__":
     import os
     import sys
     import time
-
-    from web3 import Web3
 
     from gnosis.eth import EthereumNetwork
     from gnosis.eth.constants import NULL_ADDRESS
@@ -54,7 +55,7 @@ if __name__ == "__main__":
         sellAmount=amount_wei,
         buyAmount=buy_amount,
         validTo=int(time.time()) + (60 * 60),  # Valid for 1 hour
-        appData=Web3.keccak(text="gp-cli"),
+        appData=fast_keccak(text="gp-cli"),
         feeAmount=0,
         kind="sell",  # `sell` or `buy`
         partiallyFillable=not args.require_full_fill,

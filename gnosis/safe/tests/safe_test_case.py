@@ -112,7 +112,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.multi_send_contract = get_multi_send_contract(
             cls.w3, _contract_addresses["multi_send"]
         )
-        cls.multi_send = MultiSend(cls.multi_send_contract.address, cls.ethereum_client)
+        cls.multi_send = MultiSend(
+            cls.ethereum_client, address=cls.multi_send_contract.address
+        )
 
     def build_test_safe(
         self,
@@ -187,7 +189,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_token,
                 payment,
                 payment_receiver,
-            ).buildTransaction(empty_parameters)["data"]
+            ).build_transaction(empty_parameters)["data"]
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
@@ -235,7 +237,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_token,
                 payment,
                 payment_receiver,
-            ).buildTransaction(empty_parameters)["data"]
+            ).build_transaction(empty_parameters)["data"]
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
@@ -275,7 +277,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         initializer = HexBytes(
             self.safe_contract_V1_0_0.functions.setup(
                 owners, threshold, to, data, payment_token, payment, payment_receiver
-            ).buildTransaction(empty_parameters)["data"]
+            ).build_transaction(empty_parameters)["data"]
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,

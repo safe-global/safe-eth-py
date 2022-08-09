@@ -13,6 +13,7 @@ from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 from web3.types import BlockIdentifier, Wei
 
+from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from gnosis.eth.contracts import (
     get_compatibility_fallback_handler_V1_3_0_contract,
@@ -23,8 +24,11 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
 )
-from gnosis.eth.ethereum_client import EthereumClient, EthereumTxSent
-from gnosis.eth.utils import get_eth_address_with_key
+from gnosis.eth.utils import (
+    fast_bytes_to_checksum_address,
+    fast_is_checksum_address,
+    get_eth_address_with_key,
+)
 from gnosis.safe.proxy_factory import ProxyFactory
 
 from ..eth.typing import EthereumData
@@ -91,7 +95,7 @@ class Safe:
         :param address: Safe address
         :param ethereum_client: Initialized ethereum client
         """
-        assert Web3.isChecksumAddress(address), "%s is not a valid address" % address
+        assert fast_is_checksum_address(address), "%s is not a valid address" % address
 
         self.ethereum_client = ethereum_client
         self.w3 = self.ethereum_client.w3
@@ -124,7 +128,7 @@ class Safe:
         """
 
         assert owners, "At least one owner must be set"
-        assert threshold >= len(owners), "Threshold=%d must be >= %d" % (
+        assert 1 <= threshold <= len(owners), "Threshold=%d must be <= %d" % (
             threshold,
             len(owners),
         )
@@ -141,7 +145,7 @@ class Safe:
                 payment,
                 payment_receiver,
             )
-            .buildTransaction({"gas": Wei(1), "gasPrice": Wei(1)})["data"]
+            .build_transaction({"gas": Wei(1), "gasPrice": Wei(1)})["data"]
         )
 
         if proxy_factory_address:
@@ -153,7 +157,7 @@ class Safe:
         proxy_contract = get_delegate_constructor_proxy_contract(ethereum_client.w3)
         tx = proxy_contract.constructor(
             master_copy_address, initializer
-        ).buildTransaction({"from": deployer_account.address})
+        ).build_transaction({"from": deployer_account.address})
         tx["gas"] = tx["gas"] * 100000
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
@@ -181,7 +185,7 @@ class Safe:
         :return: deployed contract address
         """
         safe_contract = contract_fn(ethereum_client.w3)
-        constructor_tx = safe_contract.constructor().buildTransaction()
+        constructor_tx = safe_contract.constructor().build_transaction()
         tx_hash = ethereum_client.send_unsigned_transaction(
             constructor_tx, private_key=deployer_account.key
         )
@@ -217,7 +221,7 @@ class Safe:
         contract = get_compatibility_fallback_handler_V1_3_0_contract(
             ethereum_client.w3
         )
-        constructor_tx = contract.constructor().buildTransaction()
+        constructor_tx = contract.constructor().build_transaction()
         tx_hash = ethereum_client.send_unsigned_transaction(
             constructor_tx, private_key=deployer_account.key
         )
@@ -283,7 +287,7 @@ class Safe:
         """
 
         safe_contract = get_safe_V1_0_0_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().buildTransaction({"gas": 0})[
+        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
             "data"
         ]
         initializer_data = safe_contract.functions.setup(
@@ -298,7 +302,7 @@ class Safe:
             NULL_ADDRESS,  # Payment token
             0,  # Payment
             NULL_ADDRESS,  # Refund receiver
-        ).buildTransaction({"to": NULL_ADDRESS})["data"]
+        ).build_transaction({"to": NULL_ADDRESS})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -323,7 +327,7 @@ class Safe:
         """
 
         safe_contract = get_safe_V0_0_1_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().buildTransaction({"gas": 0})[
+        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
             "data"
         ]
         initializer_data = safe_contract.functions.setup(
@@ -335,7 +339,7 @@ class Safe:
             2,  # Threshold. Maximum security
             NULL_ADDRESS,  # Address for optional DELEGATE CALL
             b"",  # Data for optional DELEGATE CALL
-        ).buildTransaction({"to": NULL_ADDRESS})["data"]
+        ).build_transaction({"to": NULL_ADDRESS})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -573,7 +577,7 @@ class Safe:
                 gas_token,
                 refund_receiver,
                 signatures,
-            ).buildTransaction({"gas": 1, "gasPrice": 1})["data"]
+            ).build_transaction({"gas": 1, "gasPrice": 1})["data"]
         )
 
         # If nonce == 0, nonce storage has to be initialized
@@ -650,7 +654,7 @@ class Safe:
         tx = (
             self.get_contract()
             .functions.requiredTxGas(to, value, data, operation)
-            .buildTransaction(
+            .build_transaction(
                 {
                     "from": safe_address,
                     "gas": 0,  # Don't call estimate
@@ -888,9 +892,9 @@ class Safe:
             self.address,
             self.FALLBACK_HANDLER_STORAGE_SLOT,
             block_identifier=block_identifier,
-        )[-20:]
+        )[-20:].rjust(20, b"\0")
         if len(address) == 20:
-            return Web3.toChecksumAddress(address)
+            return fast_bytes_to_checksum_address(address)
         else:
             return NULL_ADDRESS
 
@@ -899,20 +903,19 @@ class Safe:
     ) -> ChecksumAddress:
         address = self.ethereum_client.w3.eth.get_storage_at(
             self.address, self.GUARD_STORAGE_SLOT, block_identifier=block_identifier
-        )[-20:]
+        )[-20:].rjust(20, b"\0")
         if len(address) == 20:
-            return Web3.toChecksumAddress(address)
+            return fast_bytes_to_checksum_address(address)
         else:
             return NULL_ADDRESS
 
     def retrieve_master_copy_address(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> ChecksumAddress:
-        bytes_address = self.w3.eth.get_storage_at(
+        address = self.w3.eth.get_storage_at(
             self.address, "0x00", block_identifier=block_identifier
-        )[-20:]
-        int_address = int.from_bytes(bytes_address, byteorder="big")
-        return Web3.toChecksumAddress("{:#042x}".format(int_address))
+        )[-20:].rjust(20, b"\0")
+        return fast_bytes_to_checksum_address(address)
 
     def retrieve_modules(
         self,

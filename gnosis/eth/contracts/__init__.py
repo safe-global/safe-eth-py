@@ -1,6 +1,6 @@
 """
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
-https://github.com/gnosis/safe-deployments/tree/main/src/assets
+https://github.com/safe-global/safe-deployments/tree/main/src/assets
 
 GnosisSafe V1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
 GnosisSafe V1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
@@ -60,6 +60,7 @@ contracts = {
     "compatibility_fallback_handler_V1_3_0": "CompatibilityFallbackHandler_V1_3_0.json",
     "erc20": "ERC20.json",
     "erc721": "ERC721.json",
+    "erc1155": "ERC1155.json",
     "example_erc20": "ERC20TestToken.json",
     "delegate_constructor_proxy": "DelegateConstructorProxy.json",
     "multi_send": "MultiSend.json",
@@ -131,6 +132,10 @@ def get_erc20_contract(w3: Web3, address: Optional[str] = None) -> Contract:
 
 
 def get_erc721_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_erc1155_contract(w3: Web3, address: Optional[str] = None) -> Contract:
     pass
 
 

@@ -19,13 +19,26 @@ class TestGnosisProtocolAPI(TestCase):
         cls.rinkeby_weth_address = "0xc778417e063141139fce010982780140aa0cd5ab"
         cls.rinkeby_dai_address = "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa"
 
+    def test_api_is_available(self):
+        random_owner = Account.create().address
+        for ethereum_network in (
+            EthereumNetwork.MAINNET,
+            EthereumNetwork.RINKEBY,
+            EthereumNetwork.XDAI,
+        ):
+            with self.subTest(ethereum_network=ethereum_network):
+                self.assertEqual(self.gnosis_protocol_api.get_orders(random_owner), [])
+
     def test_get_estimated_amount(self):
         response = self.gnosis_protocol_api.get_estimated_amount(
             self.gno_token_address, self.gno_token_address, OrderKind.SELL, 1
         )
-        self.assertEqual(
+        self.assertDictEqual(
             response,
-            {"amount": "1", "token": "0x6810e776880c02933d47db1b9fc05908e5386b96"},
+            {
+                "errorType": "SameBuyAndSellToken",
+                "description": "Buy token is the same as the sell token.",
+            },
         )
 
         response = self.gnosis_protocol_api.get_estimated_amount(
@@ -98,8 +111,8 @@ class TestGnosisProtocolAPI(TestCase):
         self.assertEqual(
             result,
             {
-                "description": "Order does not include sufficient fee",
-                "errorType": "InsufficientFee",
+                "description": "Buy token is the same as the sell token.",
+                "errorType": "SameBuyAndSellToken",
             },
         )
 
@@ -109,6 +122,6 @@ class TestGnosisProtocolAPI(TestCase):
             self.gnosis_protocol_api.place_order(order, Account().create().key),
             {
                 "description": "order owner must have funds worth at least x in his account",
-                "errorType": "InsufficientFunds",
+                "errorType": "InsufficientBalance",
             },
         )

@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import requests
 from eip712_structs import make_domain
@@ -60,9 +60,9 @@ class GnosisProtocolAPI:
     }
 
     api_base_urls = {
-        EthereumNetwork.MAINNET: "https://protocol-mainnet.gnosis.io/api/v1/",
-        EthereumNetwork.RINKEBY: "https://protocol-rinkeby.gnosis.io/api/v1/",
-        EthereumNetwork.XDAI: "https://protocol-xdai.gnosis.io/api/v1/",
+        EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet/api/v1/",
+        EthereumNetwork.RINKEBY: "https://api.cow.fi/rinkeby/api/v1/",
+        EthereumNetwork.XDAI: "https://api.cow.fi/xdai/api/v1/",
     }
 
     def __init__(self, ethereum_network: EthereumNetwork):
@@ -140,6 +140,26 @@ class GnosisProtocolAPI:
         else:
             return ErrorResponse(r.json())
 
+    def get_orders(
+        self, owner: ChecksumAddress, offset: int = 0, limit=10
+    ) -> List[Dict[str, Any]]:
+        """
+        :param owner:
+        :param offset: Defaults to 0
+        :param limit: Defaults to 10. Maximum is 1000, minimum is 1
+        :return: Orders of one user paginated. The orders are ordered by their creation
+            date descending (newest orders first).
+            To enumerate all orders start with offset 0 and keep increasing the offset by the
+            total number of returned results. When a response contains less than the limit
+            the last page has been reached.
+        """
+        url = self.base_url + f"account/{owner}/orders"
+        r = requests.get(url)
+        if r.ok:
+            return cast(List[Dict[str, Any]], r.json())
+        else:
+            return ErrorResponse(r.json())
+
     def get_trades(
         self, order_ui: Optional[HexStr] = None, owner: Optional[ChecksumAddress] = None
     ) -> List[TradeResponse]:
@@ -152,11 +172,11 @@ class GnosisProtocolAPI:
         elif owner:
             url += f"owner={owner}"
 
-        response = requests.get(url)
-        if response.ok:
-            return cast(List[TradeResponse], response.json())
+        r = requests.get(url)
+        if r.ok:
+            return cast(List[TradeResponse], r.json())
         else:
-            return []
+            return ErrorResponse(r.json())
 
     def get_estimated_amount(
         self,
@@ -169,8 +189,8 @@ class GnosisProtocolAPI:
         The estimated amount in quote token for either buying or selling amount of baseToken.
         """
         url = self.base_url + f"markets/{base_token}-{quote_token}/{kind.name}/{amount}"
-        response = requests.get(url)
-        if response.ok:
-            return AmountResponse(response.json())
+        r = requests.get(url)
+        if r.ok:
+            return AmountResponse(r.json())
         else:
-            return ErrorResponse(response.json())
+            return ErrorResponse(r.json())

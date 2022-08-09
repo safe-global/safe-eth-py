@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 
 from .. import EthereumClient
@@ -27,6 +28,7 @@ from .utils import just_test_if_mainnet_node
 
 gno_token_mainnet_address = "0x6810e776880C02933D47DB1b9fc05908e5386b96"
 weth_token_mainnet_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+wbtc_token_mainnet_address = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
 
 dai_token_mainnet_address = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 usdt_token_mainnet_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
@@ -214,9 +216,8 @@ class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
         sushiswap_oracle = SushiswapOracle(ethereum_client)
 
         price = sushiswap_oracle.get_price(
-            gno_token_mainnet_address, weth_token_mainnet_address
+            wbtc_token_mainnet_address, weth_token_mainnet_address
         )
-        self.assertLess(price, 1)
         self.assertGreater(price, 0)
 
         # Test with 2 stablecoins
@@ -497,6 +498,7 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.xfail(reason="Flaky because of external dependency on Enzyme")
     def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)

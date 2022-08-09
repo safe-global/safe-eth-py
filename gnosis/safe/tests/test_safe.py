@@ -14,8 +14,8 @@ from gnosis.eth.utils import get_eth_address_with_key
 from ..exceptions import (
     CannotEstimateGas,
     CannotRetrieveSafeInfoException,
-    CouldNotPayGasWithEther,
     CouldNotPayGasWithToken,
+    InvalidInternalTx,
 )
 from ..safe import Safe, SafeOperation
 from ..signatures import signature_to_bytes, signatures_to_bytes
@@ -208,7 +208,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertEqual(set(contract_owners), set(owners))
         self.assertEqual(w3.eth.get_balance(owners[0]), owner0_balance)
 
-        with self.assertRaises(CouldNotPayGasWithEther):
+        # with self.assertRaises(CouldNotPayGasWithEther):
+        # Ganache v7 does not raise CouldNotPayGasWithEther anymore
+        with self.assertRaises(InvalidInternalTx):
             safe.send_multisig_tx(
                 to,
                 value,
@@ -473,7 +475,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             owners=[self.ethereum_test_account.address],
             initial_funding_wei=self.w3.toWei(0.1, "ether"),
         )
-        nester_tx = nester.functions.useGas(80).buildTransaction(
+        nester_tx = nester.functions.useGas(80).build_transaction(
             {"gasPrice": 1, "from": safe.address, "gas": 1}
         )
         nester_data = nester_tx["data"]
@@ -535,9 +537,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         with self.assertRaises(CannotEstimateGas):
             deployed_erc20 = self.deploy_example_erc20(100, Account.create().address)
-            transfer_data = deployed_erc20.functions.transfer(to, 200).buildTransaction(
-                {"gas": 0}
-            )["data"]
+            transfer_data = deployed_erc20.functions.transfer(
+                to, 200
+            ).build_transaction({"gas": 0})["data"]
             safe.estimate_tx_gas_with_web3(deployed_erc20.address, value, transfer_data)
 
     def test_estimate_tx_operational_gas(self):
@@ -572,7 +574,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         set_guard_data = HexBytes(
             safe.get_contract()
             .functions.setGuard(guard_address)
-            .buildTransaction({"gas": 1, "gasPrice": 1})["data"]
+            .build_transaction({"gas": 1, "gasPrice": 1})["data"]
         )
         set_guard_tx = safe.build_multisig_tx(safe.address, 0, set_guard_data)
         set_guard_tx.sign(owner_account.key)
@@ -631,7 +633,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         module_address = Account.create().address
         self.assertEqual(safe.retrieve_modules(), [])
 
-        tx = safe_contract.functions.enableModule(module_address).buildTransaction(
+        tx = safe_contract.functions.enableModule(module_address).build_transaction(
             {"from": self.ethereum_test_account.address, "gas": 0, "gasPrice": 0}
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
@@ -645,7 +647,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         more_modules = [Account.create().address for _ in range(2)]
         for more_module in more_modules:
             # Test pagination
-            tx = safe_contract.functions.enableModule(more_module).buildTransaction(
+            tx = safe_contract.functions.enableModule(more_module).build_transaction(
                 {"from": self.ethereum_test_account.address, "gas": 0, "gasPrice": 0}
             )
             safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
@@ -664,7 +666,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe_contract = safe.get_contract()
         fake_tx_hash = Web3.keccak(text="Knopfler")
         another_tx_hash = Web3.keccak(text="Marc")
-        tx = safe_contract.functions.approveHash(fake_tx_hash).buildTransaction(
+        tx = safe_contract.functions.approveHash(fake_tx_hash).build_transaction(
             {"from": self.ethereum_test_account.address}
         )
 
@@ -688,7 +690,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         message = b"12345"
         message_hash = safe_contract.functions.getMessageHash(message).call()
         sign_message_data = HexBytes(
-            safe_contract.functions.signMessage(message).buildTransaction({"gas": 0})[
+            safe_contract.functions.signMessage(message).build_transaction({"gas": 0})[
                 "data"
             ]
         )
@@ -718,7 +720,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         transfer_tx = deployed_erc20.functions.transfer(
             my_safe_address, amount
-        ).buildTransaction({"from": funder})
+        ).build_transaction({"from": funder})
         self.send_tx(transfer_tx, funder_account)
 
         balance = self.ethereum_client.erc20.get_balance(
@@ -786,7 +788,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         approve_hash_fn = safe_instance.functions.approveHash(safe_tx_hash)
         for account in accounts[:2]:
             self.send_tx(
-                approve_hash_fn.buildTransaction({"from": account.address}), account
+                approve_hash_fn.build_transaction({"from": account.address}), account
             )
 
         for owner in (owners[0], owners[1]):

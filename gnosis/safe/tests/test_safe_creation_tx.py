@@ -108,7 +108,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
             funder_account,
         )
 
-        with self.assertRaisesMessage(ValueError, "enough funds"):
+        with self.assertRaisesMessage(ValueError, "insufficient funds for gas"):
             w3.eth.send_raw_transaction(safe_creation_tx.tx_raw)
 
     def test_safe_creation_tx_builder_with_payment(self):
@@ -243,7 +243,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         safe_address = safe_creation_tx.safe_address
         logger.info("Send %d tokens to safe %s", payment, safe_address)
         self.send_tx(
-            erc20_contract.functions.transfer(safe_address, payment).buildTransaction(
+            erc20_contract.functions.transfer(safe_address, payment).build_transaction(
                 {"from": erc20_deployer.address}
             ),
             erc20_deployer,

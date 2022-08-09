@@ -2,7 +2,6 @@ import logging
 
 from django.utils.translation import gettext_lazy as _
 
-from ethereum.utils import checksum_encode
 from hexbytes import HexBytes
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -15,6 +14,7 @@ from ..constants import (
     SIGNATURE_V_MAX_VALUE,
     SIGNATURE_V_MIN_VALUE,
 )
+from ..utils import fast_is_checksum_address
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class EthereumAddressField(serializers.Field):
     def to_internal_value(self, data):
         # Check if address is valid
         try:
-            if checksum_encode(data) != data:
+            if not fast_is_checksum_address(data):
                 raise ValueError
             elif int(data, 16) == 0 and not self.allow_zero_address:
                 raise ValidationError("0x0 address is not allowed")
@@ -52,8 +52,6 @@ class EthereumAddressField(serializers.Field):
                 raise ValidationError("0x1 address is not allowed")
         except ValueError:
             raise ValidationError("Address %s is not checksumed" % data)
-        except Exception:
-            raise ValidationError("Address %s is not valid" % data)
 
         return data
 

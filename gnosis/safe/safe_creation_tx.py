@@ -4,18 +4,22 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 
 import rlp
-from ethereum.exceptions import InvalidTransaction
-from ethereum.transactions import Transaction, secpk1n
-from ethereum.utils import checksum_encode, mk_contract_address
+from eth.vm.forks.frontier.transactions import FrontierTransaction
+from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
 
-from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
+from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SECPK1_N
 from gnosis.eth.contracts import (
     get_erc20_contract,
     get_paying_proxy_contract,
     get_safe_V0_0_1_contract,
+)
+from gnosis.eth.utils import (
+    fast_is_checksum_address,
+    fast_to_checksum_address,
+    mk_contract_address,
 )
 
 logger = getLogger(__name__)
@@ -56,9 +60,9 @@ class SafeCreationTx:
         assert 0 < threshold <= len(owners)
         funder = funder or NULL_ADDRESS
         payment_token = payment_token or NULL_ADDRESS
-        assert Web3.isChecksumAddress(master_copy)
-        assert Web3.isChecksumAddress(funder)
-        assert Web3.isChecksumAddress(payment_token)
+        assert fast_is_checksum_address(master_copy)
+        assert fast_is_checksum_address(funder)
+        assert fast_is_checksum_address(payment_token)
 
         self.w3 = w3
         self.owners = owners
@@ -100,22 +104,19 @@ class SafeCreationTx:
             gas_price=gas_price,
         )
 
-        self.tx_pyethereum: Transaction = (
+        self.tx_pyethereum: FrontierTransaction = (
             self._build_contract_creation_tx_with_valid_signature(self.tx_dict, self.s)
         )
         self.tx_raw = rlp.encode(self.tx_pyethereum)
         self.tx_hash = self.tx_pyethereum.hash
-        self.deployer_address = checksum_encode(self.tx_pyethereum.sender)
-        self.safe_address = checksum_encode(self.tx_pyethereum.creates)
+        self.deployer_address = fast_to_checksum_address(self.tx_pyethereum.sender)
+        self.safe_address = mk_contract_address(self.tx_pyethereum.sender, 0)
 
         self.v = self.tx_pyethereum.v
         self.r = self.tx_pyethereum.r
         self.safe_setup_data = safe_setup_data
 
-        assert (
-            checksum_encode(mk_contract_address(self.deployer_address, nonce=0))
-            == self.safe_address
-        )
+        assert mk_contract_address(self.deployer_address, nonce=0) == self.safe_address
 
     @property
     def payment_ether(self):
@@ -131,12 +132,12 @@ class SafeCreationTx:
         for _ in range(10000):
             r = int(os.urandom(31).hex(), 16)
             v = (r % 2) + 27
-            if r < secpk1n:
-                tx = Transaction(0, 1, 21000, b"", 0, b"", v=v, r=r, s=s)
+            if r < SECPK1_N:
+                tx = FrontierTransaction(0, 1, 21000, b"", 0, b"", v=v, r=r, s=s)
                 try:
                     tx.sender
                     return v, r
-                except (InvalidTransaction, ValueError):
+                except (BadSignature, ValueError):
                     logger.debug("Cannot find signature with v=%d r=%d s=%d", v, r, s)
 
         raise ValueError("Valid signature not found with s=%d", s)
@@ -233,7 +234,7 @@ class SafeCreationTx:
         """
         return self._build_proxy_contract_creation_constructor(
             master_copy, initializer, funder, payment_token, payment
-        ).buildTransaction(
+        ).build_transaction(
             {
                 "gas": gas,
                 "gasPrice": gas_price,
@@ -243,7 +244,7 @@ class SafeCreationTx:
 
     def _build_contract_creation_tx_with_valid_signature(
         self, tx_dict: Dict[str, Any], s: int
-    ) -> Transaction:
+    ) -> FrontierTransaction:
         """
         Use pyethereum `Transaction` to generate valid tx using a random signature
         :param tx_dict: Web3 tx dictionary
@@ -261,18 +262,20 @@ class SafeCreationTx:
         for _ in range(100):
             try:
                 v, r = self.find_valid_random_signature(s)
-                contract_creation_tx = Transaction(
+                contract_creation_tx = FrontierTransaction(
                     nonce, gas_price, gas, to, value, HexBytes(data), v=v, r=r, s=s
                 )
                 sender_address = contract_creation_tx.sender
-                contract_address = contract_creation_tx.creates
+                contract_address: bytes = HexBytes(
+                    mk_contract_address(sender_address, nonce)
+                )
                 if sender_address in (zero_address, f_address) or contract_address in (
                     zero_address,
                     f_address,
                 ):
-                    raise InvalidTransaction
+                    raise ValueError("Invalid transaction")
                 return contract_creation_tx
-            except InvalidTransaction:
+            except BadSignature:
                 pass
         raise ValueError("Valid signature not found with s=%d", s)
 
@@ -292,7 +295,7 @@ class SafeCreationTx:
         # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
         gas: int = self._build_proxy_contract_creation_constructor(
             master_copy, initializer, funder, payment_token, 0
-        ).estimateGas()
+        ).estimate_gas()
 
         # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
@@ -306,7 +309,7 @@ class SafeCreationTx:
                 gas += (
                     get_erc20_contract(self.w3, payment_token)
                     .functions.transfer(funder, 1)
-                    .estimateGas({"from": payment_token})
+                    .estimate_gas({"from": payment_token})
                 )
             except ValueError as exc:
                 if "transfer amount exceeds balance" in str(exc):
@@ -324,7 +327,7 @@ class SafeCreationTx:
                 NULL_ADDRESS,  # Contract address for optional delegate call
                 b"",  # Data payload for optional delegate call
             )
-            .buildTransaction(
+            .build_transaction(
                 {
                     "gas": 1,
                     "gasPrice": 1,

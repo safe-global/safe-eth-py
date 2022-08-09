@@ -1,8 +1,8 @@
 from django.test import TestCase
 
-from ethereum.utils import sha3
 from hexbytes import HexBytes
 from rest_framework import serializers
+from web3 import Web3
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
 from ...utils import get_eth_address_with_invalid_checksum, get_eth_address_with_key
@@ -61,6 +61,10 @@ class TestSerializers(TestCase):
         ]:
             serializer = EthereumAddressSerializerTest(data={"value": not_valid_value})
             self.assertFalse(serializer.is_valid())
+
+        serializer = EthereumAddressSerializerTest(data={"value": NULL_ADDRESS})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("0x0 address is not allowed", serializer.errors["value"])
 
     def test_ethereum_zero_address_field(self):
         valid_address, _ = get_eth_address_with_key()
@@ -129,7 +133,7 @@ class TestSerializers(TestCase):
             self.assertEqual(serializer.data["value"], HexBytes(hex_value).hex())
 
     def test_hash_serializer_field(self):
-        value = sha3("test").hex()
+        value = Web3.keccak(text="test").hex()
         serializer = Sha3HashSerializerTest(data={"value": value})
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["value"], HexBytes(value))

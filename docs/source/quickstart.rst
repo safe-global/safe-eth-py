@@ -1,10 +1,10 @@
 Quick start
 -----------
 
-Just run ``pip install gnosis-py`` or add it to your **requirements.txt**
+Just run ``pip install safe-eth-py`` or add it to your **requirements.txt**
 
 If you want django ethereum utils (models, serializers, filters...) you need to run
-``pip install gnosis-py[django]``
+``pip install safe-eth-py[django]``
 
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
@@ -54,6 +54,22 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
   ethereum_client.w3.eth.get_block(57)
 
 
+``EthereumClient`` supports `EIP1559 <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md>`_ fees:
+
+.. code-block:: python
+
+  from gnosis.eth import TxSpeed
+  base_fee, priority_fee = ethereum_client.estimate_fee_eip1559(tx_speed=TxSpeed.NORMAL)
+  # If you want to convert a legacy tx to a EIP1559 one
+  eip1559_tx = ethereum_client.set_eip1559_fees(legacy_tx, tx_speed=TxSpeed.NORMAL)
+
+
+You can modify timeouts (in seconds) for the RPC endpoints by setting
+`ETHEREUM_RPC_TIMEOUT` and `ETHEREUM_RPC_SLOW_TIMEOUT` as environment variables.
+
+By default every RPC request will be retried `3` times. You can modify that by setting `ETHEREUM_RPC_RETRY_COUNT`.
+
+
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
@@ -84,7 +100,7 @@ Contains utils for ethereum operations:
 
 - ``get_eth_address_with_key() -> Tuple[str, bytes]``: Returns a tuple of a valid public ethereum checksumed
   address with the private key.
-- ``generate_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: [str, bytes]) -> str``:
+- ``mk_contract_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: [str, bytes]) -> str``:
   Calculates the address of a new contract created using the new CREATE2 opcode.
 
 Ethereum django (REST) utils
@@ -103,9 +119,9 @@ It includes:
 
 Gnosis Products
 ---------------
-Gnosis Safe
-~~~~~~~~~~~
-On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://gnosis-safe.io/>`_
+Safe
+~~~~
+On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://safe.global/>`_
 
 .. code-block:: python
 
@@ -127,8 +143,8 @@ To work with Multisig Transactions:
   safe_tx.call()  # Check it works
   safe_tx.execute(tx_sender_private_key)
 
-Gnosis Protocol
-~~~~~~~~~~~
+Protocol
+~~~~~~~~
 On ``gnosis.protocol`` there're classes to work with `Gnosis Protocol v2 <https://docs.cowswap.app>`_
 
 .. code-block:: python

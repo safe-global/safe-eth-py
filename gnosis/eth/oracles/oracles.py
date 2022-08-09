@@ -9,7 +9,6 @@ from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_abi_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3 import Web3
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 
@@ -23,6 +22,7 @@ from ..contracts import (
     get_uniswap_v2_pair_contract,
     get_uniswap_v2_router_contract,
 )
+from ..utils import fast_bytes_to_checksum_address, fast_keccak
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.cream_abis import cream_ctoken_abi
@@ -127,7 +127,7 @@ class KyberOracle(PriceOracle):
         try:
             # Get decimals for token, estimation will be more accurate
             decimals = self.ethereum_client.erc20.get_decimals(token_address_1)
-            token_unit = int(10 ** decimals)
+            token_unit = int(10**decimals)
             (
                 expected_rate,
                 _,
@@ -225,10 +225,10 @@ class UniswapOracle(PriceOracle):
         }
         erc20 = get_erc20_contract(self.w3, token_address)
         params = {"gas": 0, "gasPrice": 0}
-        decimals_data = erc20.functions.decimals().buildTransaction(params)["data"]
+        decimals_data = erc20.functions.decimals().build_transaction(params)["data"]
         token_balance_data = erc20.functions.balanceOf(
             uniswap_exchange_address
-        ).buildTransaction(params)["data"]
+        ).build_transaction(params)["data"]
         datas = [decimals_data, token_balance_data]
         payload_calls = [
             {
@@ -380,16 +380,16 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         if token_address.lower() > token_address_2.lower():
             token_address, token_address_2 = token_address_2, token_address
-        salt = Web3.keccak(
+        salt = fast_keccak(
             encode_abi_packed(["address", "address"], [token_address, token_address_2])
         )
-        address = Web3.keccak(
+        address = fast_keccak(
             encode_abi_packed(
                 ["bytes", "address", "bytes", "bytes"],
                 [HexBytes("ff"), self.factory_address, salt, self.pair_init_code],
             )
         )[-20:]
-        return Web3.toChecksumAddress(address)
+        return fast_bytes_to_checksum_address(address)
 
     def get_decimals(self, token_address: str, token_address_2: str) -> Tuple[int, int]:
         if not (
@@ -446,13 +446,13 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 reserves_2, reserves_1 = reserves_1, reserves_2
 
             # Check liquidity. Require at least 2 units of every token to be on the pool
-            if reserves_1 / 10 ** decimals_1 < 2 or reserves_2 / 10 ** decimals_2 < 2:
+            if reserves_1 / 10**decimals_1 < 2 or reserves_2 / 10**decimals_2 < 2:
                 raise CannotGetPriceFromOracle(
                     f"Not enough liquidity for pair token_1={token_address} "
                     f"token_2={token_address_2}"
                 )
-            decimals_normalized_reserves_1 = reserves_1 * 10 ** decimals_2
-            decimals_normalized_reserves_2 = reserves_2 * 10 ** decimals_1
+            decimals_normalized_reserves_1 = reserves_1 * 10**decimals_2
+            decimals_normalized_reserves_2 = reserves_2 * 10**decimals_1
 
             return decimals_normalized_reserves_2 / decimals_normalized_reserves_1
         except (
@@ -517,7 +517,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             ):
                 try:
                     price = self.get_price(token_address)
-                    total_value = (reserves / 10 ** decimals_1) * price
+                    total_value = (reserves / 10**decimals_1) * price
                     return (total_value * 2) / (total_supply / 1e18)
                 except CannotGetPriceFromOracle:
                     continue
@@ -822,7 +822,7 @@ class BalancerOracle(PricePoolOracle):
             for token_balance, token_decimal, token_price in zip(
                 token_balances, token_decimals, token_prices
             ):
-                total_eth_value += (token_balance / 10 ** token_decimal) * token_price
+                total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
         except (ValueError, BadFunctionCallOutput, DecodingError):
             raise CannotGetPriceFromOracle(
@@ -868,7 +868,7 @@ class MooniswapOracle(BalancerOracle):
                                 token_contract.functions.decimals(),
                             ]
                         )
-                        total_value = (token_balance / 10 ** token_decimals) * price
+                        total_value = (token_balance / 10**token_decimals) * price
                         return (total_value * 2) / (total_supply / 1e18)
                     except CannotGetPriceFromOracle:
                         continue
