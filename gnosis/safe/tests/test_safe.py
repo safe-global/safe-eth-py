@@ -833,3 +833,5 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             safe = Safe(safe_deployed.address, self.ethereum_client)
             safe.get_contract()
         self.assertEqual(Safe.get_contract.cache.currsize, 2)
+
+        self.assertNotEqual(Safe.get_contract.cache.maxsize, None)
