@@ -2,6 +2,7 @@ import dataclasses
 import math
 from enum import Enum
 from logging import getLogger
+from os import environ
 from typing import Callable, List, NamedTuple, Optional, Union
 
 from cachetools import LRUCache, cached
@@ -816,7 +817,10 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    @cached(cache=LRUCache(maxsize=1024 * 100), key=lambda self: hashkey(self.address))
+    @cached(
+        cache=LRUCache(maxsize=int(environ.get("CONTRACT_CACHE_SIZE", 1024 * 100))),
+        key=lambda self: hashkey(self.address),
+    )
     def get_contract(self) -> Contract:
         v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
         version = v_1_3_0_contract.functions.VERSION().call()
