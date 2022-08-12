@@ -4,6 +4,8 @@ from enum import Enum
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
+from cachetools import LRUCache, cached
+from cachetools.keys import hashkey
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
@@ -40,14 +42,6 @@ from .exceptions import (
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
-
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
-
 
 logger = getLogger(__name__)
 
@@ -822,7 +816,7 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    @cache
+    @cached(cache=LRUCache(maxsize=1024 * 100), key=lambda self: hashkey(self.address))
     def get_contract(self) -> Contract:
         v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
         version = v_1_3_0_contract.functions.VERSION().call()

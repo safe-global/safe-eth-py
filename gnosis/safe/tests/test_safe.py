@@ -815,3 +815,21 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         balance = self.w3.eth.get_balance(to)
         self.assertEqual(value, balance)
+
+    def test_get_contracts_cache_leak(self):
+        safe_deployed = self.deploy_test_safe(
+            owners=[self.ethereum_test_account.address]
+        )
+        Safe.get_contract.cache.clear()
+        for i in range(1, 2):
+            safe = Safe(safe_deployed.address, self.ethereum_client)
+            safe.get_contract()
+        self.assertEqual(Safe.get_contract.cache.currsize, 1)
+
+        safe_deployed = self.deploy_test_safe(
+            owners=[self.ethereum_test_account.address]
+        )
+        for i in range(1, 2):
+            safe = Safe(safe_deployed.address, self.ethereum_client)
+            safe.get_contract()
+        self.assertEqual(Safe.get_contract.cache.currsize, 2)
