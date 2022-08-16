@@ -3,7 +3,7 @@ django==3.2.14
 django-filter==22.1
 djangorestframework==3.13.1
 eip712-structs==1.1.0
-hexbytes==0.2.2
+hexbytes==0.2.3
 packaging
 psycopg2-binary==2.9.3
 py-evm==0.5.0a3
