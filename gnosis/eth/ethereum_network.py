@@ -159,6 +159,7 @@ class EthereumNetwork(Enum):
     FSN = 32659
     NRG = 39797
     ARBITRUM = 42161
+    ARBITRUM_NOVA = 42170
     CELO = 42220
     ATH_ATHEREUM = 43110
     AVALANCHE = 43114
