@@ -33,6 +33,8 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://snowtrace.io",
+        EthereumNetwork.EVMOS_MAINNET: "https://evm.evmos.org",
+        EthereumNetwork.EVMOS_TESTNET: "https://evm.evmos.dev",
     }
 
     NETWORK_WITH_API_URL = {
@@ -46,6 +48,8 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://api-optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://api.arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://api.snowtrace.io",
+        EthereumNetwork.EVMOS_MAINNET: "https://evm.evmos.org/api",
+        EthereumNetwork.EVMOS_TESTNET: "https://evm.evmos.dev/api",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
