@@ -33,6 +33,9 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://snowtrace.io",
+        EthereumNetwork.ACA: "https://acala.subscan.io",
+        EthereumNetwork.KARURA_NETWORK_TESTNET: "https://karura.subscan.io",
+        EthereumNetwork.ACALA_NETWORK_TESTNET: "https://acala-testnet.subscan.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -46,6 +49,9 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://api-optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://api.arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://api.snowtrace.io",
+        EthereumNetwork.ACA: "https://acala.api.subscan.io",
+        EthereumNetwork.KARURA_NETWORK_TESTNET: "https://karura.api.subscan.io",
+        EthereumNetwork.ACALA_NETWORK_TESTNET: "https://acala-testnet.api.subscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
