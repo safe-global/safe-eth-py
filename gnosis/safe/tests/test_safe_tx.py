@@ -24,7 +24,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
             threshold=threshold,
             initial_funding_wei=self.w3.toWei(0.1, "ether"),
         )
-        safe_contract = safe.get_contract()
+        safe_contract = safe.contract
         to = self.multi_send_contract.address
         value = 0
         safe_tx_gas = 600000
@@ -273,22 +273,18 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
         safe = self.deploy_test_safe_v1_1_1()
         # Expected hash must be the same calculated by `getTransactionHash` of the contract
-        expected_hash = (
-            safe.get_contract()
-            .functions.getTransactionHash(
-                "0x5AC255889882aaB35A2aa939679E3F3d4Cea221E",
-                5212459,
-                HexBytes(0x00),
-                1,
-                123456,
-                122,
-                12345,
-                "0x" + "2" * 40,
-                "0x" + "2" * 40,
-                10789,
-            )
-            .call()
-        )
+        expected_hash = safe.contract.functions.getTransactionHash(
+            "0x5AC255889882aaB35A2aa939679E3F3d4Cea221E",
+            5212459,
+            HexBytes(0x00),
+            1,
+            123456,
+            122,
+            12345,
+            "0x" + "2" * 40,
+            "0x" + "2" * 40,
+            10789,
+        ).call()
         safe_tx_hash = SafeTx(
             self.ethereum_client,
             safe.address,
@@ -309,22 +305,18 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         # Safe v1.3.0
         safe = self.deploy_test_safe()
         # Expected hash must be the same calculated by `getTransactionHash` of the contract
-        expected_hash = (
-            safe.get_contract()
-            .functions.getTransactionHash(
-                "0x5AC255889882aaB35A2aa939679E3F3d4Cea221E",
-                5212459,
-                HexBytes(0x00),
-                1,
-                123456,
-                122,
-                12345,
-                "0x" + "2" * 40,
-                "0x" + "2" * 40,
-                10789,
-            )
-            .call()
-        )
+        expected_hash = safe.contract.functions.getTransactionHash(
+            "0x5AC255889882aaB35A2aa939679E3F3d4Cea221E",
+            5212459,
+            HexBytes(0x00),
+            1,
+            123456,
+            122,
+            12345,
+            "0x" + "2" * 40,
+            "0x" + "2" * 40,
+            10789,
+        ).call()
         safe_tx_hash = SafeTx(
             self.ethereum_client,
             safe.address,

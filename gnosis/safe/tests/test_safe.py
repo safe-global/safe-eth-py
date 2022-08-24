@@ -572,9 +572,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         guard_address = Account.create().address
         set_guard_data = HexBytes(
-            safe.get_contract()
-            .functions.setGuard(guard_address)
-            .build_transaction({"gas": 1, "gasPrice": 1})["data"]
+            safe.contract.functions.setGuard(guard_address).build_transaction(
+                {"gas": 1, "gasPrice": 1}
+            )["data"]
         )
         set_guard_tx = safe.build_multisig_tx(safe.address, 0, set_guard_data)
         set_guard_tx.sign(owner_account.key)
@@ -629,7 +629,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
     def test_retrieve_modules(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
-        safe_contract = safe.get_contract()
+        safe_contract = safe.contract
         module_address = Account.create().address
         self.assertEqual(safe.retrieve_modules(), [])
 
@@ -663,7 +663,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
     def test_retrieve_is_hash_approved(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
-        safe_contract = safe.get_contract()
+        safe_contract = safe.contract
         fake_tx_hash = Web3.keccak(text="Knopfler")
         another_tx_hash = Web3.keccak(text="Marc")
         tx = safe_contract.functions.approveHash(fake_tx_hash).build_transaction(
@@ -686,7 +686,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
     def test_retrieve_is_message_signed(self):
         safe = self.deploy_test_safe_v1_1_1(owners=[self.ethereum_test_account.address])
-        safe_contract = safe.get_contract()
+        safe_contract = safe.contract
         message = b"12345"
         message_hash = safe_contract.functions.getMessageHash(message).call()
         sign_message_data = HexBytes(
