@@ -30,12 +30,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
+from gnosis.util import cache
 
 
 def load_contract_interface(file_name):

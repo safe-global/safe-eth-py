@@ -12,6 +12,8 @@ from hexbytes import HexBytes
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 
+from gnosis.util import cached_property
+
 from .. import EthereumClient, EthereumNetwork
 from ..constants import NULL_ADDRESS
 from ..contracts import (
@@ -29,12 +31,6 @@ from .abis.cream_abis import cream_ctoken_abi
 from .abis.mooniswap_abis import mooniswap_abi
 from .abis.zerion_abis import ZERION_TOKEN_ADAPTER_ABI
 from .helpers.curve_gauge_list import CURVE_GAUGE_TO_LP_TOKEN
-
-try:
-    from functools import cached_property
-except ImportError:
-    from cached_property import cached_property
-
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +195,7 @@ class UniswapOracle(PriceOracle):
     def uniswap_factory(self):
         return get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
 
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=2048)
     def get_uniswap_exchange(self, token_address: str) -> str:
         return self.uniswap_factory.functions.getExchange(token_address).call()
 
@@ -348,7 +344,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         return self.router.functions.WETH().call()
 
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=2048)
     def get_pair_address(
         self, token_address: str, token_address_2: str
     ) -> Optional[str]:
@@ -368,6 +364,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             return None
         return pair_address
 
+    @functools.lru_cache(maxsize=2048)
     def calculate_pair_address(self, token_address: str, token_address_2: str):
         """
         Calculate pair address without querying blockchain.
@@ -411,9 +408,10 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
 
     def get_reserves(self, pair_address: str) -> Tuple[int, int]:
         """
-        Returns the
-        Also returns the block.timestamp (mod 2**32) of the last block during which an interaction occured for the pair.
+        Returns the number of tokens in the pool. `getReserves()` also returns the block.timestamp (mod 2**32) of
+        the last block during which an interaction occurred for the pair, but it's ignored.
         https://uniswap.org/docs/v2/smart-contracts/pair/
+
         :return: Reserves of `token_address` and `token_address_2` used to price trades and distribute liquidity.
         """
         pair_contract = get_uniswap_v2_pair_contract(
