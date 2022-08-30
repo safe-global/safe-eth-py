@@ -30,6 +30,7 @@ from gnosis.eth.utils import (
     get_eth_address_with_key,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
+from gnosis.util import cached_property
 
 from ..eth.typing import EthereumData
 from .exceptions import (
@@ -40,12 +41,6 @@ from .exceptions import (
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
-
-try:
-    from functools import cached_property
-except ImportError:
-    from cached_property import cached_property
-
 
 logger = getLogger(__name__)
 
