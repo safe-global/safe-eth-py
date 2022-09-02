@@ -2,7 +2,7 @@ import functools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import requests
 from eth_abi.exceptions import DecodingError
@@ -75,6 +75,31 @@ class ComposedPriceOracle(ABC):
     @abstractmethod
     def get_underlying_tokens(self, *args) -> List[Tuple[UnderlyingToken]]:
         pass
+
+
+@functools.lru_cache(maxsize=10_000)
+def get_decimals(
+    token_address: ChecksumAddress, ethereum_client: EthereumClient
+) -> int:
+    """
+    Auxiliary function so RPC call to get `token decimals` is cached and
+    can be reused for every Oracle, instead of having a cache per Oracle.
+
+    :param token_address:
+    :param ethereum_client:
+    :return: Decimals for a token
+    :raises CannotGetPriceFromOracle: If there's a problem with the query
+    """
+    try:
+        return ethereum_client.erc20.get_decimals(token_address)
+    except (
+        ValueError,
+        BadFunctionCallOutput,
+        DecodingError,
+    ) as e:
+        error_message = f"Cannot get decimals for token={token_address}"
+        logger.warning(error_message)
+        raise CannotGetPriceFromOracle(error_message) from e
 
 
 class KyberOracle(PriceOracle):
@@ -320,7 +345,6 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         self.router = get_uniswap_v2_router_contract(
             ethereum_client.w3, self.router_address
         )
-        self._decimals_cache: Dict[str, int] = {}
 
     @cached_property
     def factory(self):
@@ -388,24 +412,6 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         )[-20:]
         return fast_bytes_to_checksum_address(address)
 
-    def get_decimals(self, token_address: str, token_address_2: str) -> Tuple[int, int]:
-        if not (
-            token_address in self._decimals_cache
-            and token_address_2 in self._decimals_cache
-        ):
-            decimals_1, decimals_2 = self.ethereum_client.batch_call(
-                [
-                    get_erc20_contract(self.w3, token_address).functions.decimals(),
-                    get_erc20_contract(self.w3, token_address_2).functions.decimals(),
-                ]
-            )
-            self._decimals_cache[token_address] = decimals_1
-            self._decimals_cache[token_address_2] = decimals_2
-        return (
-            self._decimals_cache[token_address],
-            self._decimals_cache[token_address_2],
-        )
-
     def get_reserves(self, pair_address: str) -> Tuple[int, int]:
         """
         Returns the number of tokens in the pool. `getReserves()` also returns the block.timestamp (mod 2**32) of
@@ -439,7 +445,8 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             pair_address = self.calculate_pair_address(token_address, token_address_2)
             # Tokens are sorted, so token_1 < token_2
             reserves_1, reserves_2 = self.get_reserves(pair_address)
-            decimals_1, decimals_2 = self.get_decimals(token_address, token_address_2)
+            decimals_1 = get_decimals(token_address, self.ethereum_client)
+            decimals_2 = get_decimals(token_address_2, self.ethereum_client)
             if token_address.lower() > token_address_2.lower():
                 reserves_2, reserves_1 = reserves_1, reserves_2
 
@@ -504,7 +511,8 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                     pair_contract.functions.totalSupply(),
                 ]
             )
-            decimals_1, decimals_2 = self.get_decimals(token_address_1, token_address_2)
+            decimals_1 = get_decimals(token_address_1, self.ethereum_client)
+            decimals_2 = get_decimals(token_address_2, self.ethereum_client)
 
             # Total value for one token should be the same than total value for the other token
             # if pool is under active arbitrage. We use the price for the first token we find
