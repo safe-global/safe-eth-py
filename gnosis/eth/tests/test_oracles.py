@@ -136,8 +136,7 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         ethereum_client = EthereumClient(mainnet_node)
         uniswap_v2_oracle = UniswapV2Oracle(ethereum_client)
 
-        _, _, _, current_size = oracles_get_decimals.cache_info()
-        self.assertEqual(current_size, 0)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 0)
 
         price = uniswap_v2_oracle.get_price(
             gno_token_mainnet_address, weth_token_mainnet_address
@@ -145,23 +144,23 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
 
-        _, _, _, current_size = oracles_get_decimals.cache_info()
-        self.assertEqual(current_size, 2)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 2)
 
         # Test with 2 stablecoins
         price = uniswap_v2_oracle.get_price(
             dai_token_mainnet_address, usdt_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
-        _, _, _, current_size = oracles_get_decimals.cache_info()
-        self.assertEqual(current_size, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 0)
 
         price = uniswap_v2_oracle.get_price(
             usdt_token_mainnet_address, dai_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
-        _, _, _, current_size = oracles_get_decimals.cache_info()
-        self.assertEqual(current_size, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 2)
+        oracles_get_decimals.cache_clear()
 
     def test_get_price_contract_not_deployed(self):
         uniswap_v2_oracle = UniswapV2Oracle(self.ethereum_client)
@@ -228,6 +227,7 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
 
 class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
     def test_get_price(self):
+        oracles_get_decimals.cache_clear()
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
         sushiswap_oracle = SushiswapOracle(ethereum_client)
@@ -236,23 +236,31 @@ class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
             wbtc_token_mainnet_address, weth_token_mainnet_address
         )
         self.assertGreater(price, 0)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 2)
 
         # Test with 2 stablecoins
         price = sushiswap_oracle.get_price(
             dai_token_mainnet_address, usdt_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 4)
+
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 0)
         self.assertEqual(
-            sushiswap_oracle._decimals_cache[dai_token_mainnet_address], 18
+            oracles_get_decimals(dai_token_mainnet_address, ethereum_client), 18
         )
         self.assertEqual(
-            sushiswap_oracle._decimals_cache[usdt_token_mainnet_address], 6
+            oracles_get_decimals(usdt_token_mainnet_address, ethereum_client), 6
         )
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 2)
 
         price = sushiswap_oracle.get_price(
             usdt_token_mainnet_address, dai_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 4)
+        oracles_get_decimals.cache_clear()
 
 
 class TestAaveOracle(EthereumTestCaseMixin, TestCase):
