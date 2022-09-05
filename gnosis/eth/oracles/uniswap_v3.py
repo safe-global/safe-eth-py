@@ -11,13 +11,12 @@ from gnosis.util import cached_property
 
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
-from ..contracts import get_erc20_contract
 from .abis.uniswap_v3 import (
     uniswap_v3_factory_abi,
     uniswap_v3_pool_abi,
     uniswap_v3_router_abi,
 )
-from .oracles import CannotGetPriceFromOracle, PriceOracle
+from .oracles import CannotGetPriceFromOracle, PriceOracle, get_decimals
 
 logger = logging.getLogger(__name__)
 
@@ -57,21 +56,6 @@ class UniswapV3Oracle(PriceOracle):
         return ethereum_client.is_contract(
             uniswap_v3_router_address or cls.UNISWAP_V3_ROUTER
         )
-
-    @functools.lru_cache(maxsize=5120)
-    def get_decimals(self, token_address: str) -> int:
-        try:
-            return (
-                get_erc20_contract(self.w3, token_address).functions.decimals().call()
-            )
-        except (
-            ValueError,
-            BadFunctionCallOutput,
-            DecodingError,
-        ) as e:
-            error_message = f"Cannot get decimals for token={token_address}"
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
 
     def get_factory(self) -> Contract:
         """
@@ -169,8 +153,8 @@ class UniswapV3Oracle(PriceOracle):
             raise CannotGetPriceFromOracle(error_message) from e
 
         # Decimals needs to be adjusted
-        token_decimals = self.get_decimals(token_address)
-        token_2_decimals = self.get_decimals(token_address_2)
+        token_decimals = get_decimals(token_address, self.ethereum_client)
+        token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
 
         # https://docs.uniswap.org/sdk/guides/fetching-prices
         if not reversed:
