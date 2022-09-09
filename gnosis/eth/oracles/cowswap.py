@@ -52,17 +52,23 @@ class CowswapOracle(PriceOracle):
             return 1.0
 
         token_1_decimals = get_decimals(token_address_1, self.ethereum_client)
-        result = self.api.get_estimated_amount(
-            token_address_1, token_address_2, OrderKind.SELL, 10**token_1_decimals
-        )
-        if "errorType" in result:
-            error_message = (
-                f"Cannot get price from CowSwap {result} "
-                f"for token-1={token_address_1} to token-2={token_address_2}"
+        try:
+            result = self.api.get_estimated_amount(
+                token_address_1, token_address_2, OrderKind.SELL, 10**token_1_decimals
             )
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message)
-        else:
-            # Decimals needs to be adjusted
-            token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
-            return float(result["amount"]) / 10**token_2_decimals
+            if "amount" in result:
+                # Decimals needs to be adjusted
+                token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
+                return float(result["amount"]) / 10**token_2_decimals
+
+            exception = None
+        except IOError as exc:
+            exception = exc
+            result = {}
+
+        error_message = (
+            f"Cannot get price from CowSwap {result} "
+            f"for token-1={token_address_1} to token-2={token_address_2}"
+        )
+        logger.warning(error_message)
+        raise CannotGetPriceFromOracle(error_message) from exception

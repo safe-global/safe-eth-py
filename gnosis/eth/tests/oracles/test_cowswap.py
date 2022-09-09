@@ -3,6 +3,7 @@ from unittest import mock
 from django.test import TestCase
 
 from eth_account import Account
+from requests import Session
 
 from ... import EthereumClient
 from ...oracles import CannotGetPriceFromOracle, CowswapOracle
@@ -53,6 +54,17 @@ class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
             usdc_token_mainnet_address, dai_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
+
+        with mock.patch.object(Session, "get", side_effect=IOError("Connection Error")):
+            with self.assertRaisesMessage(
+                CannotGetPriceFromOracle,
+                f"Cannot get price from CowSwap "
+                f"{{}} "
+                f"for token-1={usdc_token_mainnet_address} to token-2={dai_token_mainnet_address}",
+            ):
+                cowswap_oracle.get_price(
+                    usdc_token_mainnet_address, dai_token_mainnet_address
+                )
 
         random_token = Account.create().address
         with self.assertRaisesMessage(
