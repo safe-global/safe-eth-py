@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from ... import EthereumClient
 from ...oracles import SushiswapOracle
-from ...oracles.oracles import get_decimals as oracles_get_decimals
+from ...oracles.utils import get_decimals as oracles_get_decimals
 from ..ethereum_test_case import EthereumTestCaseMixin
 from ..test_oracles import (
     dai_token_mainnet_address,

@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
+from gnosis.util import cached_property
 
 from .order import Order, OrderKind
 
@@ -37,7 +38,7 @@ class AmountResponse(TypedDict):
 
 
 class ErrorResponse(TypedDict):
-    error_type: str
+    errorType: str
     description: str
 
 
@@ -66,6 +67,18 @@ class GnosisProtocolAPI:
             )
         self.domain_separator = self.build_domain_separator(self.network)
         self.base_url = self.api_base_urls[self.network]
+
+    @cached_property
+    def weth_address(self) -> ChecksumAddress:
+        """
+        :return: Wrapped ether checksummed address
+        """
+        if self.network == EthereumNetwork.MAINNET:
+            return ChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
+        elif self.network == EthereumNetwork.RINKEBY:
+            return ChecksumAddress("0xc778417E063141139Fce010982780140Aa0cD5Ab")
+        else:  # XDAI
+            return ChecksumAddress("0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1")
 
     @classmethod
     def build_domain_separator(cls, ethereum_network: EthereumNetwork):

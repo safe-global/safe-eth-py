@@ -8,12 +8,9 @@ from gnosis.util import cached_property
 
 from .. import EthereumClient, EthereumNetwork
 from ..contracts import get_kyber_network_proxy_contract
-from .oracles import (
-    CannotGetPriceFromOracle,
-    InvalidPriceFromOracle,
-    PriceOracle,
-    get_decimals,
-)
+from .exceptions import CannotGetPriceFromOracle, InvalidPriceFromOracle
+from .oracles import PriceOracle
+from .utils import get_decimals
 
 logger = logging.getLogger(__name__)
 
