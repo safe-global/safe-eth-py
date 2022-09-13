@@ -17,13 +17,6 @@ try:
 except ImportError:
     from typing_extensions import TypedDict
 
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
-
 
 class TradeResponse(TypedDict):
     blockNumber: int

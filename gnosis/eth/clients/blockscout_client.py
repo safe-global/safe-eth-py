@@ -47,6 +47,7 @@ class BlockscoutClient:
         EthereumNetwork.ACA: "https://blockscout.acala.network/",
         EthereumNetwork.KARURA_NETWORK_TESTNET: "https://blockscout.karura.network/",
         EthereumNetwork.ACALA_NETWORK_TESTNET: "https://blockscout.mandala.acala.network/",
+        EthereumNetwork.ASTAR: "https://blockscout.com/astar/",
     }
 
     def __init__(self, network: EthereumNetwork):

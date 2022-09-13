@@ -1,4 +1,5 @@
 # flake8: noqa F401
+from .kyber import KyberOracle
 from .oracles import (
     AaveOracle,
     BalancerOracle,
@@ -8,13 +9,11 @@ from .oracles import (
     CurveOracle,
     EnzymeOracle,
     InvalidPriceFromOracle,
-    KyberOracle,
     MooniswapOracle,
     OracleException,
     PoolTogetherOracle,
     PriceOracle,
     PricePoolOracle,
-    SushiswapOracle,
     UnderlyingToken,
     UniswapOracle,
     UniswapV2Oracle,
@@ -22,6 +21,8 @@ from .oracles import (
     YearnOracle,
     ZerionComposedOracle,
 )
+from .sushiswap import SushiswapOracle
+from .uniswap_v3 import UniswapV3Oracle
 
 __all__ = [
     "AaveOracle",
@@ -42,6 +43,7 @@ __all__ = [
     "UnderlyingToken",
     "UniswapOracle",
     "UniswapV2Oracle",
+    "UniswapV3Oracle",
     "UsdPricePoolOracle",
     "YearnOracle",
     "ZerionComposedOracle",

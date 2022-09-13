@@ -11,6 +11,7 @@ from web3.types import BlockIdentifier, TxParams, Wei
 from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
+from gnosis.util import cached_property
 
 from ..eth.ethereum_client import TxSpeed
 from ..eth.utils import fast_keccak
@@ -36,11 +37,6 @@ from .exceptions import (
 )
 from .safe_signature import SafeSignature
 from .signatures import signature_to_bytes
-
-try:
-    from functools import cached_property
-except ImportError:
-    from cached_property import cached_property
 
 
 class EIP712SafeTx(EIP712Struct):

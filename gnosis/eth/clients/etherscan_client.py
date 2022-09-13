@@ -33,6 +33,8 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://snowtrace.io",
+        EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
+        EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
     }
 
     NETWORK_WITH_API_URL = {
@@ -46,6 +48,8 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://api-optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://api.arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://api.snowtrace.io",
+        EthereumNetwork.CRONOS_MAINNET: "https://api.cronoscan.com",
+        EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
