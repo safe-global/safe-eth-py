@@ -36,6 +36,8 @@ class EtherscanClient:
         EthereumNetwork.MOON_MOONBEAM: "https://moonscan.io",
         EthereumNetwork.MOON_MOONRIVER: "https://moonriver.moonscan.io",
         EthereumNetwork.MOON_MOONBASE: "https://moonbase.moonscan.io",
+        EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
+        EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
     }
 
     NETWORK_WITH_API_URL = {
@@ -52,6 +54,8 @@ class EtherscanClient:
         EthereumNetwork.MOON_MOONBEAM: "https://api-moonbeam.moonscan.io",
         EthereumNetwork.MOON_MOONRIVER: "https://api-moonriver.moonscan.io",
         EthereumNetwork.MOON_MOONBASE: "https://api-moonbase.moonscan.io",
+        EthereumNetwork.CRONOS_MAINNET: "https://api.cronoscan.com",
+        EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",

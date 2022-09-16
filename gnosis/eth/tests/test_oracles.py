@@ -5,6 +5,7 @@ from django.test import TestCase
 
 import pytest
 from eth_account import Account
+from eth_typing import ChecksumAddress
 
 from .. import EthereumClient
 from ..oracles import (
@@ -14,7 +15,6 @@ from ..oracles import (
     CreamOracle,
     CurveOracle,
     EnzymeOracle,
-    KyberOracle,
     MooniswapOracle,
     PoolTogetherOracle,
     SushiswapOracle,
@@ -23,6 +23,7 @@ from ..oracles import (
     YearnOracle,
     ZerionComposedOracle,
 )
+from ..oracles.utils import get_decimals as oracles_get_decimals
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 
@@ -31,43 +32,11 @@ weth_token_mainnet_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 wbtc_token_mainnet_address = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
 
 dai_token_mainnet_address = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+usdc_token_mainnet_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 usdt_token_mainnet_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
 
 
 class TestOracles(EthereumTestCaseMixin, TestCase):
-    def test_kyber_oracle(self):
-        mainnet_node = just_test_if_mainnet_node()
-        ethereum_client = EthereumClient(mainnet_node)
-        kyber_oracle = KyberOracle(ethereum_client)
-        price = kyber_oracle.get_price(
-            gno_token_mainnet_address, weth_token_mainnet_address
-        )
-        self.assertLess(price, 1)
-        self.assertGreater(price, 0)
-
-        # Test with 2 stablecoins
-        price = kyber_oracle.get_price(
-            dai_token_mainnet_address, usdt_token_mainnet_address
-        )
-        self.assertAlmostEqual(price, 1.0, delta=0.5)
-
-        price = kyber_oracle.get_price(
-            usdt_token_mainnet_address, dai_token_mainnet_address
-        )
-        self.assertAlmostEqual(price, 1.0, delta=0.5)
-
-        self.assertEqual(
-            kyber_oracle.get_price("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"), 1.0
-        )
-
-    def test_kyber_oracle_not_deployed(self):
-        kyber_oracle = KyberOracle(self.ethereum_client, Account.create().address)
-        random_token_address = Account.create().address
-        with self.assertRaisesMessage(
-            CannotGetPriceFromOracle, "Cannot get price from kyber-network-proxy"
-        ):
-            kyber_oracle.get_price(random_token_address)
-
     def test_uniswap_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -128,9 +97,12 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         )
 
     def test_get_price(self):
+        oracles_get_decimals.cache_clear()
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
         uniswap_v2_oracle = UniswapV2Oracle(ethereum_client)
+
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 0)
 
         price = uniswap_v2_oracle.get_price(
             gno_token_mainnet_address, weth_token_mainnet_address
@@ -138,22 +110,23 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
 
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 2)
+
         # Test with 2 stablecoins
         price = uniswap_v2_oracle.get_price(
             dai_token_mainnet_address, usdt_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
-        self.assertEqual(
-            uniswap_v2_oracle._decimals_cache[dai_token_mainnet_address], 18
-        )
-        self.assertEqual(
-            uniswap_v2_oracle._decimals_cache[usdt_token_mainnet_address], 6
-        )
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 0)
 
         price = uniswap_v2_oracle.get_price(
             usdt_token_mainnet_address, dai_token_mainnet_address
         )
         self.assertAlmostEqual(price, 1.0, delta=0.5)
+        self.assertEqual(oracles_get_decimals.cache_info().currsize, 4)
+        self.assertEqual(oracles_get_decimals.cache_info().hits, 2)
+        oracles_get_decimals.cache_clear()
 
     def test_get_price_contract_not_deployed(self):
         uniswap_v2_oracle = UniswapV2Oracle(self.ethereum_client)
@@ -164,6 +137,7 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         ):
             uniswap_v2_oracle.get_price(random_token_address)
 
+    @mock.patch("gnosis.eth.oracles.oracles.get_decimals", autospec=True)
     @mock.patch.object(
         UniswapV2Oracle,
         "factory_address",
@@ -171,22 +145,29 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         new_callable=mock.PropertyMock,
     )
     @mock.patch.object(
-        UniswapV2Oracle, "get_decimals", return_value=(18, 3), autospec=True
-    )
-    @mock.patch.object(
         UniswapV2Oracle, "get_reserves", return_value=(int(1e20), 600), autospec=True
     )
     def test_get_price_liquidity(
         self,
         get_reserves_mock: MagicMock,
-        get_decimals_mock: MagicMock,
         factory_address_mock: MagicMock,
+        get_decimals_mock: MagicMock,
     ):
-        uniswap_v2_oracle = UniswapV2Oracle(self.ethereum_client)
         token_1, token_2 = (
             "0xA14F6F8867DB84a45BCD148bfaf4e4f54B4B9b12",
             "0xC426A8F4C79EF274Ed93faC9e1A09bFC5659B06B",
         )
+
+        def get_decimals_mock_fn(
+            token_address: ChecksumAddress, ethereum_client: EthereumClient
+        ) -> int:
+            if token_address == token_1:
+                return 18
+            else:
+                return 3
+
+        get_decimals_mock.side_effect = get_decimals_mock_fn
+        uniswap_v2_oracle = UniswapV2Oracle(self.ethereum_client)
 
         with self.assertRaisesMessage(CannotGetPriceFromOracle, "Not enough liquidity"):
             uniswap_v2_oracle.get_price(token_1, token_2)
@@ -195,9 +176,10 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         self.assertEqual(uniswap_v2_oracle.get_price(token_1, token_2), 0.06)
 
         get_reserves_mock.return_value = reversed(get_reserves_mock.return_value)
-        self.assertEqual(
-            uniswap_v2_oracle.get_price(token_2, token_1), 0.06
-        )  # Reserves were inverted
+        with self.assertRaisesMessage(CannotGetPriceFromOracle, "Not enough liquidity"):
+            self.assertEqual(
+                uniswap_v2_oracle.get_price(token_2, token_1), 0.06
+            )  # Reserves were inverted
 
     def test_get_pool_token_price(self):
         dai_eth_pool_address = "0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11"
@@ -207,35 +189,6 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
 
         price = uniswap_v2_oracle.get_pool_token_price(dai_eth_pool_address)
         self.assertGreater(price, 0.0)
-
-
-class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
-    def test_get_price(self):
-        mainnet_node = just_test_if_mainnet_node()
-        ethereum_client = EthereumClient(mainnet_node)
-        sushiswap_oracle = SushiswapOracle(ethereum_client)
-
-        price = sushiswap_oracle.get_price(
-            wbtc_token_mainnet_address, weth_token_mainnet_address
-        )
-        self.assertGreater(price, 0)
-
-        # Test with 2 stablecoins
-        price = sushiswap_oracle.get_price(
-            dai_token_mainnet_address, usdt_token_mainnet_address
-        )
-        self.assertAlmostEqual(price, 1.0, delta=0.5)
-        self.assertEqual(
-            sushiswap_oracle._decimals_cache[dai_token_mainnet_address], 18
-        )
-        self.assertEqual(
-            sushiswap_oracle._decimals_cache[usdt_token_mainnet_address], 6
-        )
-
-        price = sushiswap_oracle.get_price(
-            usdt_token_mainnet_address, dai_token_mainnet_address
-        )
-        self.assertAlmostEqual(price, 1.0, delta=0.5)
 
 
 class TestAaveOracle(EthereumTestCaseMixin, TestCase):

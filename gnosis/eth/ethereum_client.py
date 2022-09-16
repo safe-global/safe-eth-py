@@ -59,7 +59,7 @@ from gnosis.eth.utils import (
     fast_to_checksum_address,
     mk_contract_address,
 )
-from gnosis.util import chunks
+from gnosis.util import cache, cached_property, chunks
 
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
@@ -90,20 +90,6 @@ from .exceptions import (
 )
 from .typing import BalanceDict, EthereumData, EthereumHash
 from .utils import decode_string_or_bytes32
-
-try:
-    from functools import cached_property
-except ImportError:
-    from cached_property import cached_property
-
-
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
-
 
 logger = getLogger(__name__)
 

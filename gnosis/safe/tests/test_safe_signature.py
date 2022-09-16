@@ -182,7 +182,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe = self.deploy_test_safe_v1_1_1(
             owners=[owner_1.address], initial_funding_wei=Web3.toWei(0.01, "ether")
         )
-        safe_contract = safe.get_contract()
+        safe_contract = safe.contract
         safe_tx_hash = Web3.keccak(text="test")
         signature_r = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s = HexBytes(
@@ -241,7 +241,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe = self.deploy_test_safe_v1_1_1(
             owners=[owner_1.address], initial_funding_wei=Web3.toWei(0.01, "ether")
         )
-        safe_contract = safe.get_contract()
+        safe_contract = safe.contract
         safe_tx_hash = Web3.keccak(text="test")
 
         tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(

@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
+from gnosis.util import cached_property
 
 from .order import Order, OrderKind
 
@@ -16,13 +17,6 @@ try:
     from typing import TypedDict  # pylint: disable=no-name-in-module
 except ImportError:
     from typing_extensions import TypedDict
-
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
 
 
 class TradeResponse(TypedDict):
@@ -44,7 +38,7 @@ class AmountResponse(TypedDict):
 
 
 class ErrorResponse(TypedDict):
-    error_type: str
+    errorType: str
     description: str
 
 
@@ -73,6 +67,19 @@ class GnosisProtocolAPI:
             )
         self.domain_separator = self.build_domain_separator(self.network)
         self.base_url = self.api_base_urls[self.network]
+        self.http_session = requests.Session()
+
+    @cached_property
+    def weth_address(self) -> ChecksumAddress:
+        """
+        :return: Wrapped ether checksummed address
+        """
+        if self.network == EthereumNetwork.MAINNET:
+            return ChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
+        elif self.network == EthereumNetwork.RINKEBY:
+            return ChecksumAddress("0xc778417E063141139Fce010982780140Aa0cD5Ab")
+        else:  # XDAI
+            return ChecksumAddress("0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1")
 
     @classmethod
     def build_domain_separator(cls, ethereum_network: EthereumNetwork):
@@ -93,7 +100,7 @@ class GnosisProtocolAPI:
             + f'fee/?sellToken={order["sellToken"]}&buyToken={order["buyToken"]}'
             f'&amount={amount}&kind={order["kind"]}'
         )
-        result = requests.get(url).json()
+        result = self.http_session.get(url).json()
         if "amount" in result:
             return int(result["amount"])
         else:
@@ -134,7 +141,7 @@ class GnosisProtocolAPI:
             "signingScheme": "ethsign",
             "from": Account.from_key(private_key).address,
         }
-        r = requests.post(url, json=data_json)
+        r = self.http_session.post(url, json=data_json)
         if r.ok:
             return HexStr(r.json())
         else:
@@ -154,7 +161,7 @@ class GnosisProtocolAPI:
             the last page has been reached.
         """
         url = self.base_url + f"account/{owner}/orders"
-        r = requests.get(url)
+        r = self.http_session.get(url)
         if r.ok:
             return cast(List[Dict[str, Any]], r.json())
         else:
@@ -172,7 +179,7 @@ class GnosisProtocolAPI:
         elif owner:
             url += f"owner={owner}"
 
-        r = requests.get(url)
+        r = self.http_session.get(url)
         if r.ok:
             return cast(List[TradeResponse], r.json())
         else:
@@ -189,7 +196,7 @@ class GnosisProtocolAPI:
         The estimated amount in quote token for either buying or selling amount of baseToken.
         """
         url = self.base_url + f"markets/{base_token}-{quote_token}/{kind.name}/{amount}"
-        r = requests.get(url)
+        r = self.http_session.get(url)
         if r.ok:
             return AmountResponse(r.json())
         else:

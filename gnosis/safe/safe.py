@@ -30,6 +30,7 @@ from gnosis.eth.utils import (
     get_eth_address_with_key,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
+from gnosis.util import cached_property
 
 from ..eth.typing import EthereumData
 from .exceptions import (
@@ -40,14 +41,6 @@ from .exceptions import (
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
 from .safe_tx import SafeTx
-
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
-
 
 logger = getLogger(__name__)
 
@@ -502,6 +495,15 @@ class Safe:
 
         return safe_creation_tx
 
+    @cached_property
+    def contract(self) -> Contract:
+        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
+        version = v_1_3_0_contract.functions.VERSION().call()
+        if version == "1.3.0":
+            return v_1_3_0_contract
+        else:
+            return get_safe_V1_1_1_contract(self.w3, address=self.address)
+
     def check_funds_for_tx_gas(
         self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
     ) -> bool:
@@ -542,7 +544,7 @@ class Safe:
         :return:
         """
         data = data or b""
-        safe_contract = self.get_contract()
+        safe_contract = self.contract
         threshold = self.retrieve_threshold()
         nonce = self.retrieve_nonce()
 
@@ -651,16 +653,14 @@ class Safe:
 
             return int(gas_estimation.hex(), 16)
 
-        tx = (
-            self.get_contract()
-            .functions.requiredTxGas(to, value, data, operation)
-            .build_transaction(
-                {
-                    "from": safe_address,
-                    "gas": 0,  # Don't call estimate
-                    "gasPrice": 0,  # Don't get gas price
-                }
-            )
+        tx = self.contract.functions.requiredTxGas(
+            to, value, data, operation
+        ).build_transaction(
+            {
+                "from": safe_address,
+                "gas": 0,  # Don't call estimate
+                "gasPrice": 0,  # Don't get gas price
+            }
         )
 
         tx_params = {
@@ -822,15 +822,6 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    @cache
-    def get_contract(self) -> Contract:
-        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
-        version = v_1_3_0_contract.functions.VERSION().call()
-        if version == "1.3.0":
-            return v_1_3_0_contract
-        else:
-            return get_safe_V1_1_1_contract(self.w3, address=self.address)
-
     def retrieve_all_info(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> SafeInfo:
@@ -842,7 +833,7 @@ class Safe:
         :raises: CannotRetrieveSafeInfoException
         """
         try:
-            contract = self.get_contract()
+            contract = self.contract
             master_copy = self.retrieve_master_copy_address()
             fallback_handler = self.retrieve_fallback_handler()
             guard = self.retrieve_guard()
@@ -938,7 +929,7 @@ class Safe:
         except BadFunctionCallOutput:
             pass
 
-        contract = self.get_contract()
+        contract = self.contract
         address = SENTINEL_ADDRESS
         all_modules: List[str] = []
         while True:
@@ -960,9 +951,9 @@ class Safe:
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> bool:
         return (
-            self.get_contract()
-            .functions.approvedHashes(owner, safe_hash)
-            .call(block_identifier=block_identifier)
+            self.contract.functions.approvedHashes(owner, safe_hash).call(
+                block_identifier=block_identifier
+            )
             == 1
         )
 
@@ -971,56 +962,40 @@ class Safe:
         message_hash: bytes,
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> bool:
-        return (
-            self.get_contract()
-            .functions.signedMessages(message_hash)
-            .call(block_identifier=block_identifier)
+        return self.contract.functions.signedMessages(message_hash).call(
+            block_identifier=block_identifier
         )
 
     def retrieve_is_owner(
         self, owner: str, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> bool:
-        return (
-            self.get_contract()
-            .functions.isOwner(owner)
-            .call(block_identifier=block_identifier)
+        return self.contract.functions.isOwner(owner).call(
+            block_identifier=block_identifier
         )
 
     def retrieve_nonce(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> int:
-        return (
-            self.get_contract()
-            .functions.nonce()
-            .call(block_identifier=block_identifier)
-        )
+        return self.contract.functions.nonce().call(block_identifier=block_identifier)
 
     def retrieve_owners(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> List[str]:
-        return (
-            self.get_contract()
-            .functions.getOwners()
-            .call(block_identifier=block_identifier)
+        return self.contract.functions.getOwners().call(
+            block_identifier=block_identifier
         )
 
     def retrieve_threshold(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> int:
-        return (
-            self.get_contract()
-            .functions.getThreshold()
-            .call(block_identifier=block_identifier)
+        return self.contract.functions.getThreshold().call(
+            block_identifier=block_identifier
         )
 
     def retrieve_version(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> str:
-        return (
-            self.get_contract()
-            .functions.VERSION()
-            .call(block_identifier=block_identifier)
-        )
+        return self.contract.functions.VERSION().call(block_identifier=block_identifier)
 
     def build_multisig_tx(
         self,

@@ -35,6 +35,7 @@ class SafeBaseAPI(ABC):
         self.base_url = base_url or self.URL_BY_NETWORK.get(network)
         if not self.base_url:
             raise EthereumNetworkNotSupported(network)
+        self.http_session = requests.Session()
 
     @classmethod
     def from_ethereum_client(cls, ethereum_client: EthereumClient) -> "SafeBaseAPI":
@@ -43,16 +44,16 @@ class SafeBaseAPI(ABC):
 
     def _get_request(self, url: str) -> requests.Response:
         full_url = urljoin(self.base_url, url)
-        return requests.get(full_url)
+        return self.http_session.get(full_url)
 
     def _post_request(self, url: str, payload: Dict) -> requests.Response:
         full_url = urljoin(self.base_url, url)
-        return requests.post(
+        return self.http_session.post(
             full_url, json=payload, headers={"Content-type": "application/json"}
         )
 
     def _delete_request(self, url: str, payload: Dict) -> requests.Response:
         full_url = urljoin(self.base_url, url)
-        return requests.delete(
+        return self.http_session.delete(
             full_url, json=payload, headers={"Content-type": "application/json"}
         )
