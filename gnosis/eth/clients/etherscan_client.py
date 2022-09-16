@@ -33,6 +33,9 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://snowtrace.io",
+        EthereumNetwork.MOON_MOONBEAM: "https://moonscan.io",
+        EthereumNetwork.MOON_MOONRIVER: "https://moonriver.moonscan.io",
+        EthereumNetwork.MOON_MOONBASE: "https://moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
     }
@@ -48,6 +51,9 @@ class EtherscanClient:
         EthereumNetwork.OPTIMISTIC: "https://api-optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://api.arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://api.snowtrace.io",
+        EthereumNetwork.MOON_MOONBEAM: "https://api-moonbeam.moonscan.io",
+        EthereumNetwork.MOON_MOONRIVER: "https://api-moonriver.moonscan.io",
+        EthereumNetwork.MOON_MOONBASE: "https://api-moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://api.cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
     }
