@@ -44,6 +44,9 @@ class BlockscoutClient:
         EthereumNetwork.VENIDIUM: "https://evm.venidiumexplorer.com/",
         EthereumNetwork.KLAY_BAOBAB: "https://baobab.scope.klaytn.com/",
         EthereumNetwork.KLAY_CYPRESS: "https://scope.klaytn.com/",
+        EthereumNetwork.ACA: "https://blockscout.acala.network/",
+        EthereumNetwork.KARURA_NETWORK_TESTNET: "https://blockscout.karura.network/",
+        EthereumNetwork.ACALA_NETWORK_TESTNET: "https://blockscout.mandala.acala.network/",
         EthereumNetwork.ASTAR: "https://blockscout.com/astar/",
     }
 
