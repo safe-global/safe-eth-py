@@ -16,7 +16,7 @@ class TestGnosisProtocolAPI(TestCase):
         super().setUpClass()
         cls.gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.RINKEBY)
         cls.gno_token_address = "0x6810e776880C02933D47DB1b9fc05908e5386b96"
-        cls.rinkeby_weth_address = "0xc778417e063141139fce010982780140aa0cd5ab"
+        cls.weth_token_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
         cls.rinkeby_dai_address = "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa"
 
     def test_api_is_available(self):
@@ -30,7 +30,8 @@ class TestGnosisProtocolAPI(TestCase):
                 self.assertEqual(self.gnosis_protocol_api.get_orders(random_owner), [])
 
     def test_get_estimated_amount(self):
-        response = self.gnosis_protocol_api.get_estimated_amount(
+        gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.MAINNET)
+        response = gnosis_protocol_api.get_estimated_amount(
             self.gno_token_address, self.gno_token_address, OrderKind.SELL, 1
         )
         self.assertDictEqual(
@@ -41,7 +42,7 @@ class TestGnosisProtocolAPI(TestCase):
             },
         )
 
-        response = self.gnosis_protocol_api.get_estimated_amount(
+        response = gnosis_protocol_api.get_estimated_amount(
             "0x6820e776880c02933d47db1b9fc05908e5386b96",
             self.gno_token_address,
             OrderKind.SELL,
@@ -49,6 +50,13 @@ class TestGnosisProtocolAPI(TestCase):
         )
         self.assertIn("errorType", response)
         self.assertIn("description", response)
+
+        response = gnosis_protocol_api.get_estimated_amount(
+            self.gno_token_address, self.weth_token_address, OrderKind.SELL, int(1e18)
+        )
+        amount = int(response["amount"]) / 1e18
+        self.assertGreater(amount, 0)
+        self.assertLess(amount, 1)
 
     def test_get_fee(self):
         order = Order(
@@ -107,7 +115,7 @@ class TestGnosisProtocolAPI(TestCase):
         result = self.gnosis_protocol_api.place_order(order, Account().create().key)
         self.assertEqual(
             order["feeAmount"], 0
-        )  # Cannot estimate, as buy token is the same than sell token
+        )  # Cannot estimate, as buy token is the same as the sell token
         self.assertEqual(
             result,
             {
@@ -116,7 +124,7 @@ class TestGnosisProtocolAPI(TestCase):
             },
         )
 
-        order["sellToken"] = self.rinkeby_weth_address
+        order["sellToken"] = self.gnosis_protocol_api.weth_address
         order["buyToken"] = self.rinkeby_dai_address
         self.assertEqual(
             self.gnosis_protocol_api.place_order(order, Account().create().key),

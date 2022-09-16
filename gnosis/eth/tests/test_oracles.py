@@ -23,7 +23,7 @@ from ..oracles import (
     YearnOracle,
     ZerionComposedOracle,
 )
-from ..oracles.oracles import get_decimals as oracles_get_decimals
+from ..oracles.utils import get_decimals as oracles_get_decimals
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
 

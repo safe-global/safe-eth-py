@@ -16,7 +16,9 @@ from .abis.uniswap_v3 import (
     uniswap_v3_pool_abi,
     uniswap_v3_router_abi,
 )
-from .oracles import CannotGetPriceFromOracle, PriceOracle, get_decimals
+from .exceptions import CannotGetPriceFromOracle
+from .oracles import PriceOracle
+from .utils import get_decimals
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +53,7 @@ class UniswapV3Oracle(PriceOracle):
         """
         :param ethereum_client:
         :param uniswap_v3_router_address:
-        :return: `True` is Uniswap V3 is available for the EthereumClient provided, `False` otherwise
+        :return: `True` if Uniswap V3 is available for the EthereumClient provided, `False` otherwise
         """
         return ethereum_client.is_contract(
             uniswap_v3_router_address or cls.UNISWAP_V3_ROUTER

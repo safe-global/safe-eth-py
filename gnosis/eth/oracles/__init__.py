@@ -1,16 +1,19 @@
 # flake8: noqa F401
+from .cowswap import CowswapOracle
+from .exceptions import (
+    CannotGetPriceFromOracle,
+    InvalidPriceFromOracle,
+    OracleException,
+)
 from .kyber import KyberOracle
 from .oracles import (
     AaveOracle,
     BalancerOracle,
-    CannotGetPriceFromOracle,
     ComposedPriceOracle,
     CreamOracle,
     CurveOracle,
     EnzymeOracle,
-    InvalidPriceFromOracle,
     MooniswapOracle,
-    OracleException,
     PoolTogetherOracle,
     PriceOracle,
     PricePoolOracle,
@@ -27,15 +30,13 @@ from .uniswap_v3 import UniswapV3Oracle
 __all__ = [
     "AaveOracle",
     "BalancerOracle",
-    "CannotGetPriceFromOracle",
     "ComposedPriceOracle",
+    "CowswapOracle",
     "CreamOracle",
     "CurveOracle",
     "EnzymeOracle",
-    "InvalidPriceFromOracle",
     "KyberOracle",
     "MooniswapOracle",
-    "OracleException",
     "PoolTogetherOracle",
     "PriceOracle",
     "PricePoolOracle",

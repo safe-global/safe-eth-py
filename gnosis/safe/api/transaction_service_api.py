@@ -1,9 +1,7 @@
 import logging
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
-from urllib.parse import urljoin
 
-import requests
 from eth_account.signers.local import LocalAccount
 from eth_typing import HexStr
 from hexbytes import HexBytes
@@ -210,10 +208,6 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Cannot remove delegate: {response.content}")
 
     def post_transaction(self, safe_tx: SafeTx):
-        url = urljoin(
-            self.base_url,
-            f"/api/v1/safes/{safe_tx.safe_address}/multisig-transactions/",
-        )
         random_sender = "0x0000000000000000000000000000000000000002"
         sender = safe_tx.sorted_signers[0] if safe_tx.sorted_signers else random_sender
         data = {
@@ -232,6 +226,8 @@ class TransactionServiceApi(SafeBaseAPI):
             "signature": safe_tx.signatures.hex() if safe_tx.signatures else None,
             "origin": "Safe-CLI",
         }
-        response = requests.post(url, json=data)
+        response = self._post_request(
+            f"/api/v1/safes/{safe_tx.safe_address}/multisig-transactions/", data
+        )
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")

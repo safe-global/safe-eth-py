@@ -29,7 +29,9 @@ from .abis.balancer_abis import balancer_pool_abi
 from .abis.cream_abis import cream_ctoken_abi
 from .abis.mooniswap_abis import mooniswap_abi
 from .abis.zerion_abis import ZERION_TOKEN_ADAPTER_ABI
+from .exceptions import CannotGetPriceFromOracle, InvalidPriceFromOracle
 from .helpers.curve_gauge_list import CURVE_GAUGE_TO_LP_TOKEN
+from .utils import get_decimals
 
 logger = logging.getLogger(__name__)
 
@@ -38,18 +40,6 @@ logger = logging.getLogger(__name__)
 class UnderlyingToken:
     address: ChecksumAddress
     quantity: int
-
-
-class OracleException(Exception):
-    pass
-
-
-class InvalidPriceFromOracle(OracleException):
-    pass
-
-
-class CannotGetPriceFromOracle(OracleException):
-    pass
 
 
 class PriceOracle(ABC):
@@ -74,31 +64,6 @@ class ComposedPriceOracle(ABC):
     @abstractmethod
     def get_underlying_tokens(self, *args) -> List[Tuple[UnderlyingToken]]:
         pass
-
-
-@functools.lru_cache(maxsize=10_000)
-def get_decimals(
-    token_address: ChecksumAddress, ethereum_client: EthereumClient
-) -> int:
-    """
-    Auxiliary function so RPC call to get `token decimals` is cached and
-    can be reused for every Oracle, instead of having a cache per Oracle.
-
-    :param token_address:
-    :param ethereum_client:
-    :return: Decimals for a token
-    :raises CannotGetPriceFromOracle: If there's a problem with the query
-    """
-    try:
-        return ethereum_client.erc20.get_decimals(token_address)
-    except (
-        ValueError,
-        BadFunctionCallOutput,
-        DecodingError,
-    ) as e:
-        error_message = f"Cannot get decimals for token={token_address}"
-        logger.warning(error_message)
-        raise CannotGetPriceFromOracle(error_message) from e
 
 
 class UniswapOracle(PriceOracle):
