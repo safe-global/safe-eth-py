@@ -20,7 +20,6 @@ from .oracles import (
     UnderlyingToken,
     UniswapOracle,
     UniswapV2Oracle,
-    UsdPricePoolOracle,
     YearnOracle,
     ZerionComposedOracle,
 )
@@ -45,7 +44,6 @@ __all__ = [
     "UniswapOracle",
     "UniswapV2Oracle",
     "UniswapV3Oracle",
-    "UsdPricePoolOracle",
     "YearnOracle",
     "ZerionComposedOracle",
 ]

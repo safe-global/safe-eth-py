@@ -40,6 +40,8 @@ class TestOracles(EthereumTestCaseMixin, TestCase):
     def test_uniswap_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(UniswapOracle.is_available(ethereum_client))
         uniswap_oracle = UniswapOracle(ethereum_client)
         token_address = dai_token_mainnet_address
         price = uniswap_oracle.get_price(token_address)
@@ -100,6 +102,8 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         oracles_get_decimals.cache_clear()
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(UniswapV2Oracle.is_available(ethereum_client))
         uniswap_v2_oracle = UniswapV2Oracle(ethereum_client)
 
         self.assertEqual(oracles_get_decimals.cache_info().currsize, 0)
@@ -195,6 +199,8 @@ class TestAaveOracle(EthereumTestCaseMixin, TestCase):
     def test_get_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(AaveOracle.is_available(ethereum_client))
         uniswap_oracle = UniswapV2Oracle(ethereum_client)
         aave_oracle = AaveOracle(ethereum_client, uniswap_oracle)
 
@@ -218,6 +224,8 @@ class TestCreamOracle(EthereumTestCaseMixin, TestCase):
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(CreamOracle.is_available(ethereum_client))
         sushi_oracle = SushiswapOracle(ethereum_client)
         cream_oracle = CreamOracle(ethereum_client, sushi_oracle)
 
@@ -249,6 +257,8 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
 
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(CurveOracle.is_available(ethereum_client))
         curve_oracle = CurveOracle(ethereum_client)
 
         # Curve.fi ETH/stETH (steCRV) is working with the updated adapter
@@ -321,6 +331,8 @@ class TestPoolTogetherOracle(EthereumTestCaseMixin, TestCase):
 
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(PoolTogetherOracle.is_available(ethereum_client))
         pool_together_oracle = PoolTogetherOracle(ethereum_client)
 
         underlying_tokens = pool_together_oracle.get_underlying_tokens(
@@ -345,6 +357,8 @@ class TestYearnOracle(EthereumTestCaseMixin, TestCase):
     def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(YearnOracle.is_available(ethereum_client))
         yearn_oracle = YearnOracle(ethereum_client)
         yearn_token_address = "0x5533ed0a3b83F70c3c4a1f69Ef5546D3D4713E44"  # Yearn Curve.fi DAI/USDC/USDT/sUSD
         yearn_underlying_token_address = (
@@ -400,6 +414,8 @@ class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
     def test_get_pool_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(BalancerOracle.is_available(ethereum_client))
         uniswap_oracle = UniswapV2Oracle(ethereum_client)
         balancer_oracle = BalancerOracle(ethereum_client, uniswap_oracle)
         balancer_token_address = (
@@ -424,6 +440,8 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
     def test_get_pool_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(MooniswapOracle.is_available(ethereum_client))
         uniswap_oracle = UniswapV2Oracle(ethereum_client)
         mooniswap_oracle = MooniswapOracle(ethereum_client, uniswap_oracle)
         mooniswap_pool_address = "0x6a11F3E5a01D129e566d783A7b6E8862bFD66CcA"  # 1inch Liquidity Pool (ETH-WBTC)
@@ -455,6 +473,8 @@ class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
     def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(EnzymeOracle.is_available(ethereum_client))
         enzyme_oracle = EnzymeOracle(ethereum_client)
         mln_vault_token_address = "0x45c45799Bcf6C7Eb2Df0DA1240BE04cE1D18CC69"
         mln_vault_underlying_token = "0xec67005c4E498Ec7f55E092bd1d35cbC47C91892"

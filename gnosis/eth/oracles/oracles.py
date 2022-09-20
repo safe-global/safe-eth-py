@@ -42,31 +42,45 @@ class UnderlyingToken:
     quantity: int
 
 
-class PriceOracle(ABC):
+class BaseOracle(ABC):
+    @classmethod
+    @abstractmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        raise NotImplementedError
+
+
+class PriceOracle(BaseOracle):
     @abstractmethod
     def get_price(self, *args) -> float:
-        pass
+        raise NotImplementedError
 
 
-class PricePoolOracle(ABC):
+class PricePoolOracle(BaseOracle):
     @abstractmethod
     def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
-        pass
+        raise NotImplementedError
 
 
-class UsdPricePoolOracle(ABC):
-    @abstractmethod
-    def get_pool_usd_token_price(self, pool_token_address: ChecksumAddress) -> float:
-        pass
-
-
-class ComposedPriceOracle(ABC):
+class ComposedPriceOracle(BaseOracle):
     @abstractmethod
     def get_underlying_tokens(self, *args) -> List[Tuple[UnderlyingToken]]:
-        pass
+        raise NotImplementedError
 
 
 class UniswapOracle(PriceOracle):
+    """
+    Uniswap V1 Oracle
+
+    https://docs.uniswap.org/protocol/V1/guides/connect-to-uniswap
+    """
+
     ADDRESSES = {
         EthereumNetwork.MAINNET: "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95",
         EthereumNetwork.RINKEBY: "0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36",
@@ -87,6 +101,17 @@ class UniswapOracle(PriceOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self._uniswap_factory_address = uniswap_factory_address
+
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() in cls.ADDRESSES
 
     @cached_property
     def uniswap_factory_address(self):
@@ -229,6 +254,22 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         )
         self.router = get_uniswap_v2_router_contract(
             ethereum_client.w3, self.router_address
+        )
+
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.is_contract(
+            cls.ROUTER_ADDRESSES.get(
+                ethereum_client.get_network(),
+                cls.ROUTER_ADDRESSES[EthereumNetwork.MAINNET],
+            )
         )
 
     @cached_property
@@ -436,6 +477,17 @@ class AaveOracle(PriceOracle):
         self.w3 = ethereum_client.w3
         self.price_oracle = price_oracle
 
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() == EthereumNetwork.MAINNET
+
     def get_price(self, token_address: str) -> float:
         if (
             token_address == "0x4da27a545c0c5B758a6BA100e3a049001de870f5"
@@ -466,6 +518,17 @@ class CreamOracle(PriceOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.price_oracle = price_oracle
+
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() == EthereumNetwork.MAINNET
 
     def get_price(self, token_address: str) -> float:
         try:
@@ -503,6 +566,17 @@ class ZerionComposedOracle(ComposedPriceOracle):
             raise ValueError("Expected a Zerion adapter address")
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
+
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() == EthereumNetwork.MAINNET
 
     @cached_property
     def zerion_adapter_contract(self) -> Optional[Contract]:
@@ -626,6 +700,17 @@ class YearnOracle(ComposedPriceOracle):
             ethereum_client, iearn_token_adapter
         )
 
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() == EthereumNetwork.MAINNET
+
     def get_underlying_tokens(
         self, token_address: ChecksumAddress
     ) -> List[Tuple[float, ChecksumAddress]]:
@@ -660,6 +745,17 @@ class BalancerOracle(PricePoolOracle):
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
         self.price_oracle = price_oracle
+
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() == EthereumNetwork.MAINNET
 
     def get_pool_token_price(self, pool_token_address: ChecksumAddress) -> float:
         """

@@ -18,6 +18,8 @@ class TestKyberOracle(EthereumTestCaseMixin, TestCase):
     def test_kyber_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(KyberOracle.is_available(ethereum_client))
         kyber_oracle = KyberOracle(ethereum_client)
         price = kyber_oracle.get_price(
             gno_token_mainnet_address, weth_token_mainnet_address

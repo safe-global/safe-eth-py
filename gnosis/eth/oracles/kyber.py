@@ -44,6 +44,17 @@ class KyberOracle(PriceOracle):
         self.w3 = ethereum_client.w3
         self._kyber_network_proxy_address = kyber_network_proxy_address
 
+    @classmethod
+    def is_available(
+        cls,
+        ethereum_client: EthereumClient,
+    ) -> bool:
+        """
+        :param ethereum_client:
+        :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
+        """
+        return ethereum_client.get_network() in cls.ADDRESSES
+
     @cached_property
     def kyber_network_proxy_address(self):
         if self._kyber_network_proxy_address:

@@ -18,6 +18,8 @@ class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
         oracles_get_decimals.cache_clear()
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
+
+        self.assertTrue(SushiswapOracle.is_available(ethereum_client))
         sushiswap_oracle = SushiswapOracle(ethereum_client)
 
         price = sushiswap_oracle.get_price(
