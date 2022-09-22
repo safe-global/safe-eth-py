@@ -25,6 +25,7 @@ class BlockscoutClient:
         EthereumNetwork.ENERGY_WEB_CHAIN: "https://explorer.energyweb.org/",
         EthereumNetwork.VOLTA: "https://volta-explorer.energyweb.org/",
         EthereumNetwork.OLYMPUS: "https://explorer.polis.tech",
+        EthereumNetwork.BOBA_NETWORK_BOBABEAM: "https://blockexplorer.bobabeam.boba.network/",
         EthereumNetwork.BOBA_RINKEBY: "https://blockexplorer.rinkeby.boba.network/",
         EthereumNetwork.BOBA: "https://blockexplorer.boba.network/",
         EthereumNetwork.GATHER_DEVNET: "https://devnet-explorer.gather.network/",
