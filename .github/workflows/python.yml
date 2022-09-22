@@ -58,7 +58,7 @@ jobs:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
-    - name: Test setup.py
+    - name: Test packaging
       run: pip install -e .
     - name: Send results to coveralls
       run: coveralls --service=github
