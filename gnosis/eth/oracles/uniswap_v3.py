@@ -141,14 +141,26 @@ class UniswapV3Oracle(PriceOracle):
         pool_contract = self.w3.eth.contract(pool_address, abi=uniswap_v3_pool_abi)
 
         try:
-            sqrt_price_x96, _, _, _, _, _, _ = pool_contract.functions.slot0().call()
+            (
+                liquidity,
+                (sqrt_price_x96, _, _, _, _, _, _),
+            ) = self.ethereum_client.batch_call(
+                [pool_contract.functions.liquidity(), pool_contract.functions.slot0()]
+            )
+            if liquidity == 0:
+                error_message = (
+                    f"Not enough liquidity on uniswap v3 for pair token_1={token_address} "
+                    f"token_2={token_address_2}"
+                )
+                logger.warning(error_message)
+                raise CannotGetPriceFromOracle(error_message)
         except (
             ValueError,
             BadFunctionCallOutput,
             DecodingError,
         ) as e:
             error_message = (
-                f"Cannot get uniswap v2 price for pair token_1={token_address} "
+                f"Cannot get uniswap v3 price for pair token_1={token_address} "
                 f"token_2={token_address_2}"
             )
             logger.warning(error_message)
