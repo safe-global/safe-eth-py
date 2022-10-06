@@ -390,7 +390,7 @@ class SafeTx:
         if tx_nonce is not None:
             tx_parameters["nonce"] = tx_nonce
 
-        self.tx = self.w3_tx.build_transaction(tx_parameters)
+        self.tx = self.w3_tx.buildTransaction(tx_parameters)
         self.tx["gas"] = Wei(
             tx_gas or (max(self.tx["gas"] + 75000, self.recommended_gas()))
         )

@@ -152,10 +152,10 @@ class UniswapOracle(PriceOracle):
         }
         erc20 = get_erc20_contract(self.w3, token_address)
         params = {"gas": 0, "gasPrice": 0}
-        decimals_data = erc20.functions.decimals().build_transaction(params)["data"]
+        decimals_data = erc20.functions.decimals().buildTransaction(params)["data"]
         token_balance_data = erc20.functions.balanceOf(
             uniswap_exchange_address
-        ).build_transaction(params)["data"]
+        ).buildTransaction(params)["data"]
         datas = [decimals_data, token_balance_data]
         payload_calls = [
             {

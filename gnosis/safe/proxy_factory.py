@@ -45,9 +45,7 @@ class ProxyFactory:
         deployer_account: LocalAccount,
         contract: Contract,
     ) -> EthereumTxSent:
-        tx = contract.constructor().build_transaction(
-            {"from": deployer_account.address}
-        )
+        tx = contract.constructor().buildTransaction({"from": deployer_account.address})
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
@@ -163,7 +161,7 @@ class ProxyFactory:
         if gas is not None:
             tx_parameters["gas"] = gas
 
-        tx = create_proxy_fn.build_transaction(tx_parameters)
+        tx = create_proxy_fn.buildTransaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case
         tx["gas"] = tx["gas"] + 50000
         tx_hash = self.ethereum_client.send_unsigned_transaction(
@@ -210,7 +208,7 @@ class ProxyFactory:
         if nonce is not None:
             tx_parameters["nonce"] = nonce
 
-        tx = create_proxy_fn.build_transaction(tx_parameters)
+        tx = create_proxy_fn.buildTransaction(tx_parameters)
         # Auto estimation of gas does not work. We use a little more gas just in case
         tx["gas"] = tx["gas"] + 50000
         tx_hash = self.ethereum_client.send_unsigned_transaction(

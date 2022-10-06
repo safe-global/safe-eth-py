@@ -296,7 +296,7 @@ class SafeCreate2TxBuilder:
                     payment_token,
                     payment,
                     payment_receiver,
-                ).build_transaction(empty_params)["data"]
+                ).buildTransaction(empty_params)["data"]
             )
         elif self.safe_version == "1.0.0":
             return HexBytes(
@@ -308,7 +308,7 @@ class SafeCreate2TxBuilder:
                     payment_token,
                     payment,
                     payment_receiver,
-                ).build_transaction(empty_params)["data"]
+                ).buildTransaction(empty_params)["data"]
             )
         else:
             raise ValueError("Safe version must be 1.3.0, 1.1.1 or 1.0.0")

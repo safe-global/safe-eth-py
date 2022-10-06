@@ -48,7 +48,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         nonce = self.w3.eth.get_transaction_count(
             deployer_account.address, block_identifier="pending"
         )
-        tx = proxy_factory_contract.constructor().build_transaction(
+        tx = proxy_factory_contract.constructor().buildTransaction(
             {"nonce": nonce, "from": deployer_account.address}
         )
         signed_tx = deployer_account.sign_transaction(tx)
@@ -64,7 +64,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         master_copy = Account.create().address
         tx = proxy_factory_contract.functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
-        ).build_transaction(
+        ).buildTransaction(
             {
                 "nonce": nonce + 1,
                 "from": deployer_account.address,

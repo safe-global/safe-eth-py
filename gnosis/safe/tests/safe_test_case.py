@@ -189,7 +189,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_token,
                 payment,
                 payment_receiver,
-            ).build_transaction(empty_parameters)["data"]
+            ).buildTransaction(empty_parameters)["data"]
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
@@ -237,7 +237,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_token,
                 payment,
                 payment_receiver,
-            ).build_transaction(empty_parameters)["data"]
+            ).buildTransaction(empty_parameters)["data"]
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
@@ -277,7 +277,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         initializer = HexBytes(
             self.safe_contract_V1_0_0.functions.setup(
                 owners, threshold, to, data, payment_token, payment, payment_receiver
-            ).build_transaction(empty_parameters)["data"]
+            ).buildTransaction(empty_parameters)["data"]
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,

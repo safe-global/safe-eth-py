@@ -84,9 +84,7 @@ class Multicall:
         :return: deployed contract address
         """
         contract = cls.get_contract(cls, ethereum_client.w3)
-        tx = contract.constructor().build_transaction(
-            {"from": deployer_account.address}
-        )
+        tx = contract.constructor().buildTransaction({"from": deployer_account.address})
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
