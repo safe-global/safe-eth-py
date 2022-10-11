@@ -51,7 +51,7 @@ class BlockscoutClient:
         EthereumNetwork.ASTAR: "https://blockscout.com/astar/",
         EthereumNetwork.EVMOS_MAINNET: "https://evm.evmos.org",
         EthereumNetwork.EVMOS_TESTNET: "https://evm.evmos.dev",
-        EthereumNetwork.RABBIT: "https://rabbit.analogscan.com"
+        EthereumNetwork.RABBIT: "https://rabbit.analogscan.com",
     }
 
     def __init__(self, network: EthereumNetwork):
