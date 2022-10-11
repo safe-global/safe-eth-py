@@ -126,6 +126,7 @@ class EthereumNetwork(Enum):
     MOON_MOONSHADOW = 1288
     GANACHE = 1337
     CATECHAIN = 1618
+    RABBIT =1807
     EURUS_TESTNET = 1984
     EGEM = 1987
     EDG = 2021
