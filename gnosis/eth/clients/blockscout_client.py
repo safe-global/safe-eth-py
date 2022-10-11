@@ -51,6 +51,7 @@ class BlockscoutClient:
         EthereumNetwork.ASTAR: "https://blockscout.com/astar/",
         EthereumNetwork.EVMOS_MAINNET: "https://evm.evmos.org",
         EthereumNetwork.EVMOS_TESTNET: "https://evm.evmos.dev",
+        EthereumNetwork.RABBIT: "https://rabbit.analogscan.com",
         EthereumNetwork.KCC_MAINNET: "https://scan.kcc.io/",
         EthereumNetwork.KCC_TESTNET: "https://scan-testnet.kcc.network/",
     }
