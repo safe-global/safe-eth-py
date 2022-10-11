@@ -50,6 +50,8 @@ class Multicall:
         EthereumNetwork.RINKEBY: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.ROPSTEN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
         EthereumNetwork.XDAI: "0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7",
+        EthereumNetwork.KCC_MAINNET: "0x7C1C85C39d3D6b6ecB811dfe949B9C23f6E818B0",
+        EthereumNetwork.KCC_TESTNET: "0x665683D9bd41C09cF38c3956c926D9924F1ADa97",
     }
 
     def __init__(

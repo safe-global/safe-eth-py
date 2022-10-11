@@ -51,6 +51,8 @@ class BlockscoutClient:
         EthereumNetwork.ASTAR: "https://blockscout.com/astar/",
         EthereumNetwork.EVMOS_MAINNET: "https://evm.evmos.org",
         EthereumNetwork.EVMOS_TESTNET: "https://evm.evmos.dev",
+        EthereumNetwork.KCC_MAINNET: "https://scan.kcc.io/",
+        EthereumNetwork.KCC_TESTNET: "https://scan-testnet.kcc.network/",
     }
 
     def __init__(self, network: EthereumNetwork):
