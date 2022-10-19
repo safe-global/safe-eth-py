@@ -32,6 +32,7 @@ class BlockscoutClient:
         EthereumNetwork.GATHER_TESTNET: "https://testnet-explorer.gather.network/",
         EthereumNetwork.GATHER_MAINNET: "https://explorer.gather.network/",
         EthereumNetwork.METIS_TESTNET: "https://stardust-explorer.metis.io/",
+        EthereumNetwork.METIS_GOERLI_TESTNET: "https://goerli.explorer.metisdevops.link/",
         EthereumNetwork.METIS: "https://andromeda-explorer.metis.io/",
         EthereumNetwork.FUSE_MAINNET: "https://explorer.fuse.io/",
         EthereumNetwork.VELAS_MAINNET: "https://evmexplorer.velas.com/",
