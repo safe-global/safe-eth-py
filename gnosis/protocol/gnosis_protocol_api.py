@@ -49,13 +49,13 @@ class GnosisProtocolAPI:
 
     settlement_contract_addresses = {
         EthereumNetwork.MAINNET: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
-        EthereumNetwork.RINKEBY: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+        EthereumNetwork.GOERLI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.XDAI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     }
 
     api_base_urls = {
         EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet/api/v1/",
-        EthereumNetwork.RINKEBY: "https://api.cow.fi/rinkeby/api/v1/",
+        EthereumNetwork.GOERLI: "https://api.cow.fi/goerli/api/v1/",
         EthereumNetwork.XDAI: "https://api.cow.fi/xdai/api/v1/",
     }
 

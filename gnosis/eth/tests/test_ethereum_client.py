@@ -1300,7 +1300,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertTrue(self.ethereum_client.is_contract(erc20.address))
 
     def test_is_eip1559_supported(self):
-        self.assertFalse(self.ethereum_client.is_eip1559_supported())
+        self.assertTrue(self.ethereum_client.is_eip1559_supported())
 
     def test_set_eip1559_fees(self):
         with mock.patch.object(
