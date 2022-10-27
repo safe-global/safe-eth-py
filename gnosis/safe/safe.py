@@ -79,11 +79,21 @@ class Safe:
     Class to manage a Gnosis Safe
     """
 
+    # keccak256("fallback_manager.handler.address")
     FALLBACK_HANDLER_STORAGE_SLOT = (
         0x6C9A6C4A39284E37ED1CF53D337577D14212A4870FB976A4366C693B939918D5
     )
+    # keccak256("guard_manager.guard.address")
     GUARD_STORAGE_SLOT = (
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
+    )
+    # keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
+    DOMAIN_TYPEHASH = bytes.fromhex(
+        "47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
+    )
+    # keccak256("SafeMessage(bytes message)");
+    SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
+        "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
 
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
@@ -509,13 +519,14 @@ class Safe:
 
     @cached_property
     def domain_separator(self):
-        domain_typehash = bytes.fromhex(
-            "47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
-        )
-        return Web3.keccak(
+        return fast_keccak(
             encode_abi(
                 ["bytes32", "uint256", "address"],
-                [domain_typehash, self.ethereum_client.get_chain_id(), self.address],
+                [
+                    self.DOMAIN_TYPEHASH,
+                    self.ethereum_client.get_chain_id(),
+                    self.address,
+                ],
             )
         )
 
@@ -849,11 +860,10 @@ class Safe:
             message = message.encode()
         message_hash = fast_keccak(message)
 
-        safe_message_typehash = bytes.fromhex(
-            "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
-        )
         safe_message_hash = Web3.keccak(
-            encode_abi(["bytes32", "bytes32"], [safe_message_typehash, message_hash])
+            encode_abi(
+                ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
+            )
         )
         return Web3.keccak(
             encode_abi_packed(
