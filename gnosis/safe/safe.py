@@ -8,7 +8,7 @@ from eth_abi import encode_abi
 from eth_abi.packed import encode_abi_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, Hash32
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
@@ -820,7 +820,7 @@ class Safe:
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def estimate_tx_operational_gas(self, data_bytes_length: int):
+    def estimate_tx_operational_gas(self, data_bytes_length: int) -> int:
         """
         DEPRECATED. `estimate_tx_base_gas` already includes this.
         Estimates the gas for the verification of the signatures and other safe related tasks
@@ -837,7 +837,7 @@ class Safe:
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
 
-    def get_message_hash(self, message: Union[str, bytes]) -> bytes:
+    def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
         """
         Return hash of a message that can be signed by owners.
 

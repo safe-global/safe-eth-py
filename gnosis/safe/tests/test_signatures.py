@@ -45,7 +45,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
             safe_message_hash,
         )
 
-        # Use deprecated isValidSignature method
+        # Use deprecated isValidSignature method (receives bytes)
         signature = owner.signHash(safe_message_hash)
         is_valid_bytes_fn = compatibility_contract.get_function_by_signature(
             "isValidSignature(bytes,bytes)"
@@ -55,7 +55,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
             bytes.fromhex("20c13b0b"),
         )
 
-        # Use new isValidSignature method
+        # Use new isValidSignature method (receives bytes32 == hash of the message)
         # Message needs to be hashed first
         message_hash = Web3.keccak(text=message)
         safe_message_hash = safe.get_message_hash(message_hash)
