@@ -26,11 +26,11 @@ class SuperfluidOracle(PriceOracle):
         :param ethereum_client:
         :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
         """
-        return (
-            ethereum_client.get_network() == EthereumNetwork.MATIC
-            or EthereumNetwork.XDAI
-            or EthereumNetwork.ARBITRUM
-            or EthereumNetwork.OPTIMISTIC
+        return ethereum_client.get_network() in (
+            EthereumNetwork.MATIC,
+            EthereumNetwork.XDAI,
+            EthereumNetwork.ARBITRUM,
+            EthereumNetwork.OPTIMISTIC,
         )
 
     def get_price(self, token_address: str) -> float:
