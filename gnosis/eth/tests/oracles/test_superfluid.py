@@ -5,14 +5,16 @@ from eth_account import Account
 from ... import EthereumClient
 from ...oracles import CannotGetPriceFromOracle, SuperfluidOracle, SushiswapOracle
 from ..ethereum_test_case import EthereumTestCaseMixin
+from ..test_oracles import gno_token_mainnet_address
 from ..utils import just_test_if_polygon_node
-
-gno_token_mainnet_address = "0x6810e776880C02933D47DB1b9fc05908e5386b96"
 
 
 class TestSuperfluidOracle(EthereumTestCaseMixin, TestCase):
     def test_get_price(self):
         polygon_node = just_test_if_polygon_node()
+
+        self.assertFalse(SuperfluidOracle.is_available(self.ethereum_client))
+
         ethereum_client_polygon = EthereumClient(polygon_node)
 
         self.assertTrue(SuperfluidOracle.is_available(ethereum_client_polygon))
