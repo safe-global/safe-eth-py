@@ -11,12 +11,12 @@ from ...api.transaction_service_api import TransactionServiceApi
 class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def setUp(self) -> None:
         self.transaction_service_api = TransactionServiceApi(
-            EthereumNetwork.RINKEBY, ethereum_client=self.ethereum_client
+            EthereumNetwork.GOERLI, ethereum_client=self.ethereum_client
         )
-        self.safe_address = "0x7552Ed65a45E27740a15B8D5415E90d8ca64C109"
+        self.safe_address = "0x24833C9c4644a70250BCCBcB5f8529b609eaE6EC"
 
     def test_constructor(self):
-        ethereum_network = EthereumNetwork.RINKEBY
+        ethereum_network = EthereumNetwork.GOERLI
         base_url = "https://safe.global"
         transaction_service_api = TransactionServiceApi(
             ethereum_network, ethereum_client=None, base_url=base_url
@@ -30,7 +30,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             TransactionServiceApi.from_ethereum_client(self.ethereum_client)
 
         with mock.patch.object(
-            EthereumClient, "get_network", return_value=EthereumNetwork.RINKEBY
+            EthereumClient, "get_network", return_value=EthereumNetwork.GOERLI
         ):
             transaction_service_api = TransactionServiceApi.from_ethereum_client(
                 self.ethereum_client
@@ -38,7 +38,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 transaction_service_api.ethereum_client, self.ethereum_client
             )
-            self.assertEqual(transaction_service_api.network, EthereumNetwork.RINKEBY)
+            self.assertEqual(transaction_service_api.network, EthereumNetwork.GOERLI)
 
     def test_data_decoded_to_text(self):
         test_data = {
