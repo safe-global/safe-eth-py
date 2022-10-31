@@ -2,6 +2,7 @@ import functools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import cached_property
 from typing import List, Optional, Tuple
 
 import requests
@@ -11,8 +12,6 @@ from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
-
-from gnosis.util import cached_property
 
 from .. import EthereumClient, EthereumNetwork
 from ..constants import NULL_ADDRESS

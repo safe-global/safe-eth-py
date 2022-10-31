@@ -1,12 +1,6 @@
 from typing import Any, Iterable, List
 
 try:
-    from functools import cached_property  # noqa F401
-except ImportError:
-    from cached_property import cached_property  # noqa F401
-
-
-try:
     from functools import cache
 except ImportError:
     from functools import lru_cache

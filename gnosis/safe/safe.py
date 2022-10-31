@@ -1,6 +1,7 @@
 import dataclasses
 import math
 from enum import Enum
+from functools import cached_property
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
@@ -33,7 +34,6 @@ from gnosis.eth.utils import (
     get_eth_address_with_key,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
-from gnosis.util import cached_property
 
 from ..eth.typing import EthereumData
 from .exceptions import (

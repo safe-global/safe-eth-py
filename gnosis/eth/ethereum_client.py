@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from functools import wraps
+from functools import cached_property, wraps
 from logging import getLogger
 from typing import (
     Any,
@@ -59,7 +59,7 @@ from gnosis.eth.utils import (
     fast_to_checksum_address,
     mk_contract_address,
 )
-from gnosis.util import cache, cached_property, chunks
+from gnosis.util import cache, chunks
 
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,

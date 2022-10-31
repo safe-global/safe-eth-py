@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, Union, cast
+from functools import cached_property
+from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 
 import requests
 from eip712_structs import make_domain
@@ -9,14 +10,8 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
-from gnosis.util import cached_property
 
 from .order import Order, OrderKind
-
-try:
-    from typing import TypedDict  # pylint: disable=no-name-in-module
-except ImportError:
-    from typing_extensions import TypedDict
 
 
 class TradeResponse(TypedDict):
