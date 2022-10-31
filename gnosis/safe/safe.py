@@ -4,9 +4,11 @@ from enum import Enum
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
+from eth_abi import encode_abi
+from eth_abi.packed import encode_abi_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, Hash32
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
@@ -27,6 +29,7 @@ from gnosis.eth.contracts import (
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
+    fast_keccak,
     get_eth_address_with_key,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
@@ -76,11 +79,21 @@ class Safe:
     Class to manage a Gnosis Safe
     """
 
+    # keccak256("fallback_manager.handler.address")
     FALLBACK_HANDLER_STORAGE_SLOT = (
         0x6C9A6C4A39284E37ED1CF53D337577D14212A4870FB976A4366C693B939918D5
     )
+    # keccak256("guard_manager.guard.address")
     GUARD_STORAGE_SLOT = (
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
+    )
+    # keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
+    DOMAIN_TYPEHASH = bytes.fromhex(
+        "47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
+    )
+    # keccak256("SafeMessage(bytes message)");
+    SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
+        "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
 
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
@@ -504,6 +517,19 @@ class Safe:
         else:
             return get_safe_V1_1_1_contract(self.w3, address=self.address)
 
+    @cached_property
+    def domain_separator(self):
+        return fast_keccak(
+            encode_abi(
+                ["bytes32", "uint256", "address"],
+                [
+                    self.DOMAIN_TYPEHASH,
+                    self.ethereum_client.get_chain_id(),
+                    self.address,
+                ],
+            )
+        )
+
     def check_funds_for_tx_gas(
         self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
     ) -> bool:
@@ -805,7 +831,7 @@ class Safe:
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def estimate_tx_operational_gas(self, data_bytes_length: int):
+    def estimate_tx_operational_gas(self, data_bytes_length: int) -> int:
         """
         DEPRECATED. `estimate_tx_base_gas` already includes this.
         Estimates the gas for the verification of the signatures and other safe related tasks
@@ -821,6 +847,35 @@ class Safe:
         """
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
+
+    def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
+        """
+        Return hash of a message that can be signed by owners.
+
+        :param message: Message that should be hashed
+        :return: Message hash
+        """
+
+        if isinstance(message, str):
+            message = message.encode()
+        message_hash = fast_keccak(message)
+
+        safe_message_hash = Web3.keccak(
+            encode_abi(
+                ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
+            )
+        )
+        return Web3.keccak(
+            encode_abi_packed(
+                ["bytes1", "bytes1", "bytes32", "bytes32"],
+                [
+                    bytes.fromhex("19"),
+                    bytes.fromhex("01"),
+                    self.domain_separator,
+                    safe_message_hash,
+                ],
+            )
+        )
 
     def retrieve_all_info(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
