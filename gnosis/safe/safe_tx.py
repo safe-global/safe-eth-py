@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
 from eip712_structs import Address, Bytes, EIP712Struct, Uint, make_domain
@@ -11,7 +12,6 @@ from web3.types import BlockIdentifier, TxParams, Wei
 from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
-from gnosis.util import cached_property
 
 from ..eth.ethereum_client import TxSpeed
 from ..eth.utils import fast_keccak

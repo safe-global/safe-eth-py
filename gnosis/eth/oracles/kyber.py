@@ -1,10 +1,9 @@
 import logging
+from functools import cached_property
 from typing import Optional
 
 from eth_abi.exceptions import DecodingError
 from web3.exceptions import BadFunctionCallOutput
-
-from gnosis.util import cached_property
 
 from .. import EthereumClient, EthereumNetwork
 from ..contracts import get_kyber_network_proxy_contract

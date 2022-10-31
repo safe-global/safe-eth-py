@@ -1,13 +1,12 @@
 import functools
 import logging
+from functools import cached_property
 from typing import Optional
 
 from eth_abi.exceptions import DecodingError
 from eth_typing import ChecksumAddress
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
-
-from gnosis.util import cached_property
 
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
