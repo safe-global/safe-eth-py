@@ -63,7 +63,7 @@ if __name__ == "__main__":
         buyTokenBalance="erc20",  # `erc20` or `internal`
     )
 
-    order["feeAmount"] = gnosis_protocol_api.get_fee(order)
+    order.feeAmount = gnosis_protocol_api.get_fee(order)
 
     if confirm_prompt(
         f"Exchanging {amount_wei} {from_token} to {buy_amount} {to_token}?"

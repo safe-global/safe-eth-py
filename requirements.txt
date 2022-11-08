@@ -1,7 +1,6 @@
 django==3.2.16
 django-filter==22.1
 djangorestframework==3.14.0
-eip712-structs==1.1.0
 hexbytes==0.2.3
 packaging
 psycopg2-binary==2.9.5
