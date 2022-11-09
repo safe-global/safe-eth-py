@@ -79,6 +79,7 @@ gnosis.eth.constants
 gnosis.eth.eip712
 ~~~~~~~~~~~~~~~~~~~~
 .. code-block:: python
+
     from gnosis.eth.eip712 import eip712_encode_hash
 
     types = {'EIP712Domain': [{'name': 'name', 'type': 'string'},
