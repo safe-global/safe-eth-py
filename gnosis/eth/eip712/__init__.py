@@ -137,17 +137,22 @@ def eip712_encode(typed_data: Dict[str, Any]) -> List[bytes]:
       1: The encoded types
       2: The encoded data
     """
-    parts = [
-        bytes.fromhex("1901"),
-        hash_struct("EIP712Domain", typed_data["domain"], typed_data["types"]),
-    ]
-    if typed_data["primaryType"] != "EIP712Domain":
-        parts.append(
-            hash_struct(
-                typed_data["primaryType"], typed_data["message"], typed_data["types"]
+    try:
+        parts = [
+            bytes.fromhex("1901"),
+            hash_struct("EIP712Domain", typed_data["domain"], typed_data["types"]),
+        ]
+        if typed_data["primaryType"] != "EIP712Domain":
+            parts.append(
+                hash_struct(
+                    typed_data["primaryType"],
+                    typed_data["message"],
+                    typed_data["types"],
+                )
             )
-        )
-    return parts
+        return parts
+    except (KeyError, AttributeError, TypeError, IndexError) as exc:
+        raise ValueError(f"Not valid {typed_data}") from exc
 
 
 def eip712_encode_hash(typed_data: Dict[str, Any]) -> Hash32:
