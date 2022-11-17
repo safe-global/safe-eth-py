@@ -236,6 +236,9 @@ class Keccak256Field(models.BinaryField):
         if value:
             return self._to_bytes(value)
 
+    def value_to_string(self, obj):
+        return str(self.value_from_object(obj))
+
     def to_python(self, value) -> Optional[str]:
         if value is not None:
             try:

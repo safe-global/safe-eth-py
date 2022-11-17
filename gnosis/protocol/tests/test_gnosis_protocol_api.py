@@ -2,6 +2,7 @@ from time import time
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 from web3 import Web3
 
@@ -132,5 +133,10 @@ class TestGnosisProtocolAPI(TestCase):
         order_id = self.goerli_gnosis_protocol_api.place_order(
             order, Account().create().key
         )
+
+        if type(order_id) is dict:
+            if order_id["errorType"] == "NoLiquidity":
+                pytest.xfail("NoLiquidity Error")
+
         self.assertEqual(order_id[:2], "0x")
         self.assertEqual(len(order_id), 114)
