@@ -148,7 +148,7 @@ class TestModels(TestCase):
             with transaction.atomic():
                 Keccak256Hash.objects.create(value=value_hex_invalid)
 
-    def test_serialize_Keccak256Field_to_json(self):
+    def test_serialize_keccak256_field_to_json(self):
         hexvalue: str = (
             "0xdb5b7c6d3b0cc538a5859afc4674a785d9d111c3835390295f3d3173d41ca8ea"
         )
@@ -157,28 +157,28 @@ class TestModels(TestCase):
         # hexvalue should be in serialized data
         self.assertIn(hexvalue, serialized)
 
-    def test_serialize_EthereumAddressField_to_json(self):
+    def test_serialize_ethereum_address_field_to_json(self):
         address: str = "0x5aFE3855358E112B5647B952709E6165e1c1eEEe"
         EthereumAddress.objects.create(value=address)
         serialized = serialize("json", EthereumAddress.objects.all())
         # address should be in serialized data
         self.assertIn(address, serialized)
 
-    def test_serialize_EthereumAddressV2Field_to_json(self):
+    def test_serialize_ethereum_address_v2_field_to_json(self):
         address: str = "0x5aFE3855358E112B5647B952709E6165e1c1eEEe"
         EthereumAddressV2.objects.create(value=address)
         serialized = serialize("json", EthereumAddressV2.objects.all())
         # address should be in serialized data
         self.assertIn(address, serialized)
 
-    def test_serialize_Uint256Field_to_json(self):
+    def test_serialize_uint256_field_to_json(self):
         value = 2**260
         Uint256.objects.create(value=value)
         serialized = serialize("json", Uint256.objects.all())
         # value should be in serialized data
         self.assertIn(str(value), serialized)
 
-    def test_serialize_Sha3Hash_to_json(self):
+    def test_serialize_sha3_hash_to_json(self):
         hash = Web3.keccak(text="testSerializer")
         Sha3Hash.objects.create(value=hash)
         serialized = serialize("json", Sha3Hash.objects.all())
