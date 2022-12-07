@@ -816,7 +816,7 @@ class Safe:
         # So gas needed by caller will be around 35k
         OLD_CALL_GAS = 35000
         # Web3 `estimate_gas` estimates less gas
-        WEB3_ESTIMATION_OFFSET = 20000
+        WEB3_ESTIMATION_OFFSET = 23000
         ADDITIONAL_GAS = PROXY_GAS + OLD_CALL_GAS
 
         try:
