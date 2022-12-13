@@ -59,7 +59,7 @@ jobs:
       env:
         PIP_USE_MIRRORS: true
     - name: Run tests and coverage
-      run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs --reruns 3
+      run: coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
