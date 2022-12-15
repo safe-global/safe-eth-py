@@ -27,7 +27,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.MATIC: "https://safe-transaction-polygon.safe.global",
         EthereumNetwork.OPTIMISTIC: "https://safe-transaction-optimism.safe.global",
         EthereumNetwork.VOLTA: "https://safe-transaction-volta.safe.global",
-        EthereumNetwork.XDAI: "https://safe-transaction-xdai.safe.global",
+        EthereumNetwork.XDAI: "https://safe-transaction-gnosis-chain.safe.global",
     }
 
     @classmethod
