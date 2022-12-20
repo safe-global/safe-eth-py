@@ -21,7 +21,7 @@ def just_test_if_mainnet_node() -> str:
         )
     else:
         try:
-            if not requests.post(
+            response = requests.post(
                 mainnet_node_url,
                 timeout=5,
                 json={
@@ -30,12 +30,13 @@ def just_test_if_mainnet_node() -> str:
                     "params": [],
                     "id": 1,
                 },
-            ).ok:
-                pytest.skip("Cannot connect to mainnet node", allow_module_level=True)
-        except IOError:
-            pytest.skip(
-                "Problem connecting to the mainnet node", allow_module_level=True
             )
+            if not response.ok:
+                pytest.fail(
+                    f"Problem connecting to mainnet node {response.status_code} - {response.content}"
+                )
+        except IOError:
+            pytest.fail("Problem connecting to the mainnet node")
     just_test_if_mainnet_node.checked = True
     return mainnet_node_url
 

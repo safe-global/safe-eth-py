@@ -1378,16 +1378,24 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         )
 
     def test_trace_transaction(self):
-        tx_hash = "0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f"  # Safe 1.3.0 deployment
-        self.assertEqual(
-            self.ethereum_client.parity.trace_transaction(tx_hash),
-            trace_transaction_mocks[tx_hash],
-        )
+        for tx_hash in [
+            # Safe 1.3.0 deployment
+            "0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f",
+            # Erigon v2.31.0 traceAddress issue https://github.com/ledgerwatch/erigon/issues/6375
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        ]:
+            with self.subTest(tx_hash=tx_hash):
+                self.assertEqual(
+                    self.ethereum_client.parity.trace_transaction(tx_hash),
+                    trace_transaction_mocks[tx_hash],
+                )
 
     def test_trace_transactions(self):
         tx_hashes = [
             "0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f",  # Safe 1.3.0 deployment
             "0xf325b4e52d0649593e8c82f35bd389c13c13b21b61bc17de295979a21e5cfdc0",  # Safe 1.1.0 setup
+            # Erigon v2.31.0 traceAddress issue https://github.com/ledgerwatch/erigon/issues/6375
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
         ]
         self.assertEqual(
             self.ethereum_client.parity.trace_transactions(tx_hashes),
