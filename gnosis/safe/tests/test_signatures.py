@@ -11,6 +11,9 @@ from .safe_test_case import SafeTestCaseMixin
 
 
 class TestSafeSignature(SafeTestCaseMixin, TestCase):
+    EIP1271_MAGIC_VALUE = "20c13b0b"
+    UPDATED_MAGIC_VALUE = "1626ba7e"
+
     def test_get_signing_address(self):
         account = Account.create()
         # Random hash
@@ -52,7 +55,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         )
         self.assertEqual(
             is_valid_bytes_fn(message.encode(), signature.signature).call(),
-            bytes.fromhex("20c13b0b"),
+            bytes.fromhex(self.EIP1271_MAGIC_VALUE),
         )
 
         # Use new isValidSignature method (receives bytes32 == hash of the message)
@@ -70,5 +73,31 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         )
         self.assertEqual(
             is_valid_bytes_fn(message_hash, signature.signature).call(),
-            bytes.fromhex("1626ba7e"),
+            bytes.fromhex(self.UPDATED_MAGIC_VALUE),
+        )
+
+    def test_eip1271_signing_v1_1_1_contract(self):
+        owner = Account.create()
+        message = "luar_na_lubre"
+        safe = self.deploy_test_safe_v1_1_1(threshold=1, owners=[owner.address])
+
+        self.assertEqual(
+            safe.contract.functions.domainSeparator().call(), safe.domain_separator
+        )
+
+        contract = safe.contract
+        safe_message_hash = safe.get_message_hash(message)
+        self.assertEqual(
+            contract.functions.getMessageHash(message.encode()).call(),
+            safe_message_hash,
+        )
+
+        # Use isValidSignature method (receives bytes)
+        signature = owner.signHash(safe_message_hash)
+
+        self.assertEqual(
+            contract.functions.isValidSignature(
+                message.encode(), signature.signature
+            ).call(),
+            bytes.fromhex(self.EIP1271_MAGIC_VALUE),
         )

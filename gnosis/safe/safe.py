@@ -88,8 +88,11 @@ class Safe:
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
     )
     # keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
-    DOMAIN_TYPEHASH = bytes.fromhex(
+    DOMAIN_TYPEHASH_V1_3_0 = bytes.fromhex(
         "47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
+    )
+    DOMAIN_TYPEHASH_V1_1_1 = bytes.fromhex(
+        "035aff83d86937d35b32e04f0ddc6ff469290eef2f1b692d8a815c89404d4749"
     )
     # keccak256("SafeMessage(bytes message)");
     SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
@@ -519,16 +522,28 @@ class Safe:
 
     @cached_property
     def domain_separator(self):
-        return fast_keccak(
-            encode_abi(
-                ["bytes32", "uint256", "address"],
-                [
-                    self.DOMAIN_TYPEHASH,
-                    self.ethereum_client.get_chain_id(),
-                    self.address,
-                ],
+        version = self.contract.functions.VERSION().call()
+        if version == "1.3.0":
+            return fast_keccak(
+                encode_abi(
+                    ["bytes32", "uint256", "address"],
+                    [
+                        self.DOMAIN_TYPEHASH_V1_3_0,
+                        self.ethereum_client.get_chain_id(),
+                        self.address,
+                    ],
+                )
             )
-        )
+        else:
+            return fast_keccak(
+                encode_abi(
+                    ["bytes32", "address"],
+                    [
+                        self.DOMAIN_TYPEHASH_V1_1_1,
+                        self.address,
+                    ],
+                )
+            )
 
     def check_funds_for_tx_gas(
         self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
