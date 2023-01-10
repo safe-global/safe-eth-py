@@ -118,7 +118,6 @@ class TestEIP712(TestCase):
                 {"name": "maxByte", "type": "bytes32"},
             ],
         }
-        # test string uint (chainId)
         payload = {
             "types": types_with_bytes,
             "primaryType": "Message",
