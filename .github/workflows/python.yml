@@ -5,6 +5,8 @@ on:
       - master
       - develop
   pull_request:
+  release:
+    types: [ released ]
 
 
 jobs:
@@ -83,7 +85,7 @@ jobs:
     needs:
       - linting
       - test-app
-    if: startsWith(github.ref, 'refs/tags/')
+    if: (github.event_name == 'release' && github.event.action == 'released')
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
