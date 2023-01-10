@@ -57,6 +57,14 @@ def encode_data(primary_type: str, data, types):
         if value is None:
             raise Exception(f"Missing value for field {name} of type {type}")
 
+        # Accept string bytes
+        if "bytes" in typ and isinstance(value, str):
+            value = bytes.fromhex(value.replace("0x", ""))
+
+        # Accept string uint
+        if "uint" in typ and isinstance(value, str):
+            value = int(value)
+
         if typ == "bytes":
             return ["bytes32", fast_keccak(value)]
 
