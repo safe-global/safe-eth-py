@@ -564,11 +564,11 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         owner_account = Account.create()
         safe_v1_1_1 = self.deploy_test_safe_v1_1_1()
         self.assertEqual(safe_v1_1_1.retrieve_guard(), NULL_ADDRESS)
-        self.assertLess(Version(safe_v1_1_1.retrieve_version()), Version("1.3.0"))
+        self.assertLess(Version(safe_v1_1_1.retrieve_version), Version("1.3.0"))
 
         safe = self.deploy_test_safe(owners=[owner_account.address])
         self.assertEqual(safe.retrieve_guard(), NULL_ADDRESS)
-        self.assertGreaterEqual(Version(safe.retrieve_version()), Version("1.3.0"))
+        self.assertGreaterEqual(Version(safe.retrieve_version), Version("1.3.0"))
 
         guard_address = Account.create().address
         set_guard_data = HexBytes(
@@ -598,7 +598,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             self.assertEqual(safe.retrieve_modules(), [])
 
             # Versions must be semantic, like 0.1.0, so we count 3 points
-            self.assertTrue(safe.retrieve_version().count("."), 3)
+            self.assertTrue(safe.retrieve_version.count("."), 3)
 
             for owner in owners:
                 self.assertTrue(safe.retrieve_is_owner(owner))

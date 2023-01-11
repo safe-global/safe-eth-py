@@ -40,6 +40,7 @@ from .exceptions import (
     CannotEstimateGas,
     CannotRetrieveSafeInfoException,
     InvalidPaymentToken,
+    InvalidSafeVersion,
 )
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
@@ -91,6 +92,7 @@ class Safe:
     DOMAIN_TYPEHASH_V1_3_0 = bytes.fromhex(
         "47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
     )
+    # keccak256("EIP712Domain(address verifyingContract)")
     DOMAIN_TYPEHASH_V1_1_1 = bytes.fromhex(
         "035aff83d86937d35b32e04f0ddc6ff469290eef2f1b692d8a815c89404d4749"
     )
@@ -522,7 +524,7 @@ class Safe:
 
     @cached_property
     def domain_separator(self):
-        version = self.contract.functions.VERSION().call()
+        version = self.retrieve_version
         if version == "1.3.0":
             return fast_keccak(
                 encode_abi(
@@ -534,7 +536,7 @@ class Safe:
                     ],
                 )
             )
-        else:
+        elif version == "1.1.1":
             return fast_keccak(
                 encode_abi(
                     ["bytes32", "address"],
@@ -543,6 +545,10 @@ class Safe:
                         self.address,
                     ],
                 )
+            )
+        else:
+            raise InvalidSafeVersion(
+                f"Cannot get domain separator for version {version}"
             )
 
     def check_funds_for_tx_gas(
@@ -1062,6 +1068,7 @@ class Safe:
             block_identifier=block_identifier
         )
 
+    @cached_property
     def retrieve_version(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> str:
@@ -1104,7 +1111,7 @@ class Safe:
 
         if safe_nonce is None:
             safe_nonce = self.retrieve_nonce()
-        safe_version = safe_version or self.retrieve_version()
+        safe_version = safe_version or self.retrieve_version
         return SafeTx(
             self.ethereum_client,
             self.address,

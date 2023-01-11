@@ -200,7 +200,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         if initial_funding_wei:
             self.send_ether(safe.address, initial_funding_wei)
 
-        self.assertEqual(safe.retrieve_version(), "1.3.0")
+        self.assertEqual(safe.retrieve_version, "1.3.0")
         self.assertEqual(safe.retrieve_threshold(), threshold)
         self.assertCountEqual(safe.retrieve_owners(), owners)
 
@@ -248,7 +248,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         if initial_funding_wei:
             self.send_ether(safe.address, initial_funding_wei)
 
-        self.assertEqual(safe.retrieve_version(), "1.1.1")
+        self.assertEqual(safe.retrieve_version, "1.1.1")
         self.assertEqual(safe.retrieve_threshold(), threshold)
         self.assertCountEqual(safe.retrieve_owners(), owners)
 
@@ -288,7 +288,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         if initial_funding_wei:
             self.send_ether(safe.address, initial_funding_wei)
 
-        self.assertEqual(safe.retrieve_version(), "1.0.0")
+        self.assertEqual(safe.retrieve_version, "1.0.0")
         self.assertEqual(safe.retrieve_threshold(), threshold)
         self.assertCountEqual(safe.retrieve_owners(), owners)
 
