@@ -10,6 +10,10 @@ class CannotRetrieveSafeInfoException(SafeServiceException):
     pass
 
 
+class InvalidSafeVersion(SafeServiceException):
+    pass
+
+
 class InvalidChecksumAddress(SafeServiceException):
     pass
 
