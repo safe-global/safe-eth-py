@@ -12,7 +12,7 @@ from .safe_test_case import SafeTestCaseMixin
 
 class TestSafeSignature(SafeTestCaseMixin, TestCase):
     EIP1271_MAGIC_VALUE = "20c13b0b"
-    UPDATED_MAGIC_VALUE = "1626ba7e"
+    EIP1271_MAGIC_VALUE_UPDATED = "1626ba7e"
 
     def test_get_signing_address(self):
         account = Account.create()
@@ -73,7 +73,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         )
         self.assertEqual(
             is_valid_bytes_fn(message_hash, signature.signature).call(),
-            bytes.fromhex(self.UPDATED_MAGIC_VALUE),
+            bytes.fromhex(self.EIP1271_MAGIC_VALUE_UPDATED),
         )
 
     def test_eip1271_signing_v1_1_1_contract(self):
