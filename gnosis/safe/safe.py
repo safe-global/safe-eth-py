@@ -524,7 +524,7 @@ class Safe:
 
     @cached_property
     def domain_separator(self):
-        version = self.retrieve_version
+        version = self.retrieve_version()
         if version == "1.3.0":
             return fast_keccak(
                 encode_abi(
@@ -1068,7 +1068,6 @@ class Safe:
             block_identifier=block_identifier
         )
 
-    @cached_property
     def retrieve_version(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> str:
@@ -1111,7 +1110,7 @@ class Safe:
 
         if safe_nonce is None:
             safe_nonce = self.retrieve_nonce()
-        safe_version = safe_version or self.retrieve_version
+        safe_version = safe_version or self.retrieve_version()
         return SafeTx(
             self.ethereum_client,
             self.address,
