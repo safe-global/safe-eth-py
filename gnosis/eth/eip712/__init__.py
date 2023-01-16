@@ -29,6 +29,7 @@ from typing import Any, Dict, List, Union
 from eth_abi import encode_abi
 from eth_account import Account
 from eth_typing import Hash32, HexStr
+from hexbytes import HexBytes
 
 from ..utils import fast_keccak
 
@@ -59,10 +60,10 @@ def encode_data(primary_type: str, data, types):
 
         # Accept string bytes
         if "bytes" in typ and isinstance(value, str):
-            value = bytes.fromhex(value.replace("0x", ""))
+            value = HexBytes(value)
 
-        # Accept string uint
-        if "uint" in typ and isinstance(value, str):
+        # Accept string uint and int
+        if "int" in typ and isinstance(value, str):
             value = int(value)
 
         if typ == "bytes":
