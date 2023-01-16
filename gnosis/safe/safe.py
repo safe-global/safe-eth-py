@@ -6,6 +6,7 @@ from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
 from eth_abi import encode_abi
+from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_abi_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -40,7 +41,6 @@ from .exceptions import (
     CannotEstimateGas,
     CannotRetrieveSafeInfoException,
     InvalidPaymentToken,
-    InvalidSafeVersion,
 )
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
@@ -88,14 +88,7 @@ class Safe:
     GUARD_STORAGE_SLOT = (
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
     )
-    # keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
-    DOMAIN_TYPEHASH_V1_3_0 = bytes.fromhex(
-        "47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
-    )
-    # keccak256("EIP712Domain(address verifyingContract)")
-    DOMAIN_TYPEHASH_V1_1_1 = bytes.fromhex(
-        "035aff83d86937d35b32e04f0ddc6ff469290eef2f1b692d8a815c89404d4749"
-    )
+
     # keccak256("SafeMessage(bytes message)");
     SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
@@ -114,6 +107,26 @@ class Safe:
 
     def __str__(self):
         return f"Safe={self.address}"
+
+    @cached_property
+    def contract(self) -> Contract:
+        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
+        version = v_1_3_0_contract.functions.VERSION().call()
+        if version == "1.3.0":
+            return v_1_3_0_contract
+        else:
+            return get_safe_V1_1_1_contract(self.w3, address=self.address)
+
+    @cached_property
+    def domain_separator(self) -> Optional[bytes]:
+        """
+        :return: EIP721 DomainSeparator for the Safe. Returns `None` if not supported (for Safes < 1.0.0)
+        """
+        try:
+            return self.retrieve_domain_separator()
+        except (ValueError, BadFunctionCallOutput, DecodingError):
+            logger.warning("Safe %s does not support domainSeparator", self.address)
+            return None
 
     @staticmethod
     def create(
@@ -513,44 +526,6 @@ class Safe:
 
         return safe_creation_tx
 
-    @cached_property
-    def contract(self) -> Contract:
-        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
-        version = v_1_3_0_contract.functions.VERSION().call()
-        if version == "1.3.0":
-            return v_1_3_0_contract
-        else:
-            return get_safe_V1_1_1_contract(self.w3, address=self.address)
-
-    @cached_property
-    def domain_separator(self):
-        version = self.retrieve_version()
-        if version == "1.3.0":
-            return fast_keccak(
-                encode_abi(
-                    ["bytes32", "uint256", "address"],
-                    [
-                        self.DOMAIN_TYPEHASH_V1_3_0,
-                        self.ethereum_client.get_chain_id(),
-                        self.address,
-                    ],
-                )
-            )
-        elif version == "1.1.1":
-            return fast_keccak(
-                encode_abi(
-                    ["bytes32", "address"],
-                    [
-                        self.DOMAIN_TYPEHASH_V1_1_1,
-                        self.address,
-                    ],
-                )
-            )
-        else:
-            raise InvalidSafeVersion(
-                f"Cannot get domain separator for version {version}"
-            )
-
     def check_funds_for_tx_gas(
         self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
     ) -> bool:
@@ -948,6 +923,13 @@ class Safe:
             )
         except (ValueError, BadFunctionCallOutput) as e:
             raise CannotRetrieveSafeInfoException(self.address) from e
+
+    def retrieve_domain_separator(
+        self, block_identifier: Optional[BlockIdentifier] = "latest"
+    ) -> str:
+        return self.contract.functions.domainSeparator().call(
+            block_identifier=block_identifier
+        )
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.get_code(self.address)

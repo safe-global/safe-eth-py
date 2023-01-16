@@ -43,6 +43,13 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertEqual(safe.retrieve_owners(), owners)
         self.assertEqual(safe.retrieve_threshold(), threshold)
 
+    def test_domain_separator(self):
+        safe = self.deploy_test_safe()
+        self.assertTrue(safe.domain_separator)
+
+        not_a_safe = Account.create().address
+        self.assertIsNone(Safe(not_a_safe, self.ethereum_client).domain_separator)
+
     def test_check_funds_for_tx_gas(self):
         safe = self.deploy_test_safe()
         safe_tx_gas = 2
