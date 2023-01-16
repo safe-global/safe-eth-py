@@ -4,7 +4,7 @@ from gnosis.eth.eip712 import eip712_encode_hash
 
 
 class TestEIP712(TestCase):
-    address = "0x8e12f01dae5fe7f1122dc42f2cb084f2f9e8aa03"
+    address = "0x8e12f01DAE5FE7f1122Dc42f2cB084F2f9E8aA03"
     types = {
         "EIP712Domain": [
             {"name": "name", "type": "string"},
@@ -85,8 +85,8 @@ class TestEIP712(TestCase):
 
         payload["types"] = self.types
         self.assertEqual(
-            eip712_encode_hash(payload),
-            b"\xd5N\xcbf7\xfa\x99\n\xae\x02\x86\xd4 \xacpe\x8d\xb9\x95\xaem\t\xcc\x9b\xb1\xda\xcf6J\x14\x17\xd0",
+            eip712_encode_hash(payload).hex(),
+            "d54ecb6637fa990aae0286d420ac70658db995ae6d09cc9bb1dacf364a1417d0",
         )
 
     def test_eip712_encode_hash_string_uint(self):
@@ -104,8 +104,8 @@ class TestEIP712(TestCase):
         }
 
         self.assertEqual(
-            eip712_encode_hash(payload),
-            b"\xd5N\xcbf7\xfa\x99\n\xae\x02\x86\xd4 \xacpe\x8d\xb9\x95\xaem\t\xcc\x9b\xb1\xda\xcf6J\x14\x17\xd0",
+            eip712_encode_hash(payload).hex(),
+            "d54ecb6637fa990aae0286d420ac70658db995ae6d09cc9bb1dacf364a1417d0",
         )
 
     def test_eip712_encode_hash_string_bytes(self):
