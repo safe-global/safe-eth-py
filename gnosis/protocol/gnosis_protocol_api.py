@@ -77,27 +77,34 @@ class GnosisProtocolAPI:
         else:  # XDAI
             return ChecksumAddress("0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1")
 
-    def get_fee(self, order: Order) -> int:
-        if order.is_sell_order():
-            amount = order.sellAmount
+    def get_fee(self, order: Order, from_address: ChecksumAddress) -> int:
+        url = self.base_url + "quote"
+        data_json = {
+            "sellToken": order.sellToken.lower(),
+            "buyToken": order.buyToken.lower(),
+            "sellAmountBeforeFee": str(order.sellAmount),
+            "validTo": order.validTo,
+            "appData": HexBytes(order.appData).hex()
+            if isinstance(order.appData, bytes)
+            else order.appData,
+            "feeAmount": str(order.feeAmount),
+            "kind": order.kind,
+            "partiallyFillable": order.partiallyFillable,
+            "signingScheme": "ethsign",
+            "from": from_address,
+            "priceQuality": "fast",
+        }
+        r = self.http_session.post(url, json=data_json)
+        if r.ok:
+            return int(r.json()["quote"]["feeAmount"])
         else:
-            amount = order.buyAmount
-        url = (
-            self.base_url
-            + f"fee/?sellToken={order.sellToken}&buyToken={order.buyToken}"
-            f"&amount={amount}&kind={order.kind}"
-        )
-        result = self.http_session.get(url).json()
-        if "amount" in result:
-            return int(result["amount"])
-        else:
-            return 0
+            return ErrorResponse(r.json())
 
     def place_order(
         self, order: Order, private_key: HexStr
     ) -> Union[HexStr, ErrorResponse]:
         """
-        Place order. If `feeAmount=0` in Order it will be calculated calling `get_fee(order)`
+        Place order. If `feeAmount=0` in Order it will be calculated calling `get_fee(order, from_address)`
 
         :return: UUID for the order as an hex hash
         """
@@ -106,7 +113,13 @@ class GnosisProtocolAPI:
         ), "Order buyAmount and sellAmount cannot be empty"
 
         url = self.base_url + "orders/"
-        order.feeAmount = order.feeAmount or self.get_fee(order)
+        from_address = Account.from_key(private_key).address
+        if not order.feeAmount:
+            fee_amount = self.get_fee(order, from_address)
+            if "errorType" in fee_amount:  # ErrorResponse
+                return fee_amount
+            order.feeAmount = fee_amount
+
         signable_hash = eip712_encode_hash(
             order.get_eip712_structured_data(
                 self.network.value, self.settlement_contract_address
@@ -129,7 +142,7 @@ class GnosisProtocolAPI:
             "partiallyFillable": order.partiallyFillable,
             "signature": signed_message.signature.hex(),
             "signingScheme": "ethsign",
-            "from": Account.from_key(private_key).address,
+            "from": from_address,
         }
         r = self.http_session.post(url, json=data_json)
         if r.ok:

@@ -17,9 +17,8 @@ class TestGnosisProtocolAPI(TestCase):
         super().setUpClass()
         cls.mainnet_gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.MAINNET)
         cls.goerli_gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.GOERLI)
-        cls.gno_token_address = "0x6810e776880C02933D47DB1b9fc05908e5386b96"
-        cls.weth_token_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-        cls.rinkeby_dai_address = "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa"
+        cls.mainnet_gno_token_address = "0x6810e776880C02933D47DB1b9fc05908e5386b96"
+        cls.goerli_cow_token_address = "0x3430d04E42a722c5Ae52C5Bffbf1F230C2677600"
 
     def test_api_is_available(self):
         random_owner = Account.create().address
@@ -36,7 +35,10 @@ class TestGnosisProtocolAPI(TestCase):
     def test_get_estimated_amount(self):
         gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.MAINNET)
         response = gnosis_protocol_api.get_estimated_amount(
-            self.gno_token_address, self.gno_token_address, OrderKind.SELL, 1
+            self.mainnet_gno_token_address,
+            self.mainnet_gno_token_address,
+            OrderKind.SELL,
+            1,
         )
         self.assertDictEqual(
             response,
@@ -48,7 +50,7 @@ class TestGnosisProtocolAPI(TestCase):
 
         response = gnosis_protocol_api.get_estimated_amount(
             "0x6820e776880c02933d47db1b9fc05908e5386b96",
-            self.gno_token_address,
+            self.mainnet_gno_token_address,
             OrderKind.SELL,
             1,
         )
@@ -56,7 +58,10 @@ class TestGnosisProtocolAPI(TestCase):
         self.assertIn("description", response)
 
         response = gnosis_protocol_api.get_estimated_amount(
-            self.gno_token_address, self.weth_token_address, OrderKind.SELL, int(1e18)
+            self.mainnet_gno_token_address,
+            self.mainnet_gnosis_protocol_api.weth_address,
+            OrderKind.SELL,
+            int(1e18),
         )
         amount = int(response["amount"]) / 1e18
         self.assertGreater(amount, 0)
@@ -64,10 +69,10 @@ class TestGnosisProtocolAPI(TestCase):
 
     def test_get_fee(self):
         order = Order(
-            sellToken=self.gno_token_address,
-            buyToken=self.gno_token_address,
+            sellToken=self.mainnet_gno_token_address,
+            buyToken=self.mainnet_gno_token_address,
             receiver=NULL_ADDRESS,
-            sellAmount=1,
+            sellAmount=int(1e18),
             buyAmount=1,
             validTo=int(time()) + 3600,
             appData=Web3.keccak(text="hola"),
@@ -77,7 +82,18 @@ class TestGnosisProtocolAPI(TestCase):
             sellTokenBalance="erc20",
             buyTokenBalance="erc20",
         )
-        self.assertGreaterEqual(self.goerli_gnosis_protocol_api.get_fee(order), 0)
+        from_address = Account.create().address
+        self.assertEqual(
+            self.mainnet_gnosis_protocol_api.get_fee(order, from_address),
+            {
+                "errorType": "SameBuyAndSellToken",
+                "description": "Buy token is the same as the sell token.",
+            },
+        )
+        order.buyToken = self.mainnet_gnosis_protocol_api.weth_address
+        self.assertGreaterEqual(
+            self.mainnet_gnosis_protocol_api.get_fee(order, from_address), 0
+        )
 
     def test_get_trades(self):
         mainnet_order_ui = "0x65F1206182C77A040ED41D507B59C622FA94AB5E71CCA567202CFF3909F3D5C4DBE338E45276630FD8237149DD47EE027AF26F9C619723D0"
@@ -101,8 +117,8 @@ class TestGnosisProtocolAPI(TestCase):
 
     def test_place_order(self):
         order = Order(
-            sellToken=self.gno_token_address,
-            buyToken=self.gno_token_address,
+            sellToken=self.mainnet_gno_token_address,
+            buyToken=self.mainnet_gno_token_address,
             receiver=NULL_ADDRESS,
             sellAmount=1,
             buyAmount=1,
@@ -129,7 +145,7 @@ class TestGnosisProtocolAPI(TestCase):
         )
 
         order.sellToken = self.goerli_gnosis_protocol_api.weth_address
-        order.buyToken = self.rinkeby_dai_address
+        order.buyToken = self.goerli_cow_token_address
         order_id = self.goerli_gnosis_protocol_api.place_order(
             order, Account().create().key
         )
