@@ -63,7 +63,7 @@ class TestGnosisProtocolAPI(TestCase):
             OrderKind.SELL,
             int(1e18),
         )
-        amount = int(response["amount"]) / 1e18
+        amount = float(response["buyAmount"]) / response["sellAmount"]
         self.assertGreater(amount, 0)
         self.assertLess(amount, 1)
 

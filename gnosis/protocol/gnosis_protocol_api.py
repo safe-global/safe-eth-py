@@ -10,6 +10,7 @@ from hexbytes import HexBytes
 from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.eip712 import eip712_encode_hash
 
+from ..eth.constants import NULL_ADDRESS
 from .order import Order, OrderKind
 
 
@@ -27,8 +28,8 @@ class TradeResponse(TypedDict):
 
 
 class AmountResponse(TypedDict):
-    amount: str
-    token: AnyAddress
+    sellAmount: int
+    buyAmount: int
 
 
 class ErrorResponse(TypedDict):
@@ -77,13 +78,15 @@ class GnosisProtocolAPI:
         else:  # XDAI
             return ChecksumAddress("0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1")
 
-    def get_fee(self, order: Order, from_address: ChecksumAddress) -> int:
+    def get_quote(
+        self, order: Order, from_address: ChecksumAddress
+    ) -> Union[Dict[str, Any], ErrorResponse]:
         url = self.base_url + "quote"
         data_json = {
             "sellToken": order.sellToken.lower(),
             "buyToken": order.buyToken.lower(),
             "sellAmountBeforeFee": str(order.sellAmount),
-            "validTo": order.validTo,
+            # "validTo": order.validTo,
             "appData": HexBytes(order.appData).hex()
             if isinstance(order.appData, bytes)
             else order.appData,
@@ -96,9 +99,19 @@ class GnosisProtocolAPI:
         }
         r = self.http_session.post(url, json=data_json)
         if r.ok:
-            return int(r.json()["quote"]["feeAmount"])
+            return r.json()
         else:
             return ErrorResponse(r.json())
+
+    def get_fee(
+        self, order: Order, from_address: ChecksumAddress
+    ) -> Union[int, ErrorResponse]:
+        quote = self.get_quote(order, from_address)
+
+        if "quote" in quote:
+            return int(quote["quote"]["feeAmount"])
+        else:
+            return quote
 
     def place_order(
         self, order: Order, private_key: HexStr
@@ -193,14 +206,36 @@ class GnosisProtocolAPI:
         base_token: ChecksumAddress,
         quote_token: ChecksumAddress,
         kind: OrderKind,
-        amount: int,
+        amount_wei: int,
     ) -> Union[AmountResponse, ErrorResponse]:
         """
-        The estimated amount in quote token for either buying or selling amount of baseToken.
+
+        :param base_token:
+        :param quote_token:
+        :param kind:
+        :param amount_wei:
+        :return: Both `sellAmount` and `buyAmount` as they can be adjusted by CowSwap API
         """
-        url = self.base_url + f"markets/{base_token}-{quote_token}/{kind.name}/{amount}"
-        r = self.http_session.get(url)
-        if r.ok:
-            return AmountResponse(r.json())
+        order = Order(
+            sellToken=base_token,
+            buyToken=quote_token,
+            receiver=NULL_ADDRESS,
+            sellAmount=amount_wei * 10 if kind == OrderKind.SELL else 0,
+            buyAmount=amount_wei * 10 if kind == OrderKind.BUY else 0,
+            validTo=0,  # Valid for 1 hour
+            appData="0x0000000000000000000000000000000000000000000000000000000000000000",
+            feeAmount=0,
+            kind=kind.name.lower(),  # `sell` or `buy`
+            partiallyFillable=False,
+            sellTokenBalance="erc20",  # `erc20`, `external` or `internal`
+            buyTokenBalance="erc20",  # `erc20` or `internal`
+        )
+
+        quote = self.get_quote(order, NULL_ADDRESS)
+        if "quote" in quote:
+            return {
+                "buyAmount": int(quote["quote"]["buyAmount"]),
+                "sellAmount": int(quote["quote"]["sellAmount"]),
+            }
         else:
-            return ErrorResponse(r.json())
+            return quote
