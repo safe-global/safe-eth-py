@@ -56,10 +56,14 @@ class CowswapOracle(PriceOracle):
             result = self.api.get_estimated_amount(
                 token_address_1, token_address_2, OrderKind.SELL, 10**token_1_decimals
             )
-            if "amount" in result:
+            if "buyAmount" in result:
                 # Decimals needs to be adjusted
                 token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
-                return float(result["amount"]) / 10**token_2_decimals
+                return (
+                    float(result["buyAmount"])
+                    / result["sellAmount"]
+                    * 10 ** (token_1_decimals - token_2_decimals)
+                )
 
             exception = None
         except IOError as exc:
