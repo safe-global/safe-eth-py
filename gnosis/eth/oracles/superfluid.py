@@ -30,7 +30,7 @@ class SuperfluidOracle(PriceOracle):
             EthereumNetwork.POLYGON,
             EthereumNetwork.GNOSIS,
             EthereumNetwork.ARBITRUM_ONE,
-            EthereumNetwork.OPTIMISTIC,
+            EthereumNetwork.OPTIMISM,
         )
 
     def get_price(self, token_address: str) -> float:

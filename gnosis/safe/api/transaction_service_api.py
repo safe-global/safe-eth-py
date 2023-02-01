@@ -25,7 +25,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
         EthereumNetwork.MAINNET: "https://safe-transaction-mainnet.safe.global",
         EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
-        EthereumNetwork.OPTIMISTIC: "https://safe-transaction-optimism.safe.global",
+        EthereumNetwork.OPTIMISM: "https://safe-transaction-optimism.safe.global",
         EthereumNetwork.ENERGY_WEB_VOLTA_TESTNET: "https://safe-transaction-volta.safe.global",
         EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
     }
