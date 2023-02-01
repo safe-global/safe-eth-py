@@ -40,7 +40,7 @@ class EtherscanClient:
         EthereumNetwork.MOON_MOONBASE: "https://moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
-        EthereumNetwork.CELO: "https://celoscan.io",
+        EthereumNetwork.CELO_MAINNET: "https://celoscan.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -61,7 +61,7 @@ class EtherscanClient:
         EthereumNetwork.MOON_MOONBASE: "https://api-moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://api.cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
-        EthereumNetwork.CELO: "https://api.celoscan.io",
+        EthereumNetwork.CELO_MAINNET: "https://api.celoscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
