@@ -29,7 +29,7 @@ class SuperfluidOracle(PriceOracle):
         return ethereum_client.get_network() in (
             EthereumNetwork.POLYGON,
             EthereumNetwork.GNOSIS,
-            EthereumNetwork.ARBITRUM,
+            EthereumNetwork.ARBITRUM_ONE,
             EthereumNetwork.OPTIMISTIC,
         )
 

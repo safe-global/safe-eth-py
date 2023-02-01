@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class TransactionServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
-        EthereumNetwork.ARBITRUM: "https://safe-transaction-arbitrum.safe.global",
+        EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
         EthereumNetwork.AURORA: "https://safe-transaction-aurora.safe.global",
         EthereumNetwork.AVALANCHE: "https://safe-transaction-avalanche.safe.global",
         EthereumNetwork.BINANCE: "https://safe-transaction-bsc.safe.global",

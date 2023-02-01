@@ -55,7 +55,7 @@ class BlockscoutClient:
         EthereumNetwork.RABBIT: "https://rabbit.analogscan.com",
         EthereumNetwork.KCC_MAINNET: "https://scan.kcc.io/",
         EthereumNetwork.KCC_TESTNET: "https://scan-testnet.kcc.network/",
-        EthereumNetwork.ARBITRUM: "https://explorer.arbitrum.io",
+        EthereumNetwork.ARBITRUM_ONE: "https://explorer.arbitrum.io",
         EthereumNetwork.ARBITRUM_NOVA: "https://nova-explorer.arbitrum.io",
         EthereumNetwork.ARBITRUM_GOERLI: "https://goerli-rollup-explorer.arbitrum.io",
     }
