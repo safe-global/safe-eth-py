@@ -13,7 +13,7 @@ class TestBlockscoutClient(TestCase):
         with self.assertRaises(BlockScoutConfigurationProblem):
             BlockscoutClient(EthereumNetwork.MAINNET)
 
-        blockscout_client = BlockscoutClient(EthereumNetwork.XDAI)
+        blockscout_client = BlockscoutClient(EthereumNetwork.GNOSIS)
         safe_master_copy_abi = sourcify_safe_metadata["output"]["abi"]
         safe_master_copy_address = "0x6851D6fDFAfD08c0295C392436245E5bc78B0185"
         contract_metadata = blockscout_client.get_contract_metadata(

@@ -28,7 +28,7 @@ class SuperfluidOracle(PriceOracle):
         """
         return ethereum_client.get_network() in (
             EthereumNetwork.POLYGON,
-            EthereumNetwork.XDAI,
+            EthereumNetwork.GNOSIS,
             EthereumNetwork.ARBITRUM,
             EthereumNetwork.OPTIMISTIC,
         )
