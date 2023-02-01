@@ -27,7 +27,7 @@ class SuperfluidOracle(PriceOracle):
         :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
         """
         return ethereum_client.get_network() in (
-            EthereumNetwork.MATIC,
+            EthereumNetwork.POLYGON,
             EthereumNetwork.XDAI,
             EthereumNetwork.ARBITRUM,
             EthereumNetwork.OPTIMISTIC,

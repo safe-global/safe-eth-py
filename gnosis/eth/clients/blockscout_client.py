@@ -20,7 +20,7 @@ class BlockScoutConfigurationProblem(BlockscoutClientException):
 class BlockscoutClient:
     NETWORK_WITH_URL = {
         EthereumNetwork.XDAI: "https://blockscout.com/poa/xdai/",
-        EthereumNetwork.MATIC: "https://polygon-explorer-mainnet.chainstacklabs.com/",
+        EthereumNetwork.POLYGON: "https://polygon-explorer-mainnet.chainstacklabs.com/",
         EthereumNetwork.MUMBAI: "https://polygon-explorer-mumbai.chainstacklabs.com/",
         EthereumNetwork.ENERGY_WEB_CHAIN: "https://explorer.energyweb.org/",
         EthereumNetwork.VOLTA: "https://volta-explorer.energyweb.org/",
