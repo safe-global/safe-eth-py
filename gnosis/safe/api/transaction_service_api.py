@@ -20,7 +20,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
         EthereumNetwork.AURORA: "https://safe-transaction-aurora.safe.global",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
-        EthereumNetwork.BINANCE: "https://safe-transaction-bsc.safe.global",
+        EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
         EthereumNetwork.ENERGY_WEB_CHAIN: "https://safe-transaction-ewc.safe.global",
         EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
         EthereumNetwork.MAINNET: "https://safe-transaction-mainnet.safe.global",
