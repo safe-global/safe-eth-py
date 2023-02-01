@@ -19,7 +19,7 @@ class TransactionServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
         EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
         EthereumNetwork.AURORA: "https://safe-transaction-aurora.safe.global",
-        EthereumNetwork.AVALANCHE: "https://safe-transaction-avalanche.safe.global",
+        EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
         EthereumNetwork.BINANCE: "https://safe-transaction-bsc.safe.global",
         EthereumNetwork.ENERGY_WEB_CHAIN: "https://safe-transaction-ewc.safe.global",
         EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
