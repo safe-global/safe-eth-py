@@ -37,8 +37,8 @@ class EtherscanClient:
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://snowtrace.io",
         EthereumNetwork.MOONBEAM: "https://moonscan.io",
         EthereumNetwork.MOONRIVER: "https://moonriver.moonscan.io",
-        EthereumNetwork.MOON_MOONBASE: "https://moonbase.moonscan.io",
-        EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
+        EthereumNetwork.MOONBASE_ALPHA: "https://moonbase.moonscan.io",
+        EthereumNetwork.CRONOS_MAINNET_BETA: "https://cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://celoscan.io",
     }
@@ -58,8 +58,8 @@ class EtherscanClient:
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://api.snowtrace.io",
         EthereumNetwork.MOONBEAM: "https://api-moonbeam.moonscan.io",
         EthereumNetwork.MOONRIVER: "https://api-moonriver.moonscan.io",
-        EthereumNetwork.MOON_MOONBASE: "https://api-moonbase.moonscan.io",
-        EthereumNetwork.CRONOS_MAINNET: "https://api.cronoscan.com",
+        EthereumNetwork.MOONBASE_ALPHA: "https://api-moonbase.moonscan.io",
+        EthereumNetwork.CRONOS_MAINNET_BETA: "https://api.cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://api.celoscan.io",
     }
