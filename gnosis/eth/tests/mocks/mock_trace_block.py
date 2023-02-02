@@ -179,7 +179,7 @@ trace_block_13191781_mock = [
         "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
         "blockNumber": 13191781,
         "error": "Reverted",
-        "result": None,
+        "result": {"gasUsed": 27856, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
         "transactionHash": "0xbe99757628bfc3d5c7ee4e42c2629ddd13ac52354e6abb189efe5e277dce05b3",
@@ -746,7 +746,12 @@ trace_block_13191781_mock = [
         "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
         "blockNumber": 13191781,
         "error": "Reverted",
-        "result": None,
+        "result": {
+            "gasUsed": 16268,
+            "output": HexBytes(
+                "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002b556e69737761705632526f757465723a20494e53554646494349454e545f4f55545055545f414d4f554e54000000000000000000000000000000000000000000"
+            ),
+        },
         "subtraces": 2,
         "traceAddress": [],
         "transactionHash": "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855",
@@ -889,7 +894,12 @@ trace_block_13191781_mock = [
         "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
         "blockNumber": 13191781,
         "error": "Reverted",
-        "result": None,
+        "result": {
+            "gasUsed": 93884,
+            "output": HexBytes(
+                "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000164d696e2072657475726e206e6f742072656163686564"
+            ),
+        },
         "subtraces": 5,
         "traceAddress": [],
         "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",

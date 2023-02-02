@@ -76,6 +76,47 @@ gnosis.eth.constants
 - ``SENTINEL_ADDRESS (0x000...1)``: Used for Gnosis Safe's linked lists (modules, owners...).
 - Maximum an minimum values for `R`, `S` and `V` in ethereum signatures.
 
+gnosis.eth.eip712
+~~~~~~~~~~~~~~~~~~~~
+.. code-block:: python
+
+    from gnosis.eth.eip712 import eip712_encode_hash
+
+    types = {'EIP712Domain': [{'name': 'name', 'type': 'string'},
+                              {'name': 'version', 'type': 'string'},
+                              {'name': 'chainId', 'type': 'uint256'},
+                              {'name': 'verifyingContract', 'type': 'address'}],
+             'Mailbox': [{'name': 'owner', 'type': 'address'},
+                         {'name': 'messages', 'type': 'Message[]'}],
+             'Message': [{'name': 'sender', 'type': 'address'},
+                         {'name': 'subject', 'type': 'string'},
+                         {'name': 'isSpam', 'type': 'bool'},
+                         {'name': 'body', 'type': 'string'}]}
+
+    msgs = [{'sender': ADDRESS,
+             'subject': 'Hello World',
+             'body': 'The sparrow flies at midnight.',
+             'isSpam': False},
+            {'sender': ADDRESS,
+             'subject': 'You may have already Won! :dumb-emoji:',
+             'body': 'Click here for sweepstakes!',
+             'isSpam': True}]
+
+    mailbox = {'owner': ADDRESS,
+               'messages': msgs}
+
+    payload = {'types': types,
+               'primaryType': 'Mailbox',
+               'domain': {'name': 'MyDApp',
+                          'version': '3.0',
+                          'chainId': 41,
+                          'verifyingContract': ADDRESS},
+               'message': mailbox}
+
+    eip712_hash = eip712_encode_hash(payload)
+
+
+
 gnosis.eth.oracles
 ~~~~~~~~~~~~~~~~~~
 Price oracles for Uniswap, UniswapV2, Kyber, SushiSwap, Aave, Balancer, Curve, Mooniswap, Yearn...

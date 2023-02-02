@@ -21,7 +21,7 @@ def just_test_if_mainnet_node() -> str:
         )
     else:
         try:
-            if not requests.post(
+            response = requests.post(
                 mainnet_node_url,
                 timeout=5,
                 json={
@@ -30,14 +30,45 @@ def just_test_if_mainnet_node() -> str:
                     "params": [],
                     "id": 1,
                 },
-            ).ok:
-                pytest.skip("Cannot connect to mainnet node", allow_module_level=True)
-        except IOError:
-            pytest.skip(
-                "Problem connecting to the mainnet node", allow_module_level=True
             )
+            if not response.ok:
+                pytest.fail(
+                    f"Problem connecting to mainnet node {response.status_code} - {response.content}"
+                )
+        except IOError:
+            pytest.fail("Problem connecting to the mainnet node")
     just_test_if_mainnet_node.checked = True
     return mainnet_node_url
+
+
+def just_test_if_polygon_node() -> str:
+    polygon_node_url = os.environ.get("ETHEREUM_POLYGON_NODE")
+    if hasattr(just_test_if_polygon_node, "checked"):  # Just check node first time
+        return polygon_node_url
+
+    if not polygon_node_url:
+        pytest.skip(
+            "Polygon node not defined, cannot test oracles", allow_module_level=True
+        )
+    else:
+        try:
+            if not requests.post(
+                polygon_node_url,
+                timeout=5,
+                json={
+                    "jsonrpc": "2.0",
+                    "method": "eth_blockNumber",
+                    "params": [],
+                    "id": 1,
+                },
+            ).ok:
+                pytest.skip("Cannot connect to poylgon node", allow_module_level=True)
+        except IOError:
+            pytest.skip(
+                "Problem connecting to the polygon node", allow_module_level=True
+            )
+    just_test_if_polygon_node.checked = True
+    return polygon_node_url
 
 
 def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:

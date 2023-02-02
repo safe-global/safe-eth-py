@@ -1,7 +1,6 @@
+from functools import cached_property
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
-from eip712_structs import Address, Bytes, EIP712Struct, Uint, make_domain
-from eip712_structs.struct import StructTuple
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
@@ -11,10 +10,9 @@ from web3.types import BlockIdentifier, TxParams, Wei
 from gnosis.eth import EthereumClient
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
-from gnosis.util import cached_property
+from gnosis.eth.eip712 import eip712_encode_hash
+from gnosis.eth.ethereum_client import TxSpeed
 
-from ..eth.ethereum_client import TxSpeed
-from ..eth.utils import fast_keccak
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -37,36 +35,6 @@ from .exceptions import (
 )
 from .safe_signature import SafeSignature
 from .signatures import signature_to_bytes
-
-
-class EIP712SafeTx(EIP712Struct):
-    to = Address()
-    value = Uint(256)
-    data = Bytes()
-    operation = Uint(8)
-    safeTxGas = Uint(256)
-    baseGas = Uint(256)  # `dataGas` was renamed to `baseGas` in 1.0.0
-    gasPrice = Uint(256)
-    gasToken = Address()
-    refundReceiver = Address()
-    nonce = Uint(256)
-
-
-class EIP712LegacySafeTx(EIP712Struct):
-    to = Address()
-    value = Uint(256)
-    data = Bytes()
-    operation = Uint(8)
-    safeTxGas = Uint(256)
-    dataGas = Uint(256)
-    gasPrice = Uint(256)
-    gasToken = Address()
-    refundReceiver = Address()
-    nonce = Uint(256)
-
-
-EIP712SafeTx.type_name = "SafeTx"
-EIP712LegacySafeTx.type_name = "SafeTx"
 
 
 class SafeTx:
@@ -165,39 +133,58 @@ class SafeTx:
             return self.contract.functions.VERSION().call()
 
     @property
-    def _eip712_payload(self) -> StructTuple:
-        data = self.data.hex() if self.data else ""
+    def eip712_structured_data(self) -> Dict[str, Any]:
         safe_version = Version(self.safe_version)
-        cls = EIP712SafeTx if safe_version >= Version("1.0.0") else EIP712LegacySafeTx
-        message = cls(
-            to=self.to,
-            value=self.value,
-            data=data,
-            operation=self.operation,
-            safeTxGas=self.safe_tx_gas,
-            baseGas=self.base_gas,
-            dataGas=self.base_gas,
-            gasPrice=self.gas_price,
-            gasToken=self.gas_token,
-            refundReceiver=self.refund_receiver,
-            nonce=self.safe_nonce,
-        )
-        domain = make_domain(
-            verifyingContract=self.safe_address,
-            chainId=self.chain_id if safe_version >= Version("1.3.0") else None,
-        )
-        return StructTuple(message, domain)
 
-    @property
-    def eip712_structured_data(self) -> Dict:
-        message, domain = self._eip712_payload
-        return message.to_message(domain)
+        # Safes >= 1.0.0 Renamed `baseGas` to `dataGas`
+        base_gas_key = "baseGas" if safe_version >= Version("1.0.0") else "dataGas"
+
+        types = {
+            "EIP712Domain": [{"name": "verifyingContract", "type": "address"}],
+            "SafeTx": [
+                {"name": "to", "type": "address"},
+                {"name": "value", "type": "uint256"},
+                {"name": "data", "type": "bytes"},
+                {"name": "operation", "type": "uint8"},
+                {"name": "safeTxGas", "type": "uint256"},
+                {"name": base_gas_key, "type": "uint256"},
+                {"name": "gasPrice", "type": "uint256"},
+                {"name": "gasToken", "type": "address"},
+                {"name": "refundReceiver", "type": "address"},
+                {"name": "nonce", "type": "uint256"},
+            ],
+        }
+        message = {
+            "to": self.to,
+            "value": self.value,
+            "data": self.data,
+            "operation": self.operation,
+            "safeTxGas": self.safe_tx_gas,
+            base_gas_key: self.base_gas,
+            "dataGas": self.base_gas,
+            "gasPrice": self.gas_price,
+            "gasToken": self.gas_token,
+            "refundReceiver": self.refund_receiver,
+            "nonce": self.safe_nonce,
+        }
+
+        payload = {
+            "types": types,
+            "primaryType": "SafeTx",
+            "domain": {"verifyingContract": self.safe_address},
+            "message": message,
+        }
+
+        # Enable chainId from v1.3.0 onwards
+        if safe_version >= Version("1.3.0"):
+            payload["domain"]["chainId"] = self.chain_id
+            types["EIP712Domain"].insert(0, {"name": "chainId", "type": "uint256"})
+
+        return payload
 
     @property
     def safe_tx_hash(self) -> HexBytes:
-        message, domain = self._eip712_payload
-        signable_bytes = message.signable_bytes(domain)
-        return HexBytes(fast_keccak(signable_bytes))
+        return HexBytes(eip712_encode_hash(self.eip712_structured_data))
 
     @property
     def signers(self) -> List[str]:

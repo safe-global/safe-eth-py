@@ -1,5 +1,6 @@
 import functools
 import logging
+from functools import cached_property
 from typing import Optional
 
 from eth_abi.exceptions import DecodingError
@@ -7,10 +8,9 @@ from eth_typing import ChecksumAddress
 from web3.contract import Contract
 from web3.exceptions import BadFunctionCallOutput
 
-from gnosis.util import cached_property
-
 from .. import EthereumClient
 from ..constants import NULL_ADDRESS
+from ..contracts import get_erc20_contract
 from .abis.uniswap_v3 import (
     uniswap_v3_factory_abi,
     uniswap_v3_pool_abi,
@@ -138,25 +138,47 @@ class UniswapV3Oracle(PriceOracle):
                 f"Uniswap V3 pool does not exist for {token_address} and {token_address_2}"
             )
 
-        pool_contract = self.w3.eth.contract(pool_address, abi=uniswap_v3_pool_abi)
+        # Decimals needs to be adjusted
+        token_decimals = get_decimals(token_address, self.ethereum_client)
+        token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
 
+        pool_contract = self.w3.eth.contract(pool_address, abi=uniswap_v3_pool_abi)
         try:
-            sqrt_price_x96, _, _, _, _, _, _ = pool_contract.functions.slot0().call()
+            (
+                token_balance,
+                token_2_balance,
+                (sqrt_price_x96, _, _, _, _, _, _),
+            ) = self.ethereum_client.batch_call(
+                [
+                    get_erc20_contract(
+                        self.ethereum_client.w3, token_address
+                    ).functions.balanceOf(pool_address),
+                    get_erc20_contract(
+                        self.ethereum_client.w3, token_address_2
+                    ).functions.balanceOf(pool_address),
+                    pool_contract.functions.slot0(),
+                ]
+            )
+            if (token_balance / 10**token_decimals) < 2 or (
+                token_2_balance / 10**token_2_decimals
+            ) < 2:
+                error_message = (
+                    f"Not enough liquidity on uniswap v3 for pair token_1={token_address} "
+                    f"token_2={token_address_2}, at least 2 units of each token are required"
+                )
+                logger.warning(error_message)
+                raise CannotGetPriceFromOracle(error_message)
         except (
             ValueError,
             BadFunctionCallOutput,
             DecodingError,
         ) as e:
             error_message = (
-                f"Cannot get uniswap v2 price for pair token_1={token_address} "
+                f"Cannot get uniswap v3 price for pair token_1={token_address} "
                 f"token_2={token_address_2}"
             )
             logger.warning(error_message)
             raise CannotGetPriceFromOracle(error_message) from e
-
-        # Decimals needs to be adjusted
-        token_decimals = get_decimals(token_address, self.ethereum_client)
-        token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
 
         # https://docs.uniswap.org/sdk/guides/fetching-prices
         if not reversed:

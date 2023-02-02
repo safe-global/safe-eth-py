@@ -20,10 +20,10 @@ from .oracles import (
     UnderlyingToken,
     UniswapOracle,
     UniswapV2Oracle,
-    UsdPricePoolOracle,
     YearnOracle,
     ZerionComposedOracle,
 )
+from .superfluid import SuperfluidOracle
 from .sushiswap import SushiswapOracle
 from .uniswap_v3 import UniswapV3Oracle
 
@@ -45,7 +45,7 @@ __all__ = [
     "UniswapOracle",
     "UniswapV2Oracle",
     "UniswapV3Oracle",
-    "UsdPricePoolOracle",
     "YearnOracle",
     "ZerionComposedOracle",
+    "SuperfluidOracle",
 ]

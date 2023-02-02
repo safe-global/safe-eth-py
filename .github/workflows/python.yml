@@ -1,5 +1,13 @@
 name: Python CI
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+  release:
+    types: [ released ]
+
 
 jobs:
   linting:
@@ -14,8 +22,14 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: '.pre-commit-config.yaml'
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Install dependencies
-        run: pip install pre-commit
+        run: pip install -U pre-commit
       - name: Run pre-commit
         run: pre-commit run --all-files
 
@@ -23,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.8, 3.9, "3.10"]
     services:
       postgres:
         image: postgres:13
@@ -53,12 +67,13 @@ jobs:
       env:
         PIP_USE_MIRRORS: true
     - name: Run tests and coverage
-      run: coverage run --source=$SOURCE_FOLDER -m py.test -W ignore::DeprecationWarning -rxXs --reruns 3
+      run: coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3
       env:
         SOURCE_FOLDER: gnosis
         DJANGO_SETTINGS_MODULE: config.settings.test
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
-    - name: Test setup.py
+        ETHEREUM_POLYGON_NODE: ${{ secrets.ETHEREUM_POLYGON_NODE }}
+    - name: Test packaging
       run: pip install -e .
     - name: Send results to coveralls
       run: coveralls --service=github
@@ -70,7 +85,7 @@ jobs:
     needs:
       - linting
       - test-app
-    if: startsWith(github.ref, 'refs/tags/')
+    if: (github.event_name == 'release' && github.event.action == 'released')
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python

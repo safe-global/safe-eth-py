@@ -1,12 +1,16 @@
 import dataclasses
 import math
 from enum import Enum
+from functools import cached_property
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
+from eth_abi import encode_abi
+from eth_abi.exceptions import DecodingError
+from eth_abi.packed import encode_abi_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, Hash32
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
@@ -27,10 +31,10 @@ from gnosis.eth.contracts import (
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
+    fast_keccak,
     get_eth_address_with_key,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
-from gnosis.util import cached_property
 
 from ..eth.typing import EthereumData
 from .exceptions import (
@@ -76,11 +80,18 @@ class Safe:
     Class to manage a Gnosis Safe
     """
 
+    # keccak256("fallback_manager.handler.address")
     FALLBACK_HANDLER_STORAGE_SLOT = (
         0x6C9A6C4A39284E37ED1CF53D337577D14212A4870FB976A4366C693B939918D5
     )
+    # keccak256("guard_manager.guard.address")
     GUARD_STORAGE_SLOT = (
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
+    )
+
+    # keccak256("SafeMessage(bytes message)");
+    SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
+        "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
 
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
@@ -96,6 +107,26 @@ class Safe:
 
     def __str__(self):
         return f"Safe={self.address}"
+
+    @cached_property
+    def contract(self) -> Contract:
+        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
+        version = v_1_3_0_contract.functions.VERSION().call()
+        if version == "1.3.0":
+            return v_1_3_0_contract
+        else:
+            return get_safe_V1_1_1_contract(self.w3, address=self.address)
+
+    @cached_property
+    def domain_separator(self) -> Optional[bytes]:
+        """
+        :return: EIP721 DomainSeparator for the Safe. Returns `None` if not supported (for Safes < 1.0.0)
+        """
+        try:
+            return self.retrieve_domain_separator()
+        except (ValueError, BadFunctionCallOutput, DecodingError):
+            logger.warning("Safe %s does not support domainSeparator", self.address)
+            return None
 
     @staticmethod
     def create(
@@ -495,15 +526,6 @@ class Safe:
 
         return safe_creation_tx
 
-    @cached_property
-    def contract(self) -> Contract:
-        v_1_3_0_contract = get_safe_V1_3_0_contract(self.w3, address=self.address)
-        version = v_1_3_0_contract.functions.VERSION().call()
-        if version == "1.3.0":
-            return v_1_3_0_contract
-        else:
-            return get_safe_V1_1_1_contract(self.w3, address=self.address)
-
     def check_funds_for_tx_gas(
         self, safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
     ) -> bool:
@@ -790,7 +812,7 @@ class Safe:
         # So gas needed by caller will be around 35k
         OLD_CALL_GAS = 35000
         # Web3 `estimate_gas` estimates less gas
-        WEB3_ESTIMATION_OFFSET = 20000
+        WEB3_ESTIMATION_OFFSET = 23000
         ADDITIONAL_GAS = PROXY_GAS + OLD_CALL_GAS
 
         try:
@@ -805,7 +827,7 @@ class Safe:
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def estimate_tx_operational_gas(self, data_bytes_length: int):
+    def estimate_tx_operational_gas(self, data_bytes_length: int) -> int:
         """
         DEPRECATED. `estimate_tx_base_gas` already includes this.
         Estimates the gas for the verification of the signatures and other safe related tasks
@@ -821,6 +843,35 @@ class Safe:
         """
         threshold = self.retrieve_threshold()
         return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
+
+    def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
+        """
+        Return hash of a message that can be signed by owners.
+
+        :param message: Message that should be hashed
+        :return: Message hash
+        """
+
+        if isinstance(message, str):
+            message = message.encode()
+        message_hash = fast_keccak(message)
+
+        safe_message_hash = Web3.keccak(
+            encode_abi(
+                ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
+            )
+        )
+        return Web3.keccak(
+            encode_abi_packed(
+                ["bytes1", "bytes1", "bytes32", "bytes32"],
+                [
+                    bytes.fromhex("19"),
+                    bytes.fromhex("01"),
+                    self.domain_separator,
+                    safe_message_hash,
+                ],
+            )
+        )
 
     def retrieve_all_info(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
@@ -872,6 +923,13 @@ class Safe:
             )
         except (ValueError, BadFunctionCallOutput) as e:
             raise CannotRetrieveSafeInfoException(self.address) from e
+
+    def retrieve_domain_separator(
+        self, block_identifier: Optional[BlockIdentifier] = "latest"
+    ) -> str:
+        return self.contract.functions.domainSeparator().call(
+            block_identifier=block_identifier
+        )
 
     def retrieve_code(self) -> HexBytes:
         return self.w3.eth.get_code(self.address)

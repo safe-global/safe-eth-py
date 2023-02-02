@@ -17,14 +17,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_1_1_contract,
 )
 from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
-
-try:
-    from functools import cache
-except ImportError:
-    from functools import lru_cache
-
-    cache = lru_cache(maxsize=None)
-
+from gnosis.util import cache
 
 logger = getLogger(__name__)
 

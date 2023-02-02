@@ -32,12 +32,15 @@ class EtherscanClient:
         EthereumNetwork.MATIC: "https://polygonscan.com",
         EthereumNetwork.OPTIMISTIC: "https://optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://arbiscan.io",
+        EthereumNetwork.ARBITRUM_NOVA: "https://nova.arbiscan.io",
+        EthereumNetwork.ARBITRUM_GOERLI: "https://goerli.arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://snowtrace.io",
         EthereumNetwork.MOON_MOONBEAM: "https://moonscan.io",
         EthereumNetwork.MOON_MOONRIVER: "https://moonriver.moonscan.io",
         EthereumNetwork.MOON_MOONBASE: "https://moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
+        EthereumNetwork.CELO: "https://celoscan.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -45,17 +48,20 @@ class EtherscanClient:
         EthereumNetwork.RINKEBY: "https://api-rinkeby.etherscan.io",
         EthereumNetwork.ROPSTEN: "https://api-ropsten.etherscan.io",
         EthereumNetwork.GOERLI: "https://api-goerli.etherscan.io/",
-        EthereumNetwork.KOVAN: "https://api-kovan.etherscan.io/",
+        EthereumNetwork.KOVAN: "https://api-kovan.etherscan.io",
         EthereumNetwork.BINANCE: "https://api.bscscan.com",
         EthereumNetwork.MATIC: "https://api.polygonscan.com",
         EthereumNetwork.OPTIMISTIC: "https://api-optimistic.etherscan.io",
         EthereumNetwork.ARBITRUM: "https://api.arbiscan.io",
+        EthereumNetwork.ARBITRUM_NOVA: "https://api-nova.arbiscan.io",
+        EthereumNetwork.ARBITRUM_GOERLI: "https://api-goerli.arbiscan.io",
         EthereumNetwork.AVALANCHE: "https://api.snowtrace.io",
         EthereumNetwork.MOON_MOONBEAM: "https://api-moonbeam.moonscan.io",
         EthereumNetwork.MOON_MOONRIVER: "https://api-moonriver.moonscan.io",
         EthereumNetwork.MOON_MOONBASE: "https://api-moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://api.cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
+        EthereumNetwork.CELO: "https://api.celoscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
