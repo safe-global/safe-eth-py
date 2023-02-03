@@ -85,7 +85,7 @@ class GnosisProtocolAPI:
         data_json = {
             "sellToken": order.sellToken.lower(),
             "buyToken": order.buyToken.lower(),
-            "sellAmountBeforeFee": str(order.sellAmount),
+            "sellAmountAfterFee": str(order.sellAmount),
             # "validTo": order.validTo,
             "appData": HexBytes(order.appData).hex()
             if isinstance(order.appData, bytes)
