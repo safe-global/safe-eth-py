@@ -25,7 +25,7 @@ class TestGnosisProtocolAPI(TestCase):
         for ethereum_network in (
             EthereumNetwork.MAINNET,
             EthereumNetwork.GOERLI,
-            EthereumNetwork.XDAI,
+            EthereumNetwork.GNOSIS,
         ):
             with self.subTest(ethereum_network=ethereum_network):
                 self.assertEqual(
