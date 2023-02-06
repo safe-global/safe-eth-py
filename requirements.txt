@@ -4,7 +4,7 @@ djangorestframework==3.14.0
 hexbytes==0.2.3
 packaging
 psycopg2-binary==2.9.5
-py-evm==0.5.0a3
+py-evm==0.6.1a2
 pysha3>=1.0.2
 requests==2.28.2
 web3==5.31.3
