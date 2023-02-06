@@ -70,9 +70,9 @@ class CowswapOracle(PriceOracle):
             exception = exc
             result = {}
 
-        error_message = (
+        message = (
             f"Cannot get price from CowSwap {result} "
             f"for token-1={token_address_1} to token-2={token_address_2}"
         )
-        logger.warning(error_message)
-        raise CannotGetPriceFromOracle(error_message) from exception
+        logger.debug(message)
+        raise CannotGetPriceFromOracle(message) from exception

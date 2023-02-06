@@ -194,9 +194,9 @@ class UniswapOracle(PriceOracle):
             if uniswap_exchange_address == NULL_ADDRESS:
                 raise ValueError
         except (ValueError, BadFunctionCallOutput, DecodingError) as e:
-            error_message = f"Non existing uniswap exchange for token={token_address}"
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
+            message = f"Non existing uniswap exchange for token={token_address}"
+            logger.debug(message)
+            raise CannotGetPriceFromOracle(message) from e
 
         try:
             balance, token_decimals, token_balance = self._get_balances_using_batching(
@@ -210,12 +210,12 @@ class UniswapOracle(PriceOracle):
 
             price = balance / token_balance / 10 ** (18 - token_decimals)
             if price <= 0.0:
-                error_message = (
+                message = (
                     f"price={price} <= 0 from uniswap-factory={uniswap_exchange_address} "
                     f"for token={token_address}"
                 )
-                logger.warning(error_message)
-                raise InvalidPriceFromOracle(error_message)
+                logger.debug(message)
+                raise InvalidPriceFromOracle(message)
             return price
         except (
             ValueError,
@@ -223,9 +223,9 @@ class UniswapOracle(PriceOracle):
             BadFunctionCallOutput,
             DecodingError,
         ) as e:
-            error_message = f"Cannot get token balance for token={token_address}"
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
+            message = f"Cannot get token balance for token={token_address}"
+            logger.debug(message)
+            raise CannotGetPriceFromOracle(message) from e
 
 
 class UniswapV2Oracle(PricePoolOracle, PriceOracle):
@@ -391,12 +391,12 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             BadFunctionCallOutput,
             DecodingError,
         ) as e:
-            error_message = (
+            message = (
                 f"Cannot get uniswap v2 price for pair token_1={token_address} "
                 f"token_2={token_address_2}"
             )
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
+            logger.debug(message)
+            raise CannotGetPriceFromOracle(message) from e
 
     def get_price_without_exception(
         self, token_address: str, token_address_2: Optional[str] = None
@@ -458,11 +458,9 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             BadFunctionCallOutput,
             DecodingError,
         ) as e:
-            error_message = (
-                f"Cannot get uniswap v2 price for pool token={pool_token_address}"
-            )
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
+            message = f"Cannot get uniswap v2 price for pool token={pool_token_address}"
+            logger.debug(message)
+            raise CannotGetPriceFromOracle(message) from e
 
 
 class AaveOracle(PriceOracle):

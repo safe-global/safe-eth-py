@@ -162,23 +162,23 @@ class UniswapV3Oracle(PriceOracle):
             if (token_balance / 10**token_decimals) < 2 or (
                 token_2_balance / 10**token_2_decimals
             ) < 2:
-                error_message = (
+                message = (
                     f"Not enough liquidity on uniswap v3 for pair token_1={token_address} "
                     f"token_2={token_address_2}, at least 2 units of each token are required"
                 )
-                logger.warning(error_message)
-                raise CannotGetPriceFromOracle(error_message)
+                logger.debug(message)
+                raise CannotGetPriceFromOracle(message)
         except (
             ValueError,
             BadFunctionCallOutput,
             DecodingError,
         ) as e:
-            error_message = (
+            message = (
                 f"Cannot get uniswap v3 price for pair token_1={token_address} "
                 f"token_2={token_address_2}"
             )
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
+            logger.debug(message)
+            raise CannotGetPriceFromOracle(message) from e
 
         # https://docs.uniswap.org/sdk/guides/fetching-prices
         if not reversed:
