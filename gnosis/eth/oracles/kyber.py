@@ -98,17 +98,17 @@ class KyberOracle(PriceOracle):
                 price = (token_unit / expected_rate) if expected_rate else 0
 
             if price <= 0.0:
-                error_message = (
+                message = (
                     f"price={price} <= 0 from kyber-network-proxy={self.kyber_network_proxy_address} "
                     f"for token-1={token_address_1} to token-2={token_address_2}"
                 )
-                logger.warning(error_message)
-                raise InvalidPriceFromOracle(error_message)
+                logger.debug(message)
+                raise InvalidPriceFromOracle(message)
             return price
         except (ValueError, BadFunctionCallOutput, DecodingError) as e:
-            error_message = (
+            message = (
                 f"Cannot get price from kyber-network-proxy={self.kyber_network_proxy_address} "
                 f"for token-1={token_address_1} to token-2={token_address_2}"
             )
-            logger.warning(error_message)
-            raise CannotGetPriceFromOracle(error_message) from e
+            logger.debug(message)
+            raise CannotGetPriceFromOracle(message) from e

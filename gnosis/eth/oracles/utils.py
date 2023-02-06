@@ -32,6 +32,6 @@ def get_decimals(
         BadFunctionCallOutput,
         DecodingError,
     ) as e:
-        error_message = f"Cannot get decimals for token={token_address}"
-        logger.warning(error_message)
-        raise CannotGetPriceFromOracle(error_message) from e
+        message = f"Cannot get decimals for token={token_address}"
+        logger.debug(message)
+        raise CannotGetPriceFromOracle(message) from e
