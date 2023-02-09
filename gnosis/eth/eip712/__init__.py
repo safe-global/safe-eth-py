@@ -4,6 +4,7 @@ Based on https://github.com/jvinet/eip712, adjustments by https://github.com/uxi
 Routines for EIP712 encoding and signing.
 
 Copyright (C) 2022 Judd Vinet <jvinet@zeroflux.org>
+                   Uxío Fuentefría <uxio@safe.global>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -75,15 +76,16 @@ def encode_data(primary_type: str, data, types):
             return ["bytes32", fast_keccak(value)]
 
         if typ.endswith("]"):
-            parsed_type = typ[:-2]
-            type_value_pairs = dict(
-                [_encode_field(name, parsed_type, v) for v in value]
-            )
-            h = fast_keccak(
-                encode_abi(
-                    list(type_value_pairs.keys()), list(type_value_pairs.values())
-                )
-            )
+            # Array type
+            if value:
+                parsed_type = typ[: typ.rindex("[")]
+                type_value_pairs = [_encode_field(name, parsed_type, v) for v in value]
+                data_types, data_hashes = zip(*type_value_pairs)
+            else:
+                # Empty array
+                data_types, data_hashes = [], []
+
+            h = fast_keccak(encode_abi(data_types, data_hashes))
             return ["bytes32", h]
 
         return [typ, value]
