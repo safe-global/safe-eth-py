@@ -41,13 +41,14 @@ class EtherscanClient:
         EthereumNetwork.CRONOS_MAINNET_BETA: "https://cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://celoscan.io",
+        EthereumNetwork.BASE_GOERLI_TESTNET: "https://goerli.basescan.org",
     }
 
     NETWORK_WITH_API_URL = {
         EthereumNetwork.MAINNET: "https://api.etherscan.io",
         EthereumNetwork.RINKEBY: "https://api-rinkeby.etherscan.io",
         EthereumNetwork.ROPSTEN: "https://api-ropsten.etherscan.io",
-        EthereumNetwork.GOERLI: "https://api-goerli.etherscan.io/",
+        EthereumNetwork.GOERLI: "https://api-goerli.etherscan.io",
         EthereumNetwork.KOVAN: "https://api-kovan.etherscan.io",
         EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "https://api.bscscan.com",
         EthereumNetwork.POLYGON: "https://api.polygonscan.com",
@@ -62,6 +63,7 @@ class EtherscanClient:
         EthereumNetwork.CRONOS_MAINNET_BETA: "https://api.cronoscan.com",
         EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://api.celoscan.io",
+        EthereumNetwork.BASE_GOERLI_TESTNET: "https://api-goerli.basescan.org",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
