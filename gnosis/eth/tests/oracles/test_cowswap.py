@@ -80,8 +80,6 @@ class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
         ):
             with self.assertRaisesMessage(
                 CannotGetPriceFromOracle,
-                f"Cannot get price from CowSwap "
-                f"{{'errorType': 'UnsupportedToken', 'description': 'Token address {random_token.lower()}'}} "
-                f"for token-1={random_token} to token-2={weth_token_mainnet_address}",
+                f"Cannot get price from CowSwap {{'errorType': 'UnsupportedToken', 'description': 'Token {random_token.lower()} is unsupported: Could not find on chain source of the token with at least {{MIN_AMOUNT}} balance.'}} for token-1={random_token} to token-2={weth_token_mainnet_address}",
             ):
                 cowswap_oracle.get_price(random_token)
