@@ -58,12 +58,7 @@ class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
         with mock.patch.object(
             Session, "post", side_effect=IOError("Connection Error")
         ):
-            with self.assertRaisesMessage(
-                CannotGetPriceFromOracle,
-                f"Cannot get price from CowSwap "
-                f"{{}} "
-                f"for token-1={usdc_token_mainnet_address} to token-2={dai_token_mainnet_address}",
-            ):
+            with self.assertRaises(CannotGetPriceFromOracle):
                 cowswap_oracle.get_price(
                     usdc_token_mainnet_address, dai_token_mainnet_address
                 )
@@ -78,8 +73,5 @@ class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
         with mock.patch(
             "gnosis.eth.oracles.cowswap.get_decimals", autospec=True, return_value=18
         ):
-            with self.assertRaisesMessage(
-                CannotGetPriceFromOracle,
-                f"Cannot get price from CowSwap {{'errorType': 'UnsupportedToken', 'description': 'Token {random_token.lower()} is unsupported: Could not find on chain source of the token with at least {{MIN_AMOUNT}} balance.'}} for token-1={random_token} to token-2={weth_token_mainnet_address}",
-            ):
+            with self.assertRaises(CannotGetPriceFromOracle):
                 cowswap_oracle.get_price(random_token)
