@@ -1407,10 +1407,11 @@ class EthereumClient:
 
     def get_network(self) -> EthereumNetwork:
         """
-        Get network name based on the chainId
+        Get network name based on the chainId. This method is not cached as the method for getting the
+        `chainId` already is.
 
         :return: EthereumNetwork based on the chainId. If network is not
-            on our list, `EthereumNetwork.UNKOWN` is returned
+            on our list, `EthereumNetwork.UNKNOWN` is returned
         """
         return EthereumNetwork(self.get_chain_id())
 
@@ -1533,6 +1534,7 @@ class EthereumClient:
                     "gasPrice": self.w3.eth.gas_price,
                     "value": Wei(0),
                     "to": contract_address if contract_address else "",
+                    "chainId": self.get_chain_id(),
                 }
                 tx["gas"] = self.w3.eth.estimate_gas(tx)
                 tx_hash = self.send_unsigned_transaction(
@@ -1942,6 +1944,7 @@ class EthereumClient:
             "value": value,
             "gas": gas or Wei(self.estimate_gas(to, account.address, value)),
             "gasPrice": Wei(gas_price),
+            "chainId": self.get_chain_id(),
         }
 
         if nonce is not None:
