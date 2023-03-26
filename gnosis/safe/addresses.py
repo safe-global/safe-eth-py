@@ -256,15 +256,15 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 938848, "1.3.0+L2"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 939064, "1.3.0"),
     ],
-    EthereumNetwork.FLR_COSTON: [
+    EthereumNetwork.FLARE_TESTNET_COSTON: [
         ("0x7a72bA633DaF405425c0d7343E4b802B05d87bc6", 5573503, "1.3.0+L2"),
         ("0xab451EA38C6001D202fbE7155C6fCDAcb1713244", 5573507, "1.3.0"),
     ],
-    EthereumNetwork.SGB_SONGBIRD: [
+    EthereumNetwork.SONGBIRD_CANARY_NETWORK: [
         ("0x7a72bA633DaF405425c0d7343E4b802B05d87bc6", 24778017, "1.3.0+L2"),
         ("0xab451EA38C6001D202fbE7155C6fCDAcb1713244", 24778025, "1.3.0"),
     ],
-    EthereumNetwork.FLR_FLARE: [
+    EthereumNetwork.FLARE_MAINNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 3923017, "1.3.0+L2"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 3923021, "1.3.0"),
     ],
@@ -455,13 +455,13 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.BASE_GOERLI_TESTNET: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 938848),  # v1.3.0
     ],
-    EthereumNetwork.FLR_COSTON: [
+    EthereumNetwork.FLARE_TESTNET_COSTON: [
         ("0xB20452a41ea9Aca263afce6B0C7CC0d5Fd410D62", 5573480),  # v1.3.0
     ],
-    EthereumNetwork.SGB_SONGBIRD: [
+    EthereumNetwork.SONGBIRD_CANARY_NETWORK: [
         ("0xB20452a41ea9Aca263afce6B0C7CC0d5Fd410D62", 24777975),  # v1.3.0
     ],
-    EthereumNetwork.FLR_FLARE: [
+    EthereumNetwork.FLARE_MAINNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 3922979),  # v1.3.0
     ],
 }
