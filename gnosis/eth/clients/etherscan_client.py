@@ -42,6 +42,7 @@ class EtherscanClient:
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://celoscan.io",
         EthereumNetwork.BASE_GOERLI_TESTNET: "https://goerli.basescan.org",
+        EthereumNetwork.NEON_EVM_DEVNET: "https://neonscan.org",
     }
 
     NETWORK_WITH_API_URL = {
@@ -64,6 +65,7 @@ class EtherscanClient:
         EthereumNetwork.CRONOS_TESTNET: "https://api-testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://api.celoscan.io",
         EthereumNetwork.BASE_GOERLI_TESTNET: "https://api-goerli.basescan.org",
+        EthereumNetwork.NEON_EVM_DEVNET: "https://devnet-api.neonscan.org",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
