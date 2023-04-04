@@ -28,7 +28,11 @@ from ..utils import fast_to_checksum_address, get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
-from .mocks.mock_trace_block import trace_block_2191709_mock, trace_block_13191781_mock
+from .mocks.mock_trace_block import (
+    trace_block_2191709_mock,
+    trace_block_13191781_mock,
+    trace_block_15630274_mock,
+)
 from .mocks.mock_trace_filter import trace_filter_mock_1
 from .mocks.mock_trace_transaction import trace_transaction_mocks
 from .utils import deploy_example_erc20, just_test_if_mainnet_node
@@ -1360,10 +1364,13 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             )
 
     def test_trace_block(self):
-        block_numbers = [13191781, 2191709]
-        for block_number, trace_block_mock in zip(
-            block_numbers, [trace_block_13191781_mock, trace_block_2191709_mock]
-        ):
+        block_numbers = [13191781, 2191709, 15630274]
+        block_mocks = [
+            trace_block_13191781_mock,
+            trace_block_2191709_mock,
+            trace_block_15630274_mock,
+        ]
+        for block_number, trace_block_mock in zip(block_numbers, block_mocks):
             with self.subTest(block_number=block_number):
                 self.assertEqual(
                     self.ethereum_client.parity.trace_block(block_number),
@@ -1371,10 +1378,15 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
                 )
 
     def test_trace_blocks(self):
-        block_numbers = [13191781, 2191709]
+        block_numbers = [13191781, 2191709, 15630274]
+        block_mocks = [
+            trace_block_13191781_mock,
+            trace_block_2191709_mock,
+            trace_block_15630274_mock,
+        ]
         self.assertEqual(
             self.ethereum_client.parity.trace_blocks(block_numbers),
-            [trace_block_13191781_mock, trace_block_2191709_mock],
+            block_mocks,
         )
 
     def test_trace_transaction(self):

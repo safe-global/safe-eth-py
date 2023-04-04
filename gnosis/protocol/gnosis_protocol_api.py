@@ -45,13 +45,13 @@ class GnosisProtocolAPI:
     SETTLEMENT_CONTRACT_ADDRESSES = {
         EthereumNetwork.MAINNET: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.GOERLI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
-        EthereumNetwork.XDAI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+        EthereumNetwork.GNOSIS: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     }
 
     API_BASE_URLS = {
         EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet/api/v1/",
         EthereumNetwork.GOERLI: "https://api.cow.fi/goerli/api/v1/",
-        EthereumNetwork.XDAI: "https://api.cow.fi/xdai/api/v1/",
+        EthereumNetwork.GNOSIS: "https://api.cow.fi/xdai/api/v1/",
     }
 
     def __init__(self, ethereum_network: EthereumNetwork):
@@ -85,7 +85,7 @@ class GnosisProtocolAPI:
         data_json = {
             "sellToken": order.sellToken.lower(),
             "buyToken": order.buyToken.lower(),
-            "sellAmountBeforeFee": str(order.sellAmount),
+            "sellAmountAfterFee": str(order.sellAmount),
             # "validTo": order.validTo,
             "appData": HexBytes(order.appData).hex()
             if isinstance(order.appData, bytes)
