@@ -76,6 +76,8 @@ jobs:
     - name: Test packaging
       run: pip install -e .
     - name: Send results to coveralls
+      # Ignore coveralls issues
+      continue-on-error: true
       run: coveralls --service=github
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
