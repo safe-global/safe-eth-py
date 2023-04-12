@@ -904,54 +904,12 @@ class Erc721Manager(EthereumClientManager):
 class ParityManager(EthereumClientManager):
     # TODO Test with mock
     def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
-        decoded = {}
-
-        # CALL, DELEGATECALL, CREATE or CREATE2
-        if "from" in action:
-            decoded["from"] = fast_to_checksum_address(action["from"])
-        if "gas" in action:
-            decoded["gas"] = int(action["gas"], 16)
-        if "value" in action:
-            decoded["value"] = int(action["value"], 16)
-
-        # CALL or DELEGATECALL
-        if "callType" in action:
-            decoded["callType"] = action["callType"]
-        if "input" in action:
-            decoded["input"] = HexBytes(action["input"])
-        if "to" in action:
-            decoded["to"] = fast_to_checksum_address(action["to"])
-
-        # CREATE or CREATE2
-        if "init" in action:
-            decoded["init"] = HexBytes(action["init"])
-
-        # SELF-DESTRUCT
-        if "address" in action:
-            decoded["address"] = fast_to_checksum_address(action["address"])
-        if "balance" in action:
-            decoded["balance"] = int(action["balance"], 16)
-        if "refundAddress" in action:
-            decoded["refundAddress"] = fast_to_checksum_address(action["refundAddress"])
-
-        return decoded
+        # TODO Remove this, not needed anymore
+        return action
 
     def _decode_trace_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        decoded: Dict[str, Any] = {
-            "gasUsed": int(result["gasUsed"], 16),
-        }
-
-        # CALL or DELEGATECALL
-        if "output" in result:
-            decoded["output"] = HexBytes(result["output"])
-
-        # CREATE or CREATE2
-        if "code" in result:
-            decoded["code"] = HexBytes(result["code"])
-        if "address" in result:
-            decoded["address"] = fast_to_checksum_address(result["address"])
-
-        return decoded
+        # TODO Remove this, not needed anymore
+        return result
 
     def _decode_traces(
         self, traces: Sequence[Union[BlockTrace, FilterTrace]]

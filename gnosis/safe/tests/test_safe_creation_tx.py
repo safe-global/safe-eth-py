@@ -43,7 +43,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Send %d gwei to deployer %s",
-            w3.fromWei(safe_creation_tx.payment_ether, "gwei"),
+            w3.from_wei(safe_creation_tx.payment_ether, "gwei"),
             safe_creation_tx.deployer_address,
         )
 
@@ -67,7 +67,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Deployer account has still %d gwei left (will be lost)",
-            w3.fromWei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
+            w3.from_wei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
         )
 
         self.assertEqual(
@@ -97,7 +97,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Send %d gwei to deployer %s",
-            w3.fromWei(safe_creation_tx.payment_ether - 1, "gwei"),
+            w3.from_wei(safe_creation_tx.payment_ether - 1, "gwei"),
             safe_creation_tx.deployer_address,
         )
         self.send_tx(
@@ -144,7 +144,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Send %d ether to safe %s",
-            w3.fromWei(safe_balance, "ether"),
+            w3.from_wei(safe_balance, "ether"),
             safe_creation_tx.safe_address,
         )
         self.send_tx(
@@ -157,7 +157,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Send %d gwei to deployer %s",
-            w3.fromWei(safe_creation_tx.payment_ether, "gwei"),
+            w3.from_wei(safe_creation_tx.payment_ether, "gwei"),
             safe_creation_tx.deployer_address,
         )
         self.send_tx(
@@ -186,7 +186,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Deployer account has still %d gwei left (will be lost)",
-            w3.fromWei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
+            w3.from_wei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
         )
 
         deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
@@ -254,7 +254,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Send %d ether to deployer %s",
-            w3.fromWei(payment, "ether"),
+            w3.from_wei(payment, "ether"),
             deployer_address,
         )
         self.send_tx(
@@ -280,7 +280,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Deployer account has still %d gwei left (will be lost)",
-            w3.fromWei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
+            w3.from_wei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
         )
 
         deployed_safe_proxy_contract = get_safe_contract(w3, tx_receipt.contractAddress)
@@ -385,14 +385,14 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         safe_address = safe_creation_tx.safe_address
         safe_balance = w3.to_wei(0.01, "ether")
         logger.info(
-            "Send %d ether to safe %s", w3.fromWei(safe_balance, "ether"), safe_address
+            "Send %d ether to safe %s", w3.from_wei(safe_balance, "ether"), safe_address
         )
         self.send_tx({"to": safe_address, "value": safe_balance}, funder_account)
         self.assertEqual(w3.eth.get_balance(safe_address), safe_balance)
 
         logger.info(
             "Send %d ether to deployer %s",
-            w3.fromWei(safe_creation_tx.payment_ether, "ether"),
+            w3.from_wei(safe_creation_tx.payment_ether, "ether"),
             deployer_address,
         )
         self.send_tx(
@@ -423,7 +423,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         logger.info(
             "Deployer account has still %d gwei left (will be lost)",
-            w3.fromWei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
+            w3.from_wei(w3.eth.get_balance(safe_creation_tx.deployer_address), "gwei"),
         )
 
         deployed_safe_proxy_contract = get_safe_contract(w3, safe_address)

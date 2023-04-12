@@ -765,7 +765,7 @@ class TestParityManager(EthereumTestCaseMixin, TestCase):
             ValueError, "The method trace_filter does not exist/is not available"
         ):
             self.ethereum_client.parity.trace_filter(
-                from_address=Account.create().address
+                to_address=Account.create().address
             )
 
     @mock.patch.object(requests.Response, "json")
@@ -1416,7 +1416,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
 
     def test_trace_filter(self):
         safe_1_3_0_address = "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552"
-        self.assertEqual(
+        self.assertListEqual(
             self.ethereum_client.parity.trace_filter(
                 from_block=12504268, to_block=12504268, to_address=[safe_1_3_0_address]
             ),
