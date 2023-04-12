@@ -30,7 +30,7 @@ from web3._utils.method_formatters import (
     transaction_result_formatter,
 )
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
-from web3.contract import ContractFunction
+from web3.contract.contract import ContractFunction
 from web3.datastructures import AttributeDict
 from web3.exceptions import (
     BadFunctionCallOutput,
@@ -42,12 +42,11 @@ from web3.middleware import geth_poa_middleware, simple_cache_middleware
 from web3.types import (
     BlockData,
     BlockIdentifier,
+    BlockTrace,
     FilterParams,
+    FilterTrace,
     LogReceipt,
     Nonce,
-    ParityBlockTrace,
-    ParityFilterParams,
-    ParityFilterTrace,
     TxData,
     TxParams,
     TxReceipt,
@@ -290,7 +289,7 @@ class BatchCallManager(EthereumClientManager):
             else:
                 output_type = payload["output_type"]
                 try:
-                    decoded_values = self.w3.codec.decode_abi(
+                    decoded_values = eth_abi.decode(
                         output_type, HexBytes(result["result"])
                     )
                     normalized_data = map_abi_data(
@@ -430,7 +429,7 @@ class Erc20Manager(EthereumClientManager):
             if topics_len == 1:
                 # Not standard Transfer(address from, address to, uint256 unknown)
                 # 1 topic (transfer topic)
-                _from, to, unknown = eth_abi.decode_abi(
+                _from, to, unknown = eth_abi.decode(
                     ["address", "address", "uint256"], HexBytes(data)
                 )
                 return {"from": _from, "to": to, "unknown": unknown}
@@ -439,7 +438,7 @@ class Erc20Manager(EthereumClientManager):
                 # 3 topics (transfer topic + from + to)
                 try:
                     value_data = HexBytes(data)
-                    value = eth_abi.decode_single("uint256", value_data)
+                    value = eth_abi.decode(["uint256"], value_data)[0]
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `uint256 value` from data=%s",
@@ -450,7 +449,7 @@ class Erc20Manager(EthereumClientManager):
                     from_to_data = b"".join(topics[1:])
                     _from, to = (
                         fast_to_checksum_address(address)
-                        for address in eth_abi.decode_abi(
+                        for address in eth_abi.decode(
                             ["address", "address"], from_to_data
                         )
                     )
@@ -464,7 +463,7 @@ class Erc20Manager(EthereumClientManager):
             elif topics_len == 4:
                 # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
                 # 4 topics (transfer topic + from + to + tokenId)
-                _from, to, token_id = eth_abi.decode_abi(
+                _from, to, token_id = eth_abi.decode(
                     ["address", "address", "uint256"], b"".join(topics[1:])
                 )
                 _from, to = [
@@ -585,7 +584,7 @@ class Erc20Manager(EthereumClientManager):
             results = [HexBytes(r["result"]) for r in response_json]
             name = decode_string_or_bytes32(results[0])
             symbol = decode_string_or_bytes32(results[1])
-            decimals = self.ethereum_client.w3.codec.decode_single("uint8", results[2])
+            decimals = eth_abi.decode(["uint8"], results[2])[0]
             return Erc20Info(name, symbol, decimals)
         except (ValueError, BadFunctionCallOutput, DecodingError) as e:
             raise InvalidERC20Info from e
@@ -670,7 +669,7 @@ class Erc20Manager(EthereumClientManager):
         topic_0 = self.TRANSFER_TOPIC.hex()
         if addresses:
             addresses_encoded = [
-                HexBytes(eth_abi.encode_single("address", address)).hex()
+                HexBytes(eth_abi.encode(["address"], [address])).hex()
                 for address in addresses
             ]
             # Topics for transfer `to` and `from` an address
@@ -752,7 +751,7 @@ class Erc20Manager(EthereumClientManager):
         if to_address:
             argument_filters["to"] = to_address
 
-        return erc20.events.Transfer.createFilter(
+        return erc20.events.Transfer.create_filter(
             fromBlock=from_block,
             toBlock=to_block,
             address=token_address,
@@ -955,7 +954,7 @@ class ParityManager(EthereumClientManager):
         return decoded
 
     def _decode_traces(
-        self, traces: Sequence[Union[ParityBlockTrace, ParityFilterTrace]]
+        self, traces: Sequence[Union[BlockTrace, FilterTrace]]
     ) -> List[Dict[str, Any]]:
         new_traces: List[Dict[str, Any]] = []
         for trace in traces:
@@ -1067,12 +1066,12 @@ class ParityManager(EthereumClientManager):
     def trace_block(self, block_identifier: BlockIdentifier) -> List[Dict[str, Any]]:
         try:
             return self._decode_traces(
-                self.slow_w3.parity.trace_block(block_identifier)
+                self.slow_w3.tracing.trace_block(block_identifier)
             )
         except ParityTraceDecodeException as exc:
             logger.warning("Problem decoding trace: %s - Retrying", exc)
             return self._decode_traces(
-                self.slow_w3.parity.trace_block(block_identifier)
+                self.slow_w3.tracing.trace_block(block_identifier)
             )
 
     def trace_blocks(
@@ -1114,10 +1113,10 @@ class ParityManager(EthereumClientManager):
         :return: List of internal txs for `tx_hash`
         """
         try:
-            return self._decode_traces(self.slow_w3.parity.trace_transaction(tx_hash))
+            return self._decode_traces(self.slow_w3.tracing.trace_transaction(tx_hash))
         except ParityTraceDecodeException as exc:
             logger.warning("Problem decoding trace: %s - Retrying", exc)
-            return self._decode_traces(self.slow_w3.parity.trace_transaction(tx_hash))
+            return self._decode_traces(self.slow_w3.tracing.trace_transaction(tx_hash))
 
     def trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
@@ -1236,7 +1235,7 @@ class ParityManager(EthereumClientManager):
         assert (
             from_address or to_address
         ), "You must provide at least `from_address` or `to_address`"
-        parameters: ParityFilterParams = {}
+        parameters: FilterParams = {}
         if after:
             parameters["after"] = after
         if count:
@@ -1251,10 +1250,10 @@ class ParityManager(EthereumClientManager):
             parameters["toAddress"] = to_address
 
         try:
-            return self._decode_traces(self.slow_w3.parity.trace_filter(parameters))
+            return self._decode_traces(self.slow_w3.tracing.trace_filter(parameters))
         except ParityTraceDecodeException as exc:
             logger.warning("Problem decoding trace: %s - Retrying", exc)
-            return self._decode_traces(self.slow_w3.parity.trace_filter(parameters))
+            return self._decode_traces(self.slow_w3.tracing.trace_filter(parameters))
 
 
 class EthereumClient:

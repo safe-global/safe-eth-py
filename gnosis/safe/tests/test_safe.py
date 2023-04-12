@@ -139,7 +139,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         my_safe_address = safe.address
 
         # The balance we will send to the safe
-        safe_balance = w3.toWei(0.02, "ether")
+        safe_balance = w3.to_wei(0.02, "ether")
 
         # Send something to the owner[0], who will be sending the tx
         owner0_balance = safe_balance
@@ -274,7 +274,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         funder_account = self.ethereum_test_account
         funder = funder_account.address
         safe_balance_ether = 0.02
-        safe_balance = self.w3.toWei(safe_balance_ether, "ether")
+        safe_balance = self.w3.to_wei(safe_balance_ether, "ether")
         owner_account = self.create_account(initial_ether=safe_balance_ether)
         owner = owner_account.address
 
@@ -480,7 +480,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
         safe = self.deploy_test_safe(
             owners=[self.ethereum_test_account.address],
-            initial_funding_wei=self.w3.toWei(0.1, "ether"),
+            initial_funding_wei=self.w3.to_wei(0.1, "ether"),
         )
         nester_tx = nester.functions.useGas(80).build_transaction(
             {"gasPrice": 1, "from": safe.address, "gas": 1}
@@ -529,10 +529,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
     def test_estimate_tx_gas_with_web3(self):
         safe = self.deploy_test_safe(
             owners=[self.ethereum_test_account.address],
-            initial_funding_wei=self.w3.toWei(0.1, "ether"),
+            initial_funding_wei=self.w3.to_wei(0.1, "ether"),
         )
         to = Account.create().address
-        value = self.w3.toWei(0.01, "ether")
+        value = self.w3.to_wei(0.01, "ether")
         data = b""
         gas_estimated_web3 = safe.estimate_tx_gas_with_web3(to, value, data)
         gas_estimated_safe = safe.estimate_tx_gas_with_safe(to, value, data, 0)
@@ -745,14 +745,16 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         owners = [account.address for account in accounts]
 
         safe = self.deploy_test_safe(
-            threshold=2, owners=owners, initial_funding_wei=self.w3.toWei(0.01, "ether")
+            threshold=2,
+            owners=owners,
+            initial_funding_wei=self.w3.to_wei(0.01, "ether"),
         )
         safe_address = safe.address
         safe = Safe(safe_address, self.ethereum_client)
         safe_instance = get_safe_contract(self.w3, safe_address)
 
         to, _ = get_eth_address_with_key()
-        value = self.w3.toWei(0.001, "ether")
+        value = self.w3.to_wei(0.001, "ether")
         data = b""
         operation = 0
         safe_tx_gas = 500000

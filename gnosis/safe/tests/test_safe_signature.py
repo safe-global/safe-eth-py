@@ -2,8 +2,8 @@ import logging
 
 from django.test import TestCase
 
-from eth_abi import encode_single
-from eth_abi.packed import encode_single_packed
+from eth_abi import encode as encode_abi
+from eth_abi.packed import encode_packed
 from eth_account import Account
 from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
@@ -127,8 +127,8 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
             "0x4c9577d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf196"
         )
         ethereum_signed_message = "\x19Ethereum Signed Message:\n32"
-        encoded_message = encode_single_packed(
-            "(string,bytes32)", (ethereum_signed_message, HexBytes(safe_tx_hash))
+        encoded_message = encode_packed(
+            ["(string,bytes32)"], [(ethereum_signed_message, HexBytes(safe_tx_hash))]
         )
         encoded_hash = Web3.keccak(encoded_message)
         self.assertEqual(encoded_hash, defunct_hash_message(primitive=safe_tx_hash))
@@ -180,7 +180,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
     def test_contract_signature(self):
         owner_1 = self.ethereum_test_account
         safe = self.deploy_test_safe_v1_1_1(
-            owners=[owner_1.address], initial_funding_wei=Web3.toWei(0.01, "ether")
+            owners=[owner_1.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
         )
         safe_contract = safe.contract
         safe_tx_hash = Web3.keccak(text="test")
@@ -189,7 +189,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             "0" * 62 + "41"
         )  # Position of end of signature `0x41 == 65`
         signature_v = HexBytes("00")
-        contract_signature = encode_single("bytes", b"")
+        contract_signature = encode_abi(["bytes"], [b""])
         signature = signature_r + signature_s + signature_v + contract_signature
 
         safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
@@ -216,8 +216,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             safe_tx_hash_2
         ).call()
         contract_signature = owner_1.signHash(safe_tx_hash_2_message_hash)["signature"]
-        encoded_contract_signature = encode_single(
-            "bytes", contract_signature
+        encoded_contract_signature = encode_abi(
+            ["bytes"], [contract_signature]
         )  # It will add size of bytes
         # `32` bytes with the abi encoded size of array. 65 bytes will be padded to next multiple of 32 -> 96
         # 96 - 65 = `31`
@@ -239,7 +239,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         """
         owner_1 = self.ethereum_test_account
         safe = self.deploy_test_safe_v1_1_1(
-            owners=[owner_1.address], initial_funding_wei=Web3.toWei(0.01, "ether")
+            owners=[owner_1.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
         )
         safe_contract = safe.contract
         safe_tx_hash = Web3.keccak(text="test")
@@ -259,7 +259,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )  # Position of end of signature `0x82 == (65 * 2)`
         signature_v_1 = HexBytes("00")
         contract_signature_1 = b""
-        encoded_contract_signature_1 = encode_single("bytes", contract_signature_1)
+        encoded_contract_signature_1 = encode_abi(["bytes"], [contract_signature_1])
 
         signature_r_2 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s_2 = HexBytes(
@@ -270,8 +270,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             safe_tx_hash
         ).call()
         contract_signature_2 = owner_1.signHash(safe_tx_hash_message_hash)["signature"]
-        encoded_contract_signature_2 = encode_single(
-            "bytes", contract_signature_2
+        encoded_contract_signature_2 = encode_abi(
+            ["bytes"], [contract_signature_2]
         )  # It will add size of bytes
 
         signature = (

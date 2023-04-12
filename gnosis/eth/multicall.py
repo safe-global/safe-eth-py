@@ -5,6 +5,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, List, Optional, Sequence, Tuple
 
+import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.signers.local import LocalAccount
 from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress
@@ -12,7 +13,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
-from web3.contract import ContractFunction
+from web3.contract.contract import ContractFunction
 from web3.exceptions import ContractLogicError
 
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
@@ -151,7 +152,7 @@ class Multicall:
         """
         if data:
             try:
-                decoded_values = self.w3.codec.decode_abi(output_type, data)
+                decoded_values = eth_abi.decode(output_type, data)
                 normalized_data = map_abi_data(
                     BASE_RETURN_NORMALIZERS, output_type, decoded_values
                 )

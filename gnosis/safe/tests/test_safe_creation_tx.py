@@ -136,7 +136,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         user_external_account = Account.create()
         # Send some ether to that account
-        safe_balance = w3.toWei(0.01, "ether")
+        safe_balance = w3.to_wei(0.01, "ether")
         self.send_tx(
             {"to": user_external_account.address, "value": safe_balance * 2},
             funder_account,
@@ -211,7 +211,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         # Send something to the erc20 deployer
         self.send_tx(
-            {"to": erc20_deployer.address, "value": w3.toWei(1, "ether")},
+            {"to": erc20_deployer.address, "value": w3.to_wei(1, "ether")},
             funder_account,
         )
 
@@ -383,7 +383,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         deployer_address = safe_creation_tx.deployer_address
         safe_address = safe_creation_tx.safe_address
-        safe_balance = w3.toWei(0.01, "ether")
+        safe_balance = w3.to_wei(0.01, "ether")
         logger.info(
             "Send %d ether to safe %s", w3.fromWei(safe_balance, "ether"), safe_address
         )
@@ -448,7 +448,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
             s = generate_valid_s()
             owners = [get_eth_address_with_key()[0] for _ in range(i + 1)]
             threshold = len(owners)
-            gas_price = w3.toWei(15, "gwei")
+            gas_price = w3.to_wei(15, "gwei")
 
             safe_creation_tx = SafeCreationTx(
                 w3=w3,

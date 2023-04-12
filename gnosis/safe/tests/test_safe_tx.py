@@ -22,7 +22,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         safe = self.deploy_test_safe(
             owners=owner_addresses,
             threshold=threshold,
-            initial_funding_wei=self.w3.toWei(0.1, "ether"),
+            initial_funding_wei=self.w3.to_wei(0.1, "ether"),
         )
         safe_contract = safe.contract
         to = self.multi_send_contract.address
@@ -86,10 +86,10 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         safe = self.deploy_test_safe(
             owners=owner_addresses,
             threshold=threshold,
-            initial_funding_wei=self.w3.toWei(0.1, "ether"),
+            initial_funding_wei=self.w3.to_wei(0.1, "ether"),
         )
         to = Account().create().address
-        value = self.w3.toWei(0.01, "ether")
+        value = self.w3.to_wei(0.01, "ether")
         safe_tx_gas = 200000
         data_gas = 100000
 
@@ -142,10 +142,10 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         safe = self.deploy_test_safe(
             owners=owner_addresses,
             threshold=threshold,
-            initial_funding_wei=self.w3.toWei(0.1, "ether"),
+            initial_funding_wei=self.w3.to_wei(0.1, "ether"),
         )
         to = Account().create().address
-        value = self.w3.toWei(0.01, "ether")
+        value = self.w3.to_wei(0.01, "ether")
 
         safe_tx = SafeTx(
             self.ethereum_client,

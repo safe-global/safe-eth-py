@@ -6,8 +6,9 @@ from functools import cached_property
 from typing import List, Optional, Tuple
 
 import requests
+from eth_abi import decode as decode_abi
 from eth_abi.exceptions import DecodingError
-from eth_abi.packed import encode_abi_packed
+from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3.contract import Contract
@@ -180,12 +181,8 @@ class UniswapOracle(PriceOracle):
                 results.append(HexBytes(result["result"]))
 
         balance = int(results[0].hex(), 16)
-        token_decimals = self.ethereum_client.w3.codec.decode_single(
-            "uint8", results[1]
-        )
-        token_balance = self.ethereum_client.w3.codec.decode_single(
-            "uint256", results[2]
-        )
+        token_decimals = decode_abi(["uint8"], results[1])[0]
+        token_balance = decode_abi(["uint256"], results[2])[0]
         return balance, token_decimals, token_balance
 
     def get_price(self, token_address: str) -> float:
@@ -327,10 +324,10 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         if token_address.lower() > token_address_2.lower():
             token_address, token_address_2 = token_address_2, token_address
         salt = fast_keccak(
-            encode_abi_packed(["address", "address"], [token_address, token_address_2])
+            encode_packed(["address", "address"], [token_address, token_address_2])
         )
         address = fast_keccak(
-            encode_abi_packed(
+            encode_packed(
                 ["bytes", "address", "bytes", "bytes"],
                 [HexBytes("ff"), self.factory_address, salt, self.PAIR_INIT_CODE],
             )
