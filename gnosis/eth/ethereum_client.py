@@ -902,14 +902,55 @@ class Erc721Manager(EthereumClientManager):
 
 
 class ParityManager(EthereumClientManager):
-    # TODO Test with mock
     def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO Remove this, not needed anymore
-        return action
+        decoded = {}
+
+        # CALL, DELEGATECALL, CREATE or CREATE2
+        if "from" in action:
+            decoded["from"] = fast_to_checksum_address(action["from"])
+        if "gas" in action:
+            decoded["gas"] = int(action["gas"], 16)
+        if "value" in action:
+            decoded["value"] = int(action["value"], 16)
+
+        # CALL or DELEGATECALL
+        if "callType" in action:
+            decoded["callType"] = action["callType"]
+        if "input" in action:
+            decoded["input"] = HexBytes(action["input"])
+        if "to" in action:
+            decoded["to"] = fast_to_checksum_address(action["to"])
+
+        # CREATE or CREATE2
+        if "init" in action:
+            decoded["init"] = HexBytes(action["init"])
+
+        # SELF-DESTRUCT
+        if "address" in action:
+            decoded["address"] = fast_to_checksum_address(action["address"])
+        if "balance" in action:
+            decoded["balance"] = int(action["balance"], 16)
+        if "refundAddress" in action:
+            decoded["refundAddress"] = fast_to_checksum_address(action["refundAddress"])
+
+        return decoded
 
     def _decode_trace_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO Remove this, not needed anymore
-        return result
+        decoded: Dict[str, Any] = {
+            "gasUsed": int(result["gasUsed"], 16),
+        }
+
+        # CALL or DELEGATECALL
+        if "output" in result:
+            decoded["output"] = HexBytes(result["output"])
+
+        # CREATE or CREATE2
+        if "code" in result:
+            decoded["code"] = HexBytes(result["code"])
+        if "address" in result:
+            decoded["address"] = fast_to_checksum_address(result["address"])
+
+        return decoded
 
     def _decode_traces(
         self, traces: Sequence[Union[BlockTrace, FilterTrace]]
@@ -1021,16 +1062,8 @@ class ParityManager(EthereumClientManager):
                     traces.append(trace)
         return traces
 
-    def trace_block(self, block_identifier: BlockIdentifier) -> List[Dict[str, Any]]:
-        try:
-            return self._decode_traces(
-                self.slow_w3.tracing.trace_block(block_identifier)
-            )
-        except ParityTraceDecodeException as exc:
-            logger.warning("Problem decoding trace: %s - Retrying", exc)
-            return self._decode_traces(
-                self.slow_w3.tracing.trace_block(block_identifier)
-            )
+    def trace_block(self, block_identifier: BlockIdentifier) -> List[BlockTrace]:
+        return self.slow_w3.tracing.trace_block(block_identifier)
 
     def trace_blocks(
         self, block_identifiers: List[BlockIdentifier]
@@ -1065,20 +1098,16 @@ class ParityManager(EthereumClientManager):
                 traces.append([])
         return traces
 
-    def trace_transaction(self, tx_hash: EthereumHash) -> List[Dict[str, Any]]:
+    def trace_transaction(self, tx_hash: EthereumHash) -> List[FilterTrace]:
         """
         :param tx_hash:
         :return: List of internal txs for `tx_hash`
         """
-        try:
-            return self._decode_traces(self.slow_w3.tracing.trace_transaction(tx_hash))
-        except ParityTraceDecodeException as exc:
-            logger.warning("Problem decoding trace: %s - Retrying", exc)
-            return self._decode_traces(self.slow_w3.tracing.trace_transaction(tx_hash))
+        return self.slow_w3.tracing.trace_transaction(tx_hash)
 
     def trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
-    ) -> List[List[Dict[str, Any]]]:
+    ) -> List[List[FilterTrace]]:
         """
         :param tx_hashes:
         :return: For every `tx_hash` a list of internal txs (in the same order as the `tx_hashes` were provided)
@@ -1116,7 +1145,7 @@ class ParityManager(EthereumClientManager):
         to_address: Optional[Sequence[ChecksumAddress]] = None,
         after: Optional[int] = None,
         count: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[FilterTrace]:
         """
         Get events using ``trace_filter`` method
 
@@ -1207,11 +1236,7 @@ class ParityManager(EthereumClientManager):
         if to_address:
             parameters["toAddress"] = to_address
 
-        try:
-            return self._decode_traces(self.slow_w3.tracing.trace_filter(parameters))
-        except ParityTraceDecodeException as exc:
-            logger.warning("Problem decoding trace: %s - Retrying", exc)
-            return self._decode_traces(self.slow_w3.tracing.trace_filter(parameters))
+        return self.slow_w3.tracing.trace_filter(parameters)
 
 
 class EthereumClient:
