@@ -10,12 +10,16 @@ trace_block_2191709_mock = [
             "input": HexBytes("0x"),
             "to": "0x7b5A4767158DfBbaFcDE969F2B4d7FBCC19b5d3c",
         },
-        "blockHash": "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3",
+        "blockHash": HexBytes(
+            "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
+        ),
         "blockNumber": 2191709,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x8888796bdf74b616f8900d41094bd8213b1c73385916ce4c8f5bb020f3acba3c",
+        "transactionHash": HexBytes(
+            "0x8888796bdf74b616f8900d41094bd8213b1c73385916ce4c8f5bb020f3acba3c"
+        ),
         "transactionPosition": 0,
         "type": "call",
     },
@@ -28,12 +32,16 @@ trace_block_2191709_mock = [
             "input": HexBytes("0x"),
             "to": "0x038a877d4fB63A195c22783888DA2041911Ed818",
         },
-        "blockHash": "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3",
+        "blockHash": HexBytes(
+            "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
+        ),
         "blockNumber": 2191709,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x878d326c7cc7fd39cf7875d2ec3a69a910409d313eab3764fe253b9fed5acd60",
+        "transactionHash": HexBytes(
+            "0x878d326c7cc7fd39cf7875d2ec3a69a910409d313eab3764fe253b9fed5acd60"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -48,7 +56,9 @@ trace_block_2191709_mock = [
             ),
             "to": "0xE94b04a0FeD112f3664e45adb2B8915693dD5FF3",
         },
-        "blockHash": "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3",
+        "blockHash": HexBytes(
+            "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
+        ),
         "blockNumber": 2191709,
         "result": {
             "gasUsed": 8562,
@@ -58,7 +68,9 @@ trace_block_2191709_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x849da57a0cbed360cb0367f95650c0f2cf5e37b394a519748779d825cffba6fe",
+        "transactionHash": HexBytes(
+            "0x849da57a0cbed360cb0367f95650c0f2cf5e37b394a519748779d825cffba6fe"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -71,7 +83,9 @@ trace_block_2191709_mock = [
             "input": HexBytes("0x16c72721"),
             "to": "0x2BD2326c993DFaeF84f696526064FF22eba5b362",
         },
-        "blockHash": "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3",
+        "blockHash": HexBytes(
+            "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
+        ),
         "blockNumber": 2191709,
         "result": {
             "gasUsed": 197,
@@ -81,7 +95,9 @@ trace_block_2191709_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x849da57a0cbed360cb0367f95650c0f2cf5e37b394a519748779d825cffba6fe",
+        "transactionHash": HexBytes(
+            "0x849da57a0cbed360cb0367f95650c0f2cf5e37b394a519748779d825cffba6fe"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -94,18 +110,24 @@ trace_block_2191709_mock = [
             "input": HexBytes("0x"),
             "to": "0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98",
         },
-        "blockHash": "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3",
+        "blockHash": HexBytes(
+            "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
+        ),
         "blockNumber": 2191709,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x849da57a0cbed360cb0367f95650c0f2cf5e37b394a519748779d825cffba6fe",
+        "transactionHash": HexBytes(
+            "0x849da57a0cbed360cb0367f95650c0f2cf5e37b394a519748779d825cffba6fe"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
     {
         "action": {"value": 5000000000000000000},
-        "blockHash": "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3",
+        "blockHash": HexBytes(
+            "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
+        ),
         "blockNumber": 2191709,
         "result": None,
         "subtraces": 0,
@@ -126,7 +148,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 26917,
@@ -136,7 +160,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x0ba656badfa135dec7389317fefac737f75276bbbea10e103837d87f9e853aec",
+        "transactionHash": HexBytes(
+            "0x0ba656badfa135dec7389317fefac737f75276bbbea10e103837d87f9e853aec"
+        ),
         "transactionPosition": 0,
         "type": "call",
     },
@@ -151,7 +177,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 19628,
@@ -161,7 +189,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x0ba656badfa135dec7389317fefac737f75276bbbea10e103837d87f9e853aec",
+        "transactionHash": HexBytes(
+            "0x0ba656badfa135dec7389317fefac737f75276bbbea10e103837d87f9e853aec"
+        ),
         "transactionPosition": 0,
         "type": "call",
     },
@@ -176,13 +206,17 @@ trace_block_13191781_mock = [
             ),
             "to": "0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "error": "Reverted",
         "result": {"gasUsed": 27856, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xbe99757628bfc3d5c7ee4e42c2629ddd13ac52354e6abb189efe5e277dce05b3",
+        "transactionHash": HexBytes(
+            "0xbe99757628bfc3d5c7ee4e42c2629ddd13ac52354e6abb189efe5e277dce05b3"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -197,12 +231,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 201933, "output": HexBytes("0x")},
         "subtraces": 6,
         "traceAddress": [],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -217,7 +255,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2782,
@@ -227,7 +267,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -240,7 +282,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x97204d8e"),
             "to": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2613,
@@ -250,7 +294,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -263,7 +309,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x5c60da1b"),
             "to": "0x892C0FEfFE706b811a8437aB9e2293FA5F7b907A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2525,
@@ -273,7 +321,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -286,12 +336,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x5b3256965e7C3cF26E11FCAf296DfC8807C01073",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -304,12 +358,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x8bdBF4B19cb840e9Ac9B1eFFc2BfAd47591B5bF2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -324,7 +382,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x892C0FEfFE706b811a8437aB9e2293FA5F7b907A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 98215,
@@ -334,7 +394,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [5],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -349,7 +411,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xF9e266af4BcA5890e2781812cc6a6E89495a79f2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 94955,
@@ -359,7 +423,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 2,
         "traceAddress": [5, 0],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -374,7 +440,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2553,
@@ -384,7 +452,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [5, 0, 0],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -399,12 +469,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x300Ef850CA7754437cFcE52Fe0C47e5f890FB183",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 86058, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [5, 0, 1],
-        "transactionHash": "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef",
+        "transactionHash": HexBytes(
+            "0x7798b6ef9f281c87d45bdeabda70e4b9f24085c15aaac8e75a9f4480fb2feeef"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -417,12 +491,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xb0BE4D6159d6480980bCCe0f8b4F0d487e8450BD",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xe0cf30aaa01f5cd786db4b14daf61aac44143778926d5e33ce416a2709d3713b",
+        "transactionHash": HexBytes(
+            "0xe0cf30aaa01f5cd786db4b14daf61aac44143778926d5e33ce416a2709d3713b"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -435,12 +513,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xe74B4E405768BcC2B6deda7710f659ba7924A245",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xf092fb03ceca9ff7e01e5b6483bfac47a7db6d8bf0a32ac44b45f8a8f0b0b665",
+        "transactionHash": HexBytes(
+            "0xf092fb03ceca9ff7e01e5b6483bfac47a7db6d8bf0a32ac44b45f8a8f0b0b665"
+        ),
         "transactionPosition": 4,
         "type": "call",
     },
@@ -453,12 +535,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x9E5D17e8E34d2568200C154895ba63523b3560C8",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x565d69c19ae671197d53591caff0d945b72f4ac0a1a6d917bda7e2179906055d",
+        "transactionHash": HexBytes(
+            "0x565d69c19ae671197d53591caff0d945b72f4ac0a1a6d917bda7e2179906055d"
+        ),
         "transactionPosition": 5,
         "type": "call",
     },
@@ -473,7 +559,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 30250,
@@ -483,7 +571,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x13a3a8911e7314c8c38bdb634abab5c503aca77bab0755c36fb3d1a8e61e7820",
+        "transactionHash": HexBytes(
+            "0x13a3a8911e7314c8c38bdb634abab5c503aca77bab0755c36fb3d1a8e61e7820"
+        ),
         "transactionPosition": 6,
         "type": "call",
     },
@@ -496,12 +586,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xa6eeFBd51A818DCBc77d6e8eF6Bd59ab61c403dF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xc3f27af4f5b8a3063b6dbd0a08019100867afb00f47227cc6e03a9c647777483",
+        "transactionHash": HexBytes(
+            "0xc3f27af4f5b8a3063b6dbd0a08019100867afb00f47227cc6e03a9c647777483"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -516,7 +610,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 26917,
@@ -526,7 +622,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x7011ea340523e70f4a18f178c20367816cab4e45aa7d31e705bdb5b51265548f",
+        "transactionHash": HexBytes(
+            "0x7011ea340523e70f4a18f178c20367816cab4e45aa7d31e705bdb5b51265548f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -541,7 +639,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 19628,
@@ -551,7 +651,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x7011ea340523e70f4a18f178c20367816cab4e45aa7d31e705bdb5b51265548f",
+        "transactionHash": HexBytes(
+            "0x7011ea340523e70f4a18f178c20367816cab4e45aa7d31e705bdb5b51265548f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -566,12 +668,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x58d69c294aaa1503e06c4a69c895cd4fbc47e03f0a341a26c7255609d6b58c79",
+        "transactionHash": HexBytes(
+            "0x58d69c294aaa1503e06c4a69c895cd4fbc47e03f0a341a26c7255609d6b58c79"
+        ),
         "transactionPosition": 9,
         "type": "call",
     },
@@ -584,12 +690,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xcAE2c1225481162eFF4c0807c7607724E5c29c9D",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x7b5e1ecaffd9bab57d8b59bf476d031bb2517192139b84362db866b88d40a295",
+        "transactionHash": HexBytes(
+            "0x7b5e1ecaffd9bab57d8b59bf476d031bb2517192139b84362db866b88d40a295"
+        ),
         "transactionPosition": 10,
         "type": "call",
     },
@@ -602,12 +712,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x043aD94aeC8f88a62B6b0f130ccC61aC39f77A3c",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x2542cee5c144aada422aa08df4b458c594baae89061d0ae41d8b9678c527f51d",
+        "transactionHash": HexBytes(
+            "0x2542cee5c144aada422aa08df4b458c594baae89061d0ae41d8b9678c527f51d"
+        ),
         "transactionPosition": 11,
         "type": "call",
     },
@@ -622,12 +736,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x6e90803bf18163a7797d9b35fd5403c485784bf8c9480b2e1fc9b5d81194d8d2",
+        "transactionHash": HexBytes(
+            "0x6e90803bf18163a7797d9b35fd5403c485784bf8c9480b2e1fc9b5d81194d8d2"
+        ),
         "transactionPosition": 12,
         "type": "call",
     },
@@ -640,12 +758,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x1645521a6df217605d9949AafB84927018868cDf",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x973702b743a2e3b8caae347f74f2729b5a9cd20a5c8472b94c6758daac4407ee",
+        "transactionHash": HexBytes(
+            "0x973702b743a2e3b8caae347f74f2729b5a9cd20a5c8472b94c6758daac4407ee"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -660,12 +782,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xd80a9b37571313117f0d34fe3152f1ad4fee03f1a6c629ff7d2bf966a37ed14f",
+        "transactionHash": HexBytes(
+            "0xd80a9b37571313117f0d34fe3152f1ad4fee03f1a6c629ff7d2bf966a37ed14f"
+        ),
         "transactionPosition": 14,
         "type": "call",
     },
@@ -680,7 +806,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa117000000f279D81A1D3cc75430fAA017FA5A2e",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 29842,
@@ -690,7 +818,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x5cf28c6818d072ea14ac6f5923431202a3af58e73c833d525d75af61078ef37d",
+        "transactionHash": HexBytes(
+            "0x5cf28c6818d072ea14ac6f5923431202a3af58e73c833d525d75af61078ef37d"
+        ),
         "transactionPosition": 15,
         "type": "call",
     },
@@ -703,12 +833,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x5EE7BC4c49c653778597900143702691E8AFCE48",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xe8385591d43060730b568d5762656d72c4597f3c63c17e03143abb4cd2ce2549",
+        "transactionHash": HexBytes(
+            "0xe8385591d43060730b568d5762656d72c4597f3c63c17e03143abb4cd2ce2549"
+        ),
         "transactionPosition": 16,
         "type": "call",
     },
@@ -723,12 +857,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 26530, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x072f7a1f91c6281907b0b0a001bb2a58cb0e199bcf72f439b816ee7e83d1a978",
+        "transactionHash": HexBytes(
+            "0x072f7a1f91c6281907b0b0a001bb2a58cb0e199bcf72f439b816ee7e83d1a978"
+        ),
         "transactionPosition": 17,
         "type": "call",
     },
@@ -743,7 +881,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "error": "Reverted",
         "result": {
@@ -754,7 +894,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855",
+        "transactionHash": HexBytes(
+            "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -767,7 +909,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x6469B34a2a4723163C4902dbBdEa728D20693C12",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2517,
@@ -777,7 +921,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855",
+        "transactionHash": HexBytes(
+            "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -790,7 +936,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x06da0fd433C1A5d7a4faa01111c044910A184553",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2517,
@@ -800,7 +948,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855",
+        "transactionHash": HexBytes(
+            "0xfac7403428a8213f3fc296412eb3f259086d80dd83be2d819b574b145b8d4855"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -813,12 +963,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xAcF288a55C9e807e6B5d7DD4cB4f314eBe1E14FA",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x6b460cc1afa1311f9d698fb3b45a68ad537a30630b20db06a394e1d7de3c5a02",
+        "transactionHash": HexBytes(
+            "0x6b460cc1afa1311f9d698fb3b45a68ad537a30630b20db06a394e1d7de3c5a02"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -833,12 +987,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x9665b3325bd3a57d61c7d185f1eb428b61ef244561fa15fbb0237a4e67f593ea",
+        "transactionHash": HexBytes(
+            "0x9665b3325bd3a57d61c7d185f1eb428b61ef244561fa15fbb0237a4e67f593ea"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -853,12 +1011,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 26530, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x3204a5a8a2c34a8f8224375968a440858aee459ca50278e33073939d9d2f0a79",
+        "transactionHash": HexBytes(
+            "0x3204a5a8a2c34a8f8224375968a440858aee459ca50278e33073939d9d2f0a79"
+        ),
         "transactionPosition": 21,
         "type": "call",
     },
@@ -871,12 +1033,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x1AB18ac546Cf48509D4cd41d48B41cc859A269A5",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x62dacd69eab666668088561b6d87e3f703973992b0f00666e09585af3264ea4d",
+        "transactionHash": HexBytes(
+            "0x62dacd69eab666668088561b6d87e3f703973992b0f00666e09585af3264ea4d"
+        ),
         "transactionPosition": 22,
         "type": "call",
     },
@@ -891,7 +1057,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x11111112542D85B3EF69AE05771c2dCCff4fAa26",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "error": "Reverted",
         "result": {
@@ -902,7 +1070,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 5,
         "traceAddress": [],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -917,7 +1087,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x6286A9e6f7e745A6D884561D88F94542d6715698",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 20711,
@@ -927,7 +1099,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -940,7 +1114,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x84d1f4BBD0FB53b9a09e95E051f2fe1bF3e01e6A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2504,
@@ -950,7 +1126,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -965,12 +1143,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x84d1f4BBD0FB53b9a09e95E051f2fe1bF3e01e6A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 47804, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [2],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -985,7 +1167,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 12862,
@@ -995,7 +1179,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 0],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -1010,7 +1196,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x6286A9e6f7e745A6D884561D88F94542d6715698",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 585,
@@ -1020,7 +1208,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 1],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -1035,7 +1225,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 534,
@@ -1045,7 +1237,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 2],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -1060,12 +1254,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 9219, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [3],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -1078,12 +1276,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x11111112542D85B3EF69AE05771c2dCCff4fAa26",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 79, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -1096,12 +1298,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xfa35113163bFD33c18A01d1A62d4D14a1Ed30a42",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6",
+        "transactionHash": HexBytes(
+            "0xd1118a18e43777636ccef0cafa5de58c3b0c6800454606342ba46a662828a8c6"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -1114,12 +1320,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 23974, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x1ea951dcaf2bda8a8fb8251b2592561f35af0c879d78f34cd4ef9110f1b1b4c7",
+        "transactionHash": HexBytes(
+            "0x1ea951dcaf2bda8a8fb8251b2592561f35af0c879d78f34cd4ef9110f1b1b4c7"
+        ),
         "transactionPosition": 24,
         "type": "call",
     },
@@ -1134,12 +1344,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa18607cA4A3804CC3Cd5730eafeFcC47a7641643",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 78872, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf",
+        "transactionHash": HexBytes(
+            "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -1154,12 +1368,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xfc7b1daD07111c77c5d619043D75aC9A19680760",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 67101, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf",
+        "transactionHash": HexBytes(
+            "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -1174,12 +1392,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x20EF25713c37855fbB8ED483eFDDFF9407442650",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 64354, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0],
-        "transactionHash": "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf",
+        "transactionHash": HexBytes(
+            "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -1194,7 +1416,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 44017,
@@ -1204,7 +1428,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf",
+        "transactionHash": HexBytes(
+            "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -1219,7 +1445,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 36728,
@@ -1229,7 +1457,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0, 0],
-        "transactionHash": "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf",
+        "transactionHash": HexBytes(
+            "0x28790ea8588f1c24cbc3dacb95bad48556df979755563626652a9b3aa55799bf"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -1244,12 +1474,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x9640C1a69eadD073D273D75028a1D233CD63016C",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 25197, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xaaae290a863c7a364941fa047c5c18d0ea0e30f1cb3401537e274576a227b1b0",
+        "transactionHash": HexBytes(
+            "0xaaae290a863c7a364941fa047c5c18d0ea0e30f1cb3401537e274576a227b1b0"
+        ),
         "transactionPosition": 26,
         "type": "call",
     },
@@ -1262,12 +1496,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x61296A581598F58fA5841B44904D376eDA01127A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xc1338a392bbb9271c0de47705148127ed3685159918424a2431e085d67b0ef26",
+        "transactionHash": HexBytes(
+            "0xc1338a392bbb9271c0de47705148127ed3685159918424a2431e085d67b0ef26"
+        ),
         "transactionPosition": 27,
         "type": "call",
     },
@@ -1282,12 +1520,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x00D07C53E70338c376cF6ab2A5218d8643115084",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 160190, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x662483ec1961250e0f24c9adffcf8d96d43418f573448867ecbdf65a31dd331c",
+        "transactionHash": HexBytes(
+            "0x662483ec1961250e0f24c9adffcf8d96d43418f573448867ecbdf65a31dd331c"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -1302,12 +1544,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x881D40237659C251811CEC9c364ef91dC08D300C",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 179647, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1322,7 +1568,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x217ddEad61a42369A266F1Fb754EB5d3EBadc88a",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 38792,
@@ -1332,7 +1580,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1347,12 +1597,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x74de5d4FCbf63E00296fd95d33236B9794016631",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 117818, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1367,12 +1621,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x4fEd27Eac9C2477B8c14Ee8baDA444BD4654F833",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 112694, "output": HexBytes("0x")},
         "subtraces": 5,
         "traceAddress": [1, 0],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1387,7 +1645,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x217ddEad61a42369A266F1Fb754EB5d3EBadc88a",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 3241,
@@ -1397,7 +1657,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 0],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1412,7 +1674,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x11111112542D85B3EF69AE05771c2dCCff4fAa26",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 85953,
@@ -1422,7 +1686,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 5,
         "traceAddress": [1, 0, 1],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1437,7 +1703,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x217ddEad61a42369A266F1Fb754EB5d3EBadc88a",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 14892,
@@ -1447,7 +1715,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 0],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1460,7 +1730,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x643b47D668f7BD78E0EeaA574b0d185c46Ef079C",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2504,
@@ -1470,7 +1742,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 1],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1485,12 +1759,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x643b47D668f7BD78E0EeaA574b0d185c46Ef079C",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 48105, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1, 0, 1, 2],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1505,7 +1783,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 12862,
@@ -1515,7 +1795,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 2, 0],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1530,7 +1812,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x217ddEad61a42369A266F1Fb754EB5d3EBadc88a",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 886,
@@ -1540,7 +1824,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 2, 1],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1555,7 +1841,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 534,
@@ -1565,7 +1853,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 2, 2],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1580,12 +1870,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 9219, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 0, 1, 3],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1598,12 +1892,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x11111112542D85B3EF69AE05771c2dCCff4fAa26",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 79, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 3, 0],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1616,12 +1914,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x74de5d4FCbf63E00296fd95d33236B9794016631",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 40, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 1, 4],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1634,12 +1936,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x11eDedebF63bef0ea2d2D071bdF88F71543ec6fB",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 2],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1654,7 +1960,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x217ddEad61a42369A266F1Fb754EB5d3EBadc88a",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 886,
@@ -1664,7 +1972,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 3],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1677,12 +1987,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x7F9Bb16Bb280D93e6e465420fD02d28b3A8fbc5f",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 4],
-        "transactionHash": "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850",
+        "transactionHash": HexBytes(
+            "0x7cd9fdf8ba8f3378d428e1cbb353a28142b28946840353df07b1140b5849b850"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -1695,12 +2009,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x59b6E0185a290aC466A6c4B60093e33afeC7169b",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xfc4763a159754d4839c1ca85382ba5f66be2cbfc33df28005e33c4928b541f97",
+        "transactionHash": HexBytes(
+            "0xfc4763a159754d4839c1ca85382ba5f66be2cbfc33df28005e33c4928b541f97"
+        ),
         "transactionPosition": 30,
         "type": "call",
     },
@@ -1713,12 +2031,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x1521A41240C40Cf441cc68dD7E0EED06e3dC72fF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x709198fe8195723ab00c2edf265ded5267dff4a7dcda49098a4783b4473b115e",
+        "transactionHash": HexBytes(
+            "0x709198fe8195723ab00c2edf265ded5267dff4a7dcda49098a4783b4473b115e"
+        ),
         "transactionPosition": 31,
         "type": "call",
     },
@@ -1731,12 +2053,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xA837149C978776B322fC7A6245a46AE89a4c5385",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xaa0a0d4f8bf778e909c48dcd13397140bfb791d86acf35a14f5271e44cfeac8f",
+        "transactionHash": HexBytes(
+            "0xaa0a0d4f8bf778e909c48dcd13397140bfb791d86acf35a14f5271e44cfeac8f"
+        ),
         "transactionPosition": 32,
         "type": "call",
     },
@@ -1751,7 +2077,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 44017,
@@ -1761,7 +2089,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xb3d846d3937d048de62e482bc19d5fc8447a74fdd3b709b64b52b33da0ffcdab",
+        "transactionHash": HexBytes(
+            "0xb3d846d3937d048de62e482bc19d5fc8447a74fdd3b709b64b52b33da0ffcdab"
+        ),
         "transactionPosition": 33,
         "type": "call",
     },
@@ -1776,7 +2106,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 36728,
@@ -1786,7 +2118,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xb3d846d3937d048de62e482bc19d5fc8447a74fdd3b709b64b52b33da0ffcdab",
+        "transactionHash": HexBytes(
+            "0xb3d846d3937d048de62e482bc19d5fc8447a74fdd3b709b64b52b33da0ffcdab"
+        ),
         "transactionPosition": 33,
         "type": "call",
     },
@@ -1799,12 +2133,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xCF5A1c6E4e157d63883f3aE9E62cAD2729838580",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x1ef77ab2e12ad5808999b5ee99ee93aa24a559849c7e2a9096ffbe7d56353b9b",
+        "transactionHash": HexBytes(
+            "0x1ef77ab2e12ad5808999b5ee99ee93aa24a559849c7e2a9096ffbe7d56353b9b"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -1819,7 +2157,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 38367,
@@ -1829,7 +2169,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xc7c7d796f48e336a5d895e064116ef21f1ba73826ab7b4cba208df47c03ce4ac",
+        "transactionHash": HexBytes(
+            "0xc7c7d796f48e336a5d895e064116ef21f1ba73826ab7b4cba208df47c03ce4ac"
+        ),
         "transactionPosition": 35,
         "type": "call",
     },
@@ -1844,7 +2186,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 31078,
@@ -1854,7 +2198,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xc7c7d796f48e336a5d895e064116ef21f1ba73826ab7b4cba208df47c03ce4ac",
+        "transactionHash": HexBytes(
+            "0xc7c7d796f48e336a5d895e064116ef21f1ba73826ab7b4cba208df47c03ce4ac"
+        ),
         "transactionPosition": 35,
         "type": "call",
     },
@@ -1869,7 +2215,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 128244,
@@ -1879,7 +2227,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -1894,7 +2244,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 107077,
@@ -1904,7 +2256,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -1919,7 +2273,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC00C5977395664267c118d71569DCCF4BC37bF5F",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 99638,
@@ -1929,7 +2285,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 0],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -1944,7 +2302,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 29962,
@@ -1954,7 +2314,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -1969,7 +2331,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xbA7970f10D9f0531941DcEd1dda7ef3016B24e5b",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 2577,
@@ -1979,7 +2343,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 1],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -1994,12 +2360,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 22278, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0, 2],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2014,7 +2384,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xbA7970f10D9f0531941DcEd1dda7ef3016B24e5b",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 18222,
@@ -2024,7 +2396,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 0],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2039,7 +2413,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xbA7970f10D9f0531941DcEd1dda7ef3016B24e5b",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 577,
@@ -2049,7 +2425,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 3],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2064,12 +2442,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 18173, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2084,7 +2466,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 534,
@@ -2094,7 +2478,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2109,12 +2495,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 9223, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 1],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2127,12 +2517,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 83, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 1, 0],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2145,12 +2539,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x02736d5c8dcea65539993d143A3DE90ceBcA9c3c",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 2],
-        "transactionHash": "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba",
+        "transactionHash": HexBytes(
+            "0x2407e6b8a5be763a5f8c280f1ae10ff000ebaf75e1530a0f3651987ba311b2ba"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -2165,12 +2563,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xC0981Df196dc6c6fb8673B912B07956256D7e9fF",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 734311, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [],
-        "transactionHash": "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153",
+        "transactionHash": HexBytes(
+            "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -2185,12 +2587,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdEcC60000ba66700a009b8F9F7D82676B5cfA88A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 76963, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153",
+        "transactionHash": HexBytes(
+            "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -2203,7 +2609,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x95d89b41"),
             "to": "0xa6233451039230fAe712371dD7526f6Df7625E1f",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 3294,
@@ -2213,7 +2621,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153",
+        "transactionHash": HexBytes(
+            "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -2228,7 +2638,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x787D1B8bFe2142af127e62dcc15D63D6D708f85F",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 191993,
@@ -2238,7 +2650,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153",
+        "transactionHash": HexBytes(
+            "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -2253,7 +2667,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdEcC60000ba66700a009b8F9F7D82676B5cfA88A",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 217795,
@@ -2263,7 +2679,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153",
+        "transactionHash": HexBytes(
+            "0xf5e2ebf727d16274508ca3bd5f26929327e3a1fec8b6aafae19d42972547c153"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -2276,12 +2694,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x9e8b2990f80ce4bAEF5cD6b7049e8cCF02813eB1",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xc883289f103aa8ce65340eb880b4e99598707090af3f35ac38d983d59b3c272c",
+        "transactionHash": HexBytes(
+            "0xc883289f103aa8ce65340eb880b4e99598707090af3f35ac38d983d59b3c272c"
+        ),
         "transactionPosition": 38,
         "type": "call",
     },
@@ -2296,12 +2718,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xdDA32aabBBB6c44eFC567baC5F7C35f185338456",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 24984, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xc05e8ce528fd257471f3961ee467d56f80a17f75be6a0b8d11a2bfe25fdb8763",
+        "transactionHash": HexBytes(
+            "0xc05e8ce528fd257471f3961ee467d56f80a17f75be6a0b8d11a2bfe25fdb8763"
+        ),
         "transactionPosition": 39,
         "type": "call",
     },
@@ -2314,12 +2740,16 @@ trace_block_13191781_mock = [
             "input": HexBytes("0x"),
             "to": "0x77ACC06250552c8A96e9560670328974386D632F",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xaae3e3d36a7d210372e22920a103a5cbe695d6c273bfa46eb7bc7bf903c669c4",
+        "transactionHash": HexBytes(
+            "0xaae3e3d36a7d210372e22920a103a5cbe695d6c273bfa46eb7bc7bf903c669c4"
+        ),
         "transactionPosition": 40,
         "type": "call",
     },
@@ -2334,7 +2764,9 @@ trace_block_13191781_mock = [
             ),
             "to": "0x3C4B6E6e1eA3D4863700D7F76b36B7f3D3f13E3d",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 24659,
@@ -2344,7 +2776,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x31aecc7e3c6c9062caf6532ec45a9239b85490fa85396d8c00cfc39f55e9138b",
+        "transactionHash": HexBytes(
+            "0x31aecc7e3c6c9062caf6532ec45a9239b85490fa85396d8c00cfc39f55e9138b"
+        ),
         "transactionPosition": 41,
         "type": "call",
     },
@@ -2359,12 +2793,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0x50f5474724e0Ee42D9a4e711ccFB275809Fd6d4a",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 20840, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xb26b3e31995258eecbd92e61f1d222bd16369c83eae85a4760776cb5adef26cf",
+        "transactionHash": HexBytes(
+            "0xb26b3e31995258eecbd92e61f1d222bd16369c83eae85a4760776cb5adef26cf"
+        ),
         "transactionPosition": 42,
         "type": "call",
     },
@@ -2377,7 +2815,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0xddd81f82"),
             "to": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 376538,
@@ -2387,7 +2827,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x87a0b62f5d2350e2161abfc9071c68a964272ec288c1e00d564437a01d48ef53",
+        "transactionHash": HexBytes(
+            "0x87a0b62f5d2350e2161abfc9071c68a964272ec288c1e00d564437a01d48ef53"
+        ),
         "transactionPosition": 43,
         "type": "call",
     },
@@ -2400,7 +2842,9 @@ trace_block_13191781_mock = [
                 "0x608060405234801561001057600080fd5b506040516105d03803806105d08339810160409081528151602083015191830151909201610046836401000000006100e0810204565b61005882640100000000610102810204565b81600160a060020a03168160405180828051906020019080838360005b8381101561008d578181015183820152602001610075565b50505050905090810190601f1680156100ba5780820380516001836020036101000a031916815260200191505b50915050600060405180830381855af491505015156100d857600080fd5b505050610165565b60018054600160a060020a031916600160a060020a0392909216919091179055565b600054600160a060020a038281169116141561011d57600080fd5b60008054600160a060020a031916600160a060020a038316908117825560405190917fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b91a250565b61045c806101746000396000f3006080604052600436106100825763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663025313a281146100c85780633659cfe6146100f95780634555d5c91461011c5780634f1ef286146101435780635c60da1b1461019d5780636fde8202146101b2578063f1739cae146101c7575b600061008c6101e8565b9050600160a060020a03811615156100a357600080fd5b60405136600082376000803683855af43d806000843e8180156100c4578184f35b8184fd5b3480156100d457600080fd5b506100dd6101f7565b60408051600160a060020a039092168252519081900360200190f35b34801561010557600080fd5b5061011a600160a060020a0360043516610206565b005b34801561012857600080fd5b50610131610239565b60408051918252519081900360200190f35b60408051602060046024803582810135601f810185900485028601850190965285855261011a958335600160a060020a031695369560449491939091019190819084018382808284375094975061023e9650505050505050565b3480156101a957600080fd5b506100dd6101e8565b3480156101be57600080fd5b506100dd6102f2565b3480156101d357600080fd5b5061011a600160a060020a0360043516610301565b600054600160a060020a031690565b60006102016102f2565b905090565b61020e6101f7565b600160a060020a031633600160a060020a031614151561022d57600080fd5b61023681610391565b50565b600290565b6102466101f7565b600160a060020a031633600160a060020a031614151561026557600080fd5b61026e82610206565b30600160a060020a03168160405180828051906020019080838360005b838110156102a357818101518382015260200161028b565b50505050905090810190601f1680156102d05780820380516001836020036101000a031916815260200191505b50915050600060405180830381855af491505015156102ee57600080fd5b5050565b600154600160a060020a031690565b6103096101f7565b600160a060020a031633600160a060020a031614151561032857600080fd5b600160a060020a038116151561033d57600080fd5b7f5a3e66efaa1e445ebd894728a69d6959842ea1e97bd79b892797106e270efcd96103666101f7565b60408051600160a060020a03928316815291841660208301528051918290030190a161023681610401565b600054600160a060020a03828116911614156103ac57600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a038316908117825560405190917fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b91a250565b6001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a723058205f26049bbc794226b505f589b2ee1130db54310d79dd8a635c6f6c61e305a77700290000000000000000000000001b320348dcf5fe741161c87bd321f4170bf5fe45000000000000000000000000f9e266af4bca5890e2781812cc6a6e89495a79f200000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000044485cc9550000000000000000000000001b320348dcf5fe741161c87bd321f4170bf5fe45000000000000000000000000a5409ec958c83c3f309868babaca7c86dcb077c100000000000000000000000000000000000000000000000000000000"
             ),
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 317883,
@@ -2411,7 +2855,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x87a0b62f5d2350e2161abfc9071c68a964272ec288c1e00d564437a01d48ef53",
+        "transactionHash": HexBytes(
+            "0x87a0b62f5d2350e2161abfc9071c68a964272ec288c1e00d564437a01d48ef53"
+        ),
         "transactionPosition": 43,
         "type": "create",
     },
@@ -2426,12 +2872,16 @@ trace_block_13191781_mock = [
             ),
             "to": "0xF9e266af4BcA5890e2781812cc6a6E89495a79f2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 45120, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0x87a0b62f5d2350e2161abfc9071c68a964272ec288c1e00d564437a01d48ef53",
+        "transactionHash": HexBytes(
+            "0x87a0b62f5d2350e2161abfc9071c68a964272ec288c1e00d564437a01d48ef53"
+        ),
         "transactionPosition": 43,
         "type": "call",
     },
@@ -2444,7 +2894,9 @@ trace_block_13191781_mock = [
             "input": HexBytes("0xddd81f82"),
             "to": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 376538,
@@ -2454,7 +2906,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x73c429f04ca56cd06ec53cfdaf845faf6f284e368eeeb310b1b7b825fa70a6db",
+        "transactionHash": HexBytes(
+            "0x73c429f04ca56cd06ec53cfdaf845faf6f284e368eeeb310b1b7b825fa70a6db"
+        ),
         "transactionPosition": 44,
         "type": "call",
     },
@@ -2467,7 +2921,9 @@ trace_block_13191781_mock = [
                 "0x608060405234801561001057600080fd5b506040516105d03803806105d08339810160409081528151602083015191830151909201610046836401000000006100e0810204565b61005882640100000000610102810204565b81600160a060020a03168160405180828051906020019080838360005b8381101561008d578181015183820152602001610075565b50505050905090810190601f1680156100ba5780820380516001836020036101000a031916815260200191505b50915050600060405180830381855af491505015156100d857600080fd5b505050610165565b60018054600160a060020a031916600160a060020a0392909216919091179055565b600054600160a060020a038281169116141561011d57600080fd5b60008054600160a060020a031916600160a060020a038316908117825560405190917fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b91a250565b61045c806101746000396000f3006080604052600436106100825763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663025313a281146100c85780633659cfe6146100f95780634555d5c91461011c5780634f1ef286146101435780635c60da1b1461019d5780636fde8202146101b2578063f1739cae146101c7575b600061008c6101e8565b9050600160a060020a03811615156100a357600080fd5b60405136600082376000803683855af43d806000843e8180156100c4578184f35b8184fd5b3480156100d457600080fd5b506100dd6101f7565b60408051600160a060020a039092168252519081900360200190f35b34801561010557600080fd5b5061011a600160a060020a0360043516610206565b005b34801561012857600080fd5b50610131610239565b60408051918252519081900360200190f35b60408051602060046024803582810135601f810185900485028601850190965285855261011a958335600160a060020a031695369560449491939091019190819084018382808284375094975061023e9650505050505050565b3480156101a957600080fd5b506100dd6101e8565b3480156101be57600080fd5b506100dd6102f2565b3480156101d357600080fd5b5061011a600160a060020a0360043516610301565b600054600160a060020a031690565b60006102016102f2565b905090565b61020e6101f7565b600160a060020a031633600160a060020a031614151561022d57600080fd5b61023681610391565b50565b600290565b6102466101f7565b600160a060020a031633600160a060020a031614151561026557600080fd5b61026e82610206565b30600160a060020a03168160405180828051906020019080838360005b838110156102a357818101518382015260200161028b565b50505050905090810190601f1680156102d05780820380516001836020036101000a031916815260200191505b50915050600060405180830381855af491505015156102ee57600080fd5b5050565b600154600160a060020a031690565b6103096101f7565b600160a060020a031633600160a060020a031614151561032857600080fd5b600160a060020a038116151561033d57600080fd5b7f5a3e66efaa1e445ebd894728a69d6959842ea1e97bd79b892797106e270efcd96103666101f7565b60408051600160a060020a03928316815291841660208301528051918290030190a161023681610401565b600054600160a060020a03828116911614156103ac57600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a038316908117825560405190917fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b91a250565b6001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a723058205f26049bbc794226b505f589b2ee1130db54310d79dd8a635c6f6c61e305a777002900000000000000000000000026b675fc79ea35805b6594857c429cfe2d5f1509000000000000000000000000f9e266af4bca5890e2781812cc6a6e89495a79f200000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000044485cc95500000000000000000000000026b675fc79ea35805b6594857c429cfe2d5f1509000000000000000000000000a5409ec958c83c3f309868babaca7c86dcb077c100000000000000000000000000000000000000000000000000000000"
             ),
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {
             "gasUsed": 317883,
@@ -2478,7 +2934,9 @@ trace_block_13191781_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x73c429f04ca56cd06ec53cfdaf845faf6f284e368eeeb310b1b7b825fa70a6db",
+        "transactionHash": HexBytes(
+            "0x73c429f04ca56cd06ec53cfdaf845faf6f284e368eeeb310b1b7b825fa70a6db"
+        ),
         "transactionPosition": 44,
         "type": "create",
     },
@@ -2493,18 +2951,24 @@ trace_block_13191781_mock = [
             ),
             "to": "0xF9e266af4BcA5890e2781812cc6a6E89495a79f2",
         },
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": {"gasUsed": 45120, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0x73c429f04ca56cd06ec53cfdaf845faf6f284e368eeeb310b1b7b825fa70a6db",
+        "transactionHash": HexBytes(
+            "0x73c429f04ca56cd06ec53cfdaf845faf6f284e368eeeb310b1b7b825fa70a6db"
+        ),
         "transactionPosition": 44,
         "type": "call",
     },
     {
         "action": {"value": 2000000000000000000},
-        "blockHash": "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e",
+        "blockHash": HexBytes(
+            "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
+        ),
         "blockNumber": 13191781,
         "result": None,
         "subtraces": 0,
@@ -2525,7 +2989,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xcb6B570B8AeAbE38B449Aff31f901B8E1B91e396",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "error": "Reverted",
         "result": {
@@ -2536,7 +3002,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x71453e4f713dd1f102cbdbbf9d7a9995f75ee1f57ab5ded1f7e3cae93dab4c2b",
+        "transactionHash": HexBytes(
+            "0x71453e4f713dd1f102cbdbbf9d7a9995f75ee1f57ab5ded1f7e3cae93dab4c2b"
+        ),
         "transactionPosition": 0,
         "type": "call",
     },
@@ -2551,12 +3019,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x9507c04B10486547584C37bCBd931B2a4FeE9A41",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 60937, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2571,7 +3043,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 53152,
@@ -2581,7 +3055,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2596,7 +3072,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8862,
@@ -2606,7 +3084,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2621,7 +3101,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -2631,7 +3113,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 1],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2646,7 +3130,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -2656,7 +3142,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1, 0],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2671,12 +3159,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x9507c04B10486547584C37bCBd931B2a4FeE9A41",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 13863, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 2],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2691,7 +3183,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 10417,
@@ -2701,7 +3195,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 2, 0],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2716,7 +3212,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9628,
@@ -2726,7 +3224,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 0],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2741,7 +3241,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -2751,7 +3253,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 3],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2766,7 +3270,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -2776,7 +3282,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 3, 0],
-        "transactionHash": "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244",
+        "transactionHash": HexBytes(
+            "0x55cb57ee60fca9739fc9e90010b0889701c4cebd58a053fa6bfe156484c48244"
+        ),
         "transactionPosition": 1,
         "type": "call",
     },
@@ -2789,12 +3297,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x81FfD37ed3ab472F9bC1d3135D583dC594Bf4795",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x649cdb70fa7f1a5a32e154e07ec74183bb15a370cead1461ceda940146902f84",
+        "transactionHash": HexBytes(
+            "0x649cdb70fa7f1a5a32e154e07ec74183bb15a370cead1461ceda940146902f84"
+        ),
         "transactionPosition": 2,
         "type": "call",
     },
@@ -2809,7 +3321,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x617Dee16B86534a5d792A4d7A62FB491B544111E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 564703,
@@ -2819,7 +3333,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2834,7 +3350,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA888D9616C2222788fa19f05F77221A290eEf704",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 91897,
@@ -2844,7 +3362,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2859,12 +3379,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x41684b361557E9282E0373CA51260D9331e518C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 450179, "output": HexBytes("0x")},
         "subtraces": 23,
         "traceAddress": [1],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2879,7 +3403,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA888D9616C2222788fa19f05F77221A290eEf704",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2632,
@@ -2889,7 +3415,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2904,7 +3432,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA888D9616C2222788fa19f05F77221A290eEf704",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 33710,
@@ -2914,7 +3444,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 1],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2929,7 +3461,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA9249f4D7e84B206d010Bc90211a11fDA57785b4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 16861,
@@ -2939,7 +3473,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [1, 2],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2952,7 +3488,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x4D42FD2fe2Eb1e4C7eec64272a1f715dce0eA535",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -2962,7 +3500,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2975,7 +3515,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0dfe1681"),
             "to": "0x4D42FD2fe2Eb1e4C7eec64272a1f715dce0eA535",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2381,
@@ -2985,7 +3527,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 1],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -2998,7 +3542,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd21220a7"),
             "to": "0x4D42FD2fe2Eb1e4C7eec64272a1f715dce0eA535",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2357,
@@ -3008,7 +3554,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 2],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3021,7 +3569,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0dfe1681"),
             "to": "0x4D42FD2fe2Eb1e4C7eec64272a1f715dce0eA535",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 381,
@@ -3031,7 +3581,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 3],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3046,7 +3598,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA888D9616C2222788fa19f05F77221A290eEf704",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2632,
@@ -3056,7 +3610,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 3],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3071,7 +3627,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA9249f4D7e84B206d010Bc90211a11fDA57785b4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1070,
@@ -3081,7 +3639,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 4],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3096,7 +3656,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9815,
@@ -3106,7 +3668,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 5],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3121,7 +3685,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2529,
@@ -3131,7 +3697,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 5, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3144,7 +3712,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0dfe1681"),
             "to": "0x4D42FD2fe2Eb1e4C7eec64272a1f715dce0eA535",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 381,
@@ -3154,7 +3724,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 6],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3169,12 +3741,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x4D42FD2fe2Eb1e4C7eec64272a1f715dce0eA535",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 66787, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1, 7],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3189,7 +3765,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 35517,
@@ -3199,7 +3777,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 7, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3214,7 +3794,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 34728,
@@ -3224,7 +3806,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 7, 0, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3239,7 +3823,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -3249,7 +3835,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 7, 1],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3264,7 +3852,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -3274,7 +3864,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 7, 1, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3289,7 +3881,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA888D9616C2222788fa19f05F77221A290eEf704",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2632,
@@ -3299,7 +3893,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 7, 2],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3314,7 +3910,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -3324,7 +3922,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 8],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3339,7 +3939,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -3349,7 +3951,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 8, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3364,7 +3968,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2602,
@@ -3374,7 +3980,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 9],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3389,7 +3997,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -3399,7 +4009,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 10],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3414,7 +4026,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -3424,7 +4038,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 10, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3439,7 +4055,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 27867,
@@ -3449,7 +4067,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 11],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3464,7 +4084,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 27078,
@@ -3474,7 +4096,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 11, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3489,7 +4113,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 113825,
@@ -3499,7 +4125,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 3,
         "traceAddress": [1, 12],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3514,7 +4142,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x06Df3b2bbB68adc8B0e302443692037ED9f91b42",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 33575,
@@ -3524,7 +4154,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 12, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3539,7 +4171,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 10792,
@@ -3549,7 +4183,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 12, 1],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3564,7 +4200,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9997,
@@ -3574,7 +4212,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 12, 1, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3589,7 +4229,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 28174,
@@ -3599,7 +4241,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 12, 2],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3614,7 +4258,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 602,
@@ -3624,7 +4270,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 13],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3639,7 +4287,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 602,
@@ -3649,7 +4299,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 14],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3664,7 +4316,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2534,
@@ -3674,7 +4328,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 15],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3689,7 +4345,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x60594a405d53811d3BC4766596EFD80fd545A270",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 82248,
@@ -3699,7 +4357,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [1, 16],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3714,7 +4374,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 27962,
@@ -3724,7 +4386,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 16, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3739,7 +4403,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2602,
@@ -3749,7 +4415,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 16, 1],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3764,12 +4432,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x41684b361557E9282E0373CA51260D9331e518C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 9511, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 16, 2],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3784,7 +4456,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 6274,
@@ -3794,7 +4468,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 16, 2, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3809,7 +4485,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 602,
@@ -3819,7 +4497,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 16, 3],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3834,7 +4514,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -3844,7 +4526,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 17],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3859,7 +4543,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -3869,7 +4555,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 18],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3884,12 +4572,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 9195, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 19],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3902,12 +4594,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x41684b361557E9282E0373CA51260D9331e518C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 55, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 19, 0],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3920,12 +4616,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x96c195F6643A3D797cb90cb6BA0Ae2776D51b5F3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 20],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3938,12 +4638,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xf896736D814F87C3A94eDc7F4D16b1D0b87aCDf7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 21],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3958,7 +4662,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA888D9616C2222788fa19f05F77221A290eEf704",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2632,
@@ -3968,7 +4674,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 22],
-        "transactionHash": "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0",
+        "transactionHash": HexBytes(
+            "0x0829191d1e4da5fcf7001059a66f51183c8fa6c343e4a470d9398306c8095ed0"
+        ),
         "transactionPosition": 3,
         "type": "call",
     },
@@ -3983,7 +4691,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0d438F3b5175Bebc262bF23753C1E53d03432bDE",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13006,
@@ -3993,7 +4703,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xfa5183ed2496b4604a8a000039677bc139744f1049201e48cddd0dfddfe0f365",
+        "transactionHash": HexBytes(
+            "0xfa5183ed2496b4604a8a000039677bc139744f1049201e48cddd0dfddfe0f365"
+        ),
         "transactionPosition": 4,
         "type": "call",
     },
@@ -4008,7 +4720,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0d438F3b5175Bebc262bF23753C1E53d03432bDE",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13006,
@@ -4018,7 +4732,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x4c8e5be08977569c9fcbe1ca050459a2b8c67fc6a6e642b113764ae5256af3a7",
+        "transactionHash": HexBytes(
+            "0x4c8e5be08977569c9fcbe1ca050459a2b8c67fc6a6e642b113764ae5256af3a7"
+        ),
         "transactionPosition": 5,
         "type": "call",
     },
@@ -4033,7 +4749,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0d438F3b5175Bebc262bF23753C1E53d03432bDE",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13006,
@@ -4043,7 +4761,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x874d6a00a710e0e8cb6c9e4c394b6f1b0502ca7517af206ed75aab7028cfca57",
+        "transactionHash": HexBytes(
+            "0x874d6a00a710e0e8cb6c9e4c394b6f1b0502ca7517af206ed75aab7028cfca57"
+        ),
         "transactionPosition": 6,
         "type": "call",
     },
@@ -4058,12 +4778,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 64675, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4078,7 +4802,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xEbD64b5f2e3028fb887D40cc69570d2C59b16bdc",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 63335,
@@ -4088,7 +4814,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [0],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4103,7 +4831,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 52682,
@@ -4113,7 +4843,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 0],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4128,7 +4860,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8862,
@@ -4138,7 +4872,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4153,7 +4889,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 655,
@@ -4163,7 +4901,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 1],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4178,12 +4918,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 13309, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0, 2],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4198,7 +4942,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12700,
@@ -4208,7 +4954,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 0],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4223,7 +4971,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 655,
@@ -4233,7 +4983,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 3],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4246,12 +4998,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6",
+        "transactionHash": HexBytes(
+            "0xac7f47a0babae1284b8e16945ea02907cf3e7efa571cc3922ca1fed5fe4e57a6"
+        ),
         "transactionPosition": 7,
         "type": "call",
     },
@@ -4266,12 +5022,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 69351, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4286,7 +5046,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA2657323a987e02B1C4e8e64AA3844f0e48dBff8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 67987,
@@ -4296,7 +5058,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [0],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4311,7 +5075,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x9feBc984504356225405e26833608b17719c82Ae",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 57334,
@@ -4321,7 +5087,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 0],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4336,7 +5104,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 10417,
@@ -4346,7 +5116,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4361,7 +5133,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9628,
@@ -4371,7 +5145,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0, 0],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4386,7 +5162,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x111111111117dC0aa78b770fA6A738034120C302",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 510,
@@ -4396,7 +5174,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 1],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4411,12 +5191,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14913, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0, 2],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4431,7 +5215,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x111111111117dC0aa78b770fA6A738034120C302",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 14304,
@@ -4441,7 +5227,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 0],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4456,7 +5244,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x111111111117dC0aa78b770fA6A738034120C302",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 510,
@@ -4466,7 +5256,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 3],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4479,12 +5271,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f",
+        "transactionHash": HexBytes(
+            "0x7aa71de1165fd9ec3a8b959699727d95fe593a06d7eb6f5be08fa3d7415aa42f"
+        ),
         "transactionPosition": 8,
         "type": "call",
     },
@@ -4499,7 +5295,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x467719aD09025FcC6cF6F8311755809d45a5E5f3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12851,
@@ -4509,7 +5307,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x7904630f15ed02f242085f15b35e46e67143e7dd149a4e7a52ffa955a2f85d99",
+        "transactionHash": HexBytes(
+            "0x7904630f15ed02f242085f15b35e46e67143e7dd149a4e7a52ffa955a2f85d99"
+        ),
         "transactionPosition": 9,
         "type": "call",
     },
@@ -4524,12 +5324,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x24036cd410f94faabb55cf432c6011e9f6e7c3d27617a1ea5c4071e407a05b92",
+        "transactionHash": HexBytes(
+            "0x24036cd410f94faabb55cf432c6011e9f6e7c3d27617a1ea5c4071e407a05b92"
+        ),
         "transactionPosition": 10,
         "type": "call",
     },
@@ -4544,12 +5348,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x2d56ca1e01c6a843884439032fb0e881b10e8c63607f72b8f0719bc6e5608dea",
+        "transactionHash": HexBytes(
+            "0x2d56ca1e01c6a843884439032fb0e881b10e8c63607f72b8f0719bc6e5608dea"
+        ),
         "transactionPosition": 11,
         "type": "call",
     },
@@ -4564,12 +5372,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x7ad91e43ef805dff57fde8087fbc9e0b88b0bc7f8905254c968cc743c3cfdab9",
+        "transactionHash": HexBytes(
+            "0x7ad91e43ef805dff57fde8087fbc9e0b88b0bc7f8905254c968cc743c3cfdab9"
+        ),
         "transactionPosition": 12,
         "type": "call",
     },
@@ -4584,12 +5396,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x98C3d3183C4b8A650614ad179A1a98be0a8d6B8E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 106592, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4602,7 +5418,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x3850c7bd"),
             "to": "0xB0F4a77Bde7fEE134265307C5CC19abfF0ba409B",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2696,
@@ -4612,7 +5430,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4627,7 +5447,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xB0F4a77Bde7fEE134265307C5CC19abfF0ba409B",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 85732,
@@ -4637,7 +5459,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [1],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4652,12 +5476,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4672,7 +5500,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x3506424F91fD33084466F402d5D97f05F8e3b4AF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2679,
@@ -4682,7 +5512,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 1],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4697,12 +5529,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x98C3d3183C4b8A650614ad179A1a98be0a8d6B8E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 16098, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 2],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4717,7 +5553,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x3506424F91fD33084466F402d5D97f05F8e3b4AF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13599,
@@ -4727,7 +5565,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 0],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4742,7 +5582,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x3506424F91fD33084466F402d5D97f05F8e3b4AF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 679,
@@ -4752,7 +5594,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 3],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4765,12 +5609,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3",
+        "transactionHash": HexBytes(
+            "0x1b46582c3a74483e15f3eb783af8535f482bc4564b94ec42052568641b55d6d3"
+        ),
         "transactionPosition": 13,
         "type": "call",
     },
@@ -4785,12 +5633,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x9f22bd44194f4149cea1d3ca9b180f973407b287e542beeecb9576e23879a294",
+        "transactionHash": HexBytes(
+            "0x9f22bd44194f4149cea1d3ca9b180f973407b287e542beeecb9576e23879a294"
+        ),
         "transactionPosition": 14,
         "type": "call",
     },
@@ -4805,7 +5657,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 44017,
@@ -4815,7 +5669,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x026e0528519b6ec3a9257f394c67f3bb4aa37b425bae9cbd7030c0fe4e997a9f",
+        "transactionHash": HexBytes(
+            "0x026e0528519b6ec3a9257f394c67f3bb4aa37b425bae9cbd7030c0fe4e997a9f"
+        ),
         "transactionPosition": 15,
         "type": "call",
     },
@@ -4830,7 +5686,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 36728,
@@ -4840,7 +5698,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x026e0528519b6ec3a9257f394c67f3bb4aa37b425bae9cbd7030c0fe4e997a9f",
+        "transactionHash": HexBytes(
+            "0x026e0528519b6ec3a9257f394c67f3bb4aa37b425bae9cbd7030c0fe4e997a9f"
+        ),
         "transactionPosition": 15,
         "type": "call",
     },
@@ -4853,12 +5713,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xF26A1896377568742767A777C53357442Ebf9af1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xbe0cd9c33f8c5285aabc7dbe705ae4b41598072ce541cb948c20eefadcd5d6c4",
+        "transactionHash": HexBytes(
+            "0xbe0cd9c33f8c5285aabc7dbe705ae4b41598072ce541cb948c20eefadcd5d6c4"
+        ),
         "transactionPosition": 16,
         "type": "call",
     },
@@ -4871,12 +5735,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x1E3a01AE80b3B7B8576AE26880D16fFA8d2d1FA4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xd455e7c376623ff7004818166cb7b52166d7c0439ae31c75aa53341fcd3b57d6",
+        "transactionHash": HexBytes(
+            "0xd455e7c376623ff7004818166cb7b52166d7c0439ae31c75aa53341fcd3b57d6"
+        ),
         "transactionPosition": 17,
         "type": "call",
     },
@@ -4891,7 +5759,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 120956,
@@ -4901,7 +5771,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -4914,7 +5786,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x2430c43867EcAE58A4B2C2e41d08C916A062b700",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -4924,7 +5798,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -4937,12 +5813,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 23974, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -4957,7 +5837,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8062,
@@ -4967,7 +5849,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -4982,12 +5866,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x2430c43867EcAE58A4B2C2e41d08C916A062b700",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 67151, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [3],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -5002,7 +5890,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x48878490702f1BA61aB02546F93fc92e04c36007",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 32260,
@@ -5012,7 +5902,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -5027,7 +5919,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x48878490702f1BA61aB02546F93fc92e04c36007",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -5037,7 +5931,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -5052,7 +5948,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -5062,7 +5960,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 2],
-        "transactionHash": "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06",
+        "transactionHash": HexBytes(
+            "0x7da753a1abc52d90449a075dc7753ef7fd8ed4504b36908e75570abd1ce73a06"
+        ),
         "transactionPosition": 18,
         "type": "call",
     },
@@ -5077,12 +5977,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xe8218cACb0a5421BC6409e498d9f8CC8869945ea",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 272740, "output": HexBytes("0x")},
         "subtraces": 6,
         "traceAddress": [],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5097,7 +6001,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2466,
@@ -5107,7 +6013,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5122,7 +6030,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9759,
@@ -5132,7 +6042,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5147,7 +6059,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xf98624E9924CAA2cbD21cC6288215Ec2ef7cFE80",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 4741,
@@ -5157,7 +6071,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5172,7 +6088,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2428,
@@ -5182,7 +6100,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5197,7 +6117,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8585,
@@ -5207,7 +6129,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [3],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5222,7 +6146,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xf98624E9924CAA2cbD21cC6288215Ec2ef7cFE80",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8070,
@@ -5232,7 +6158,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5247,7 +6175,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8585,
@@ -5257,7 +6187,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [4],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5272,7 +6204,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xf98624E9924CAA2cbD21cC6288215Ec2ef7cFE80",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8070,
@@ -5282,7 +6216,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [4, 0],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5297,7 +6233,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 62631,
@@ -5307,7 +6245,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [5],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5322,7 +6262,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xf98624E9924CAA2cbD21cC6288215Ec2ef7cFE80",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 62113,
@@ -5332,7 +6274,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [5, 0],
-        "transactionHash": "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72",
+        "transactionHash": HexBytes(
+            "0x6935c24a01508d4296c6d75809d66f8f55acc4916c7487ee984096baac7e4f72"
+        ),
         "transactionPosition": 19,
         "type": "call",
     },
@@ -5347,12 +6291,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x000000000dFDe7deaF24138722987c9a6991e2D4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 97062, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5367,7 +6315,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFAD57d2039C21811C8F2B5D5B65308aa99D31559",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 88906,
@@ -5377,7 +6327,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5392,7 +6344,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 26917,
@@ -5402,7 +6356,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 0],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5417,7 +6373,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 19628,
@@ -5427,7 +6385,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5442,7 +6402,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2655,
@@ -5452,7 +6414,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5467,12 +6431,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x000000000dFDe7deaF24138722987c9a6991e2D4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14611, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 2],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5487,7 +6455,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 11345,
@@ -5497,7 +6467,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5512,7 +6484,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 655,
@@ -5522,7 +6496,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 3],
-        "transactionHash": "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0",
+        "transactionHash": HexBytes(
+            "0x44348924e614dec6d93d35139ee2e7984fcda0f13d81a1b927e0f42b0c1b93f0"
+        ),
         "transactionPosition": 20,
         "type": "call",
     },
@@ -5535,12 +6511,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xBf864026C2f50ADe50AC9C6a139724Bb72bFd14C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xa9ca435c275811c7b8b253ebb42590b309497a3d8285cb9789b35f6f212c56c0",
+        "transactionHash": HexBytes(
+            "0xa9ca435c275811c7b8b253ebb42590b309497a3d8285cb9789b35f6f212c56c0"
+        ),
         "transactionPosition": 21,
         "type": "call",
     },
@@ -5555,7 +6535,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0b38210ea11411557c13457D4dA7dC6ea731B88a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12946,
@@ -5565,7 +6547,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x115923f7c2ac2e9dfde3ecad01b3c549e5274c8f5c2424b4c1d5f315265fc528",
+        "transactionHash": HexBytes(
+            "0x115923f7c2ac2e9dfde3ecad01b3c549e5274c8f5c2424b4c1d5f315265fc528"
+        ),
         "transactionPosition": 22,
         "type": "call",
     },
@@ -5580,12 +6564,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0352086e5Ce73fc2eC4C41fef56361F7dEF6Ea91",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 250132, "output": HexBytes("0x")},
         "subtraces": 6,
         "traceAddress": [],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5600,7 +6588,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2666,
@@ -5610,7 +6600,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5623,7 +6615,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0xD6c783B257E662CA949b441a4FcB08a53fc49914",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -5633,7 +6627,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5646,7 +6642,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0xcB0bC7C879bb3E9CFEB9d8EFef653F33B3d242e9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2470,
@@ -5656,7 +6654,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5671,12 +6671,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xcB0bC7C879bb3E9CFEB9d8EFef653F33B3d242e9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 204115, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [3],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5691,7 +6695,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x579CEa1889991f68aCc35Ff5c3dd0621fF29b0C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30046,
@@ -5701,7 +6707,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5716,7 +6724,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0352086e5Ce73fc2eC4C41fef56361F7dEF6Ea91",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 68322,
@@ -5726,7 +6736,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 3,
         "traceAddress": [3, 1],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5741,7 +6753,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x579CEa1889991f68aCc35Ff5c3dd0621fF29b0C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8146,
@@ -5751,7 +6765,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1, 0],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5766,12 +6782,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xD6c783B257E662CA949b441a4FcB08a53fc49914",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 43646, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [3, 1, 1],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5786,7 +6806,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 11123,
@@ -5796,7 +6818,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1, 1, 0],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5811,7 +6835,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x579CEa1889991f68aCc35Ff5c3dd0621fF29b0C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -5821,7 +6847,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1, 1, 1],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5836,7 +6864,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 666,
@@ -5846,7 +6876,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1, 1, 2],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5861,7 +6893,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8323,
@@ -5871,7 +6905,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1, 2],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5886,7 +6922,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x579CEa1889991f68aCc35Ff5c3dd0621fF29b0C9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -5896,7 +6934,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 2],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5911,7 +6951,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 666,
@@ -5921,7 +6963,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 3],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5936,7 +6980,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 666,
@@ -5946,7 +6992,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5959,12 +7007,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [5],
-        "transactionHash": "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282",
+        "transactionHash": HexBytes(
+            "0x96cca7a715699d94646169b9be9e40b8ec08dd09258fdde7b9fd65413d000282"
+        ),
         "transactionPosition": 23,
         "type": "call",
     },
@@ -5977,12 +7029,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x54D7eD95a8cd1282b14a2C843b146CeF93e0AFd6",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x786c4a7a2bc4393c10859e181e0b89bfd794e1a44e45dcea3650f1049cfdc79b",
+        "transactionHash": HexBytes(
+            "0x786c4a7a2bc4393c10859e181e0b89bfd794e1a44e45dcea3650f1049cfdc79b"
+        ),
         "transactionPosition": 24,
         "type": "call",
     },
@@ -5997,12 +7053,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x98C3d3183C4b8A650614ad179A1a98be0a8d6B8E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 93629, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6015,7 +7075,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x3850c7bd"),
             "to": "0xFf29D3E552155180809ea3A877408A4620058086",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2696,
@@ -6025,7 +7087,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6040,7 +7104,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFf29D3E552155180809ea3A877408A4620058086",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 72769,
@@ -6050,7 +7116,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [1],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6065,12 +7133,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6085,7 +7157,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x940a2dB1B7008B6C776d4faaCa729d6d4A4AA551",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2591,
@@ -6095,7 +7169,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 1],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6110,12 +7186,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x98C3d3183C4b8A650614ad179A1a98be0a8d6B8E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 13756, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 2],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6130,7 +7210,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x940a2dB1B7008B6C776d4faaCa729d6d4A4AA551",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 11257,
@@ -6140,7 +7222,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 0],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6155,7 +7239,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x940a2dB1B7008B6C776d4faaCa729d6d4A4AA551",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 591,
@@ -6165,7 +7251,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 3],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6178,12 +7266,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85",
+        "transactionHash": HexBytes(
+            "0xc1ae5ff001e58d2090cb3e21686172064f481229594bccef528c8a7787852b85"
+        ),
         "transactionPosition": 25,
         "type": "call",
     },
@@ -6196,12 +7288,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x5a2337c1eF439CFdB7347F509B1F0e55AaE20414",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x03d1ad74410f3ec5b02abdd9fa4eb2f27510bc0739a88c406b989e5944d73fd7",
+        "transactionHash": HexBytes(
+            "0x03d1ad74410f3ec5b02abdd9fa4eb2f27510bc0739a88c406b989e5944d73fd7"
+        ),
         "transactionPosition": 26,
         "type": "call",
     },
@@ -6214,12 +7310,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x96B5Ea9aCF9C45fc9898291911fEE702f5CA261E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xd01a08701962a549fe8688b8808269ed28bcb1be5c7f28a26ac868fa2e543344",
+        "transactionHash": HexBytes(
+            "0xd01a08701962a549fe8688b8808269ed28bcb1be5c7f28a26ac868fa2e543344"
+        ),
         "transactionPosition": 27,
         "type": "call",
     },
@@ -6234,12 +7334,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x585C3d4Da9b533C7e3dF8AC7356C882859298cEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 93935, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6252,7 +7356,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x7E6782E37278994d1e99f1a5d03309B4b249d919",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2517,
@@ -6262,7 +7368,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6277,7 +7385,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12862,
@@ -6287,7 +7397,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6302,12 +7414,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7E6782E37278994d1e99f1a5d03309B4b249d919",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 65500, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [2],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6322,7 +7438,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xeEAA40B28A2d1b0B08f6f97bB1DD4B75316c6107",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30185,
@@ -6332,7 +7450,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 0],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6347,7 +7467,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -6357,7 +7479,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 1],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6372,7 +7496,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xeEAA40B28A2d1b0B08f6f97bB1DD4B75316c6107",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 585,
@@ -6382,7 +7508,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 2],
-        "transactionHash": "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb",
+        "transactionHash": HexBytes(
+            "0x1bfd4d5ff57aa8a53dd33874ab86fda8f2116d9176e465aa03c1b4aa664a31eb"
+        ),
         "transactionPosition": 28,
         "type": "call",
     },
@@ -6397,7 +7525,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13345,
@@ -6407,7 +7537,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x23e0c28a9b9aac51dcde3800f62f204697372e83e07de431c42bb84d4ac1270e",
+        "transactionHash": HexBytes(
+            "0x23e0c28a9b9aac51dcde3800f62f204697372e83e07de431c42bb84d4ac1270e"
+        ),
         "transactionPosition": 29,
         "type": "call",
     },
@@ -6420,12 +7552,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x70108219110dCCC337B9Ac90f6Db612ab1AE91B4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x7b8604005b12dc2df0399229cf67c42c8e6fcaed43e041b144a14addc5016603",
+        "transactionHash": HexBytes(
+            "0x7b8604005b12dc2df0399229cf67c42c8e6fcaed43e041b144a14addc5016603"
+        ),
         "transactionPosition": 30,
         "type": "call",
     },
@@ -6438,12 +7574,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xBe83E7Db6C6fb4F5DB4F22294FAF3868Ca443F2B",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x1a5dcfb543029f5d549f78cd215208f8297b5ba9c618e4835555f24eaf6a97ed",
+        "transactionHash": HexBytes(
+            "0x1a5dcfb543029f5d549f78cd215208f8297b5ba9c618e4835555f24eaf6a97ed"
+        ),
         "transactionPosition": 31,
         "type": "call",
     },
@@ -6456,12 +7596,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x595063172C85B1e8AC2fe74Fcb6b7dC26844CC2D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x27bc92882541be215a93a9d32b7b0dcab330f5a6d17769e33a5a07aba9f2d0bd",
+        "transactionHash": HexBytes(
+            "0x27bc92882541be215a93a9d32b7b0dcab330f5a6d17769e33a5a07aba9f2d0bd"
+        ),
         "transactionPosition": 32,
         "type": "call",
     },
@@ -6474,12 +7618,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x595063172C85B1e8AC2fe74Fcb6b7dC26844CC2D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x9bf0c37de713bf58a538605ca5eba0d0f8f647c09922fd5d4f7e2f6b1410ea23",
+        "transactionHash": HexBytes(
+            "0x9bf0c37de713bf58a538605ca5eba0d0f8f647c09922fd5d4f7e2f6b1410ea23"
+        ),
         "transactionPosition": 33,
         "type": "call",
     },
@@ -6494,7 +7642,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 135063,
@@ -6504,7 +7654,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6517,7 +7669,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x4f4d050d5C86dD32D276a8D066fA1932EB241c1b",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -6527,7 +7681,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6540,12 +7696,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 23974, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6560,7 +7720,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8062,
@@ -6570,7 +7732,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6585,12 +7749,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x4f4d050d5C86dD32D276a8D066fA1932EB241c1b",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 81258, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [3],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6605,7 +7773,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x135783B60cf5d71DAFF7a377f9eb7dB8D2dEAb9e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 46015,
@@ -6615,7 +7785,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6630,7 +7802,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x135783B60cf5d71DAFF7a377f9eb7dB8D2dEAb9e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 886,
@@ -6640,7 +7814,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 1],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6655,7 +7831,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -6665,7 +7843,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 2],
-        "transactionHash": "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df",
+        "transactionHash": HexBytes(
+            "0xa08f2afe43351449e3a45e9ee9c823ccb9eafbf048634a9888675f6dc81349df"
+        ),
         "transactionPosition": 34,
         "type": "call",
     },
@@ -6680,7 +7860,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xcb6B570B8AeAbE38B449Aff31f901B8E1B91e396",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "error": "Reverted",
         "result": {
@@ -6691,7 +7873,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x6450d56ae3625b1a2033ab80bab1d64b836e7d29b5ff3eb767c9bd99c428ebb5",
+        "transactionHash": HexBytes(
+            "0x6450d56ae3625b1a2033ab80bab1d64b836e7d29b5ff3eb767c9bd99c428ebb5"
+        ),
         "transactionPosition": 35,
         "type": "call",
     },
@@ -6706,7 +7890,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa8c8CfB141A3bB59FEA1E2ea6B79b5ECBCD7b6ca",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 17770,
@@ -6716,7 +7902,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x1c50f2c97fc372bb0abd48e60a5e67325238dc060e0615f8687b884689684d38",
+        "transactionHash": HexBytes(
+            "0x1c50f2c97fc372bb0abd48e60a5e67325238dc060e0615f8687b884689684d38"
+        ),
         "transactionPosition": 36,
         "type": "call",
     },
@@ -6731,7 +7919,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdeFA4e8a7bcBA345F687a2f1456F5Edd9CE97202",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 20107,
@@ -6741,7 +7931,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xb85966637dbaf8ccbbde674ec7e0619149e6ae2b634e0d5d65034acf668ce98a",
+        "transactionHash": HexBytes(
+            "0xb85966637dbaf8ccbbde674ec7e0619149e6ae2b634e0d5d65034acf668ce98a"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -6756,7 +7948,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xe5E8E834086F1a964f9A089eB6Ae11796862e4CE",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12861,
@@ -6766,7 +7960,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xb85966637dbaf8ccbbde674ec7e0619149e6ae2b634e0d5d65034acf668ce98a",
+        "transactionHash": HexBytes(
+            "0xb85966637dbaf8ccbbde674ec7e0619149e6ae2b634e0d5d65034acf668ce98a"
+        ),
         "transactionPosition": 37,
         "type": "call",
     },
@@ -6781,7 +7977,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x3845badAde8e6dFF049820680d1F14bD3903a5d0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12580,
@@ -6791,7 +7989,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x0f7abee5077bf4aeac14a55c12c7df7a043d9700cc57761b344c2365b28b6d2c",
+        "transactionHash": HexBytes(
+            "0x0f7abee5077bf4aeac14a55c12c7df7a043d9700cc57761b344c2365b28b6d2c"
+        ),
         "transactionPosition": 38,
         "type": "call",
     },
@@ -6806,7 +8006,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30445,
@@ -6816,7 +8018,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x40c38fceedcd1b03ce32979fb9f4175fb3aa95d6d5bb119d684e2d88e62cf094",
+        "transactionHash": HexBytes(
+            "0x40c38fceedcd1b03ce32979fb9f4175fb3aa95d6d5bb119d684e2d88e62cf094"
+        ),
         "transactionPosition": 39,
         "type": "call",
     },
@@ -6831,12 +8035,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x6a6c52cc60b4ea3ce990bd2bec1943dfe2950c3f3be52d3ac7e1e71a44ed92a3",
+        "transactionHash": HexBytes(
+            "0x6a6c52cc60b4ea3ce990bd2bec1943dfe2950c3f3be52d3ac7e1e71a44ed92a3"
+        ),
         "transactionPosition": 40,
         "type": "call",
     },
@@ -6851,7 +8059,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 32271,
@@ -6861,7 +8071,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xeee941aaa821ed7b70144ad564c2c98bcb2a8e1e2181513a6d5bc653e81e0259",
+        "transactionHash": HexBytes(
+            "0xeee941aaa821ed7b70144ad564c2c98bcb2a8e1e2181513a6d5bc653e81e0259"
+        ),
         "transactionPosition": 41,
         "type": "call",
     },
@@ -6874,12 +8086,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xFC74E21DD6869B1A503B2e8a617708a5B131ACDd",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x26eee3ca714b8e19ef6a4b385205d7dd1a5df344f2e34cf232d1eae7cb751857",
+        "transactionHash": HexBytes(
+            "0x26eee3ca714b8e19ef6a4b385205d7dd1a5df344f2e34cf232d1eae7cb751857"
+        ),
         "transactionPosition": 42,
         "type": "call",
     },
@@ -6894,12 +8110,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xfe0c93f002b5fb58804d65bcc9872ebf0324748d62c336a32897c9b5ec12aec3",
+        "transactionHash": HexBytes(
+            "0xfe0c93f002b5fb58804d65bcc9872ebf0324748d62c336a32897c9b5ec12aec3"
+        ),
         "transactionPosition": 43,
         "type": "call",
     },
@@ -6914,12 +8134,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xcbbc531dfdc6414a5a25934ce98e99b58bc94667bca379678f727a08f906d653",
+        "transactionHash": HexBytes(
+            "0xcbbc531dfdc6414a5a25934ce98e99b58bc94667bca379678f727a08f906d653"
+        ),
         "transactionPosition": 44,
         "type": "call",
     },
@@ -6932,12 +8156,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xF74B5172bE54e9f2f6BFFF064d018232F711bAE2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x44fea50e87ce67241229764d98c575bc45591a476e7b63cb4d90cd0bfead6f0d",
+        "transactionHash": HexBytes(
+            "0x44fea50e87ce67241229764d98c575bc45591a476e7b63cb4d90cd0bfead6f0d"
+        ),
         "transactionPosition": 45,
         "type": "call",
     },
@@ -6950,12 +8178,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xdbb36ee008FA0C6e6836989438c2B7C968fCF06d",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x43fd9fbe65bf1ed170514d3ac991c9ce572013cae49f788062dcbabca9b1db51",
+        "transactionHash": HexBytes(
+            "0x43fd9fbe65bf1ed170514d3ac991c9ce572013cae49f788062dcbabca9b1db51"
+        ),
         "transactionPosition": 46,
         "type": "call",
     },
@@ -6970,12 +8202,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xefc24ceb70523ebc5dc119060a22210c6637ded58f15766fdde2677bb7a2de66",
+        "transactionHash": HexBytes(
+            "0xefc24ceb70523ebc5dc119060a22210c6637ded58f15766fdde2677bb7a2de66"
+        ),
         "transactionPosition": 47,
         "type": "call",
     },
@@ -6988,12 +8224,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x81f6E9966F3786970927d5B847c68A9830CB14fE",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x7e815928c663b393494c33d16e2f894f90635aa23ed2fb1c665699eadc4a9884",
+        "transactionHash": HexBytes(
+            "0x7e815928c663b393494c33d16e2f894f90635aa23ed2fb1c665699eadc4a9884"
+        ),
         "transactionPosition": 48,
         "type": "call",
     },
@@ -7008,12 +8248,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x9a8c4f892501af624e016a637e1721a30d43556ae87f899d39229ecf2008bedf",
+        "transactionHash": HexBytes(
+            "0x9a8c4f892501af624e016a637e1721a30d43556ae87f899d39229ecf2008bedf"
+        ),
         "transactionPosition": 49,
         "type": "call",
     },
@@ -7026,12 +8270,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xFCf820d0847E485d9d858234b1E8E48542E9bCf8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xe442135f00989923b0ea29109a72623e7d8adf8fce34412abab1d34144dfb4e6",
+        "transactionHash": HexBytes(
+            "0xe442135f00989923b0ea29109a72623e7d8adf8fce34412abab1d34144dfb4e6"
+        ),
         "transactionPosition": 50,
         "type": "call",
     },
@@ -7044,12 +8292,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x9F6a0ea6938f4797861556Dbd65444765BeDF95f",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x65991660a702fa60c4480f2170a30d50a5bdb9e26069677916179e5a5adbdad0",
+        "transactionHash": HexBytes(
+            "0x65991660a702fa60c4480f2170a30d50a5bdb9e26069677916179e5a5adbdad0"
+        ),
         "transactionPosition": 51,
         "type": "call",
     },
@@ -7064,12 +8316,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x3584a9ad3d5cd88ba7bbb1ab5b33ea3b5221a4d73ae536ee39708410fd9c31d8",
+        "transactionHash": HexBytes(
+            "0x3584a9ad3d5cd88ba7bbb1ab5b33ea3b5221a4d73ae536ee39708410fd9c31d8"
+        ),
         "transactionPosition": 52,
         "type": "call",
     },
@@ -7082,12 +8338,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x7f36c020f878AC4c08E142625DD8d44B418D4CCe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xcc09909856ce2eae7d5c3d81d7d7409daa3df331956cc2168ad9cde80e567ad9",
+        "transactionHash": HexBytes(
+            "0xcc09909856ce2eae7d5c3d81d7d7409daa3df331956cc2168ad9cde80e567ad9"
+        ),
         "transactionPosition": 53,
         "type": "call",
     },
@@ -7102,7 +8362,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xe66B31678d6C16E9ebf358268a790B763C133750",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 140343,
@@ -7112,7 +8374,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7125,12 +8389,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x382fFCe2287252F930E1C8DC9328dac5BF282bA1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7145,7 +8413,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 104912,
@@ -7155,7 +8425,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7170,7 +8442,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xf9b30557AfcF76eA82C04015D80057Fa2147Dfa9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 99158,
@@ -7180,7 +8454,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [1, 0],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7193,12 +8469,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 6874, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 0],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7213,7 +8493,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8062,
@@ -7223,7 +8505,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7236,7 +8520,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0xee9b50B74A132912cf55e7699Ef3Aa7aE2b00E0C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -7246,7 +8532,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 2],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7261,12 +8549,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xee9b50B74A132912cf55e7699Ef3Aa7aE2b00E0C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 67085, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1, 0, 3],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7281,7 +8573,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x17EF75AA22dD5f6C2763b8304Ab24f40eE54D48a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 32260,
@@ -7291,7 +8585,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 3, 0],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7306,7 +8602,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x17EF75AA22dD5f6C2763b8304Ab24f40eE54D48a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 468,
@@ -7316,7 +8614,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 3, 1],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7331,7 +8631,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -7341,7 +8643,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 3, 2],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7356,7 +8660,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x17EF75AA22dD5f6C2763b8304Ab24f40eE54D48a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 468,
@@ -7366,7 +8672,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7381,7 +8689,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x17EF75AA22dD5f6C2763b8304Ab24f40eE54D48a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8360,
@@ -7391,7 +8701,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d",
+        "transactionHash": HexBytes(
+            "0x4800c6b73f11809fad7a7e26176b1da773af4048a924d2433db9d15e7c94d08d"
+        ),
         "transactionPosition": 54,
         "type": "call",
     },
@@ -7404,12 +8716,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x4202a383E8834695d5d6Ccf95Ec010eaA99Ebc1a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x01e1313588dbb6ca10ad1842229e04b3f023cdcc40c02541bb3f6e621f5d1399",
+        "transactionHash": HexBytes(
+            "0x01e1313588dbb6ca10ad1842229e04b3f023cdcc40c02541bb3f6e621f5d1399"
+        ),
         "transactionPosition": 55,
         "type": "call",
     },
@@ -7424,7 +8740,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1111111254fb6c44bAC0beD2854e76F90643097d",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 367685,
@@ -7434,7 +8752,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7449,7 +8769,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 15025,
@@ -7459,7 +8781,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7474,12 +8798,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 302058, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7494,12 +8822,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 92260, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7514,7 +8846,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -7524,7 +8858,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7537,7 +8873,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x74C99F3f5331676f6AEc2756e1F39b4FC029a83E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -7547,7 +8885,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7562,12 +8902,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x74C99F3f5331676f6AEc2756e1F39b4FC029a83E",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 84284, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [1, 0, 2],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7582,12 +8926,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 2, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7602,7 +8950,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -7612,7 +8962,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 2, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7627,7 +8979,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1031,
@@ -7637,7 +8991,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 2, 2],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7650,7 +9006,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xe380f728"),
             "to": "0x9DEB29c9a4c7A88a3C0257393b7f3335338D9A9D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2342,
@@ -7660,7 +9018,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 2, 3],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7675,12 +9035,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 159328, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7695,7 +9059,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2143,
@@ -7705,7 +9071,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 1, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7720,7 +9088,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1031,
@@ -7730,7 +9100,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 1, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7745,12 +9117,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 26419, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 1, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7765,12 +9141,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24953, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 1, 1, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7785,12 +9165,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xE2e3441004E7D377A2D97142e75d465e0dD36aF9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 121182, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [1, 1, 2],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7805,12 +9189,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 12124, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 1, 2, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7825,7 +9213,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xe8A8700faFd46CBE81AA983D180fE2EE89D3E401",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 100932,
@@ -7835,7 +9225,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 1, 2, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7850,7 +9242,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x13F257714B2234C7865d5aBe0ec656423BF8be88",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 98140,
@@ -7860,7 +9254,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 1, 2, 1, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7875,7 +9271,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 44017,
@@ -7885,7 +9283,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 1, 2, 1, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7900,7 +9300,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 36728,
@@ -7910,7 +9312,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 1, 2, 1, 0, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7925,12 +9329,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 5992, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [1, 2],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7945,7 +9353,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2284,
@@ -7955,7 +9365,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 2, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7970,7 +9382,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -7980,7 +9394,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 2, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -7995,7 +9411,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -8005,7 +9423,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 0, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8020,12 +9440,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 660, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 2, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8040,12 +9464,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x288931fA76d7B0482f0FD0BCA9a50Bf0D22b9FEf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 32829, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [1, 3],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8060,7 +9488,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -8070,7 +9500,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 3, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8085,7 +9517,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -8095,7 +9529,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 3, 0, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8110,7 +9546,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 28717,
@@ -8120,7 +9558,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 3, 1],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8135,7 +9575,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 27928,
@@ -8145,7 +9587,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 3, 1, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8160,7 +9604,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -8170,7 +9616,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [2],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8185,7 +9633,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -8195,7 +9645,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8210,7 +9662,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 28717,
@@ -8220,7 +9674,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [3],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8235,7 +9691,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 27928,
@@ -8245,7 +9703,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228",
+        "transactionHash": HexBytes(
+            "0x62699a9a1862cffb6de9b5a515e0d88b794f0063d30a18012284fc4e80dfb228"
+        ),
         "transactionPosition": 56,
         "type": "call",
     },
@@ -8260,7 +9720,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdebe620609674F21B1089042527F420372eA98A5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 15089,
@@ -8270,7 +9732,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x8201ab74775e340545466eb56aca74a66663cfed5ed882305448008b2958d858",
+        "transactionHash": HexBytes(
+            "0x8201ab74775e340545466eb56aca74a66663cfed5ed882305448008b2958d858"
+        ),
         "transactionPosition": 57,
         "type": "call",
     },
@@ -8285,12 +9749,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x4329952703f3451b6bd4192681cc1ac12a9b49c59f8f1cc341916e43edc50528",
+        "transactionHash": HexBytes(
+            "0x4329952703f3451b6bd4192681cc1ac12a9b49c59f8f1cc341916e43edc50528"
+        ),
         "transactionPosition": 58,
         "type": "call",
     },
@@ -8305,12 +9773,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x442faeeac16b6f7d65fd7c446d34a43ce76c75afeef160bbd6b55f91cdc7af67",
+        "transactionHash": HexBytes(
+            "0x442faeeac16b6f7d65fd7c446d34a43ce76c75afeef160bbd6b55f91cdc7af67"
+        ),
         "transactionPosition": 59,
         "type": "call",
     },
@@ -8325,12 +9797,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xa3345c931a6eefc7ed7fb9871fae9aa58e584b2605fda35a731a2821a5e2d9f9",
+        "transactionHash": HexBytes(
+            "0xa3345c931a6eefc7ed7fb9871fae9aa58e584b2605fda35a731a2821a5e2d9f9"
+        ),
         "transactionPosition": 60,
         "type": "call",
     },
@@ -8345,12 +9821,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x02dbd77c4d9f4628dbd6c7b6e8aff8a8a0926885b0cfb92470d33e148360da77",
+        "transactionHash": HexBytes(
+            "0x02dbd77c4d9f4628dbd6c7b6e8aff8a8a0926885b0cfb92470d33e148360da77"
+        ),
         "transactionPosition": 61,
         "type": "call",
     },
@@ -8365,12 +9845,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x2bd16eb236b0e6ae85530081508a6621caddd08bdce97bde5bbd02c16eaa10b8",
+        "transactionHash": HexBytes(
+            "0x2bd16eb236b0e6ae85530081508a6621caddd08bdce97bde5bbd02c16eaa10b8"
+        ),
         "transactionPosition": 62,
         "type": "call",
     },
@@ -8385,12 +9869,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xead0f6f356d5a7a0a2564f300f72f214128a5332b7f65d8851770435f89874d9",
+        "transactionHash": HexBytes(
+            "0xead0f6f356d5a7a0a2564f300f72f214128a5332b7f65d8851770435f89874d9"
+        ),
         "transactionPosition": 63,
         "type": "call",
     },
@@ -8405,12 +9893,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x5add90f1d02771bbeae1852b626c67c26461b0369d000f5aaa74570195a3af54",
+        "transactionHash": HexBytes(
+            "0x5add90f1d02771bbeae1852b626c67c26461b0369d000f5aaa74570195a3af54"
+        ),
         "transactionPosition": 64,
         "type": "call",
     },
@@ -8425,12 +9917,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xee24a81eeb1987a70dfb2ab5715a72fedeaead74789e62ee8969b3064a835c54",
+        "transactionHash": HexBytes(
+            "0xee24a81eeb1987a70dfb2ab5715a72fedeaead74789e62ee8969b3064a835c54"
+        ),
         "transactionPosition": 65,
         "type": "call",
     },
@@ -8445,12 +9941,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xa5156879bac0e5aa75b3e12d0b076faf27003d4ddbbf4832581e10904c0f1622",
+        "transactionHash": HexBytes(
+            "0xa5156879bac0e5aa75b3e12d0b076faf27003d4ddbbf4832581e10904c0f1622"
+        ),
         "transactionPosition": 66,
         "type": "call",
     },
@@ -8465,12 +9965,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24639, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xefd2df30d83664509cb1660f10b757c9a4e331c3fb90594b3e9b3169cd8addf1",
+        "transactionHash": HexBytes(
+            "0xefd2df30d83664509cb1660f10b757c9a4e331c3fb90594b3e9b3169cd8addf1"
+        ),
         "transactionPosition": 67,
         "type": "call",
     },
@@ -8483,12 +9987,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x54296C42aAAEfD12786c05d38BB889C0015D83a2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x722282ce78cf93070d5c6eae9a11bf55cf48412f7a7dae849fc3f156d0626841",
+        "transactionHash": HexBytes(
+            "0x722282ce78cf93070d5c6eae9a11bf55cf48412f7a7dae849fc3f156d0626841"
+        ),
         "transactionPosition": 68,
         "type": "call",
     },
@@ -8503,12 +10011,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000003b3cc22aF3aE1EAc0440BcEe416B40",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 27417, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d",
+        "transactionHash": HexBytes(
+            "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d"
+        ),
         "transactionPosition": 69,
         "type": "call",
     },
@@ -8523,12 +10035,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6037667A4Ee835a0b78258D0cb6Ae4c3DD0fA9dC",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24239, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [0],
-        "transactionHash": "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d",
+        "transactionHash": HexBytes(
+            "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d"
+        ),
         "transactionPosition": 69,
         "type": "call",
     },
@@ -8543,12 +10059,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14017, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0],
-        "transactionHash": "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d",
+        "transactionHash": HexBytes(
+            "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d"
+        ),
         "transactionPosition": 69,
         "type": "call",
     },
@@ -8561,12 +10081,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x00000000003b3cc22aF3aE1EAc0440BcEe416B40",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 77, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d",
+        "transactionHash": HexBytes(
+            "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d"
+        ),
         "transactionPosition": 69,
         "type": "call",
     },
@@ -8579,12 +10103,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x26cE7c1976C5eec83eA6Ac22D83cB341B08850aF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d",
+        "transactionHash": HexBytes(
+            "0xa3faa931dc47cf4357667d1d0b45e855a9b200628287c5584c468de7792c514d"
+        ),
         "transactionPosition": 69,
         "type": "call",
     },
@@ -8597,12 +10125,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x41F3cbBaA1EDA77EccE61E3f6814a843f77CD1eD",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xc411f2adb10200988181ee0bfcfa82ae6816c3081a252ee1f3e1b711514713e7",
+        "transactionHash": HexBytes(
+            "0xc411f2adb10200988181ee0bfcfa82ae6816c3081a252ee1f3e1b711514713e7"
+        ),
         "transactionPosition": 70,
         "type": "call",
     },
@@ -8617,12 +10149,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x160C404B2b49CBC3240055CEaEE026df1e8497A0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24647, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xcc7ff6ce29157a48eb5a666a5d6f1b2d3f686532282ad858afb22828b9cc80dd",
+        "transactionHash": HexBytes(
+            "0xcc7ff6ce29157a48eb5a666a5d6f1b2d3f686532282ad858afb22828b9cc80dd"
+        ),
         "transactionPosition": 71,
         "type": "call",
     },
@@ -8637,12 +10173,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xe17827609Ac34443B3987661f4e037642F6BD9bA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 32697, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x68b57d91e9bd524d1d8ab7be1dd9aabb89f46856a1c6d05b0d49ca98fd2ceb6a",
+        "transactionHash": HexBytes(
+            "0x68b57d91e9bd524d1d8ab7be1dd9aabb89f46856a1c6d05b0d49ca98fd2ceb6a"
+        ),
         "transactionPosition": 72,
         "type": "call",
     },
@@ -8657,12 +10197,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x64aa40D6865079379e41cA7CF9A001C5B962B94F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 25360, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x68b57d91e9bd524d1d8ab7be1dd9aabb89f46856a1c6d05b0d49ca98fd2ceb6a",
+        "transactionHash": HexBytes(
+            "0x68b57d91e9bd524d1d8ab7be1dd9aabb89f46856a1c6d05b0d49ca98fd2ceb6a"
+        ),
         "transactionPosition": 72,
         "type": "call",
     },
@@ -8675,12 +10219,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x3ccfd60b"),
             "to": "0x189Dcc34ad4f90aD4a35160850406fEe3c16c0D7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 78703, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x2e8602f0b166026645e4ec9d9caef4c414b375cd47481a601fda4702bc544f06",
+        "transactionHash": HexBytes(
+            "0x2e8602f0b166026645e4ec9d9caef4c414b375cd47481a601fda4702bc544f06"
+        ),
         "transactionPosition": 73,
         "type": "call",
     },
@@ -8693,12 +10241,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x3ccfd60b"),
             "to": "0x63583366554d67319eCE65e1AA031a6817B14123",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 71378, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x2e8602f0b166026645e4ec9d9caef4c414b375cd47481a601fda4702bc544f06",
+        "transactionHash": HexBytes(
+            "0x2e8602f0b166026645e4ec9d9caef4c414b375cd47481a601fda4702bc544f06"
+        ),
         "transactionPosition": 73,
         "type": "call",
     },
@@ -8713,7 +10265,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x38B0e3A59183814957D83dF2a97492AED1F003e2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30748,
@@ -8723,7 +10277,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0x2e8602f0b166026645e4ec9d9caef4c414b375cd47481a601fda4702bc544f06",
+        "transactionHash": HexBytes(
+            "0x2e8602f0b166026645e4ec9d9caef4c414b375cd47481a601fda4702bc544f06"
+        ),
         "transactionPosition": 73,
         "type": "call",
     },
@@ -8738,7 +10294,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa393473d64d2F9F026B60b6Df7859A689715d092",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 24737,
@@ -8748,7 +10306,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x0faf55ac01d551b886aecf3a06dba27048b570a3109f8adf1f9c4947285562bc",
+        "transactionHash": HexBytes(
+            "0x0faf55ac01d551b886aecf3a06dba27048b570a3109f8adf1f9c4947285562bc"
+        ),
         "transactionPosition": 74,
         "type": "call",
     },
@@ -8763,12 +10323,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x67698eb06a875e2708a10665f74bd0184d07173053e5f0754e38194d6ba8db1b",
+        "transactionHash": HexBytes(
+            "0x67698eb06a875e2708a10665f74bd0184d07173053e5f0754e38194d6ba8db1b"
+        ),
         "transactionPosition": 75,
         "type": "call",
     },
@@ -8781,12 +10345,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x30e9c3076Cd4E7453b8F2AEC6B7BC0b759b72231",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x2714ef67d21fa20ca7bf28cea66db566e0ad68d5aed03c501ac683720e9e680c",
+        "transactionHash": HexBytes(
+            "0x2714ef67d21fa20ca7bf28cea66db566e0ad68d5aed03c501ac683720e9e680c"
+        ),
         "transactionPosition": 76,
         "type": "call",
     },
@@ -8801,12 +10369,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC45f3c76FeeEa53aAE5AFA9b51F166E025145400",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 92850, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [],
-        "transactionHash": "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772",
+        "transactionHash": HexBytes(
+            "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772"
+        ),
         "transactionPosition": 77,
         "type": "call",
     },
@@ -8821,7 +10393,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1AFEF6b252cc35Ec061eFe6a9676C90915a73F18",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2916,
@@ -8831,7 +10405,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772",
+        "transactionHash": HexBytes(
+            "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772"
+        ),
         "transactionPosition": 77,
         "type": "call",
     },
@@ -8846,12 +10422,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7Eb72B7EC6961C0fad45Ff174403a2B3dc5018f1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 39532, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772",
+        "transactionHash": HexBytes(
+            "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772"
+        ),
         "transactionPosition": 77,
         "type": "call",
     },
@@ -8864,7 +10444,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x18160ddd"),
             "to": "0x7Eb72B7EC6961C0fad45Ff174403a2B3dc5018f1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2477,
@@ -8874,7 +10456,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772",
+        "transactionHash": HexBytes(
+            "0x1194635c792344c2a88b105ef26bfb5e8f8c3295910978ba45f655b285ca9772"
+        ),
         "transactionPosition": 77,
         "type": "call",
     },
@@ -8889,7 +10473,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xBb62D5b69AE3A747EcD019aD3bE5EC06D84A21e9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 31157,
@@ -8899,7 +10485,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x5ccd14a8f0e349a08db8f5484c94284d93d6ab9a50eb2c44d7abace37ef7724e",
+        "transactionHash": HexBytes(
+            "0x5ccd14a8f0e349a08db8f5484c94284d93d6ab9a50eb2c44d7abace37ef7724e"
+        ),
         "transactionPosition": 78,
         "type": "call",
     },
@@ -8914,7 +10502,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 215637,
@@ -8924,7 +10514,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -8939,7 +10531,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 205016,
@@ -8949,7 +10543,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 6,
         "traceAddress": [0],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -8962,7 +10558,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x397973Ba6E752943EA9146F88414D1f379fd427e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -8972,7 +10570,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -8985,12 +10585,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 23974, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9005,7 +10609,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8062,
@@ -9015,7 +10621,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9028,7 +10636,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x397973Ba6E752943EA9146F88414D1f379fd427e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 504,
@@ -9038,7 +10648,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 3],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9053,7 +10665,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -9063,7 +10677,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 4],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9078,12 +10694,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x397973Ba6E752943EA9146F88414D1f379fd427e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 147662, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [0, 5],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9098,7 +10718,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x64Df3aAB3b21cC275bB76c4A581Cf8B726478ee0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 112330,
@@ -9108,7 +10730,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 5, 0],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9123,7 +10747,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x64Df3aAB3b21cC275bB76c4A581Cf8B726478ee0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 975,
@@ -9133,7 +10759,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 5, 1],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9148,7 +10776,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -9158,7 +10788,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 5, 2],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9171,12 +10803,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x12210e8a"),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 7468, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9189,12 +10825,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xEAF7057423F7758600a5f8c1DE8446068803771C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8",
+        "transactionHash": HexBytes(
+            "0xc717b2b2671d626c53271c1c0666c280e363b1488c1b04d5aefa79ea8601dff8"
+        ),
         "transactionPosition": 79,
         "type": "call",
     },
@@ -9209,7 +10849,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x826f446C587159897Db0aE01192dA1691f12007f",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 228534,
@@ -9219,7 +10861,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9234,7 +10878,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 223320,
@@ -9244,7 +10890,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9259,12 +10907,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 201030, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [0, 0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9279,12 +10931,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24983, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9299,12 +10955,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b937D5c8E32a80E3a8ed4227CD020221544ee6",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 75351, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0, 1],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9319,7 +10979,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2886,
@@ -9329,7 +10991,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 1, 0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9344,12 +11008,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b937D5c8E32a80E3a8ed4227CD020221544ee6",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 93862, "output": HexBytes("0x")},
         "subtraces": 7,
         "traceAddress": [0, 0, 2],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9364,7 +11032,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 25285,
@@ -9374,7 +11044,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9389,7 +11061,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 886,
@@ -9399,7 +11073,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 1],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9414,7 +11090,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2886,
@@ -9424,7 +11102,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 2],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9439,7 +11119,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x8CF60B289f8d31F737049B590b5E4285Ff0Bd1D1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 41825,
@@ -9449,7 +11131,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 0, 2, 3],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9464,7 +11148,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 36946,
@@ -9474,7 +11160,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 0, 2, 3, 0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9489,7 +11177,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 32341,
@@ -9499,7 +11189,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 3, 0, 0],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9514,7 +11206,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 3285,
@@ -9524,7 +11218,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 4],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9539,7 +11235,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 886,
@@ -9549,7 +11247,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 5],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9564,7 +11264,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5aFE3855358E112B5647B952709E6165e1c1eEEe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 886,
@@ -9574,7 +11276,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 6],
-        "transactionHash": "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
+        "transactionHash": HexBytes(
+            "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0"
+        ),
         "transactionPosition": 80,
         "type": "call",
     },
@@ -9589,12 +11293,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x68c46c1ff47dbafc55b1792d90ead3cb2f77e40162701f5f591cf4e939816ddf",
+        "transactionHash": HexBytes(
+            "0x68c46c1ff47dbafc55b1792d90ead3cb2f77e40162701f5f591cf4e939816ddf"
+        ),
         "transactionPosition": 81,
         "type": "call",
     },
@@ -9609,7 +11317,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xE1BDA0c3Bfa2bE7f740f0119B6a34F057BD58Eba",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13162,
@@ -9619,7 +11329,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x001dab67b0430ee38bbc51020b3ed3e1ea437fddc46f21f558bb07b7599377c7",
+        "transactionHash": HexBytes(
+            "0x001dab67b0430ee38bbc51020b3ed3e1ea437fddc46f21f558bb07b7599377c7"
+        ),
         "transactionPosition": 82,
         "type": "call",
     },
@@ -9634,7 +11346,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 196962,
@@ -9644,7 +11358,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 5,
         "traceAddress": [],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9659,7 +11375,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 257,
@@ -9669,7 +11387,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9684,7 +11404,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 115736,
@@ -9694,7 +11416,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9709,12 +11433,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xaEab9eCBfae9A0ec5D6035c887D4D115aBcAe1D0",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 109620, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9727,12 +11455,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0000a26b00c1F0DF003000390027140000fAa719",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 85, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9745,12 +11477,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xeFE00956A448d2EC6A1Dc60576386E823AE7451F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9763,12 +11499,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x1b45aBFD4a82c438f1BB63b691Ac7c662Efcf0C6",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c",
+        "transactionHash": HexBytes(
+            "0x6041f8446dfb2733b9169dd85f070e339dc5e50cacb3a46b42b113f165518d6c"
+        ),
         "transactionPosition": 83,
         "type": "call",
     },
@@ -9781,12 +11521,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x727bf745e7afb11Bf40Ca3b2B11c63e00EA656c2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x39b30da08a37c206724acdd1420d14bae4183d081df0cef044c3dd778f8946f0",
+        "transactionHash": HexBytes(
+            "0x39b30da08a37c206724acdd1420d14bae4183d081df0cef044c3dd778f8946f0"
+        ),
         "transactionPosition": 84,
         "type": "call",
     },
@@ -9799,12 +11543,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0C649D071C687288A325A8aA82EF42a917fE8A0F",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x2a72ae1dae981a2568da14d1b5ecf2d495df086dc1bc6399eaad348e20b5b51c",
+        "transactionHash": HexBytes(
+            "0x2a72ae1dae981a2568da14d1b5ecf2d495df086dc1bc6399eaad348e20b5b51c"
+        ),
         "transactionPosition": 85,
         "type": "call",
     },
@@ -9819,12 +11567,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x6b32636fdf28aed992d59d3f74bf179f047724845fac716ea1f9413dfc119ce6",
+        "transactionHash": HexBytes(
+            "0x6b32636fdf28aed992d59d3f74bf179f047724845fac716ea1f9413dfc119ce6"
+        ),
         "transactionPosition": 86,
         "type": "call",
     },
@@ -9839,12 +11591,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x3333336D579A0107849Eb68C9f1c0B92D48C2889",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 50899, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x6095a3a6e9d6444901e9d66abb6a48cda862d7770ef319e8ed8c5be4ee9e772f",
+        "transactionHash": HexBytes(
+            "0x6095a3a6e9d6444901e9d66abb6a48cda862d7770ef319e8ed8c5be4ee9e772f"
+        ),
         "transactionPosition": 87,
         "type": "call",
     },
@@ -9859,7 +11615,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x888888848B652B3E3a0f34c96E00EEC0F3a23F72",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30547,
@@ -9869,7 +11627,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x6095a3a6e9d6444901e9d66abb6a48cda862d7770ef319e8ed8c5be4ee9e772f",
+        "transactionHash": HexBytes(
+            "0x6095a3a6e9d6444901e9d66abb6a48cda862d7770ef319e8ed8c5be4ee9e772f"
+        ),
         "transactionPosition": 87,
         "type": "call",
     },
@@ -9884,12 +11644,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x83C8F28c26bF6aaca652Df1DbBE0e1b56F8baBa2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 405658, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -9904,7 +11668,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xadd91d3EbF809f0058D59Db2AC3632B3ce55f0bA",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 4722,
@@ -9914,7 +11680,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -9929,12 +11697,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xAeB21626259f7980F5dBD08701FBC555265C7b6a",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 374609, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [1],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -9949,12 +11721,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 160460, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -9969,12 +11745,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6D7812d41A08BC2a910B562d8B56411964A4eD88",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 152762, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [1, 0, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -9987,7 +11767,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x2c436e5b"),
             "to": "0xF849de01B080aDC3A814FaBE1E2087475cF2E354",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 281,
@@ -9997,7 +11779,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 0, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10012,7 +11796,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xF849de01B080aDC3A814FaBE1E2087475cF2E354",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 55995,
@@ -10022,7 +11808,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 0, 0, 1],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10037,12 +11825,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 48707, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 0, 0, 1, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10057,7 +11849,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x83C8F28c26bF6aaca652Df1DbBE0e1b56F8baBa2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 793,
@@ -10067,7 +11861,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0, 0, 1, 0, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10080,12 +11876,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xD823C605807cC5E6Bd6fC0d7e4eEa50d3e2d66cd",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 55, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 0, 2],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10098,12 +11898,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x5B61824a3DCe92A045697A6728B14578CE80F6AD",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0, 0, 3],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10118,12 +11922,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 28791, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 1],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10138,12 +11946,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 148401, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 2],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10158,12 +11970,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x6D7812d41A08BC2a910B562d8B56411964A4eD88",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 147253, "output": HexBytes("0x")},
         "subtraces": 4,
         "traceAddress": [1, 2, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10176,7 +11992,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x2c436e5b"),
             "to": "0xF849de01B080aDC3A814FaBE1E2087475cF2E354",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 281,
@@ -10186,7 +12004,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 0, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10201,7 +12021,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xF849de01B080aDC3A814FaBE1E2087475cF2E354",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 66961,
@@ -10211,7 +12033,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1, 2, 0, 1],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10226,12 +12050,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 64173, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 2, 0, 1, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10246,7 +12074,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x83C8F28c26bF6aaca652Df1DbBE0e1b56F8baBa2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 793,
@@ -10256,7 +12086,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2, 0, 1, 0, 0],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10269,12 +12101,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xD823C605807cC5E6Bd6fC0d7e4eEa50d3e2d66cd",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 55, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 2, 0, 2],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10287,12 +12123,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x96707eBB51FE5a0dE19E90E66058D111A348b42D",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 2, 0, 3],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10307,12 +12147,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 6891, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 3],
-        "transactionHash": "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a",
+        "transactionHash": HexBytes(
+            "0x55a3788904325310606d880fc3b68094eb916aed5aae56dddf4fd3b89fd11a3a"
+        ),
         "transactionPosition": 88,
         "type": "call",
     },
@@ -10325,12 +12169,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xE905b9c4415cAb3654cb730F588c1a4aC29C59c1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x01f3743105a053d772c45a726f91919344cd093bbe448ba2c1cca4527151357b",
+        "transactionHash": HexBytes(
+            "0x01f3743105a053d772c45a726f91919344cd093bbe448ba2c1cca4527151357b"
+        ),
         "transactionPosition": 89,
         "type": "call",
     },
@@ -10345,7 +12193,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 137260,
@@ -10355,7 +12205,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 5,
         "traceAddress": [],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10370,7 +12222,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 257,
@@ -10380,7 +12234,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10395,7 +12251,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 56034,
@@ -10405,7 +12263,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10420,12 +12280,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x16d1884381d94B372e6020a28BF41BBaBe8C1F26",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 49918, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10438,12 +12302,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0000a26b00c1F0DF003000390027140000fAa719",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 85, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10456,12 +12324,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x67C86dE418948C7a5d72b7f664b551C5F95e274e",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10474,12 +12346,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x62B261590e0D65285b194948B37eEAaDE9C8B888",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd",
+        "transactionHash": HexBytes(
+            "0xd3e569ea90565e790bc87900f674290be212c552d25bb413f600e1fe169209dd"
+        ),
         "transactionPosition": 90,
         "type": "call",
     },
@@ -10492,12 +12368,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0F8922e5C5ccC3fa8B9F7f13f3189Ca7397721f9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x933463ae7b1fc39d4f252d31c938b5a9d768d01f521d3b254ae116de2764a6d6",
+        "transactionHash": HexBytes(
+            "0x933463ae7b1fc39d4f252d31c938b5a9d768d01f521d3b254ae116de2764a6d6"
+        ),
         "transactionPosition": 91,
         "type": "call",
     },
@@ -10512,7 +12392,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xcb6B570B8AeAbE38B449Aff31f901B8E1B91e396",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "error": "Reverted",
         "result": {
@@ -10523,7 +12405,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x5327768b86412dc5a79b2c38a3780e61aa13894875f154d2aa275bc75e32c606",
+        "transactionHash": HexBytes(
+            "0x5327768b86412dc5a79b2c38a3780e61aa13894875f154d2aa275bc75e32c606"
+        ),
         "transactionPosition": 92,
         "type": "call",
     },
@@ -10538,12 +12422,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x34Bc797F40Df0445c8429d485232874B15561728",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24615, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x255c5f1233a9c41794535147e6b7d00db8f45f10f2e95779108214ab2c7730b1",
+        "transactionHash": HexBytes(
+            "0x255c5f1233a9c41794535147e6b7d00db8f45f10f2e95779108214ab2c7730b1"
+        ),
         "transactionPosition": 93,
         "type": "call",
     },
@@ -10558,7 +12446,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 126612,
@@ -10568,7 +12458,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 5,
         "traceAddress": [],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10583,7 +12475,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 257,
@@ -10593,7 +12487,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10608,7 +12504,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 39057,
@@ -10618,7 +12516,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10633,12 +12533,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xDCf68c8eBB18Df1419C7DFf17ed33505Faf8A20C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 32941, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10651,12 +12555,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0000a26b00c1F0DF003000390027140000fAa719",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 85, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10669,12 +12577,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x4E5a0d50De3675b70Cff0FAB90C8960aDE6A93AB",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 6329, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [3],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10687,12 +12599,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 1504, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10705,12 +12621,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x7EB77BfD9AFC2046053619464194132AD2c63c65",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87",
+        "transactionHash": HexBytes(
+            "0x5dcf7fc06962ebc0ceec7c661099bb9f2f318757bf5972334e126b0bc728ff87"
+        ),
         "transactionPosition": 94,
         "type": "call",
     },
@@ -10725,12 +12645,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFfa397285Ce46FB78C588a9e993286AaC68c37cD",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 70774, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421",
+        "transactionHash": HexBytes(
+            "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421"
+        ),
         "transactionPosition": 95,
         "type": "call",
     },
@@ -10743,7 +12667,9 @@ trace_block_15630274_mock = [
                 "0x3d602d80600a3d3981f3363d3d373d3d3d363d73059ffafdc6ef594230de44f824e2bd0a51ca5ded5af43d82803e903d91602b57fd5bf3"
             ),
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9031,
@@ -10754,7 +12680,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421",
+        "transactionHash": HexBytes(
+            "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421"
+        ),
         "transactionPosition": 95,
         "type": "create",
     },
@@ -10769,12 +12697,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0304536d9Ed7fE3aBD2076f913a994DC84E939C4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 25290, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421",
+        "transactionHash": HexBytes(
+            "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421"
+        ),
         "transactionPosition": 95,
         "type": "call",
     },
@@ -10789,12 +12721,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x059FFAFdC6eF594230dE44F824E2bD0A51CA5dED",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 22621, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421",
+        "transactionHash": HexBytes(
+            "0xbbbbb6c3d6bda93e291f424649832ac28143649b52e6406f43e696f29f582421"
+        ),
         "transactionPosition": 95,
         "type": "call",
     },
@@ -10809,12 +12745,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xbd9350a3a2fd6e3Ad0a053a567f2609a1bf6c505",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 144515, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x09424eb20228cd916606a02acdb6f1d182249a5950a73282c8197780b5491b16",
+        "transactionHash": HexBytes(
+            "0x09424eb20228cd916606a02acdb6f1d182249a5950a73282c8197780b5491b16"
+        ),
         "transactionPosition": 96,
         "type": "call",
     },
@@ -10829,7 +12769,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x12b6893cE26Ea6341919FE289212ef77e51688c8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30715,
@@ -10839,7 +12781,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xa76abd7792a83a4b898f2058c2406840ccc59451d99b12e56653b4c7b2b01900",
+        "transactionHash": HexBytes(
+            "0xa76abd7792a83a4b898f2058c2406840ccc59451d99b12e56653b4c7b2b01900"
+        ),
         "transactionPosition": 97,
         "type": "call",
     },
@@ -10854,12 +12798,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xecdB63C30D46e8c86bf1292fA7D4519535b161c3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 47948, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881",
+        "transactionHash": HexBytes(
+            "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881"
+        ),
         "transactionPosition": 98,
         "type": "call",
     },
@@ -10874,12 +12822,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0304536d9Ed7fE3aBD2076f913a994DC84E939C4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 34644, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881",
+        "transactionHash": HexBytes(
+            "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881"
+        ),
         "transactionPosition": 98,
         "type": "call",
     },
@@ -10894,12 +12846,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x059FFAFdC6eF594230dE44F824E2bD0A51CA5dED",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 31975, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [0, 0],
-        "transactionHash": "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881",
+        "transactionHash": HexBytes(
+            "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881"
+        ),
         "transactionPosition": 98,
         "type": "call",
     },
@@ -10914,7 +12870,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 5031,
@@ -10924,7 +12882,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881",
+        "transactionHash": HexBytes(
+            "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881"
+        ),
         "transactionPosition": 98,
         "type": "call",
     },
@@ -10939,12 +12899,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 20501, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0, 1],
-        "transactionHash": "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881",
+        "transactionHash": HexBytes(
+            "0x105e7cf0b25cd24261c036abc2b46a5936eea632eb96de89c63e616f8b3be881"
+        ),
         "transactionPosition": 98,
         "type": "call",
     },
@@ -10959,7 +12923,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 116963,
@@ -10969,7 +12935,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 5,
         "traceAddress": [],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -10984,7 +12952,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 257,
@@ -10994,7 +12964,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -11009,7 +12981,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 35737,
@@ -11019,7 +12993,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -11034,12 +13010,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x3727aC93ED1FF0472eC91619CfaA011F76A5BAAe",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 29621, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -11052,12 +13032,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0000a26b00c1F0DF003000390027140000fAa719",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 85, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -11070,12 +13054,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x8D207b47A26Fd218b99f97f171353e448960BFc9",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -11088,12 +13076,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xEF134569EC50879F253411C42149eC09638E69fD",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861",
+        "transactionHash": HexBytes(
+            "0x0978cbeb211b934581d2d2e5f552c61cef51e564923379f99ad6a80dd841b861"
+        ),
         "transactionPosition": 99,
         "type": "call",
     },
@@ -11108,7 +13100,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 113462,
@@ -11118,7 +13112,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 5,
         "traceAddress": [],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11133,7 +13129,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 257,
@@ -11143,7 +13141,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11158,7 +13158,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30831,
@@ -11168,7 +13170,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [1],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11183,12 +13187,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x12b180b635dD9f07a78736fB4E43438fcdb41555",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 24715, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11201,12 +13209,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x0000a26b00c1F0DF003000390027140000fAa719",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 85, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11219,12 +13231,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x08E07e198eF6d77cd77cFBC4E9366503EADfDEed",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 1405, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11237,12 +13253,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xA660a7AD59D9529700f13c614403B5929802Bae3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512",
+        "transactionHash": HexBytes(
+            "0xebbe947f3619e7001cd9997f61f16acfd545b5074c84fad092e5a2b363c05512"
+        ),
         "transactionPosition": 100,
         "type": "call",
     },
@@ -11257,7 +13277,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 26917,
@@ -11267,7 +13289,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x80f46ae07bde59613b16e0ba77882743390b6eb682410a30c780a3288810ea84",
+        "transactionHash": HexBytes(
+            "0x80f46ae07bde59613b16e0ba77882743390b6eb682410a30c780a3288810ea84"
+        ),
         "transactionPosition": 101,
         "type": "call",
     },
@@ -11282,7 +13306,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 19628,
@@ -11292,7 +13318,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x80f46ae07bde59613b16e0ba77882743390b6eb682410a30c780a3288810ea84",
+        "transactionHash": HexBytes(
+            "0x80f46ae07bde59613b16e0ba77882743390b6eb682410a30c780a3288810ea84"
+        ),
         "transactionPosition": 101,
         "type": "call",
     },
@@ -11307,12 +13335,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x64192819Ac13Ef72bF6b5AE239AC672B43a9AF08",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 29486, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xfe4632252c3a16367eadbea91e279e6d36a3cc25976d54758f466b46dcd18803",
+        "transactionHash": HexBytes(
+            "0xfe4632252c3a16367eadbea91e279e6d36a3cc25976d54758f466b46dcd18803"
+        ),
         "transactionPosition": 102,
         "type": "call",
     },
@@ -11327,12 +13359,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x71356E37e0368Bd10bFDbF41dC052fE5FA24cD05",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 22170, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xfe4632252c3a16367eadbea91e279e6d36a3cc25976d54758f466b46dcd18803",
+        "transactionHash": HexBytes(
+            "0xfe4632252c3a16367eadbea91e279e6d36a3cc25976d54758f466b46dcd18803"
+        ),
         "transactionPosition": 102,
         "type": "call",
     },
@@ -11347,12 +13383,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xE6A0bD3C8d6f664a6a1D1Ff70e723d352804A2f4",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 60527, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x8da3b9c6101c5aa3606595adb35c1be3c175656596ae4509b9583b71ff59995f",
+        "transactionHash": HexBytes(
+            "0x8da3b9c6101c5aa3606595adb35c1be3c175656596ae4509b9583b71ff59995f"
+        ),
         "transactionPosition": 103,
         "type": "call",
     },
@@ -11367,7 +13407,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 24420,
@@ -11377,7 +13419,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xe7af46ff8f590b99f434e17a4f4bef83fbcd0c813fc880169ba10e2b7f9d259e",
+        "transactionHash": HexBytes(
+            "0xe7af46ff8f590b99f434e17a4f4bef83fbcd0c813fc880169ba10e2b7f9d259e"
+        ),
         "transactionPosition": 104,
         "type": "call",
     },
@@ -11392,7 +13436,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0000000000c2d145a2526bD8C716263bFeBe1A72",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 184996,
@@ -11402,7 +13448,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11417,7 +13465,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 165477,
@@ -11427,7 +13477,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 7,
         "traceAddress": [0],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11442,12 +13494,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x209e639a0EC166Ac7a1A4bA41968fa967dB30221",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 29627, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11462,12 +13518,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x209e639a0EC166Ac7a1A4bA41968fa967dB30221",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 16027, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11482,12 +13542,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFDe881c7B76ad10B59a82247E1cD3CBAd0d739F3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 45509, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 2],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11502,12 +13566,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFDe881c7B76ad10B59a82247E1cD3CBAd0d739F3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14809, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 3],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11522,12 +13590,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFDe881c7B76ad10B59a82247E1cD3CBAd0d739F3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14809, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 4],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11542,12 +13614,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFDe881c7B76ad10B59a82247E1cD3CBAd0d739F3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14809, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 5],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11562,12 +13638,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFDe881c7B76ad10B59a82247E1cD3CBAd0d739F3",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 14809, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 6],
-        "transactionHash": "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7",
+        "transactionHash": HexBytes(
+            "0x8f14db912558c6ea8e4aac57d92e3dc907409b4a3b5745989dfb4ef05658d3a7"
+        ),
         "transactionPosition": 105,
         "type": "call",
     },
@@ -11582,13 +13662,17 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "error": "Reverted",
         "result": {"gasUsed": 9506, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xc96ca0a60cede355f1e6a01572c372cb5bfe2ae57ea368824955977983949202",
+        "transactionHash": HexBytes(
+            "0xc96ca0a60cede355f1e6a01572c372cb5bfe2ae57ea368824955977983949202"
+        ),
         "transactionPosition": 106,
         "type": "call",
     },
@@ -11603,7 +13687,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xfc588723eAD01D032B837229577f6A532e5a0c20",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "error": "Reverted",
         "result": {
@@ -11614,7 +13700,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0xc96ca0a60cede355f1e6a01572c372cb5bfe2ae57ea368824955977983949202",
+        "transactionHash": HexBytes(
+            "0xc96ca0a60cede355f1e6a01572c372cb5bfe2ae57ea368824955977983949202"
+        ),
         "transactionPosition": 106,
         "type": "call",
     },
@@ -11627,7 +13715,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x3850c7bd"),
             "to": "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2696,
@@ -11637,7 +13727,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0xc96ca0a60cede355f1e6a01572c372cb5bfe2ae57ea368824955977983949202",
+        "transactionHash": HexBytes(
+            "0xc96ca0a60cede355f1e6a01572c372cb5bfe2ae57ea368824955977983949202"
+        ),
         "transactionPosition": 106,
         "type": "call",
     },
@@ -11650,12 +13742,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x69181A03fD84D1e2679Eb520DFDE72C97e1Ce524",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x3e0cf9f9dd09599dcd4288a08b3cb5fae027c589e85a408ee8426e19efd6a1d1",
+        "transactionHash": HexBytes(
+            "0x3e0cf9f9dd09599dcd4288a08b3cb5fae027c589e85a408ee8426e19efd6a1d1"
+        ),
         "transactionPosition": 107,
         "type": "call",
     },
@@ -11670,12 +13766,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 59531, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x1b800abc991f002b6cadcbc7db318d16d9f555741580eb3f57e5fcf4e0cc0288",
+        "transactionHash": HexBytes(
+            "0x1b800abc991f002b6cadcbc7db318d16d9f555741580eb3f57e5fcf4e0cc0288"
+        ),
         "transactionPosition": 108,
         "type": "call",
     },
@@ -11688,12 +13788,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 6874, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x1b800abc991f002b6cadcbc7db318d16d9f555741580eb3f57e5fcf4e0cc0288",
+        "transactionHash": HexBytes(
+            "0x1b800abc991f002b6cadcbc7db318d16d9f555741580eb3f57e5fcf4e0cc0288"
+        ),
         "transactionPosition": 108,
         "type": "call",
     },
@@ -11708,12 +13812,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7BB5178af214B8c5E714EE29D40045E37Bc89d42",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 2753576, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x3b339b91dfa35453d68ac18d34a0fcb0cbd1ffd92ba1d39cc1a5fd43ecbd1a31",
+        "transactionHash": HexBytes(
+            "0x3b339b91dfa35453d68ac18d34a0fcb0cbd1ffd92ba1d39cc1a5fd43ecbd1a31"
+        ),
         "transactionPosition": 109,
         "type": "call",
     },
@@ -11728,12 +13836,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 82860, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11748,7 +13860,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x4095d53a4Cf4dedd3AD40773E474670d9D0B5729",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 79019,
@@ -11758,7 +13872,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [0],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11771,7 +13887,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x3850c7bd"),
             "to": "0x83abECf7204d5Afc1Bea5dF734f085f2535a9976",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2696,
@@ -11781,7 +13899,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11796,7 +13916,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x83abECf7204d5Afc1Bea5dF734f085f2535a9976",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 72444,
@@ -11806,7 +13928,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 1],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11821,7 +13945,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7A58c0Be72BE218B41C608b7Fe7C5bB630736C71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12726,
@@ -11831,7 +13957,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1, 0],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11846,7 +13974,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2534,
@@ -11856,7 +13986,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1, 1],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11871,12 +14003,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA69babEF1cA67A37Ffaf7a485DfFF3382056e78C",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 13664, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 1, 2],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11891,7 +14027,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13025,
@@ -11901,7 +14039,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1, 2, 0],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11916,7 +14056,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -11926,7 +14068,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1, 3],
-        "transactionHash": "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c",
+        "transactionHash": HexBytes(
+            "0x21254fad192705300b69839b7ca07262aeafb1a7e3d1ebc45ad41e29a5f9838c"
+        ),
         "transactionPosition": 110,
         "type": "call",
     },
@@ -11941,7 +14085,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 26917,
@@ -11951,7 +14097,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0x0d91e50454b46c7858661116271beec901957ce1c5edeb680ea8443650728953",
+        "transactionHash": HexBytes(
+            "0x0d91e50454b46c7858661116271beec901957ce1c5edeb680ea8443650728953"
+        ),
         "transactionPosition": 111,
         "type": "call",
     },
@@ -11966,7 +14114,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 19628,
@@ -11976,7 +14126,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x0d91e50454b46c7858661116271beec901957ce1c5edeb680ea8443650728953",
+        "transactionHash": HexBytes(
+            "0x0d91e50454b46c7858661116271beec901957ce1c5edeb680ea8443650728953"
+        ),
         "transactionPosition": 111,
         "type": "call",
     },
@@ -11991,7 +14143,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 130303,
@@ -12001,7 +14155,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12016,7 +14172,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 108970,
@@ -12026,7 +14184,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12041,7 +14201,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xF1B5Cf831CED19136472b2b385F30384cE14a982",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 101567,
@@ -12051,7 +14213,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 0],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12066,7 +14230,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 29962,
@@ -12076,7 +14242,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 0],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12091,7 +14259,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x12b6893cE26Ea6341919FE289212ef77e51688c8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2952,
@@ -12101,7 +14271,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 1],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12116,12 +14288,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 23411, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 0, 2],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12136,7 +14312,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x12b6893cE26Ea6341919FE289212ef77e51688c8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 19334,
@@ -12146,7 +14324,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 2, 0],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12161,7 +14341,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x12b6893cE26Ea6341919FE289212ef77e51688c8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 952,
@@ -12171,7 +14353,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0, 3],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12186,12 +14370,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 18174, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [1],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12206,7 +14394,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -12216,7 +14406,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12231,12 +14423,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 9223, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [1, 1],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12249,12 +14445,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 83, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 1, 0],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12267,12 +14467,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0x1905D4567D88b371983e442ADF2fDC7EEa5ae3a8",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 2],
-        "transactionHash": "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7",
+        "transactionHash": HexBytes(
+            "0x42e688c14cfee7fe51d9aeff3e9e95f2689ba0dc3ab6ad34a1e02e4689e15ec7"
+        ),
         "transactionPosition": 112,
         "type": "call",
     },
@@ -12287,7 +14491,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x08e0fAFf8bB80eaf8c30A99920355028b5bD6789",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 16023,
@@ -12297,7 +14503,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0xd7b59c62a21ce4542e64e25428db05c2421434702c27553d15b57abad944ed63",
+        "transactionHash": HexBytes(
+            "0xd7b59c62a21ce4542e64e25428db05c2421434702c27553d15b57abad944ed63"
+        ),
         "transactionPosition": 113,
         "type": "call",
     },
@@ -12312,7 +14520,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 256556,
@@ -12322,7 +14532,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12337,7 +14549,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 254378,
@@ -12347,7 +14561,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 7,
         "traceAddress": [0],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12360,12 +14576,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 23974, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12380,7 +14600,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8062,
@@ -12390,7 +14612,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12405,7 +14629,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7db5af2B9624e1b3B4Bb69D6DeBd9aD1016A58Ac",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 45293,
@@ -12415,7 +14641,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12428,7 +14656,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x4a08CF0a7bcA217c24b9EE99c0395052f3707d68",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2504,
@@ -12438,7 +14668,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 3],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12453,7 +14685,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -12463,7 +14697,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 4],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12478,12 +14714,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x4a08CF0a7bcA217c24b9EE99c0395052f3707d68",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 137786, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [0, 5],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12498,7 +14738,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7db5af2B9624e1b3B4Bb69D6DeBd9aD1016A58Ac",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 92639,
@@ -12508,7 +14750,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 5, 0],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12523,7 +14767,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7db5af2B9624e1b3B4Bb69D6DeBd9aD1016A58Ac",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13293,
@@ -12533,7 +14779,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 5, 1],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12548,7 +14796,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -12558,7 +14808,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 5, 2],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12573,7 +14825,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x7db5af2B9624e1b3B4Bb69D6DeBd9aD1016A58Ac",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13293,
@@ -12583,7 +14837,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 6],
-        "transactionHash": "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8",
+        "transactionHash": HexBytes(
+            "0xa24679dfdcba768b6ed93dfd63de2d9132e7880ed5c29667280d69da866ce9f8"
+        ),
         "transactionPosition": 114,
         "type": "call",
     },
@@ -12598,12 +14854,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0c17e776CD218252ADFca8D4e761D3fe757e9778",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 321245, "output": HexBytes("0x")},
         "subtraces": 7,
         "traceAddress": [],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12616,12 +14876,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0xd0e30db0"),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 23974, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12636,7 +14900,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8062,
@@ -12646,7 +14912,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12661,7 +14929,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xCE3f08e664693ca792caCE4af1364D5e220827B2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 68381,
@@ -12671,7 +14941,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12684,7 +14956,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0902f1ac"),
             "to": "0x5716D2cbF2f44b5b9e3Ed7b7a6eB58Ce5996F318",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2517,
@@ -12694,7 +14968,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12709,7 +14985,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -12719,7 +14997,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [4],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12734,12 +15014,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0x5716D2cbF2f44b5b9e3Ed7b7a6eB58Ce5996F318",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 173739, "output": HexBytes("0x")},
         "subtraces": 3,
         "traceAddress": [5],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12754,7 +15038,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xCE3f08e664693ca792caCE4af1364D5e220827B2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 114301,
@@ -12764,7 +15050,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [5, 0],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12779,7 +15067,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -12789,7 +15079,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [5, 1],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12804,7 +15096,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xCE3f08e664693ca792caCE4af1364D5e220827B2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 22381,
@@ -12814,7 +15108,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [5, 2],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12829,7 +15125,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xCE3f08e664693ca792caCE4af1364D5e220827B2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 22381,
@@ -12839,7 +15137,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [6],
-        "transactionHash": "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9",
+        "transactionHash": HexBytes(
+            "0xde5bb7799c83b55de96081265617a7d4fcd4d2ffa3dea999b4671599cba56ed9"
+        ),
         "transactionPosition": 115,
         "type": "call",
     },
@@ -12854,12 +15154,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xc7EE7c66636f407586afa431C19A916e04928942",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 223995, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -12874,7 +15178,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 198611,
@@ -12884,7 +15190,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -12899,7 +15207,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 12862,
@@ -12909,7 +15219,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -12924,7 +15236,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 9815,
@@ -12934,7 +15248,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 1],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -12949,7 +15265,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2529,
@@ -12959,7 +15277,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 1, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -12974,12 +15294,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xc7EE7c66636f407586afa431C19A916e04928942",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 138818, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 2],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -12994,7 +15318,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x290850efa2d7E130E55bbc1db2b48Bc5C03097F5",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 135217,
@@ -13004,7 +15330,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 2, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13019,7 +15347,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 18417,
@@ -13029,7 +15359,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 2, 0, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13044,7 +15376,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 17628,
@@ -13054,7 +15388,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 0, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13069,7 +15405,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xDF2C7238198Ad8B389666574f2d8bc411A4b7428",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2657,
@@ -13079,7 +15417,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 1],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13094,12 +15434,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xc7EE7c66636f407586afa431C19A916e04928942",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 69032, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [0, 2, 0, 2],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13114,7 +15458,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xFBbA47B4C4ded47AA154a1b6DC06ec207166Fc13",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 65520,
@@ -13124,7 +15470,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [0, 2, 0, 2, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13139,7 +15487,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xDF2C7238198Ad8B389666574f2d8bc411A4b7428",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 13649,
@@ -13149,7 +15499,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 2, 0, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13164,7 +15516,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2534,
@@ -13174,7 +15528,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 2, 0, 1],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13189,12 +15545,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xc7EE7c66636f407586afa431C19A916e04928942",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 7975, "output": HexBytes("0x")},
         "subtraces": 2,
         "traceAddress": [0, 2, 0, 2, 0, 2],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13207,7 +15567,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x0dfe1681"),
             "to": "0xFBbA47B4C4ded47AA154a1b6DC06ec207166Fc13",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 266,
@@ -13217,7 +15579,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 2, 0, 2, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13232,7 +15596,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 6062,
@@ -13242,7 +15608,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 2, 0, 2, 1],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13257,7 +15625,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 534,
@@ -13267,7 +15637,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 2, 0, 3],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13282,7 +15654,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xDF2C7238198Ad8B389666574f2d8bc411A4b7428",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 657,
@@ -13292,7 +15666,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 2, 0, 3],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13307,7 +15683,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 1315,
@@ -13317,7 +15695,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [0, 3],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13332,7 +15712,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 529,
@@ -13342,7 +15724,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0, 3, 0],
-        "transactionHash": "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c",
+        "transactionHash": HexBytes(
+            "0xaec61e6113da706f407a6defb998476591cd3e85ccf3bfb4fb2d2a2561df136c"
+        ),
         "transactionPosition": 116,
         "type": "call",
     },
@@ -13357,7 +15741,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x557B933a7C2c45672B610F8954A3deB39a51A8Ca",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 30033,
@@ -13367,7 +15753,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x74563c253a5758f5b99e36a2fe1cbbf15292694724f764050525a36e4b44f966",
+        "transactionHash": HexBytes(
+            "0x74563c253a5758f5b99e36a2fe1cbbf15292694724f764050525a36e4b44f966"
+        ),
         "transactionPosition": 117,
         "type": "call",
     },
@@ -13382,12 +15770,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xd588b586D61C826A0e87919b3D1a239206d58bf2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 105485, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x8f3155286a4d53ce966c4456465b446d097849026ad885a26ed80833b6799d6e",
+        "transactionHash": HexBytes(
+            "0x8f3155286a4d53ce966c4456465b446d097849026ad885a26ed80833b6799d6e"
+        ),
         "transactionPosition": 118,
         "type": "call",
     },
@@ -13402,12 +15794,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xBa8Da9dcF11B50B03fd5284f164Ef5cdEF910705",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 105711, "output": HexBytes("0x")},
         "subtraces": 6,
         "traceAddress": [],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13422,7 +15818,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0615Dbba33Fe61a31c7eD131BDA6655Ed76748B1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 32018,
@@ -13432,7 +15830,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13445,7 +15845,9 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x6f307dc3"),
             "to": "0x0615Dbba33Fe61a31c7eD131BDA6655Ed76748B1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 371,
@@ -13455,7 +15857,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13470,7 +15874,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 2534,
@@ -13480,7 +15886,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [2],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13495,7 +15903,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x0615Dbba33Fe61a31c7eD131BDA6655Ed76748B1",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 36924,
@@ -13505,7 +15915,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 1,
         "traceAddress": [3],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13520,7 +15932,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 27962,
@@ -13530,7 +15944,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [3, 0],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13545,12 +15961,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 9235, "output": HexBytes("0x")},
         "subtraces": 1,
         "traceAddress": [4],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13563,12 +15983,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xBa8Da9dcF11B50B03fd5284f164Ef5cdEF910705",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 95, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [4, 0],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13581,12 +16005,16 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xd169005c938F82fC3Cd9b195DE76D3d9f86F8bce",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 0, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [5],
-        "transactionHash": "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4",
+        "transactionHash": HexBytes(
+            "0x8bb5786ab0733d9657e3eace0c126794be48d22982492dc6e7107642314483a4"
+        ),
         "transactionPosition": 119,
         "type": "call",
     },
@@ -13601,7 +16029,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 29997,
@@ -13611,7 +16041,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x95b640dc515fe47ec62bc86e907579a46ae2762d76662a5afe3018d2d85e4763",
+        "transactionHash": HexBytes(
+            "0x95b640dc515fe47ec62bc86e907579a46ae2762d76662a5afe3018d2d85e4763"
+        ),
         "transactionPosition": 120,
         "type": "call",
     },
@@ -13626,12 +16058,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x72462461c4c7dd13689fb6251251230d30e2b57dbe47af652279e197bb68cf8f",
+        "transactionHash": HexBytes(
+            "0x72462461c4c7dd13689fb6251251230d30e2b57dbe47af652279e197bb68cf8f"
+        ),
         "transactionPosition": 121,
         "type": "call",
     },
@@ -13646,7 +16082,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x00000000006c3852cbEf3e08E8dF289169EdE581",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 165367,
@@ -13656,7 +16094,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 2,
         "traceAddress": [],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13671,7 +16111,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 702,
@@ -13681,7 +16123,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [0],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13696,7 +16140,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0x1E0049783F008A0085193E00003D00cd54003c71",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 89138,
@@ -13706,7 +16152,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 4,
         "traceAddress": [1],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13721,7 +16169,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 15025,
@@ -13731,7 +16181,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 0],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13746,12 +16198,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xBaEEc315F9d7f8DB2645edfD5633360F152279Bc",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 44479, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [1, 1],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13766,7 +16222,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 10225,
@@ -13776,7 +16234,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 2],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13791,7 +16251,9 @@ trace_block_15630274_mock = [
             ),
             "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {
             "gasUsed": 8225,
@@ -13801,7 +16263,9 @@ trace_block_15630274_mock = [
         },
         "subtraces": 0,
         "traceAddress": [1, 3],
-        "transactionHash": "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993",
+        "transactionHash": HexBytes(
+            "0x8c3c3b6fe342720d958411dba2d29cbd22d07cac74be21a099d12c439201c993"
+        ),
         "transactionPosition": 122,
         "type": "call",
     },
@@ -13816,12 +16280,16 @@ trace_block_15630274_mock = [
             ),
             "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 41601, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x3760e7fda19d27167d343d18150e4bc3d421d041cf9b8b1ee8bbb648768478a5",
+        "transactionHash": HexBytes(
+            "0x3760e7fda19d27167d343d18150e4bc3d421d041cf9b8b1ee8bbb648768478a5"
+        ),
         "transactionPosition": 123,
         "type": "call",
     },
@@ -13834,18 +16302,24 @@ trace_block_15630274_mock = [
             "input": HexBytes("0x"),
             "to": "0xeBec795c9c8bBD61FFc14A6662944748F299cAcf",
         },
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": {"gasUsed": 55, "output": HexBytes("0x")},
         "subtraces": 0,
         "traceAddress": [],
-        "transactionHash": "0x3894b0d1325a8a91171a2e0a58394287066fef3174945e4ff56eacfc0e4bda58",
+        "transactionHash": HexBytes(
+            "0x3894b0d1325a8a91171a2e0a58394287066fef3174945e4ff56eacfc0e4bda58"
+        ),
         "transactionPosition": 124,
         "type": "call",
     },
     {
         "action": {"value": 0},
-        "blockHash": "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624",
+        "blockHash": HexBytes(
+            "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
+        ),
         "blockNumber": 15630274,
         "result": None,
         "subtraces": 0,

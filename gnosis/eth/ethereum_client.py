@@ -971,6 +971,9 @@ class ParityManager(EthereumClientManager):
             if "result" in trace and trace["result"]:
                 trace_copy["result"] = self._decode_trace_result(trace["result"])
             trace_copy["action"] = self._decode_trace_action(trace["action"])
+            trace_copy["blockHash"] = HexBytes(trace_copy["blockHash"])
+            if "transactionHash" in trace_copy:  # Reward traces don't have txHash
+                trace_copy["transactionHash"] = HexBytes(trace_copy["transactionHash"])
         return new_traces
 
     def filter_out_errored_traces(
