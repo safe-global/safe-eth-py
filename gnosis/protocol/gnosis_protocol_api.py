@@ -71,12 +71,13 @@ class GnosisProtocolAPI:
         """
         :return: Wrapped ether checksummed address
         """
-        if self.network == EthereumNetwork.MAINNET:
-            return ChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
-        elif self.network == EthereumNetwork.RINKEBY:
-            return ChecksumAddress("0xc778417E063141139Fce010982780140Aa0cD5Ab")
-        else:  # XDAI
-            return ChecksumAddress("0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1")
+        if self.network == EthereumNetwork.GNOSIS:  # WXDAI
+            return ChecksumAddress("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d")
+        if self.network == EthereumNetwork.GOERLI:  # Goerli WETH9
+            return ChecksumAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6")
+
+        # Mainnet WETH9
+        return ChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
 
     def get_quote(
         self, order: Order, from_address: ChecksumAddress
