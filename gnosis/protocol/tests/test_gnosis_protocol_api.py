@@ -153,6 +153,8 @@ class TestGnosisProtocolAPI(TestCase):
         if type(order_id) is dict:
             if order_id["errorType"] == "NoLiquidity":
                 pytest.xfail("NoLiquidity Error")
+            elif order_id["errorType"] == "InsufficientBalance":
+                pytest.xfail("InsufficientBalance")
 
         self.assertEqual(order_id[:2], "0x")
         self.assertEqual(len(order_id), 114)

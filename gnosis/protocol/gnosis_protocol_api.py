@@ -130,9 +130,10 @@ class GnosisProtocolAPI:
         from_address = Account.from_key(private_key).address
         if not order.feeAmount:
             fee_amount = self.get_fee(order, from_address)
-            if "errorType" in fee_amount:  # ErrorResponse
+            if isinstance(fee_amount, int):
+                order.feeAmount = fee_amount
+            elif "errorType" in fee_amount:  # ErrorResponse
                 return fee_amount
-            order.feeAmount = fee_amount
 
         signable_hash = eip712_encode_hash(
             order.get_eip712_structured_data(
