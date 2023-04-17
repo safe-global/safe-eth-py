@@ -290,7 +290,7 @@ class BatchCallManager(EthereumClientManager):
             else:
                 output_type = payload["output_type"]
                 try:
-                    decoded_values = self.w3.codec.decode_abi(
+                    decoded_values = eth_abi.decode(
                         output_type, HexBytes(result["result"])
                     )
                     normalized_data = map_abi_data(
@@ -430,7 +430,7 @@ class Erc20Manager(EthereumClientManager):
             if topics_len == 1:
                 # Not standard Transfer(address from, address to, uint256 unknown)
                 # 1 topic (transfer topic)
-                _from, to, unknown = eth_abi.decode_abi(
+                _from, to, unknown = eth_abi.decode(
                     ["address", "address", "uint256"], HexBytes(data)
                 )
                 return {"from": _from, "to": to, "unknown": unknown}
@@ -439,7 +439,7 @@ class Erc20Manager(EthereumClientManager):
                 # 3 topics (transfer topic + from + to)
                 try:
                     value_data = HexBytes(data)
-                    value = eth_abi.decode_single("uint256", value_data)
+                    value = eth_abi.decode(["uint256"], value_data)[0]
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `uint256 value` from data=%s",
@@ -450,7 +450,7 @@ class Erc20Manager(EthereumClientManager):
                     from_to_data = b"".join(topics[1:])
                     _from, to = (
                         fast_to_checksum_address(address)
-                        for address in eth_abi.decode_abi(
+                        for address in eth_abi.decode(
                             ["address", "address"], from_to_data
                         )
                     )
@@ -464,7 +464,7 @@ class Erc20Manager(EthereumClientManager):
             elif topics_len == 4:
                 # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
                 # 4 topics (transfer topic + from + to + tokenId)
-                _from, to, token_id = eth_abi.decode_abi(
+                _from, to, token_id = eth_abi.decode(
                     ["address", "address", "uint256"], b"".join(topics[1:])
                 )
                 _from, to = [
@@ -585,7 +585,7 @@ class Erc20Manager(EthereumClientManager):
             results = [HexBytes(r["result"]) for r in response_json]
             name = decode_string_or_bytes32(results[0])
             symbol = decode_string_or_bytes32(results[1])
-            decimals = self.ethereum_client.w3.codec.decode_single("uint8", results[2])
+            decimals = eth_abi.decode(["uint8"], results[2])[0]
             return Erc20Info(name, symbol, decimals)
         except (ValueError, BadFunctionCallOutput, DecodingError) as e:
             raise InvalidERC20Info from e
@@ -670,7 +670,7 @@ class Erc20Manager(EthereumClientManager):
         topic_0 = self.TRANSFER_TOPIC.hex()
         if addresses:
             addresses_encoded = [
-                HexBytes(eth_abi.encode_single("address", address)).hex()
+                HexBytes(eth_abi.encode(["address"], [address])).hex()
                 for address in addresses
             ]
             # Topics for transfer `to` and `from` an address

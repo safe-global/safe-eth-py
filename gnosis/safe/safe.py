@@ -5,9 +5,9 @@ from functools import cached_property
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
-from eth_abi import encode_abi
+from eth_abi import encode as encode_abi
 from eth_abi.exceptions import DecodingError
-from eth_abi.packed import encode_abi_packed
+from eth_abi.packed import encode_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, Hash32
@@ -862,7 +862,7 @@ class Safe:
             )
         )
         return Web3.keccak(
-            encode_abi_packed(
+            encode_packed(
                 ["bytes1", "bytes1", "bytes32", "bytes32"],
                 [
                     bytes.fromhex("19"),

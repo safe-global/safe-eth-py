@@ -2,7 +2,7 @@ import os
 
 from django.test import TestCase
 
-from eth_abi.packed import encode_abi_packed
+from eth_abi.packed import encode_packed
 from eth_account import Account
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
@@ -82,11 +82,11 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
             proxy_factory_contract.functions.proxyCreationCode().call()
         )
         salt = self.w3.keccak(
-            encode_abi_packed(
+            encode_packed(
                 ["bytes", "uint256"], [self.w3.keccak(initializer), salt_nonce]
             )
         )
-        deployment_data = encode_abi_packed(
+        deployment_data = encode_packed(
             ["bytes", "uint256"], [proxy_creation_code, int(master_copy, 16)]
         )
         address2 = mk_contract_address_2(
