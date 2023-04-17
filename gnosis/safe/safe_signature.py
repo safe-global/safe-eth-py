@@ -250,7 +250,8 @@ class SafeSignatureApprovedHash(SafeSignature):
                     ).call(block_identifier=block_identifier)
                     == 1
                 )
-            except BadFunctionCallOutput as e:  # Error using `pending` block identifier
+            except (ValueError, BadFunctionCallOutput, DecodingError) as e:
+                # Error using `pending` block identifier
                 exception = e
         raise exception  # This should never happen
 
