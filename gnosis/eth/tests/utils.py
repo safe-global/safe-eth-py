@@ -62,7 +62,7 @@ def just_test_if_polygon_node() -> str:
                     "id": 1,
                 },
             ).ok:
-                pytest.skip("Cannot connect to poylgon node", allow_module_level=True)
+                pytest.skip("Cannot connect to polygon node", allow_module_level=True)
         except IOError:
             pytest.skip(
                 "Problem connecting to the polygon node", allow_module_level=True
