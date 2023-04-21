@@ -124,7 +124,11 @@ trace_block_2191709_mock = [
         "type": "call",
     },
     {
-        "action": {"value": 5000000000000000000},
+        "action": {
+            "value": 5000000000000000000,
+            "author": "0x52bc44d5378309ee2abf1539bf71de1b7d7be3b5",
+            "rewardType": "block",
+        },
         "blockHash": HexBytes(
             "0x4169fc8dfb9ece41c90044ebc9b8e2daed9f5e08c0ba3746e337732aa48b3bc3"
         ),
@@ -2965,7 +2969,11 @@ trace_block_13191781_mock = [
         "type": "call",
     },
     {
-        "action": {"value": 2000000000000000000},
+        "action": {
+            "author": "0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c",
+            "rewardType": "block",
+            "value": 2000000000000000000,
+        },
         "blockHash": HexBytes(
             "0x8f9809f6012f85803956a419e2e54914dfdebba33e4f7a0d1574b12e92499c0e"
         ),
@@ -16316,7 +16324,11 @@ trace_block_15630274_mock = [
         "type": "call",
     },
     {
-        "action": {"value": 0},
+        "action": {
+            "author": "0xdafea492d9c6733ae3d56b7ed1adb60692c98bc5",
+            "rewardType": "block",
+            "value": 0,
+        },
         "blockHash": HexBytes(
             "0xa1dd687d41a835a1e173b5f69f656eaad52570ca864dfaeece6bec72e17bc624"
         ),

@@ -933,6 +933,15 @@ class ParityManager(EthereumClientManager):
         if "refundAddress" in action:
             decoded["refundAddress"] = fast_to_checksum_address(action["refundAddress"])
 
+        # REWARD
+        if "author" in action:
+            decoded["author"] = action[
+                "author"
+            ]  # TODO Web3 is not performing checksum decoding
+
+        if "rewardType" in action:
+            decoded["rewardType"] = action["rewardType"]
+
         return decoded
 
     def _decode_trace_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
