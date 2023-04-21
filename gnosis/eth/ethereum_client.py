@@ -33,10 +33,10 @@ from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract.contract import ContractFunction
 from web3.datastructures import AttributeDict
 from web3.exceptions import (
-    BadFunctionCallOutput,
     BlockNotFound,
     TimeExhausted,
     TransactionNotFound,
+    Web3Exception,
 )
 from web3.middleware import geth_poa_middleware, simple_cache_middleware
 from web3.types import (
@@ -132,7 +132,7 @@ def tx_with_exception_handling(func):
     def with_exception_handling(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except ValueError as exc:
+        except (Web3Exception, ValueError) as exc:
             str_exc = str(exc).lower()
             for reason, custom_exception in error_with_exception.items():
                 if reason.lower() in str_exc:
@@ -586,7 +586,7 @@ class Erc20Manager(EthereumClientManager):
             symbol = decode_string_or_bytes32(results[1])
             decimals = eth_abi.decode(["uint8"], results[2])[0]
             return Erc20Info(name, symbol, decimals)
-        except (ValueError, BadFunctionCallOutput, DecodingError) as e:
+        except (Web3Exception, DecodingError, ValueError) as e:
             raise InvalidERC20Info from e
 
     def get_total_transfer_history(
@@ -1408,7 +1408,7 @@ class EthereumClient:
         try:
             self.w3.eth.fee_history(1, "latest", reward_percentiles=[50])
             return True
-        except ValueError:
+        except (Web3Exception, ValueError):
             return False
 
     @cached_property
@@ -1592,7 +1592,7 @@ class EthereumClient:
             tx["gasPrice"] = gas_price
         try:
             return self.w3.eth.estimate_gas(tx, block_identifier=block_identifier)
-        except ValueError:
+        except (Web3Exception, ValueError):
             if (
                 block_identifier is not None
             ):  # Geth does not support setting `block_identifier`
