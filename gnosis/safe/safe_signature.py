@@ -196,11 +196,15 @@ class SafeSignatureContract(SafeSignature):
     def export_signature(self) -> HexBytes:
         """
         Fix offset (s) and append `contract_signature` at the end of the signature
+
         :return:
         """
+        # encode_abi adds {32 bytes offset}{32 bytes size}. We don't need offset
+        contract_signature = encode_abi(["bytes"], [self.contract_signature])[32:]
+        dynamic_offset = 65
+
         return HexBytes(
-            signature_to_bytes(self.v, self.r, 65)
-            + encode_abi(["bytes"], [self.contract_signature])
+            signature_to_bytes(self.v, self.r, dynamic_offset) + contract_signature
         )
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:

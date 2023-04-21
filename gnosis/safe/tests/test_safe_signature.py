@@ -186,7 +186,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx_hash = Web3.keccak(text="test")
         signature_r = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s = HexBytes(
-            "0" * 62 + "41"
+            "41".rjust(64, "0")
         )  # Position of end of signature `0x41 == 65`
         signature_v = HexBytes("00")
         # First 32 bytes signature size, in this case 0
@@ -256,24 +256,26 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         # in real life
         signature_r_1 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s_1 = HexBytes(
-            "0" * 62 + "82"
+            "82".rjust(64, "0")
         )  # Position of end of signature `0x82 == (65 * 2)`
         signature_v_1 = HexBytes("00")
         contract_signature_1 = b""
-        encoded_contract_signature_1 = encode_abi(["bytes"], [contract_signature_1])
+        encoded_contract_signature_1 = encode_abi(["bytes"], [contract_signature_1])[
+            32:
+        ]  # It will {32 bytes offset}{32 bytes size}, we don't need offset
 
         signature_r_2 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s_2 = HexBytes(
-            "0" * 62 + "c2"
-        )  # Position of end of signature `0xc2 == (65 * 2) + 64`
+            "a2".rjust(64, "0")
+        )  # Position of end of signature `0xa2 == (65 * 2) + 32`
         signature_v_2 = HexBytes("00")
         safe_tx_hash_message_hash = safe_contract.functions.getMessageHash(
             safe_tx_hash
         ).call()
         contract_signature_2 = owner_1.signHash(safe_tx_hash_message_hash)["signature"]
-        encoded_contract_signature_2 = encode_abi(
-            ["bytes"], [contract_signature_2]
-        )  # It will add size of bytes
+        encoded_contract_signature_2 = encode_abi(["bytes"], [contract_signature_2])[
+            32:
+        ]  # It will {32 bytes offset}{32 bytes size}, we don't need offset
 
         signature = (
             signature_r_1
