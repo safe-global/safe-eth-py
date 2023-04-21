@@ -3,7 +3,7 @@ import logging
 
 from eth_abi.exceptions import DecodingError
 from eth_typing import ChecksumAddress
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from gnosis.eth import EthereumClient
 
@@ -28,9 +28,9 @@ def get_decimals(
     try:
         return ethereum_client.erc20.get_decimals(token_address)
     except (
-        ValueError,
-        BadFunctionCallOutput,
+        Web3Exception,
         DecodingError,
+        ValueError,
     ) as e:
         message = f"Cannot get decimals for token={token_address}"
         logger.debug(message)

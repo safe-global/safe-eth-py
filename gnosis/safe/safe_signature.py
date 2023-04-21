@@ -9,7 +9,7 @@ from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_safe_contract, get_safe_V1_1_1_contract
@@ -218,7 +218,7 @@ class SafeSignatureContract(SafeSignature):
                     self.EIP1271_MAGIC_VALUE,
                     self.EIP1271_MAGIC_VALUE_UPDATED,
                 )
-            except (ValueError, BadFunctionCallOutput, DecodingError):
+            except (Web3Exception, DecodingError, ValueError):
                 # Error using `pending` block identifier or contract does not exist
                 logger.warning(
                     "Cannot check EIP1271 signature from contract %s", self.owner
@@ -255,7 +255,7 @@ class SafeSignatureApprovedHash(SafeSignature):
                     ).call(block_identifier=block_identifier)
                     == 1
                 )
-            except (ValueError, BadFunctionCallOutput, DecodingError) as e:
+            except (Web3Exception, DecodingError, ValueError) as e:
                 # Error using `pending` block identifier
                 exception = e
         raise exception  # This should never happen

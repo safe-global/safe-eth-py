@@ -1,5 +1,5 @@
 from eth_abi.exceptions import DecodingError
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from .. import EthereumClient, EthereumNetwork
 from .abis.superfluid_abis import super_token_abi
@@ -41,7 +41,7 @@ class SuperfluidOracle(PriceOracle):
                 .call()
             )
             return self.price_oracle.get_price(underlying_token)
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (Web3Exception, DecodingError, ValueError):
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {token_address}. It is not a wrapper Super Token"
             )

@@ -14,7 +14,7 @@ from eth_typing import ChecksumAddress, Hash32
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
-from web3.exceptions import BadFunctionCallOutput, Web3Exception
+from web3.exceptions import Web3Exception
 from web3.types import BlockIdentifier, Wei
 
 from gnosis.eth import EthereumClient, EthereumTxSent
@@ -984,7 +984,7 @@ class Safe:
             return contract.functions.getModules().call(
                 block_identifier=block_identifier
             )
-        except BadFunctionCallOutput:
+        except Web3Exception:
             pass
 
         contract = self.contract
