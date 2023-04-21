@@ -189,7 +189,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             "0" * 62 + "41"
         )  # Position of end of signature `0x41 == 65`
         signature_v = HexBytes("00")
-        contract_signature = encode_abi(["bytes"], [b""])
+        # First 32 bytes signature size, in this case 0
+        contract_signature = HexBytes("0" * 64)
         signature = signature_r + signature_s + signature_v + contract_signature
 
         safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
@@ -216,14 +217,14 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             safe_tx_hash_2
         ).call()
         contract_signature = owner_1.signHash(safe_tx_hash_2_message_hash)["signature"]
-        encoded_contract_signature = encode_abi(
+
+        encoded_contract_signature_with_offset = encode_abi(
             ["bytes"], [contract_signature]
-        )  # It will add size of bytes
-        # `32` bytes with the abi encoded size of array. 65 bytes will be padded to next multiple of 32 -> 96
-        # 96 - 65 = `31`
-        self.assertEqual(
-            len(encoded_contract_signature), len(contract_signature) + 32 + 31
         )
+        # {32 bytes - offset for the length}{32 bytes - length = 65 bytes}{65 bytes - content}
+        self.assertEqual(len(encoded_contract_signature_with_offset), 160)
+        # Safe dynamic part does not use the offset
+        encoded_contract_signature = encoded_contract_signature_with_offset[32:]
         crafted_signature = (
             signature_r + signature_s + signature_v + encoded_contract_signature
         )
