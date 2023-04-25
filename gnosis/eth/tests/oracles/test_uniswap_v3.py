@@ -81,6 +81,6 @@ class TestUniswapV3Oracle(EthereumTestCaseMixin, TestCase):
         self.assertFalse(UniswapV3Oracle.is_available(self.ethereum_client))
         with self.assertRaisesMessage(
             ValueError,
-            f"Uniswap V3 Router Contract {UniswapV3Oracle.UNISWAP_V3_ROUTER} does not exist",
+            f"Uniswap V3 Router Contract {UniswapV3Oracle.DEFAULT_ROUTER_ADDRESS} does not exist",
         ):
             UniswapV3Oracle(self.ethereum_client)
