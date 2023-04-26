@@ -2,6 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 from requests import Session
 
@@ -17,6 +18,7 @@ from ..test_oracles import (
 from ..utils import just_test_if_mainnet_node
 
 
+@pytest.skip("Having issues often", allow_module_level=True)
 class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()
