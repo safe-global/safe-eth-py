@@ -6,12 +6,13 @@ from functools import cached_property
 from typing import List, Optional, Tuple
 
 import requests
+from eth_abi import decode as decode_abi
 from eth_abi.exceptions import DecodingError
-from eth_abi.packed import encode_abi_packed
+from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3.contract import Contract
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from .. import EthereumClient, EthereumNetwork
 from ..constants import NULL_ADDRESS
@@ -180,12 +181,8 @@ class UniswapOracle(PriceOracle):
                 results.append(HexBytes(result["result"]))
 
         balance = int(results[0].hex(), 16)
-        token_decimals = self.ethereum_client.w3.codec.decode_single(
-            "uint8", results[1]
-        )
-        token_balance = self.ethereum_client.w3.codec.decode_single(
-            "uint256", results[2]
-        )
+        token_decimals = decode_abi(["uint8"], results[1])[0]
+        token_balance = decode_abi(["uint256"], results[2])[0]
         return balance, token_decimals, token_balance
 
     def get_price(self, token_address: str) -> float:
@@ -193,7 +190,7 @@ class UniswapOracle(PriceOracle):
             uniswap_exchange_address = self.get_uniswap_exchange(token_address)
             if uniswap_exchange_address == NULL_ADDRESS:
                 raise ValueError
-        except (ValueError, BadFunctionCallOutput, DecodingError) as e:
+        except (Web3Exception, DecodingError, ValueError) as e:
             message = f"Non existing uniswap exchange for token={token_address}"
             logger.debug(message)
             raise CannotGetPriceFromOracle(message) from e
@@ -218,10 +215,10 @@ class UniswapOracle(PriceOracle):
                 raise InvalidPriceFromOracle(message)
             return price
         except (
+            Web3Exception,
+            DecodingError,
             ValueError,
             ZeroDivisionError,
-            BadFunctionCallOutput,
-            DecodingError,
         ) as e:
             message = f"Cannot get token balance for token={token_address}"
             logger.debug(message)
@@ -281,7 +278,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
     def factory_address(self) -> str:
         """
         :return: Uniswap factory checksummed address
-        :raises: BadFunctionCallOutput: If router contract is not deployed
+        :raises: Web3Exception: If router contract is not deployed
         """
         return self.router.functions.factory().call()
 
@@ -289,7 +286,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
     def weth_address(self) -> str:
         """
         :return: Wrapped ether checksummed address
-        :raises: BadFunctionCallOutput: If router contract is not deployed
+        :raises: Web3Exception: If router contract is not deployed
         """
         return self.router.functions.WETH().call()
 
@@ -327,10 +324,10 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         if token_address.lower() > token_address_2.lower():
             token_address, token_address_2 = token_address_2, token_address
         salt = fast_keccak(
-            encode_abi_packed(["address", "address"], [token_address, token_address_2])
+            encode_packed(["address", "address"], [token_address, token_address_2])
         )
         address = fast_keccak(
-            encode_abi_packed(
+            encode_packed(
                 ["bytes", "address", "bytes", "bytes"],
                 [HexBytes("ff"), self.factory_address, salt, self.PAIR_INIT_CODE],
             )
@@ -386,10 +383,10 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
 
             return decimals_normalized_reserves_2 / decimals_normalized_reserves_1
         except (
+            Web3Exception,
+            DecodingError,
             ValueError,
             ZeroDivisionError,
-            BadFunctionCallOutput,
-            DecodingError,
         ) as e:
             message = (
                 f"Cannot get uniswap v2 price for pair token_1={token_address} "
@@ -453,10 +450,10 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 except CannotGetPriceFromOracle:
                     continue
         except (
+            Web3Exception,
+            DecodingError,
             ValueError,
             ZeroDivisionError,
-            BadFunctionCallOutput,
-            DecodingError,
         ) as e:
             message = f"Cannot get uniswap v2 price for pool token={pool_token_address}"
             logger.debug(message)
@@ -499,7 +496,7 @@ class AaveOracle(PriceOracle):
                 .call()
             )
             return self.price_oracle.get_price(underlying_token)
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (Web3Exception, DecodingError, ValueError):
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {token_address}. It is not an Aaave atoken"
             )
@@ -535,7 +532,7 @@ class CreamOracle(PriceOracle):
                 .call()
             )
             return self.price_oracle.get_price(underlying_token)
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (Web3Exception, DecodingError, ValueError):
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {token_address}. It is not a Cream cToken"
             )
@@ -617,7 +614,7 @@ class ZerionComposedOracle(ComposedPriceOracle):
                         UnderlyingToken(token_address, normalized_quantity)
                     )
                 return underlying_tokens
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (ValueError, Web3Exception, DecodingError):
             pass
 
         raise CannotGetPriceFromOracle(
@@ -801,7 +798,7 @@ class BalancerOracle(PricePoolOracle):
             ):
                 total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (Web3Exception, DecodingError, ValueError):
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {pool_token_address}. "
                 f"It is not a balancer pool token"
@@ -855,7 +852,7 @@ class MooniswapOracle(BalancerOracle):
                     f"It is not a mooniswap pool token"
                 )
 
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (Web3Exception, DecodingError, ValueError):
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {pool_token_address}. "
                 f"It is not a mooniswap pool token"

@@ -59,7 +59,7 @@ class EthereumTestCaseMixin:
             self.send_tx(
                 {
                     "to": account.address,
-                    "value": self.w3.toWei(initial_ether, "ether") + initial_wei,
+                    "value": self.w3.to_wei(initial_ether, "ether") + initial_wei,
                 },
                 self.ethereum_test_account,
             )

@@ -27,7 +27,7 @@ SOFTWARE.
 import re
 from typing import Any, Dict, List, Union
 
-from eth_abi import encode_abi
+from eth_abi import encode as encode_abi
 from eth_account import Account
 from eth_typing import Hash32, HexStr
 from hexbytes import HexBytes

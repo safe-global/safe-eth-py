@@ -4,7 +4,7 @@ from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 from eth_account import Account
 from hexbytes import HexBytes
 from packaging.version import Version
-from web3.exceptions import BadFunctionCallOutput, ContractLogicError
+from web3.exceptions import Web3Exception
 from web3.types import BlockIdentifier, TxParams, Wei
 
 from gnosis.eth import EthereumClient
@@ -308,7 +308,7 @@ class SafeTx:
                     "Success bit is %d, should be equal to 1" % success
                 )
             return success
-        except (ContractLogicError, BadFunctionCallOutput, ValueError) as exc:
+        except (Web3Exception, ValueError) as exc:
             # e.g. web3.exceptions.ContractLogicError: execution reverted: Invalid owner provided
             return self._raise_safe_vm_exception(str(exc))
         except ValueError as exc:  # Parity

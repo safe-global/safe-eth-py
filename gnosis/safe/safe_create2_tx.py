@@ -2,7 +2,7 @@ import math
 from logging import getLogger
 from typing import List, NamedTuple, Optional
 
-from eth_abi.packed import encode_abi_packed
+from eth_abi.packed import encode_packed
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.types import TxParams, Wei
@@ -214,11 +214,11 @@ class SafeCreate2TxBuilder:
             self.proxy_factory_contract.functions.proxyCreationCode().call()
         )
         salt = self.w3.keccak(
-            encode_abi_packed(
+            encode_packed(
                 ["bytes", "uint256"], [self.w3.keccak(safe_setup_data), salt_nonce]
             )
         )
-        deployment_data = encode_abi_packed(
+        deployment_data = encode_packed(
             ["bytes", "uint256"],
             [proxy_creation_code, int(self.master_copy_address, 16)],
         )

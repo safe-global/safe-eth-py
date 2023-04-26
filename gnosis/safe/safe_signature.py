@@ -3,12 +3,13 @@ from enum import Enum
 from logging import getLogger
 from typing import List, Union
 
-from eth_abi import decode_single, encode_single
+from eth_abi import decode as decode_abi
+from eth_abi import encode as encode_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import get_safe_contract, get_safe_V1_1_1_contract
@@ -58,11 +59,11 @@ def uint_to_address(value: int) -> ChecksumAddress:
 
     :return: Checksummed address
     """
-    encoded = encode_single("uint", value)
+    encoded = encode_abi(["uint"], [value])
     # Remove padding bytes, as Solidity will ignore it but `eth_abi` will not
     encoded_without_padding_bytes = b"\x00" * 12 + encoded[-20:]
     return fast_to_checksum_address(
-        decode_single("address", encoded_without_padding_bytes)
+        decode_abi(["address"], encoded_without_padding_bytes)[0]
     )
 
 
@@ -195,11 +196,15 @@ class SafeSignatureContract(SafeSignature):
     def export_signature(self) -> HexBytes:
         """
         Fix offset (s) and append `contract_signature` at the end of the signature
+
         :return:
         """
+        # encode_abi adds {32 bytes offset}{32 bytes size}. We don't need offset
+        contract_signature = encode_abi(["bytes"], [self.contract_signature])[32:]
+        dynamic_offset = 65
+
         return HexBytes(
-            signature_to_bytes(self.v, self.r, 65)
-            + encode_single("bytes", self.contract_signature)
+            signature_to_bytes(self.v, self.r, dynamic_offset) + contract_signature
         )
 
     def is_valid(self, ethereum_client: EthereumClient, *args) -> bool:
@@ -213,7 +218,7 @@ class SafeSignatureContract(SafeSignature):
                     self.EIP1271_MAGIC_VALUE,
                     self.EIP1271_MAGIC_VALUE_UPDATED,
                 )
-            except (ValueError, BadFunctionCallOutput, DecodingError):
+            except (Web3Exception, DecodingError, ValueError):
                 # Error using `pending` block identifier or contract does not exist
                 logger.warning(
                     "Cannot check EIP1271 signature from contract %s", self.owner
@@ -250,7 +255,7 @@ class SafeSignatureApprovedHash(SafeSignature):
                     ).call(block_identifier=block_identifier)
                     == 1
                 )
-            except (ValueError, BadFunctionCallOutput, DecodingError) as e:
+            except (Web3Exception, DecodingError, ValueError) as e:
                 # Error using `pending` block identifier
                 exception = e
         raise exception  # This should never happen

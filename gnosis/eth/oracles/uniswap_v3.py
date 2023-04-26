@@ -6,7 +6,7 @@ from typing import Optional
 from eth_abi.exceptions import DecodingError
 from eth_typing import ChecksumAddress
 from web3.contract import Contract
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from .. import EthereumClient, EthereumNetwork
 from ..constants import NULL_ADDRESS
@@ -76,7 +76,7 @@ class UniswapV3Oracle(PriceOracle):
         """
         try:
             factory_address = self.router.functions.factory().call()
-        except BadFunctionCallOutput:
+        except Web3Exception:
             raise ValueError(
                 f"Uniswap V3 Router Contract {self.router_address} does not exist"
             )
@@ -178,9 +178,9 @@ class UniswapV3Oracle(PriceOracle):
                 logger.debug(message)
                 raise CannotGetPriceFromOracle(message)
         except (
-            ValueError,
-            BadFunctionCallOutput,
+            Web3Exception,
             DecodingError,
+            ValueError,
         ) as e:
             message = (
                 f"Cannot get uniswap v3 price for pair token_1={token_address} "

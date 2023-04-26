@@ -54,7 +54,7 @@ class TransactionGasPriceTooLow(EthereumClientException):
     pass
 
 
-class ParityTraceDecodeException(EthereumClientException):
+class TraceDecodeException(EthereumClientException):
     pass
 
 

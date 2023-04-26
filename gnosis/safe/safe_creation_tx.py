@@ -9,6 +9,7 @@ from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import ContractConstructor
+from web3.exceptions import Web3Exception
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SECPK1_N
 from gnosis.eth.contracts import (
@@ -311,7 +312,7 @@ class SafeCreationTx:
                     .functions.transfer(funder, 1)
                     .estimate_gas({"from": payment_token})
                 )
-            except ValueError as exc:
+            except Web3Exception as exc:
                 if "transfer amount exceeds balance" in str(exc):
                     return 70000
                 raise InvalidERC20Token from exc
