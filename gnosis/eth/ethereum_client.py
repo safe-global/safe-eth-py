@@ -79,9 +79,9 @@ from .exceptions import (
     InvalidNonce,
     NonceTooHigh,
     NonceTooLow,
-    ParityTraceDecodeException,
     ReplacementTransactionUnderpriced,
     SenderAccountNotFoundInNode,
+    TraceDecodeException,
     TransactionAlreadyImported,
     TransactionGasPriceTooLow,
     TransactionQueueLimitReached,
@@ -95,7 +95,7 @@ logger = getLogger(__name__)
 
 def tx_with_exception_handling(func):
     """
-    Parity
+    Parity / OpenEthereum
         - https://github.com/openethereum/openethereum/blob/main/rpc/src/v1/helpers/errors.rs
     Geth
         - https://github.com/ethereum/go-ethereum/blob/master/core/error.go
@@ -901,7 +901,7 @@ class Erc721Manager(EthereumClientManager):
         ]
 
 
-class ParityManager(EthereumClientManager):
+class TracingManager(EthereumClientManager):
     def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
         decoded = {}
 
@@ -971,7 +971,7 @@ class ParityManager(EthereumClientManager):
             elif isinstance(trace, AttributeDict):
                 trace_copy = trace.__dict__.copy()
             else:
-                raise ParityTraceDecodeException(
+                raise TraceDecodeException(
                     "Expected dictionary, but found unexpected trace %s" % trace
                 )
             new_traces.append(trace_copy)
@@ -1102,7 +1102,7 @@ class ParityManager(EthereumClientManager):
             if raw_tx:
                 try:
                     decoded_traces = self._decode_traces(raw_tx)
-                except ParityTraceDecodeException as exc:
+                except TraceDecodeException as exc:
                     logger.warning("Problem decoding trace: %s - Retrying", exc)
                     decoded_traces = self._decode_traces(raw_tx)
                 traces.append(decoded_traces)
@@ -1141,7 +1141,7 @@ class ParityManager(EthereumClientManager):
             if raw_tx:
                 try:
                     decoded_traces = self._decode_traces(raw_tx)
-                except ParityTraceDecodeException as exc:
+                except TraceDecodeException as exc:
                     logger.warning("Problem decoding trace: %s - Retrying", exc)
                     decoded_traces = self._decode_traces(raw_tx)
                 traces.append(decoded_traces)
@@ -1294,7 +1294,7 @@ class EthereumClient:
         self.slow_w3: Web3 = Web3(self.w3_slow_provider)
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
-        self.parity: ParityManager = ParityManager(self)
+        self.tracing: TracingManager = TracingManager(self)
         self.batch_call_manager: BatchCallManager = BatchCallManager(self)
         try:
             if self.get_network() != EthereumNetwork.MAINNET:
