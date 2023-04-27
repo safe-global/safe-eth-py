@@ -1,10 +1,12 @@
 """
-Support for MakerDAO MultiCall contract
+MultiCall Smart Contract API
+https://github.com/mds1/multicall
 """
 import logging
 from dataclasses import dataclass
 from typing import Any, List, Optional, Sequence, Tuple
 
+import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.signers.local import LocalAccount
 from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress
@@ -12,13 +14,13 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
-from web3.contract import ContractFunction
+from web3.contract.contract import ContractFunction
 from web3.exceptions import ContractLogicError
 
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
+from .abis.multicall import multicall_v3_abi, multicall_v3_bytecode
 from .ethereum_client import EthereumTxSent
 from .exceptions import BatchCallFunctionFailed
-from .oracles.abis.makerdao import multicall_v2_abi, multicall_v2_bytecode
 
 logger = logging.getLogger(__name__)
 
@@ -36,23 +38,36 @@ class MulticallDecodedResult:
 
 
 class Multicall:
+    # https://github.com/mds1/multicall#deployments
     ADDRESSES = {
-        EthereumNetwork.MAINNET: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
-        EthereumNetwork.ARBITRUM_ONE: "0x021CeAC7e681dBCE9b5039d2535ED97590eB395c",
-        EthereumNetwork.AVALANCHE_C_CHAIN: "0xAbeC56f92a89eEe33F5194Ca4151DD59785c2C74",
-        EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
-        EthereumNetwork.FANTOM_OPERA: "0xD98e3dBE5950Ca8Ce5a4b59630a5652110403E5c",
-        EthereumNetwork.GOERLI: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
-        EthereumNetwork.KOVAN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
-        EthereumNetwork.POLYGON: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
-        EthereumNetwork.MUMBAI: "0xed386Fe855C1EFf2f843B910923Dd8846E45C5A4",
-        EthereumNetwork.OPTIMISM: "0x2DC0E2aa608532Da689e89e237dF582B783E552C",
-        EthereumNetwork.RINKEBY: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
-        EthereumNetwork.ROPSTEN: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
-        EthereumNetwork.GNOSIS: "0x08612d3C4A5Dfe2FaaFaFe6a4ff712C2dC675bF7",
-        EthereumNetwork.KCC_MAINNET: "0x7C1C85C39d3D6b6ecB811dfe949B9C23f6E818B0",
-        EthereumNetwork.KCC_TESTNET: "0x665683D9bd41C09cF38c3956c926D9924F1ADa97",
+        EthereumNetwork.MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.GOERLI: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.SEPOLIA: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.OPTIMISM: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.OPTIMISM_GOERLI_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.ARBITRUM_ONE: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.ARBITRUM_NOVA: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.ARBITRUM_GOERLI: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.POLYGON: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.MUMBAI: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.POLYGON_ZKEVM: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.POLYGON_ZKEVM_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.GNOSIS: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.AVALANCHE_C_CHAIN: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.AVALANCHE_FUJI_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.FANTOM_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.FANTOM_OPERA: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.BINANCE_SMART_CHAIN_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.KOVAN: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.RINKEBY: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.KCC_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.KCC_TESTNET: "0x665683D9bd41C09cF38c3956c926D9924F1ADa97",
+        EthereumNetwork.ROPSTEN: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.CELO_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.CELO_ALFAJORES_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.AURORA_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.BASE_GOERLI_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
     }
 
     def __init__(
@@ -65,14 +80,17 @@ class Multicall:
         ethereum_network = ethereum_client.get_network()
         address = multicall_contract_address or self.ADDRESSES.get(ethereum_network)
         if not address:
-            raise EthereumNetworkNotSupported(
-                "Multicall contract not available for %s", ethereum_network.name
-            )
+            # Try with Multicall V3 deterministic address
+            address = self.ADDRESSES.get(EthereumNetwork.MAINNET)
+            if not ethereum_client.is_contract(address):
+                raise EthereumNetworkNotSupported(
+                    "Multicall contract not available for %s", ethereum_network.name
+                )
         self.contract = self.get_contract(self.w3, address)
 
     def get_contract(self, w3: Web3, address: Optional[ChecksumAddress] = None):
         return w3.eth.contract(
-            address, abi=multicall_v2_abi, bytecode=multicall_v2_bytecode
+            address, abi=multicall_v3_abi, bytecode=multicall_v3_bytecode
         )
 
     @classmethod
@@ -151,7 +169,7 @@ class Multicall:
         """
         if data:
             try:
-                decoded_values = self.w3.codec.decode_abi(output_type, data)
+                decoded_values = eth_abi.decode(output_type, data)
                 normalized_data = map_abi_data(
                     BASE_RETURN_NORMALIZERS, output_type, decoded_values
                 )

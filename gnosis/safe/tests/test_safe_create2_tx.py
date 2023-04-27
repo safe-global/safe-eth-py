@@ -61,7 +61,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         self.assertGreater(
             self.ethereum_client.get_balance(funder_account.address), funder_balance
         )
-        logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(
+        logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
         )
         log = logs[0]
@@ -134,7 +134,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         self.assertGreater(
             self.ethereum_client.get_balance(funder_account.address), funder_balance
         )
-        logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(
+        logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
         )
         log = logs[0]
@@ -199,7 +199,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         )
         tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt.status, 1)
-        logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(
+        logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
         )
         log = logs[0]
@@ -270,7 +270,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         )
         tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt.status, 1)
-        logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(
+        logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
         )
         log = logs[0]
@@ -309,7 +309,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
 
         # Send something to the erc20 deployer
         self.send_tx(
-            {"to": erc20_deployer.address, "value": w3.toWei(1, "ether")},
+            {"to": erc20_deployer.address, "value": w3.to_wei(1, "ether")},
             funder_account,
         )
 
@@ -353,7 +353,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
         )
         tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt.status, 1)
-        logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(
+        logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
         )
         self.assertEqual(len(logs), 1)
@@ -419,7 +419,7 @@ class TestSafeCreationTx(SafeTestCaseMixin, TestCase):
             )
             tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
             self.assertEqual(tx_receipt.status, 1)
-            logs = self.proxy_factory_contract.events.ProxyCreation().processReceipt(
+            logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
                 tx_receipt
             )
             log = logs[0]

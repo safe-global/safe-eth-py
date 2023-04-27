@@ -6,9 +6,9 @@ from typing import Optional
 from eth_abi.exceptions import DecodingError
 from eth_typing import ChecksumAddress
 from web3.contract import Contract
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
-from .. import EthereumClient
+from .. import EthereumClient, EthereumNetwork
 from ..constants import NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from .abis.uniswap_v3 import (
@@ -25,7 +25,12 @@ logger = logging.getLogger(__name__)
 
 class UniswapV3Oracle(PriceOracle):
     # https://docs.uniswap.org/protocol/reference/deployments
-    UNISWAP_V3_ROUTER = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+    DEFAULT_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+    ROUTER_ADDRESSES = {
+        # SwapRouter02
+        EthereumNetwork.MAINNET: DEFAULT_ROUTER_ADDRESS,
+        EthereumNetwork.CELO_MAINNET: "0x5615CDAb10dc425a742d643d949a7F474C01abc4",
+    }
 
     # Cache to optimize calculation: https://docs.uniswap.org/sdk/guides/fetching-prices#understanding-sqrtprice
     PRICE_CONVERSION_CONSTANT = 2**192
@@ -37,11 +42,14 @@ class UniswapV3Oracle(PriceOracle):
     ):
         """
         :param ethereum_client:
+        :param uniswap_v3_router_address: Provide a custom `SwapRouter02` address
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
 
-        self.router_address = uniswap_v3_router_address or self.UNISWAP_V3_ROUTER
+        self.router_address = uniswap_v3_router_address or self.ROUTER_ADDRESSES.get(
+            self.ethereum_client.get_network(), self.DEFAULT_ROUTER_ADDRESS
+        )
         self.factory = self.get_factory()
 
     @classmethod
@@ -52,12 +60,13 @@ class UniswapV3Oracle(PriceOracle):
     ) -> bool:
         """
         :param ethereum_client:
-        :param uniswap_v3_router_address:
+        :param uniswap_v3_router_address: Provide a custom `SwapRouter02` address
         :return: `True` if Uniswap V3 is available for the EthereumClient provided, `False` otherwise
         """
-        return ethereum_client.is_contract(
-            uniswap_v3_router_address or cls.UNISWAP_V3_ROUTER
+        router_address = uniswap_v3_router_address or cls.ROUTER_ADDRESSES.get(
+            ethereum_client.get_network(), cls.DEFAULT_ROUTER_ADDRESS
         )
+        return ethereum_client.is_contract(router_address)
 
     def get_factory(self) -> Contract:
         """
@@ -67,7 +76,7 @@ class UniswapV3Oracle(PriceOracle):
         """
         try:
             factory_address = self.router.functions.factory().call()
-        except BadFunctionCallOutput:
+        except Web3Exception:
             raise ValueError(
                 f"Uniswap V3 Router Contract {self.router_address} does not exist"
             )
@@ -169,9 +178,9 @@ class UniswapV3Oracle(PriceOracle):
                 logger.debug(message)
                 raise CannotGetPriceFromOracle(message)
         except (
-            ValueError,
-            BadFunctionCallOutput,
+            Web3Exception,
             DecodingError,
+            ValueError,
         ) as e:
             message = (
                 f"Cannot get uniswap v3 price for pair token_1={token_address} "

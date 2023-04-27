@@ -5,16 +5,16 @@ from functools import cached_property
 from logging import getLogger
 from typing import Callable, List, NamedTuple, Optional, Union
 
-from eth_abi import encode_abi
+from eth_abi import encode as encode_abi
 from eth_abi.exceptions import DecodingError
-from eth_abi.packed import encode_abi_packed
+from eth_abi.packed import encode_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, Hash32
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 from web3.types import BlockIdentifier, Wei
 
 from gnosis.eth import EthereumClient, EthereumTxSent
@@ -124,7 +124,7 @@ class Safe:
         """
         try:
             return self.retrieve_domain_separator()
-        except (ValueError, BadFunctionCallOutput, DecodingError):
+        except (Web3Exception, DecodingError, ValueError):
             logger.warning("Safe %s does not support domainSeparator", self.address)
             return None
 
@@ -733,7 +733,7 @@ class Safe:
             return self.ethereum_client.estimate_gas(
                 to, from_=self.address, value=value, data=data
             )
-        except ValueError as exc:
+        except (Web3Exception, ValueError) as exc:
             raise CannotEstimateGas(
                 f"Cannot estimate gas with `eth_estimateGas`: {exc}"
             ) from exc
@@ -862,7 +862,7 @@ class Safe:
             )
         )
         return Web3.keccak(
-            encode_abi_packed(
+            encode_packed(
                 ["bytes1", "bytes1", "bytes32", "bytes32"],
                 [
                     bytes.fromhex("19"),
@@ -921,7 +921,7 @@ class Safe:
                 threshold,
                 version,
             )
-        except (ValueError, BadFunctionCallOutput) as e:
+        except (Web3Exception, ValueError) as e:
             raise CannotRetrieveSafeInfoException(self.address) from e
 
     def retrieve_domain_separator(
@@ -984,7 +984,7 @@ class Safe:
             return contract.functions.getModules().call(
                 block_identifier=block_identifier
             )
-        except BadFunctionCallOutput:
+        except Web3Exception:
             pass
 
         contract = self.contract

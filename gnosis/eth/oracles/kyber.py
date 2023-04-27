@@ -3,7 +3,7 @@ from functools import cached_property
 from typing import Optional
 
 from eth_abi.exceptions import DecodingError
-from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import Web3Exception
 
 from .. import EthereumClient, EthereumNetwork
 from ..contracts import get_kyber_network_proxy_contract
@@ -105,7 +105,7 @@ class KyberOracle(PriceOracle):
                 logger.debug(message)
                 raise InvalidPriceFromOracle(message)
             return price
-        except (ValueError, BadFunctionCallOutput, DecodingError) as e:
+        except (Web3Exception, DecodingError, ValueError) as e:
             message = (
                 f"Cannot get price from kyber-network-proxy={self.kyber_network_proxy_address} "
                 f"for token-1={token_address_1} to token-2={token_address_2}"
