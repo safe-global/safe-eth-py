@@ -54,10 +54,6 @@ class TransactionGasPriceTooLow(EthereumClientException):
     pass
 
 
-class TraceDecodeException(EthereumClientException):
-    pass
-
-
 class InvalidERC20Info(EthereumClientException):
     pass
 
