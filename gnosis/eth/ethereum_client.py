@@ -27,11 +27,11 @@ from web3._utils.abi import map_abi_data
 from web3._utils.method_formatters import (
     block_formatter,
     receipt_formatter,
+    trace_list_result_formatter,
     transaction_result_formatter,
 )
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract.contract import ContractFunction
-from web3.datastructures import AttributeDict
 from web3.exceptions import (
     BlockNotFound,
     TimeExhausted,
@@ -81,7 +81,6 @@ from .exceptions import (
     NonceTooLow,
     ReplacementTransactionUnderpriced,
     SenderAccountNotFoundInNode,
-    TraceDecodeException,
     TransactionAlreadyImported,
     TransactionGasPriceTooLow,
     TransactionQueueLimitReached,
@@ -902,89 +901,6 @@ class Erc721Manager(EthereumClientManager):
 
 
 class TracingManager(EthereumClientManager):
-    def _decode_trace_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
-        decoded = {}
-
-        # CALL, DELEGATECALL, CREATE or CREATE2
-        if "from" in action:
-            decoded["from"] = fast_to_checksum_address(action["from"])
-        if "gas" in action:
-            decoded["gas"] = int(action["gas"], 16)
-        if "value" in action:
-            decoded["value"] = int(action["value"], 16)
-
-        # CALL or DELEGATECALL
-        if "callType" in action:
-            decoded["callType"] = action["callType"]
-        if "input" in action:
-            decoded["input"] = HexBytes(action["input"])
-        if "to" in action:
-            decoded["to"] = fast_to_checksum_address(action["to"])
-
-        # CREATE or CREATE2
-        if "init" in action:
-            decoded["init"] = HexBytes(action["init"])
-
-        # SELF-DESTRUCT
-        if "address" in action:
-            decoded["address"] = fast_to_checksum_address(action["address"])
-        if "balance" in action:
-            decoded["balance"] = int(action["balance"], 16)
-        if "refundAddress" in action:
-            decoded["refundAddress"] = fast_to_checksum_address(action["refundAddress"])
-
-        # REWARD
-        if "author" in action:
-            decoded["author"] = action[
-                "author"
-            ]  # TODO Web3 is not performing checksum decoding
-
-        if "rewardType" in action:
-            decoded["rewardType"] = action["rewardType"]
-
-        return decoded
-
-    def _decode_trace_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        decoded: Dict[str, Any] = {
-            "gasUsed": int(result["gasUsed"], 16),
-        }
-
-        # CALL or DELEGATECALL
-        if "output" in result:
-            decoded["output"] = HexBytes(result["output"])
-
-        # CREATE or CREATE2
-        if "code" in result:
-            decoded["code"] = HexBytes(result["code"])
-        if "address" in result:
-            decoded["address"] = fast_to_checksum_address(result["address"])
-
-        return decoded
-
-    def _decode_traces(
-        self, traces: Sequence[Union[BlockTrace, FilterTrace]]
-    ) -> List[Dict[str, Any]]:
-        new_traces: List[Dict[str, Any]] = []
-        for trace in traces:
-            if isinstance(trace, dict):
-                trace_copy = trace.copy()
-            elif isinstance(trace, AttributeDict):
-                trace_copy = trace.__dict__.copy()
-            else:
-                raise TraceDecodeException(
-                    "Expected dictionary, but found unexpected trace %s" % trace
-                )
-            new_traces.append(trace_copy)
-            # Txs with `error` field don't have `result` field
-            # Txs with `type=suicide` have `result` field but is `None`
-            if "result" in trace and trace["result"]:
-                trace_copy["result"] = self._decode_trace_result(trace["result"])
-            trace_copy["action"] = self._decode_trace_action(trace["action"])
-            trace_copy["blockHash"] = HexBytes(trace_copy["blockHash"])
-            if "transactionHash" in trace_copy:  # Reward traces don't have txHash
-                trace_copy["transactionHash"] = HexBytes(trace_copy["transactionHash"])
-        return new_traces
-
     def filter_out_errored_traces(
         self, internal_txs: Sequence[Dict[str, Any]]
     ) -> Sequence[Dict[str, Any]]:
@@ -1097,18 +1013,7 @@ class TracingManager(EthereumClientManager):
         ]
 
         results = self.ethereum_client.raw_batch_request(payload)
-        traces = []
-        for raw_tx in results:
-            if raw_tx:
-                try:
-                    decoded_traces = self._decode_traces(raw_tx)
-                except TraceDecodeException as exc:
-                    logger.warning("Problem decoding trace: %s - Retrying", exc)
-                    decoded_traces = self._decode_traces(raw_tx)
-                traces.append(decoded_traces)
-            else:
-                traces.append([])
-        return traces
+        return [trace_list_result_formatter(block_traces) for block_traces in results]
 
     def trace_transaction(self, tx_hash: EthereumHash) -> List[FilterTrace]:
         """
@@ -1136,18 +1041,7 @@ class TracingManager(EthereumClientManager):
             for i, tx_hash in enumerate(tx_hashes)
         ]
         results = self.ethereum_client.raw_batch_request(payload)
-        traces = []
-        for raw_tx in results:
-            if raw_tx:
-                try:
-                    decoded_traces = self._decode_traces(raw_tx)
-                except TraceDecodeException as exc:
-                    logger.warning("Problem decoding trace: %s - Retrying", exc)
-                    decoded_traces = self._decode_traces(raw_tx)
-                traces.append(decoded_traces)
-            else:
-                traces.append([])
-        return traces
+        return [trace_list_result_formatter(tx_traces) for tx_traces in results]
 
     def trace_filter(
         self,

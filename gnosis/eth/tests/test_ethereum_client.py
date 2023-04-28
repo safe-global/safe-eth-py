@@ -24,7 +24,7 @@ from ..ethereum_client import (
     TracingManager,
 )
 from ..exceptions import BatchCallException, ChainIdIsRequired, InvalidERC20Info
-from ..utils import fast_to_checksum_address, get_eth_address_with_key
+from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -424,128 +424,6 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
 
 
 class TestTracingManager(EthereumTestCaseMixin, TestCase):
-    def test_decode_trace(self):
-        example_traces = [
-            {
-                "action": {
-                    "callType": "call",
-                    "from": "0x32be343b94f860124dc4fee278fdcbd38c102d88",
-                    "gas": "0x4c40d",
-                    "input": "0x",
-                    "to": "0x8bbb73bcb5d553b5a556358d27625323fd781d37",
-                    "value": "0x3f0650ec47fd240000",
-                },
-                "blockHash": "0x86df301bcdd8248d982dbf039f09faf792684e1aeee99d5b58b77d620008b80f",
-                "blockNumber": 3068183,
-                "result": {"gasUsed": "0x0", "output": "0x"},
-                "subtraces": 0,
-                "traceAddress": [],
-                "transactionHash": "0x3321a7708b1083130bd78da0d62ead9f6683033231617c9d268e2c7e3fa6c104",
-                "transactionPosition": 3,
-                "type": "call",
-            },
-            {
-                "action": {
-                    "from": "0x3b169a0fb55ea0b6bafe54c272b1fe4983742bf7",
-                    "gas": "0x49b0b",
-                    "init": "0x608060405234801561001057600080fd5b5060405161060a38038061060a833981018060405281019080805190602001909291908051820192919060200180519060200190929190805190602001909291908051906020019092919050505084848160008173ffffffffffffffffffffffffffffffffffffffff1614151515610116576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260248152602001807f496e76616c6964206d617374657220636f707920616464726573732070726f7681526020017f696465640000000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506000815111156101a35773ffffffffffffffffffffffffffffffffffffffff60005416600080835160208501846127105a03f46040513d6000823e600082141561019f573d81fd5b5050505b5050600081111561036d57600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156102b7578273ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f1935050505015156102b2576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f206574686572000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b61036c565b6102d1828483610377640100000000026401000000009004565b151561036b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001807f436f756c64206e6f74207061792073616665206372656174696f6e207769746881526020017f20746f6b656e000000000000000000000000000000000000000000000000000081525060400191505060405180910390fd5b5b5b5050505050610490565b600060608383604051602401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506040516020818303038152906040527fa9059cbb000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff19166020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff838183161783525050505090506000808251602084016000896127105a03f16040513d6000823e3d60008114610473576020811461047b5760009450610485565b829450610485565b8151158315171594505b505050509392505050565b61016b8061049f6000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d0410800290000000000000000000000008942595a2dc5181df0465af0d7be08c8f23c93af00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000d9e09beaeb338d81a7c5688358df0071d498811500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b15f91a8c35300000000000000000000000000000000000000000000000000000000000001640ec78d9e00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000004000000000000000000000000f763ea5fbb191d47dc4b083dcdc3cdfb586468f8000000000000000000000000ad25c9717d04c0a12086a1d352c1ccf4bf5fcbf80000000000000000000000000da7155692446c80a4e7ad72018e586f20fa3bfe000000000000000000000000bce0cc48ce44e0ac9ee38df4d586afbacef191fa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-                    "value": "0x0",
-                },
-                "blockHash": "0x03f9f64dfeb7807b5df608e6957dd4d521fd71685aac5533451d27f0abe03660",
-                "blockNumber": 3793534,
-                "result": {
-                    "address": "0x61a7cc907c47c133d5ff5b685407201951fcbd08",
-                    "code": "0x60806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634555d5c91461008b5780635c60da1b146100b6575b73ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415610086573d6000fd5b3d6000f35b34801561009757600080fd5b506100a061010d565b6040518082815260200191505060405180910390f35b3480156100c257600080fd5b506100cb610116565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60006002905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050905600a165627a7a7230582007fffd557dfc8c4d2fdf56ba6381a6ce5b65b6260e1492d87f26c6d4f1d041080029",
-                    "gasUsed": "0x4683f",
-                },
-                "subtraces": 2,
-                "traceAddress": [],
-                "transactionHash": "0x6c7e8f8778d33d81b29c4bd7526ee50a4cea340d69eed6c89ada4e6fab731789",
-                "transactionPosition": 1,
-                "type": "create",
-            },
-            {
-                "action": {
-                    "callType": "call",
-                    "from": "0xed85033a23027439fb20f381f5930ba67f1ebee0",
-                    "gas": "0x0",
-                    "input": "0x",
-                    "to": "0x0affccd762f0a7fa1bca40c51afe1a806a74a6f9",
-                    "value": "0x11c290633b7000",
-                },
-                "blockHash": "0xbf3a508137e72b20399852becdee1752c7b9986184f835014d12b10c01746f39",
-                "blockNumber": 7556887,
-                "error": "Out of gas",
-                "subtraces": 0,
-                "traceAddress": [],
-                "transactionHash": "0xec7e447ce8eef033a8c85442a281bd34436e576553c7d98fbe859af7754a9064",
-                "transactionPosition": 117,
-                "type": "call",
-            },
-            {
-                "action": {
-                    "address": "0x4440adafbc6c4e45c299451c0eedc7c8b98c14ac",
-                    "balance": "0xa",
-                    "refundAddress": "0x1240adafbc6c4e45c299451c0eedc7c8b98c2222",
-                },
-                "blockHash": "0x8512d367492371edf44ebcbbbd935bc434946dddc2b126cb558df5906012186c",
-                "blockNumber": 7829689,
-                "result": None,
-                "subtraces": 0,
-                "traceAddress": [0, 0, 0, 0, 0, 0],
-                "transactionHash": "0x5f7af6aa390f9f8dd79ee692c37cbde76bb7869768b1bac438b6d176c94f637d",
-                "transactionPosition": 35,
-                "type": "suicide",
-            },
-        ]
-        at_least_one_error = False
-        at_least_one_self_destruct = False
-        decoded_traces = self.ethereum_client.tracing._decode_traces(example_traces)
-        for example_trace, decoded_trace in zip(example_traces, decoded_traces):
-            if decoded_trace["type"] == "suicide":
-                self.assertEqual(
-                    decoded_trace["action"]["address"],
-                    "0x4440AdaFBc6c4E45C299451C0eEdC7C8B98c14Ac",
-                )
-                self.assertEqual(decoded_trace["action"]["balance"], 10)
-                self.assertEqual(
-                    decoded_trace["action"]["refundAddress"],
-                    "0x1240aDafBC6C4e45C299451C0eEdC7c8B98C2222",
-                )
-                at_least_one_self_destruct = True
-            else:
-                self.assertEqual(
-                    decoded_trace["action"]["gas"],
-                    int(example_trace["action"]["gas"], 16),
-                )
-                self.assertEqual(
-                    decoded_trace["action"]["value"],
-                    int(example_trace["action"]["value"], 16),
-                )
-                if "error" in decoded_trace:
-                    self.assertNotIn("result", decoded_trace)
-                    at_least_one_error = True
-                else:
-                    self.assertEqual(
-                        decoded_trace["result"]["gasUsed"],
-                        int(example_trace["result"]["gasUsed"], 16),
-                    )
-
-        self.assertTrue(at_least_one_error)
-        self.assertTrue(at_least_one_self_destruct)
-
-        self.assertEqual(decoded_traces[0]["result"]["output"], HexBytes(""))
-        self.assertEqual(
-            decoded_traces[1]["result"]["address"],
-            fast_to_checksum_address(example_traces[1]["result"]["address"]),
-        )
-        self.assertEqual(
-            decoded_traces[1]["result"]["code"],
-            HexBytes(example_traces[1]["result"]["code"]),
-        )
-
-        self.assertEqual(decoded_traces[2]["error"], "Out of gas")
-
     def test_filter_out_errored_traces(self):
         self.assertEqual(self.ethereum_client.tracing.filter_out_errored_traces([]), [])
         traces = internal_txs_errored

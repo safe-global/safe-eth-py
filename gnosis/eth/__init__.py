@@ -17,7 +17,7 @@ from .ethereum_client import (
     UnknownAccount,
 )
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
-from .exceptions import InvalidERC20Info, InvalidERC721Info, TraceDecodeException
+from .exceptions import InvalidERC20Info, InvalidERC721Info
 
 __all__ = [
     "EthereumClient",
@@ -39,5 +39,4 @@ __all__ = [
     "EthereumNetworkNotSupported",
     "InvalidERC20Info",
     "InvalidERC721Info",
-    "TraceDecodeException",
 ]
