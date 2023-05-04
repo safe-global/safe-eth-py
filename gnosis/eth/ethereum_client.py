@@ -1333,7 +1333,7 @@ class EthereumClient:
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> List[Optional[Union[bytes, Any]]]:
         """
-        Call multiple functions. Multicall contract by MakerDAO will be used by default if available
+        Call multiple functions. ``Multicall`` contract by MakerDAO will be used by default if available
 
         :param contract_functions:
         :param from_address: Only available when ``Multicall`` is not used
@@ -1372,7 +1372,7 @@ class EthereumClient:
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> List[Optional[Union[bytes, Any]]]:
         """
-        Call the same function in multiple contracts. Way more optimal than using `batch_call` generating multiple
+        Call the same function in multiple contracts. Way more optimal than using ``batch_call`` generating multiple
         ``ContractFunction`` objects.
 
         :param contract_function:
