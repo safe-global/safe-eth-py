@@ -1,4 +1,4 @@
-django==4.2
+django==4.2.1
 django-filter==23.2
 djangorestframework==3.14.0
 hexbytes==0.2.3
