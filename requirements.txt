@@ -6,6 +6,6 @@ packaging
 psycopg2-binary==2.9.6
 py-evm==0.7.0a1
 pysha3>=1.0.0,<2.0.0; python_version<"3.9"
-requests==2.29.0
+requests==2.30.0
 safe-pysha3>=1.0.0; python_version>="3.9"
 web3==6.2.0
