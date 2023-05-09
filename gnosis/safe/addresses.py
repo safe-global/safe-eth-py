@@ -157,8 +157,23 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 8944351, "1.3.0"),
     ],
     EthereumNetwork.AVALANCHE_C_CHAIN: [
-        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 4_949_507, "1.3.0+L2"),
-        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 4_949_512, "1.3.0"),
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            22_123_383,
+            "1.3.0+L2",
+        )(  # default singleton address
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 4_949_507, "1.3.0+L2"
+        ),  # safe singleton address
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            14_747_111,
+            "1.3.0",
+        ),  # default singleton address
+        (
+            "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
+            4_949_512,
+            "1.3.0",
+        ),  # safe singleton address
     ],
     EthereumNetwork.MOONBEAM: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 172_092, "1.3.0+L2"),
@@ -485,7 +500,12 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 8944342),  # v1.3.0
     ],
     EthereumNetwork.AVALANCHE_C_CHAIN: [
-        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 4_949_487),  # v1.3.0
+        (
+            " 0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
+            14_747_108,
+        )(  # v1.3.0 default singleton address
+            "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 4_949_487
+        ),  # v1.3.0 safe singleton address
     ],
     EthereumNetwork.MOONBEAM: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 172078),  # v1.3.0
