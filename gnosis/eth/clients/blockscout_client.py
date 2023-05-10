@@ -59,6 +59,8 @@ class BlockscoutClient:
         EthereumNetwork.ARBITRUM_NOVA: "https://nova-explorer.arbitrum.io",
         EthereumNetwork.ARBITRUM_GOERLI: "https://goerli-rollup-explorer.arbitrum.io",
         EthereumNetwork.CROSSBELL: "https://scan.crossbell.io",
+        EthereumNetwork.ETHEREUM_CLASSIC_MAINNET: "https://blockscout.com/etc/mainnet/",
+        EthereumNetwork.ETHEREUM_CLASSIC_TESTNET_MORDOR: "https://blockscout.com/etc/mordor/",
     }
 
     def __init__(self, network: EthereumNetwork):
