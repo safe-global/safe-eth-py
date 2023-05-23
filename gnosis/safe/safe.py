@@ -904,12 +904,15 @@ class Safe:
                 raise_exception=False,
             )
             modules_response, nonce, owners, threshold, version = results
-            if modules_response:
-                modules, next_module = modules_response
-            if (
-                not modules_response or next_module != SENTINEL_ADDRESS
-            ):  # < 1.1.1 or still more elements in the list
+            if not modules_response:
+                # < 1.1.1
                 modules = self.retrieve_modules()
+            else:
+                modules, next_module = modules_response
+                if modules and next_module != SENTINEL_ADDRESS:
+                    # Still more elements in the list
+                    modules = self.retrieve_modules()
+
             return SafeInfo(
                 self.address,
                 fallback_handler,
@@ -970,10 +973,12 @@ class Safe:
         self,
         pagination: Optional[int] = 50,
         block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[str]:
+        max_modules_to_retrieve: Optional[int] = 500,
+    ) -> List[ChecksumAddress]:
         """
         :param pagination: Number of modules to get per request
         :param block_identifier:
+        :param max_modules_to_retrieve: Maximum number of modules to retrieve
         :return: List of module addresses
         """
         try:
@@ -989,17 +994,24 @@ class Safe:
 
         contract = self.contract
         address = SENTINEL_ADDRESS
-        all_modules: List[str] = []
-        while True:
+        all_modules: List[ChecksumAddress] = []
+
+        for _ in range(max_modules_to_retrieve // pagination):
+            # If we use a `while True` loop a custom coded Safe could get us into an infinite loop
             (modules, address) = contract.functions.getModulesPaginated(
                 address, pagination
             ).call(block_identifier=block_identifier)
 
-            all_modules.extend(modules)
-            if address == SENTINEL_ADDRESS:
+            if not modules or address in (NULL_ADDRESS, SENTINEL_ADDRESS):
+                # `NULL_ADDRESS` is only seen in uninitialized Safes
                 break
-            else:
-                all_modules.append(address)
+
+            # Safes with version < 1.4.0 don't include the `starter address` used as pagination in the module list
+            # From 1.4.0 onwards it is included, so we check for duplicated addresses before inserting
+            modules_to_insert = [
+                module for module in modules + [address] if module not in all_modules
+            ]
+            all_modules.extend(modules_to_insert)
         return all_modules
 
     def retrieve_is_hash_approved(
