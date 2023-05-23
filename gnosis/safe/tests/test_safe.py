@@ -668,6 +668,41 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             safe.retrieve_modules(pagination=1), [module_address] + more_modules
         )
 
+    def test_retrieve_modules_below_v1_1_1(self):
+        safe_v1_0_0 = self.deploy_test_safe_v1_0_0(
+            owners=[self.ethereum_test_account.address]
+        )
+        safe_contract = safe_v1_0_0.contract
+        module_address = Account.create().address
+        self.assertEqual(safe_v1_0_0.retrieve_modules(), [])
+
+        tx = safe_contract.functions.enableModule(module_address).build_transaction(
+            {"from": self.ethereum_test_account.address, "gas": 0, "gasPrice": 0}
+        )
+        safe_tx = safe_v1_0_0.build_multisig_tx(safe_v1_0_0.address, 0, tx["data"])
+        safe_tx.sign(self.ethereum_test_account.key)
+        safe_tx.execute(
+            tx_sender_private_key=self.ethereum_test_account.key,
+            tx_gas_price=self.gas_price,
+        )
+        self.assertEqual(safe_v1_0_0.retrieve_modules(), [module_address])
+        self.assertEqual(safe_v1_0_0.retrieve_all_info().modules, [module_address])
+
+    def test_retrieve_modules_unitialized_safe(self):
+        """
+        Unitialized Safes will return `[[], '0x0000000000000000000000000000000000000000']` when calling
+        `getModulesPaginated`, as `SENTINEL_ADDRESS` is only set when initialized
+        """
+
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+            self.ethereum_test_account,
+            self.safe_contract.address,
+            initializer=b"",
+        )
+        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
+        self.assertEqual(safe.retrieve_modules(), [])
+        self.assertEqual(safe.retrieve_all_info().modules, [])
+
     def test_retrieve_is_hash_approved(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
         safe_contract = safe.contract
