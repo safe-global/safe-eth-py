@@ -1,8 +1,12 @@
+import json
 import os
+from copy import deepcopy
+from typing import Any
 
 import pytest
 import requests
 from eth_account.signers.local import LocalAccount
+from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 from web3.types import TxParams
@@ -140,3 +144,35 @@ def deploy_erc20(
     deployed_erc20 = get_example_erc20_contract(w3, erc20_address)
     assert deployed_erc20.functions.balanceOf(owner).call() == amount
     return deployed_erc20
+
+
+def bytes_to_str(o: Any) -> Any:
+    """
+    Converts bytes (and hexbytes) fields to `str` in nested data types
+
+    :param o:
+    :return:
+    """
+    if isinstance(o, bytes):
+        return HexBytes(o).hex()
+    if isinstance(o, dict):
+        o = dict(o)  # Remove AttributeDict
+        for k in o.keys():
+            o[k] = bytes_to_str(o[k])
+    elif isinstance(o, (list, tuple)):
+        o = deepcopy(o)
+        for i, v in enumerate(o):
+            o[i] = bytes_to_str(o[i])
+    elif isinstance(o, set):
+        o = {bytes_to_str(element) for element in o}
+    return o
+
+
+def to_json_with_hexbytes(o: Any) -> str:
+    """
+    Convert RPC calls with nested bytes/Hexbytes to json and compare. Useful for RPC calls
+
+    :param o:
+    :return: Object as JSON with Hexbytes/bytes parsed correctly as an hex string
+    """
+    return json.dumps(bytes_to_str(o), indent=4, sort_keys=True)
