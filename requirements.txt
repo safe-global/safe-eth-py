@@ -4,8 +4,8 @@ djangorestframework==3.14.0
 hexbytes==0.2.3
 packaging
 psycopg2-binary==2.9.6
-py-evm==0.7.0a1
+py-evm==0.7.0a2
 pysha3>=1.0.0,<2.0.0; python_version<"3.9"
-requests==2.30.0
+requests==2.31.0
 safe-pysha3>=1.0.0; python_version>="3.9"
-web3==6.3.0
+web3==6.4.0
