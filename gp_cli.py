@@ -26,8 +26,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Place orders on Gnosis Protocol V2")
     parser.add_argument(
         "--network",
-        default=EthereumNetwork.RINKEBY.name,
-        help="Mainnet, Rinkeby or xDAI",
+        default=EthereumNetwork.GOERLI.name,
+        help="Mainnet, Goerli or PulseChain",
     )
     parser.add_argument("--from-token", required=True)  # TODO Check checksummed address
     parser.add_argument("--to-token", required=True)

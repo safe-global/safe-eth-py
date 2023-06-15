@@ -29,7 +29,6 @@ class UniswapV3Oracle(PriceOracle):
     ROUTER_ADDRESSES = {
         # SwapRouter02
         EthereumNetwork.MAINNET: DEFAULT_ROUTER_ADDRESS,
-        EthereumNetwork.CELO_MAINNET: "0x5615CDAb10dc425a742d643d949a7F474C01abc4",
     }
 
     # Cache to optimize calculation: https://docs.uniswap.org/sdk/guides/fetching-prices#understanding-sqrtprice

@@ -17,17 +17,10 @@ logger = logging.getLogger(__name__)
 
 class TransactionServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
-        EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
-        EthereumNetwork.AURORA_MAINNET: "https://safe-transaction-aurora.safe.global",
-        EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
-        EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
-        EthereumNetwork.ENERGY_WEB_CHAIN: "https://safe-transaction-ewc.safe.global",
-        EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
         EthereumNetwork.MAINNET: "https://safe-transaction-mainnet.safe.global",
-        EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
-        EthereumNetwork.OPTIMISM: "https://safe-transaction-optimism.safe.global",
-        EthereumNetwork.ENERGY_WEB_VOLTA_TESTNET: "https://safe-transaction-volta.safe.global",
-        EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
+        EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
+        EthereumNetwork.PULSECHAIN_MAINNET: "https://safe-transaction.pulse.domains",
+        EthereumNetwork.PULSECHAIN_TESTNET: "https://t.safe-transaction.pulse.domains",
     }
 
     @classmethod

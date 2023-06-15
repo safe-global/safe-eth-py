@@ -18,10 +18,10 @@ class TestSourcify(TestCase):
         self.assertIsInstance(contract_metadata.abi, List)
         self.assertTrue(contract_metadata.abi)
         self.assertFalse(contract_metadata.partial_match)
-        contract_metadata_rinkeby = Sourcify(
-            EthereumNetwork.RINKEBY
+        contract_metadata_goerli = Sourcify(
+            EthereumNetwork.GOERLI
         ).get_contract_metadata(safe_contract_address)
-        self.assertEqual(contract_metadata, contract_metadata_rinkeby)
+        self.assertEqual(contract_metadata, contract_metadata_goerli)
 
         partial_match_contract_address = "0x000000000000C1CB11D5c062901F32D06248CE48"
         contract_metadata = sourcify.get_contract_metadata(

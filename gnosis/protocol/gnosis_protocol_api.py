@@ -45,13 +45,11 @@ class GnosisProtocolAPI:
     SETTLEMENT_CONTRACT_ADDRESSES = {
         EthereumNetwork.MAINNET: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.GOERLI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
-        EthereumNetwork.GNOSIS: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     }
 
     API_BASE_URLS = {
         EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet/api/v1/",
         EthereumNetwork.GOERLI: "https://api.cow.fi/goerli/api/v1/",
-        EthereumNetwork.GNOSIS: "https://api.cow.fi/xdai/api/v1/",
     }
 
     def __init__(self, ethereum_network: EthereumNetwork):
@@ -71,8 +69,6 @@ class GnosisProtocolAPI:
         """
         :return: Wrapped ether checksummed address
         """
-        if self.network == EthereumNetwork.GNOSIS:  # WXDAI
-            return ChecksumAddress("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d")
         if self.network == EthereumNetwork.GOERLI:  # Goerli WETH9
             return ChecksumAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6")
 

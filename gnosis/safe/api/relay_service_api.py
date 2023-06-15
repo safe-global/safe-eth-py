@@ -29,7 +29,6 @@ class RelayServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
         EthereumNetwork.GOERLI: "https://safe-relay.goerli.gnosis.io/",
         EthereumNetwork.MAINNET: "https://safe-relay.gnosis.io",
-        EthereumNetwork.RINKEBY: "https://safe-relay.rinkeby.gnosis.io",
     }
 
     def send_transaction(

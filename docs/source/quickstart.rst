@@ -196,7 +196,7 @@ On ``gnosis.protocol`` there're classes to work with `Gnosis Protocol v2 <https:
 
   account_address = ''  # Fill with checksummed version of a Gnosis Protocol user address
   account_private_key = ''  # Fill with private key of a user address
-  gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.RINKEBY)
+  gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.GOERLI)
   print(gnosis_protocol_api.get_trades(owner=account_address))
   buy_amount = gnosis_protocol_api.get_estimated_amount(base_token, quote_token, OrderKind.SELL, sell_amount)
   valid_to = int(time.time() + (24 * 60 * 60))  # Order valid for 1 day

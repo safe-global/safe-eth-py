@@ -23,7 +23,6 @@ from .oracles import (
     YearnOracle,
     ZerionComposedOracle,
 )
-from .superfluid import SuperfluidOracle
 from .sushiswap import SushiswapOracle
 from .uniswap_v3 import UniswapV3Oracle
 
@@ -47,5 +46,4 @@ __all__ = [
     "UniswapV3Oracle",
     "YearnOracle",
     "ZerionComposedOracle",
-    "SuperfluidOracle",
 ]
