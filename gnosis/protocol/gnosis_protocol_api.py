@@ -54,7 +54,7 @@ class GnosisProtocolAPI:
         EthereumNetwork.GNOSIS: "https://api.cow.fi/xdai/api/v1/",
     }
 
-    def __init__(self, ethereum_network: EthereumNetwork):
+    def __init__(self, ethereum_network: EthereumNetwork, request_timeout: int = 10):
         self.network = ethereum_network
         if self.network not in self.API_BASE_URLS:
             raise EthereumNetworkNotSupported(
@@ -64,7 +64,25 @@ class GnosisProtocolAPI:
             self.network
         ]
         self.base_url = self.API_BASE_URLS[self.network]
-        self.http_session = requests.Session()
+        self.http_session = self._prepare_http_session()
+        self.request_timeout = request_timeout
+
+    def _prepare_http_session(self) -> requests.Session:
+        """
+        Prepare http session with custom pooling. See:
+        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
+        https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
+        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
+        """
+        session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=10,
+            pool_maxsize=100,
+            pool_block=False,
+        )
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        return session
 
     @cached_property
     def weth_address(self) -> ChecksumAddress:
@@ -98,7 +116,7 @@ class GnosisProtocolAPI:
             "from": from_address,
             "priceQuality": "fast",
         }
-        r = self.http_session.post(url, json=data_json)
+        r = self.http_session.post(url, json=data_json, timeout=self.request_timeout)
         if r.ok:
             return r.json()
         else:
@@ -159,7 +177,7 @@ class GnosisProtocolAPI:
             "signingScheme": "ethsign",
             "from": from_address,
         }
-        r = self.http_session.post(url, json=data_json)
+        r = self.http_session.post(url, json=data_json, timeout=self.request_timeout)
         if r.ok:
             return HexStr(r.json())
         else:
@@ -179,7 +197,7 @@ class GnosisProtocolAPI:
             the last page has been reached.
         """
         url = self.base_url + f"account/{owner}/orders"
-        r = self.http_session.get(url)
+        r = self.http_session.get(url, timeout=self.request_timeout)
         if r.ok:
             return cast(List[Dict[str, Any]], r.json())
         else:
@@ -197,7 +215,7 @@ class GnosisProtocolAPI:
         elif owner:
             url += f"owner={owner}"
 
-        r = self.http_session.get(url)
+        r = self.http_session.get(url, timeout=self.request_timeout)
         if r.ok:
             return cast(List[TradeResponse], r.json())
         else:

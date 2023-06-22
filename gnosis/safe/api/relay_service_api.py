@@ -60,7 +60,7 @@ class RelayServiceApi(SafeBaseAPI):
             "nonce": safe_tx.safe_nonce,
             "signatures": signatures,
         }
-        response = requests.post(url, json=data)
+        response = requests.post(url, json=data, timeout=self.request_timeout)
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
         else:
@@ -82,7 +82,7 @@ class RelayServiceApi(SafeBaseAPI):
             "operation": safe_tx.operation,
             "gasToken": safe_tx.gas_token,
         }
-        response = requests.post(url, json=data)
+        response = requests.post(url, json=data, timeout=self.request_timeout)
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
         else:
