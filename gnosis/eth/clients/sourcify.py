@@ -24,10 +24,29 @@ class Sourcify:
         self,
         network: EthereumNetwork = EthereumNetwork.MAINNET,
         base_url: str = "https://repo.sourcify.dev/",
+        request_timeout: int = 10,
     ):
         self.network = network
         self.base_url = base_url
-        self.http_session = requests.session()
+        self.http_session = self._prepare_http_session()
+        self.request_timeout = request_timeout
+
+    def _prepare_http_session(self) -> requests.Session:
+        """
+        Prepare http session with custom pooling. See:
+        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
+        https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
+        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
+        """
+        session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=10,
+            pool_maxsize=100,
+            pool_block=False,
+        )
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        return session
 
     def _get_abi_from_metadata(self, metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
         return metadata["output"]["abi"]
@@ -38,7 +57,7 @@ class Sourcify:
             return values[0]
 
     def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
-        response = self.http_session.get(url, timeout=10)
+        response = self.http_session.get(url, timeout=self.request_timeout)
         if not response.ok:
             return None
 

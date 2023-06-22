@@ -167,7 +167,11 @@ class UniswapOracle(PriceOracle):
             for i, data in enumerate(datas)
         ]
         payloads = [payload_balance] + payload_calls
-        r = requests.post(self.ethereum_client.ethereum_node_url, json=payloads)
+        r = requests.post(
+            self.ethereum_client.ethereum_node_url,
+            json=payloads,
+            timeout=self.ethereum_client.timeout,
+        )
         if not r.ok:
             raise CannotGetPriceFromOracle(
                 f"Error from node with url={self.ethereum_client.ethereum_node_url}"

@@ -23,6 +23,7 @@ class SafeBaseAPI(ABC):
         network: EthereumNetwork,
         ethereum_client: Optional[EthereumClient] = None,
         base_url: Optional[str] = None,
+        request_timeout: int = 10,
     ):
         """
         :param network: Network for the transaction service
@@ -36,6 +37,7 @@ class SafeBaseAPI(ABC):
         if not self.base_url:
             raise EthereumNetworkNotSupported(network)
         self.http_session = requests.Session()
+        self.request_timeout = request_timeout
 
     @classmethod
     def from_ethereum_client(cls, ethereum_client: EthereumClient) -> "SafeBaseAPI":
@@ -44,16 +46,22 @@ class SafeBaseAPI(ABC):
 
     def _get_request(self, url: str) -> requests.Response:
         full_url = urljoin(self.base_url, url)
-        return self.http_session.get(full_url)
+        return self.http_session.get(full_url, timeout=self.request_timeout)
 
     def _post_request(self, url: str, payload: Dict) -> requests.Response:
         full_url = urljoin(self.base_url, url)
         return self.http_session.post(
-            full_url, json=payload, headers={"Content-type": "application/json"}
+            full_url,
+            json=payload,
+            headers={"Content-type": "application/json"},
+            timeout=self.request_timeout,
         )
 
     def _delete_request(self, url: str, payload: Dict) -> requests.Response:
         full_url = urljoin(self.base_url, url)
         return self.http_session.delete(
-            full_url, json=payload, headers={"Content-type": "application/json"}
+            full_url,
+            json=payload,
+            headers={"Content-type": "application/json"},
+            timeout=self.request_timeout,
         )
