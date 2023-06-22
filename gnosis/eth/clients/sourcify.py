@@ -35,7 +35,7 @@ class Sourcify:
         """
         Prepare http session with custom pooling. See:
         https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://2.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
+        https://docs.python-requests.org/en/v1.2.3/api/#requests.adapters.HTTPAdapter
         https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
         """
         session = requests.Session()
