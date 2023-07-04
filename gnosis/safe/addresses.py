@@ -484,6 +484,20 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 1634935, "1.3.0+L2"),
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 1634935, "1.3.0"),
     ],
+    EthereumNetwork.DARWINIA_NETWORK: [
+        (
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
+            491175,
+            "1.3.0+L2",
+        )
+    ],
+    EthereumNetwork.DARWINIA_CRAB_NETWORK: [
+        (
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
+            739900,
+            "1.3.0+L2",
+        )
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -803,5 +817,17 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.SHIDEN: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 1634935),  # v1.3.0
+    ],
+    EthereumNetwork.DARWINIA_NETWORK: [
+        (
+            "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
+            491157,
+        )
+    ],
+    EthereumNetwork.DARWINIA_CRAB_NETWORK: [
+        (
+            "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
+            739882,
+        )
     ],
 }
