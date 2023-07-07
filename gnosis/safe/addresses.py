@@ -498,6 +498,14 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         )
     ],
+    EthereumNetwork.ZKSYNC_ALPHA_TESTNET: [
+        ("0x1727c2c531cf966f902E5927b98490fDFb3b2b70", 8619879, "1.3.0+L2"),
+        ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 8619884, "1.3.0"),
+    ],
+    EthereumNetwork.ZKSYNC_V2: [
+        ("0x1727c2c531cf966f902E5927b98490fDFb3b2b70", 7259224, "1.3.0+L2"),
+        ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 7259230, "1.3.0"),
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -829,5 +837,11 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
             739882,
         )
+    ],
+    EthereumNetwork.ZKSYNC_ALPHA_TESTNET: [
+        ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 8619849),  # v1.3.0
+    ],
+    EthereumNetwork.ZKSYNC_V2: [
+        ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 7259190),  # v1.3.0
     ],
 }
