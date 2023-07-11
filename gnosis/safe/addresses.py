@@ -850,6 +850,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.ZORA: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 11914),  # v1.3.0
+    ]
     EthereumNetwork.ZKSYNC_ALPHA_TESTNET: [
         ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 8619849),  # v1.3.0
     ],
