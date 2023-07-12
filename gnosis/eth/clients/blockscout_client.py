@@ -40,7 +40,7 @@ class BlockscoutClient:
         EthereumNetwork.REI_CHAIN_TESTNET: "https://scan-test.rei.network/",
         EthereumNetwork.METER_MAINNET: "https://scan.meter.io/",
         EthereumNetwork.METER_TESTNET: "https://scan-warringstakes.meter.io/",
-        EthereumNetwork.GODWOKEN_TESTNET_V1: "https://v1.betanet.gwscan.com/",
+        EthereumNetwork.GODWOKEN_TESTNET_V1: "https://v1.testnet.gwscan.com/",
         EthereumNetwork.GODWOKEN_MAINNET: "https://v1.gwscan.com/",
         EthereumNetwork.VENIDIUM_TESTNET: "https://evm-testnet.venidiumexplorer.com/",
         EthereumNetwork.VENIDIUM_MAINNET: "https://evm.venidiumexplorer.com/",
