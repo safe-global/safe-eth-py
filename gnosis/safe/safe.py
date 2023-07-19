@@ -36,6 +36,7 @@ from gnosis.eth.utils import (
 )
 from gnosis.safe.proxy_factory import ProxyFactory
 
+from ..eth.contract_common import ContractCommon
 from ..eth.typing import EthereumData
 from .exceptions import (
     CannotEstimateGas,
@@ -75,7 +76,7 @@ class SafeInfo:
     version: str
 
 
-class Safe:
+class Safe(ContractCommon):
     """
     Class to manage a Gnosis Safe
     """
@@ -192,8 +193,9 @@ class Safe:
         contract_address = tx_receipt["contractAddress"]
         return EthereumTxSent(tx_hash, tx, contract_address)
 
-    @staticmethod
+    @classmethod
     def _deploy_master_contract(
+        cls,
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
         contract_fn: Callable[[Web3, Optional[str]], Contract],
@@ -208,17 +210,10 @@ class Safe:
         :return: deployed contract address
         """
         safe_contract = contract_fn(ethereum_client.w3)
-        constructor_tx = safe_contract.constructor().build_transaction()
-        tx_hash = ethereum_client.send_unsigned_transaction(
-            constructor_tx, private_key=deployer_account.key
+        ethereum_tx_sent = cls.deploy_contract(
+            ethereum_client, deployer_account, contract=safe_contract
         )
-        tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
-        assert tx_receipt
-        assert tx_receipt["status"]
 
-        ethereum_tx_sent = EthereumTxSent(
-            tx_hash, constructor_tx, tx_receipt["contractAddress"]
-        )
         logger.info(
             "Deployed and initialized Safe Master Contract version=%s on address %s by %s",
             contract_fn(ethereum_client.w3, ethereum_tx_sent.contract_address)

@@ -7,10 +7,9 @@ from eth_account import Account
 from gnosis.eth import EthereumClient
 from gnosis.eth.tests.utils import just_test_if_mainnet_node
 from gnosis.safe import Safe
-
-from ..proxy_factory import ProxyFactory
-from .safe_test_case import SafeTestCaseMixin
-from .utils import generate_salt_nonce
+from gnosis.safe.proxy_factory import ProxyFactory
+from gnosis.safe.tests.safe_test_case import SafeTestCaseMixin
+from gnosis.safe.tests.utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
 
@@ -32,34 +31,6 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         )
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
-            self.ethereum_test_account, self.safe_contract_address
-        )
-        self.assertTrue(
-            self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
-        )
-
-        # Test proxy factory v1.1.1
-        ethereum_tx_sent = ProxyFactory.deploy_proxy_factory_contract_v1_1_1(
-            self.ethereum_client, self.ethereum_test_account
-        )
-        proxy_factory_V1_1_1 = ProxyFactory(
-            ethereum_tx_sent.contract_address, self.ethereum_client
-        )
-        ethereum_tx_sent = proxy_factory_V1_1_1.deploy_proxy_contract(
-            self.ethereum_test_account, self.safe_contract_address
-        )
-        self.assertTrue(
-            self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
-        )
-
-        # Test proxy factory v1.0.0
-        ethereum_tx_sent = ProxyFactory.deploy_proxy_factory_contract_v1_0_0(
-            self.ethereum_client, self.ethereum_test_account
-        )
-        proxy_factory_V1_0_0 = ProxyFactory(
-            ethereum_tx_sent.contract_address, self.ethereum_client
-        )
-        ethereum_tx_sent = proxy_factory_V1_0_0.deploy_proxy_contract(
             self.ethereum_test_account, self.safe_contract_address
         )
         self.assertTrue(

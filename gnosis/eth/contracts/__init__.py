@@ -60,7 +60,7 @@ contracts = {
     "delegate_constructor_proxy": "DelegateConstructorProxy.json",
     "multi_send": "MultiSend.json",
     "paying_proxy": "PayingProxy.json",
-    "proxy_factory": "ProxyFactory_V1_3_0.json",
+    "proxy_factory_V1_3_0": "ProxyFactory_V1_3_0.json",
     "proxy_factory_V1_1_1": "ProxyFactory_V1_1_1.json",
     "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",
     "proxy": "Proxy_V1_1_1.json",
@@ -153,6 +153,12 @@ def get_paying_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contra
 
 
 def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    return get_proxy_factory_V1_3_0_contract(w3, address)
+
+
+def get_proxy_factory_V1_3_0_contract(
+    w3: Web3, address: Optional[str] = None
+) -> Contract:
     pass
 
 

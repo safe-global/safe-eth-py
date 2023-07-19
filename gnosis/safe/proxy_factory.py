@@ -3,9 +3,9 @@ from typing import Optional
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
-from web3.contract import Contract
 
 from gnosis.eth import EthereumClient, EthereumTxSent
+from gnosis.eth.contract_common import ContractCommon
 from gnosis.eth.contracts import (
     get_paying_proxy_deployed_bytecode,
     get_proxy_1_0_0_deployed_bytecode,
@@ -15,6 +15,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_contract,
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
+    get_proxy_factory_V1_3_0_contract,
 )
 from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 from gnosis.util import cache
@@ -22,39 +23,14 @@ from gnosis.util import cache
 logger = getLogger(__name__)
 
 
-class ProxyFactory:
+class ProxyFactory(ContractCommon):
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert fast_is_checksum_address(address), (
             "%s proxy factory address not valid" % address
         )
-
-        self.address = address
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-
-    @staticmethod
-    def _deploy_proxy_factory_contract(
-        ethereum_client: EthereumClient,
-        deployer_account: LocalAccount,
-        contract: Contract,
-    ) -> EthereumTxSent:
-        tx = contract.constructor().build_transaction(
-            {"from": deployer_account.address}
-        )
-
-        tx_hash = ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
-        )
-        tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
-        assert tx_receipt
-        assert tx_receipt["status"]
-        contract_address = tx_receipt["contractAddress"]
-        logger.info(
-            "Deployed and initialized Proxy Factory Contract=%s by %s",
-            contract_address,
-            deployer_account.address,
-        )
-        return EthereumTxSent(tx_hash, tx, contract_address)
+        self.address = address
 
     @classmethod
     def deploy_proxy_factory_contract(
@@ -67,8 +43,23 @@ class ProxyFactory:
         :param deployer_account: Ethereum Account
         :return: deployed contract address
         """
-        proxy_factory_contract = get_proxy_factory_contract(ethereum_client.w3)
-        return cls._deploy_proxy_factory_contract(
+        return cls.deploy_proxy_factory_contract_v1_3_0(
+            ethereum_client, deployer_account
+        )
+
+    @classmethod
+    def deploy_proxy_factory_contract_v1_3_0(
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
+    ) -> EthereumTxSent:
+        """
+        Deploy proxy factory contract v1.3.0
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum Account
+        :return: deployed contract address
+        """
+        proxy_factory_contract = get_proxy_factory_V1_3_0_contract(ethereum_client.w3)
+        return cls.deploy_contract(
             ethereum_client, deployer_account, proxy_factory_contract
         )
 
@@ -84,7 +75,7 @@ class ProxyFactory:
         :return: deployed contract address
         """
         proxy_factory_contract = get_proxy_factory_V1_1_1_contract(ethereum_client.w3)
-        return cls._deploy_proxy_factory_contract(
+        return cls.deploy_contract(
             ethereum_client, deployer_account, proxy_factory_contract
         )
 
@@ -100,7 +91,7 @@ class ProxyFactory:
         :return: deployed contract address
         """
         proxy_factory_contract = get_proxy_factory_V1_0_0_contract(ethereum_client.w3)
-        return cls._deploy_proxy_factory_contract(
+        return cls.deploy_contract(
             ethereum_client, deployer_account, proxy_factory_contract
         )
 
@@ -147,22 +138,13 @@ class ProxyFactory:
             master_copy, initializer
         )
 
-        tx_parameters = {"from": deployer_account.address}
-        contract_address = create_proxy_fn.call(tx_parameters)
-
-        if gas_price is not None:
-            tx_parameters["gasPrice"] = gas_price
-
-        if gas is not None:
-            tx_parameters["gas"] = gas
-
-        tx = create_proxy_fn.build_transaction(tx_parameters)
-        # Auto estimation of gas does not work. We use a little more gas just in case
-        tx["gas"] = tx["gas"] + 50000
-        tx_hash = self.ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
+        tx_parameters = self.configure_tx_parameters(
+            deployer_account.address, gas, gas_price
         )
-        return EthereumTxSent(tx_hash, tx, contract_address)
+        # Auto estimation of gas does not work. We use a little more gas just in case (gas_increment)
+        return self.deploy_contract_with_deploy_function(
+            self.ethereum_client, deployer_account, create_proxy_fn, tx_parameters
+        )
 
     def deploy_proxy_contract_with_nonce(
         self,
@@ -191,25 +173,17 @@ class ProxyFactory:
             master_copy, initializer, salt_nonce
         )
 
-        tx_parameters = {"from": deployer_account.address}
-        contract_address = create_proxy_fn.call(tx_parameters)
-
-        if gas_price is not None:
-            tx_parameters["gasPrice"] = gas_price
-
-        if gas is not None:
-            tx_parameters["gas"] = gas
-
-        if nonce is not None:
-            tx_parameters["nonce"] = nonce
-
-        tx = create_proxy_fn.build_transaction(tx_parameters)
-        # Auto estimation of gas does not work. We use a little more gas just in case
-        tx["gas"] = tx["gas"] + 50000
-        tx_hash = self.ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
+        tx_parameters = self.configure_tx_parameters(
+            deployer_account.address, gas, gas_price, nonce
         )
-        return EthereumTxSent(tx_hash, tx, contract_address)
+        # Auto estimation of gas does not work. We use a little more gas just in case (gas_increment)
+        return self.deploy_contract_with_deploy_function(
+            self.ethereum_client,
+            deployer_account,
+            create_proxy_fn,
+            tx_parameters,
+            gas_increment=50000,
+        )
 
     def get_contract(self, address: Optional[ChecksumAddress] = None):
         address = address or self.address
