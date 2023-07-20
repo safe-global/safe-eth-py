@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 project = "Safe-eth-py"
 copyright = "2018-2023"
-author = "Uxio"
+author = "Uxio, Moisés"
 
 
 # -- General configuration ---------------------------------------------------
