@@ -897,4 +897,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.OASIS_SAPPHIRE: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 325632),  # v1.3.0
     ],
+    EthereumNetwork.EDGEWARE_MAINNET: [
+        ("0x59D06ef6A9d45a51724fB788E2a2Ed152D8CBd6F", 17984386),  # v1.3.0
+    ],
 }
