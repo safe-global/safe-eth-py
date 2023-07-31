@@ -44,7 +44,8 @@ class EtherscanClient:
         EthereumNetwork.CRONOS_TESTNET: "https://testnet.cronoscan.com",
         EthereumNetwork.CELO_MAINNET: "https://celoscan.io",
         EthereumNetwork.BASE_GOERLI_TESTNET: "https://goerli.basescan.org",
-        EthereumNetwork.NEON_EVM_DEVNET: "https://neonscan.org",
+        EthereumNetwork.NEON_EVM_DEVNET: "https://devnet.neonscan.org",
+        EthereumNetwork.NEON_EVM_MAINNET: "https://neonscan.org",
         EthereumNetwork.SEPOLIA: "https://sepolia.etherscan.io",
     }
 
@@ -71,6 +72,7 @@ class EtherscanClient:
         EthereumNetwork.CELO_MAINNET: "https://api.celoscan.io",
         EthereumNetwork.BASE_GOERLI_TESTNET: "https://api-goerli.basescan.org",
         EthereumNetwork.NEON_EVM_DEVNET: "https://devnet-api.neonscan.org",
+        EthereumNetwork.NEON_EVM_MAINNET: "https://api.neonscan.org",
         EthereumNetwork.SEPOLIA: "https://api-sepolia.etherscan.io",
     }
     HTTP_HEADERS = {
