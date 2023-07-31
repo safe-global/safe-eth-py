@@ -534,6 +534,14 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 1378154, "1.3.0+L2"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 1378155, "1.3.0"),
     ],
+    EthereumNetwork.NEON_EVM_DEVNET: [
+        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 205147021, "1.3.0+L2"),
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 205147000, "1.3.0"),
+    ],
+    EthereumNetwork.NEON_EVM_MAINNET: [
+        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 203994162, "1.3.0+L2"),
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 203994202, "1.3.0"),
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -892,5 +900,11 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.OASIS_SAPPHIRE: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 325632),  # v1.3.0
+    ],
+    EthereumNetwork.NEON_EVM_DEVNET: [
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 205146874),  # v1.3.0
+    ],
+    EthereumNetwork.NEON_EVM_MAINNET: [
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 203993869),  # v1.3.0
     ],
 }
