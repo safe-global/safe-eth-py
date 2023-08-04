@@ -182,7 +182,6 @@ class Safe:
         tx = proxy_contract.constructor(
             master_copy_address, initializer
         ).build_transaction({"from": deployer_account.address})
-        tx["gas"] = tx["gas"] * 100000
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
         )
