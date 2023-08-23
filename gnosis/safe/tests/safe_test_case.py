@@ -19,7 +19,7 @@ from gnosis.eth.contracts import (
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
-from gnosis.safe.proxy_factory import ProxyFactory
+from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV111, ProxyFactoryV130
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
 from ...eth.constants import NULL_ADDRESS
@@ -34,8 +34,8 @@ _contract_addresses = {
     "safe_V1_1_1": Safe.deploy_master_contract_v1_1_1,
     "safe_v1_3_0": Safe.deploy_master_contract_v1_3_0,
     "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
-    "proxy_factory": ProxyFactory.deploy_proxy_factory_contract,
-    "proxy_factory_V1_0_0": ProxyFactory.deploy_proxy_factory_contract_v1_0_0,
+    "proxy_factory": ProxyFactoryV130.deploy_proxy_factory_contract,
+    "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_proxy_factory_contract,
     "multi_send": MultiSend.deploy_contract,
 }
 

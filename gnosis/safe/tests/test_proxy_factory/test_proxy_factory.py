@@ -77,7 +77,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         )
 
         proxy_factory = ProxyFactory(
-            self.proxy_factory_contract_address, self.ethereum_client
+            self.proxy_factory_contract_address, self.ethereum_client, version="1.1.1"
         )
         ethereum_tx_sent = proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,

@@ -43,14 +43,15 @@ class ContractCommon:
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
         deploy_function: ContractFunction,
-        tx_parameters: Optional[TxParams] = None,
+        gas: Optional[int] = None,
+        gas_price: Optional[int] = None,
+        nonce: Optional[int] = None,
         gas_increment: Optional[int] = None,
     ):
 
-        if tx_parameters is None:
-            tx_parameters = ContractCommon.configure_tx_parameters(
-                deployer_account.address
-            )
+        tx_parameters = ContractCommon.configure_tx_parameters(
+            deployer_account.address, gas, gas_price, nonce
+        )
 
         contract_address = deploy_function.call(tx_parameters)
 
