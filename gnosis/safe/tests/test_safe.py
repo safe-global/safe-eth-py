@@ -17,7 +17,7 @@ from ..exceptions import (
     CouldNotPayGasWithToken,
     InvalidInternalTx,
 )
-from ..safe import Safe, SafeOperation
+from ..safe import Safe, SafeOperation, SafeV100, SafeV111, SafeV130
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -633,6 +633,16 @@ class TestSafe(SafeTestCaseMixin, TestCase):
                 CannotRetrieveSafeInfoException, invalid_address
             ):
                 invalid_safe.retrieve_all_info()
+
+    def test_safe_instance(self):
+        owners = [Account.create().address for _ in range(2)]
+        threshold = 2
+        safe_v1_0_0 = self.deploy_test_safe_v1_0_0(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_0_0, SafeV100))
+        safe_v1_1_1 = self.deploy_test_safe_v1_1_1(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_1_1, SafeV111))
+        safe_v1_3_0 = self.deploy_test_safe(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_3_0, SafeV130))
 
     def test_retrieve_modules(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
