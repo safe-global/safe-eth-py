@@ -61,6 +61,7 @@ class BlockscoutClient:
         EthereumNetwork.CROSSBELL: "https://scan.crossbell.io",
         EthereumNetwork.ETHEREUM_CLASSIC_MAINNET: "https://blockscout.com/etc/mainnet/",
         EthereumNetwork.ETHEREUM_CLASSIC_TESTNET_MORDOR: "https://blockscout.com/etc/mordor/",
+        EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://sepolia-blockscout.scroll.io/",
     }
 
     def __init__(self, network: EthereumNetwork):
