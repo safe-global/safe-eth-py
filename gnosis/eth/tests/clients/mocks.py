@@ -981,6 +981,17 @@ sourcify_safe_metadata = {
     "version": 1,
 }
 
+etherscan_multisend_abi = [
+    {"inputs": [], "stateMutability": "nonpayable", "type": "constructor"},
+    {
+        "inputs": [{"internalType": "bytes", "name": "transactions", "type": "bytes"}],
+        "name": "multiSend",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+    },
+]
+
 
 etherscan_source_code_mock = [
     {
