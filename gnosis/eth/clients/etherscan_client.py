@@ -47,6 +47,7 @@ class EtherscanClient:
         EthereumNetwork.NEON_EVM_DEVNET: "https://devnet.neonscan.org",
         EthereumNetwork.NEON_EVM_MAINNET: "https://neonscan.org",
         EthereumNetwork.SEPOLIA: "https://sepolia.etherscan.io",
+        EthereumNetwork.ZKSYNC_V2: "https://explorer.zksync.io/",
     }
 
     NETWORK_WITH_API_URL = {
@@ -74,6 +75,7 @@ class EtherscanClient:
         EthereumNetwork.NEON_EVM_DEVNET: "https://devnet-api.neonscan.org",
         EthereumNetwork.NEON_EVM_MAINNET: "https://api.neonscan.org",
         EthereumNetwork.SEPOLIA: "https://api-sepolia.etherscan.io",
+        EthereumNetwork.ZKSYNC_V2: "https://block-explorer-api.mainnet.zksync.io/",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",

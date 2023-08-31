@@ -1,8 +1,10 @@
 from django.test import TestCase
 
+import pytest
+
 from ... import EthereumNetwork
 from ...clients import EtherscanClient, EtherscanRateLimitError
-from .mocks import sourcify_safe_metadata
+from .mocks import etherscan_multisend_abi, sourcify_safe_metadata
 
 
 class TestEtherscanClient(TestCase):
@@ -27,3 +29,12 @@ class TestEtherscanClient(TestCase):
             self.assertIsNone(etherscan_api.get_contract_metadata(random_address))
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
+
+    @pytest.mark.xfail(reason="Test might fail due to third-party service issues")
+    def test_etherscan_get_abi_zksync(self):
+        multisend_address = "0x0dFcccB95225ffB03c6FBB2559B530C2B7C8A912"
+        etherscan_api = EtherscanClient(EthereumNetwork(324))
+        self.assertEqual(
+            etherscan_api.get_contract_abi(multisend_address),
+            etherscan_multisend_abi,
+        )
