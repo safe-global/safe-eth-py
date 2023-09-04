@@ -76,7 +76,7 @@ class SafeInfo:
     version: str
 
 
-class SafeCommon(ContractCommon):
+class SafeBase(ContractCommon):
     """
     Collection of methods and utilies to handle a Safe
     """
@@ -815,7 +815,7 @@ class SafeCommon(ContractCommon):
         return EthereumTxSent(tx_hash, tx, None)
 
 
-class SafeV130(SafeCommon):
+class SafeV130(SafeBase):
     @cached_property
     def contract(self) -> Contract:
         return get_safe_V1_3_0_contract(self.w3, address=self.address)
@@ -838,7 +838,7 @@ class SafeV130(SafeCommon):
         )
 
 
-class SafeV111(SafeCommon):
+class SafeV111(SafeBase):
     @cached_property
     def contract(self) -> Contract:
         return get_safe_V1_1_1_contract(self.w3, address=self.address)
@@ -861,7 +861,7 @@ class SafeV111(SafeCommon):
         )
 
 
-class SafeV100(SafeCommon):
+class SafeV100(SafeBase):
     @cached_property
     def contract(self) -> Contract:
         return get_safe_V1_0_0_contract(self.w3, address=self.address)
@@ -950,7 +950,7 @@ class SafeV100(SafeCommon):
             raise CannotRetrieveSafeInfoException(self.address) from e
 
 
-class SafeV001(SafeCommon):
+class SafeV001(SafeBase):
     @cached_property
     def contract(self) -> Contract:
         return get_safe_V0_0_1_contract(self.w3, address=self.address)

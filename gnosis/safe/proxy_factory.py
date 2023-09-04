@@ -2,6 +2,7 @@ from typing import Optional
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
+from web3 import Web3
 
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contract_common import ContractCommon
@@ -19,7 +20,7 @@ from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 from gnosis.util import cache
 
 
-class ProxyFactoryCommon(ContractCommon):
+class ProxyFactoryBase(ContractCommon):
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert fast_is_checksum_address(address), (
             "%s proxy factory address not valid" % address
@@ -111,6 +112,26 @@ class ProxyFactoryCommon(ContractCommon):
             nonce,
         )
 
+    def get_contract(self, address: Optional[ChecksumAddress] = None):
+        address = address or self.address
+        return self.get_proxy_factory_fn(self.ethereum_client.w3, address)
+
+    @classmethod
+    def deploy_proxy_factory_contract(
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
+    ) -> EthereumTxSent:
+        """
+        Deploy proxy factory contract
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum Account
+        :return: deployed contract address
+        """
+        proxy_factory_contract = cls.get_proxy_factory_fn(ethereum_client.w3)
+        return cls.deploy_contract(
+            ethereum_client, deployer_account, proxy_factory_contract
+        )
+
     @cache
     def get_proxy_runtime_code(self, address: Optional[ChecksumAddress] = None):
         """
@@ -120,70 +141,22 @@ class ProxyFactoryCommon(ContractCommon):
         return self.get_contract(address=address).functions.proxyRuntimeCode().call()
 
 
-class ProxyFactoryV100(ProxyFactoryCommon):
-    @classmethod
-    def deploy_proxy_factory_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy proxy factory contract v1.0.0
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum Account
-        :return: deployed contract address
-        """
-        proxy_factory_contract = get_proxy_factory_V1_0_0_contract(ethereum_client.w3)
-        return cls.deploy_contract(
-            ethereum_client, deployer_account, proxy_factory_contract
-        )
-
-    def get_contract(self, address: Optional[ChecksumAddress] = None):
-        address = address or self.address
-        return get_proxy_factory_V1_0_0_contract(self.ethereum_client.w3, address)
+class ProxyFactoryV100(ProxyFactoryBase):
+    @staticmethod
+    def get_proxy_factory_fn(w3: Web3, address: Optional[str] = None):
+        return get_proxy_factory_V1_0_0_contract(w3, address)
 
 
-class ProxyFactoryV111(ProxyFactoryCommon):
-    @classmethod
-    def deploy_proxy_factory_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy proxy factory contract v1.1.1
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum Account
-        :return: deployed contract address
-        """
-        proxy_factory_contract = get_proxy_factory_V1_1_1_contract(ethereum_client.w3)
-        return cls.deploy_contract(
-            ethereum_client, deployer_account, proxy_factory_contract
-        )
-
-    def get_contract(self, address: Optional[ChecksumAddress] = None):
-        address = address or self.address
-        return get_proxy_factory_V1_1_1_contract(self.ethereum_client.w3, address)
+class ProxyFactoryV111(ProxyFactoryBase):
+    @staticmethod
+    def get_proxy_factory_fn(w3: Web3, address: Optional[str] = None):
+        return get_proxy_factory_V1_1_1_contract(w3, address)
 
 
-class ProxyFactoryV130(ProxyFactoryCommon):
-    @classmethod
-    def deploy_proxy_factory_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy proxy factory contract v1.3.0
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum Account
-        :return: deployed contract address
-        """
-        proxy_factory_contract = get_proxy_factory_V1_3_0_contract(ethereum_client.w3)
-        return cls.deploy_contract(
-            ethereum_client, deployer_account, proxy_factory_contract
-        )
-
-    def get_contract(self, address: Optional[ChecksumAddress] = None):
-        address = address or self.address
-        return get_proxy_factory_V1_3_0_contract(self.ethereum_client.w3, address)
+class ProxyFactoryV130(ProxyFactoryBase):
+    @staticmethod
+    def get_proxy_factory_fn(w3: Web3, address: Optional[str] = None):
+        return get_proxy_factory_V1_3_0_contract(w3, address)
 
 
 class ProxyFactory:
@@ -194,7 +167,10 @@ class ProxyFactory:
     }
 
     def __new__(
-        cls, address: ChecksumAddress, ethereum_client: EthereumClient, version=None
+        cls,
+        address: ChecksumAddress,
+        ethereum_client: EthereumClient,
+        version: str = "1.3.0",
     ):
         # Return default version 1.3.0
         proxy_factory_version = cls.versions.get(version, ProxyFactoryV130)
