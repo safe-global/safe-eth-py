@@ -109,7 +109,6 @@ class ProxyFactoryCommon(ContractCommon):
             gas,
             gas_price,
             nonce,
-            gas_increment=50000,
         )
 
     @cache

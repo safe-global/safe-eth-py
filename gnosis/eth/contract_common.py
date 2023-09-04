@@ -46,7 +46,6 @@ class ContractCommon:
         gas: Optional[int] = None,
         gas_price: Optional[int] = None,
         nonce: Optional[int] = None,
-        gas_increment: Optional[int] = None,
     ):
 
         tx_parameters = ContractCommon.configure_tx_parameters(
@@ -56,9 +55,6 @@ class ContractCommon:
         contract_address = deploy_function.call(tx_parameters)
 
         tx = deploy_function.build_transaction(tx_parameters)
-        # Adjust gas
-        if gas_increment:
-            tx["gas"] = tx["gas"] + gas_increment
 
         tx_hash = ethereum_client.send_unsigned_transaction(
             tx, private_key=deployer_account.key
