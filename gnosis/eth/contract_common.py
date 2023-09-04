@@ -17,7 +17,7 @@ class ContractCommon:
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
         contract: Contract,
-    ):
+    ) -> EthereumTxSent:
         tx = contract.constructor().build_transaction(
             {"from": deployer_account.address}
         )

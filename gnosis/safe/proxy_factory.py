@@ -71,7 +71,6 @@ class ProxyFactoryCommon(ContractCommon):
             master_copy, initializer
         )
 
-        # Auto estimation of gas does not work. We use a little more gas just in case (gas_increment)
         return self.deploy_contract_with_deploy_function(
             self.ethereum_client, deployer_account, create_proxy_fn, gas, gas_price
         )
@@ -103,7 +102,6 @@ class ProxyFactoryCommon(ContractCommon):
             master_copy, initializer, salt_nonce
         )
 
-        # Auto estimation of gas does not work. We use a little more gas just in case (gas_increment)
         return self.deploy_contract_with_deploy_function(
             self.ethereum_client,
             deployer_account,

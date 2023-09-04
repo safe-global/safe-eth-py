@@ -78,7 +78,7 @@ class SafeInfo:
 
 class SafeCommon(ContractCommon):
     """
-    Class to manage a Safe
+    Collection of methods and utilies to handle a Safe
     """
 
     # keccak256("fallback_manager.handler.address")
