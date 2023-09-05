@@ -5,7 +5,6 @@ from eth_typing import ChecksumAddress
 from web3 import Web3
 
 from gnosis.eth import EthereumClient, EthereumTxSent
-from gnosis.eth.contract_common import ContractCommon
 from gnosis.eth.contracts import (
     get_paying_proxy_deployed_bytecode,
     get_proxy_1_0_0_deployed_bytecode,
@@ -16,6 +15,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
 )
+from gnosis.eth.contracts.contract_common import ContractCommon
 from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 from gnosis.util import cache
 

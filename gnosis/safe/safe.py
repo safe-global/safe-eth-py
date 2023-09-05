@@ -28,6 +28,7 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
 )
+from gnosis.eth.contracts.contract_common import ContractCommon
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
@@ -36,7 +37,6 @@ from gnosis.eth.utils import (
 )
 from gnosis.safe.proxy_factory import ProxyFactory
 
-from ..eth.contract_common import ContractCommon
 from ..eth.typing import EthereumData
 from .exceptions import (
     CannotEstimateGas,
