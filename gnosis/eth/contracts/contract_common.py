@@ -3,7 +3,6 @@ from typing import Optional
 
 from eth_account.signers.local import LocalAccount
 from web3.contract import Contract
-from web3.contract.contract import ContractFunction
 from web3.types import TxParams
 
 from gnosis.eth import EthereumClient, EthereumTxSent
@@ -35,29 +34,6 @@ class ContractCommon:
             "Deployed Contract=%s by %s",
             contract_address,
             deployer_account.address,
-        )
-        return EthereumTxSent(tx_hash, tx, contract_address)
-
-    @staticmethod
-    def deploy_contract_with_deploy_function(
-        ethereum_client: EthereumClient,
-        deployer_account: LocalAccount,
-        deploy_function: ContractFunction,
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        nonce: Optional[int] = None,
-    ):
-
-        tx_parameters = ContractCommon.configure_tx_parameters(
-            deployer_account.address, gas, gas_price, nonce
-        )
-
-        contract_address = deploy_function.call(tx_parameters)
-
-        tx = deploy_function.build_transaction(tx_parameters)
-
-        tx_hash = ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
         )
         return EthereumTxSent(tx_hash, tx, contract_address)
 

@@ -72,9 +72,19 @@ class ProxyFactoryBase(ContractCommon):
             master_copy, initializer
         )
 
-        return self.deploy_contract_with_deploy_function(
-            self.ethereum_client, deployer_account, create_proxy_fn, gas, gas_price
+        tx_parameters = self.configure_tx_parameters(
+            deployer_account.address, gas, gas_price
         )
+
+        contract_address = create_proxy_fn.call(tx_parameters)
+
+        tx = create_proxy_fn.build_transaction(tx_parameters)
+
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=deployer_account.key
+        )
+
+        return EthereumTxSent(tx_hash, tx, contract_address)
 
     def deploy_proxy_contract_with_nonce(
         self,
@@ -103,14 +113,18 @@ class ProxyFactoryBase(ContractCommon):
             master_copy, initializer, salt_nonce
         )
 
-        return self.deploy_contract_with_deploy_function(
-            self.ethereum_client,
-            deployer_account,
-            create_proxy_fn,
-            gas,
-            gas_price,
-            nonce,
+        tx_parameters = self.configure_tx_parameters(
+            deployer_account.address, gas, gas_price, nonce
         )
+
+        contract_address = create_proxy_fn.call(tx_parameters)
+
+        tx = create_proxy_fn.build_transaction(tx_parameters)
+
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=deployer_account.key
+        )
+        return EthereumTxSent(tx_hash, tx, contract_address)
 
     def get_contract(self, address: Optional[ChecksumAddress] = None):
         address = address or self.address
