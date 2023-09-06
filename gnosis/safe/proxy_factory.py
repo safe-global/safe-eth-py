@@ -1,8 +1,10 @@
-from typing import Optional
+from abc import ABCMeta, abstractmethod
+from typing import Callable, Optional
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
 from web3 import Web3
+from web3.contract.contract import Contract, ContractFunction
 
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import (
@@ -20,7 +22,7 @@ from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 from gnosis.util import cache
 
 
-class ProxyFactoryBase(ContractCommon):
+class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
     def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert fast_is_checksum_address(address), (
             "%s proxy factory address not valid" % address
@@ -29,11 +31,24 @@ class ProxyFactoryBase(ContractCommon):
         self.w3 = ethereum_client.w3
         self.address = address
 
+    @abstractmethod
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        """
+        :return: Contract function to get the proper ProxyFactory contract
+        """
+        raise NotImplementedError
+
+    @cache
+    def get_contract(self, address: Optional[ChecksumAddress] = None):
+        address = address or self.address
+        return self.get_contract_fn()(self.ethereum_client.w3, address)
+
     def check_proxy_code(self, address: ChecksumAddress) -> bool:
         """
-        Check if proxy is valid
+        Check if proxy bytecode matches any of the deployed by the supported Proxy Factories
+
         :param address: Ethereum address to check
-        :return: True if proxy is valid, False otherwise
+        :return: ``True`` if proxy is valid, ``False`` otherwise
         """
 
         deployed_proxy_code = self.w3.eth.get_code(address)
@@ -50,6 +65,36 @@ class ProxyFactoryBase(ContractCommon):
                 return True
         return False
 
+    def _deploy_proxy_contract(
+        self,
+        deployer_account: LocalAccount,
+        deploy_fn: ContractFunction,
+        gas: Optional[int] = None,
+        gas_price: Optional[int] = None,
+        nonce: Optional[int] = None,
+    ) -> EthereumTxSent:
+        """
+        Common logic for `createProxy` and `createProxyWithNonce`
+
+        :param deployer_account:
+        :param deploy_fn:
+        :param gas:
+        :param gas_price:
+        :param nonce:
+        :return: EthereumTxSent
+        """
+
+        tx_params = self.configure_tx_parameters(
+            deployer_account.address, gas=gas, gas_price=gas_price, nonce=nonce
+        )
+        contract_address = deploy_fn.call(tx_params)
+        tx = deploy_fn.build_transaction(tx_params)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=deployer_account.key
+        )
+
+        return EthereumTxSent(tx_hash, tx, contract_address)
+
     def deploy_proxy_contract(
         self,
         deployer_account: LocalAccount,
@@ -57,34 +102,26 @@ class ProxyFactoryBase(ContractCommon):
         initializer: bytes = b"",
         gas: Optional[int] = None,
         gas_price: Optional[int] = None,
+        nonce: Optional[int] = None,
     ) -> EthereumTxSent:
         """
-        Deploy proxy contract via ProxyFactory using `createProxy` function
+        Deploy proxy contract via ProxyFactory using `createProxy` function (CREATE opcode)
+
         :param deployer_account: Ethereum account
         :param master_copy: Address the proxy will point at
-        :param initializer: Initializer
+        :param initializer: Initializer for the deployed proxy
         :param gas: Gas
         :param gas_price: Gas Price
+        :param nonce: Nonce
         :return: EthereumTxSent
         """
-        proxy_factory_contract = self.get_contract()
-        create_proxy_fn = proxy_factory_contract.functions.createProxy(
+        create_proxy_fn = self.get_contract().functions.createProxy(
             master_copy, initializer
         )
 
-        tx_parameters = self.configure_tx_parameters(
-            deployer_account.address, gas, gas_price
+        return self._deploy_proxy_contract(
+            deployer_account, create_proxy_fn, gas=gas, gas_price=gas_price, nonce=nonce
         )
-
-        contract_address = create_proxy_fn.call(tx_parameters)
-
-        tx = create_proxy_fn.build_transaction(tx_parameters)
-
-        tx_hash = self.ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
-        )
-
-        return EthereumTxSent(tx_hash, tx, contract_address)
 
     def deploy_proxy_contract_with_nonce(
         self,
@@ -97,51 +134,37 @@ class ProxyFactoryBase(ContractCommon):
         nonce: Optional[int] = None,
     ) -> EthereumTxSent:
         """
-        Deploy proxy contract via Proxy Factory using `createProxyWithNonce` (create2)
+        Deploy proxy contract via Proxy Factory using `createProxyWithNonce` (CREATE2 opcode)
 
         :param deployer_account: Ethereum account
         :param master_copy: Address the proxy will point at
-        :param initializer: Data for safe creation
-        :param salt_nonce: Uint256 for `create2` salt
+        :param initializer: Initializer for the deployed proxy
+        :param salt_nonce: Uint256 for ``CREATE2`` salt
         :param gas: Gas
         :param gas_price: Gas Price
         :param nonce: Nonce
-        :return: Tuple(tx-hash, tx, deployed contract address)
+        :return: EthereumTxSent
         """
-        proxy_factory_contract = self.get_contract()
-        create_proxy_fn = proxy_factory_contract.functions.createProxyWithNonce(
+        create_proxy_fn = self.get_contract().functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
         )
 
-        tx_parameters = self.configure_tx_parameters(
-            deployer_account.address, gas, gas_price, nonce
+        return self._deploy_proxy_contract(
+            deployer_account, create_proxy_fn, gas=gas, gas_price=gas_price, nonce=nonce
         )
-
-        contract_address = create_proxy_fn.call(tx_parameters)
-
-        tx = create_proxy_fn.build_transaction(tx_parameters)
-
-        tx_hash = self.ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
-        )
-        return EthereumTxSent(tx_hash, tx, contract_address)
-
-    def get_contract(self, address: Optional[ChecksumAddress] = None):
-        address = address or self.address
-        return self.get_proxy_factory_fn(self.ethereum_client.w3, address)
 
     @classmethod
     def deploy_proxy_factory_contract(
         cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
-        Deploy proxy factory contract
+        Deploy Proxy Factory contract
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
         :return: deployed contract address
         """
-        proxy_factory_contract = cls.get_proxy_factory_fn(ethereum_client.w3)
+        proxy_factory_contract = cls.get_contract_fn(cls)(ethereum_client.w3)
         return cls.deploy_contract(
             ethereum_client, deployer_account, proxy_factory_contract
         )
@@ -156,21 +179,18 @@ class ProxyFactoryBase(ContractCommon):
 
 
 class ProxyFactoryV100(ProxyFactoryBase):
-    @staticmethod
-    def get_proxy_factory_fn(w3: Web3, address: Optional[str] = None):
-        return get_proxy_factory_V1_0_0_contract(w3, address)
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        return get_proxy_factory_V1_0_0_contract
 
 
 class ProxyFactoryV111(ProxyFactoryBase):
-    @staticmethod
-    def get_proxy_factory_fn(w3: Web3, address: Optional[str] = None):
-        return get_proxy_factory_V1_1_1_contract(w3, address)
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        return get_proxy_factory_V1_1_1_contract
 
 
 class ProxyFactoryV130(ProxyFactoryBase):
-    @staticmethod
-    def get_proxy_factory_fn(w3: Web3, address: Optional[str] = None):
-        return get_proxy_factory_V1_3_0_contract(w3, address)
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        return get_proxy_factory_V1_3_0_contract
 
 
 class ProxyFactory:

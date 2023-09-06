@@ -37,8 +37,8 @@ class ContractCommon:
         )
         return EthereumTxSent(tx_hash, tx, contract_address)
 
-    @staticmethod
     def configure_tx_parameters(
+        self,
         from_address: str,
         gas: Optional[int] = None,
         gas_price: Optional[int] = None,

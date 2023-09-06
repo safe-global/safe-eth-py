@@ -144,7 +144,7 @@ def tx_with_exception_handling(func):
 class EthereumTxSent(NamedTuple):
     tx_hash: bytes
     tx: TxParams
-    contract_address: Optional[str]
+    contract_address: Optional[ChecksumAddress]
 
 
 class Erc20Info(NamedTuple):
