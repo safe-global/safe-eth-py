@@ -63,22 +63,6 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             safe.check_funds_for_tx_gas(safe_tx_gas, base_gas, gas_price, NULL_ADDRESS)
         )
 
-    def test_estimate_safe_creation(self):
-        number_owners = 4
-        gas_price = self.gas_price
-        payment_token = NULL_ADDRESS
-        safe_creation_estimate = Safe.estimate_safe_creation(
-            self.ethereum_client,
-            self.safe_contract_V0_0_1_address,
-            number_owners,
-            gas_price,
-            payment_token,
-        )
-        self.assertGreater(safe_creation_estimate.gas_price, 0)
-        self.assertGreater(safe_creation_estimate.gas, 0)
-        self.assertGreater(safe_creation_estimate.payment, 0)
-        self.assertEqual(safe_creation_estimate.payment_token, payment_token)
-
     def test_estimate_safe_creation_2(self):
         number_owners = 4
         gas_price = self.gas_price
@@ -548,12 +532,6 @@ class TestSafe(SafeTestCaseMixin, TestCase):
                 to, 200
             ).build_transaction({"gas": 0})["data"]
             safe.estimate_tx_gas_with_web3(deployed_erc20.address, value, transfer_data)
-
-    def test_estimate_tx_operational_gas(self):
-        for threshold in range(2, 5):
-            safe = self.deploy_test_safe(threshold=threshold, number_owners=6)
-            tx_signature_gas_estimation = safe.estimate_tx_operational_gas(0)
-            self.assertGreaterEqual(tx_signature_gas_estimation, 20000)
 
     def test_retrieve_code(self):
         self.assertEqual(

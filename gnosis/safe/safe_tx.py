@@ -53,7 +53,7 @@ class SafeTx:
         refund_receiver: Optional[str],
         signatures: Optional[bytes] = None,
         safe_nonce: Optional[int] = None,
-        safe_version: str = None,
+        safe_version: Optional[str] = None,
         chain_id: Optional[int] = None,
     ):
         """

@@ -1,5 +1,6 @@
 import dataclasses
 import math
+from abc import ABCMeta, abstractmethod
 from enum import Enum
 from functools import cached_property
 from logging import getLogger
@@ -33,7 +34,6 @@ from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
     fast_keccak,
-    get_eth_address_with_key,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
 
@@ -43,8 +43,7 @@ from .exceptions import (
     CannotRetrieveSafeInfoException,
     InvalidPaymentToken,
 )
-from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
-from .safe_creation_tx import InvalidERC20Token, SafeCreationTx
+from .safe_create2_tx import InvalidERC20Token, SafeCreate2Tx, SafeCreate2TxBuilder
 from .safe_tx import SafeTx
 
 logger = getLogger(__name__)
@@ -76,7 +75,7 @@ class SafeInfo:
     version: str
 
 
-class SafeBase(ContractCommon):
+class SafeBase(ContractCommon, metaclass=ABCMeta):
     """
     Collection of methods and utilies to handle a Safe
     """
@@ -95,9 +94,7 @@ class SafeBase(ContractCommon):
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
 
-    def __init__(
-        self, address: ChecksumAddress, ethereum_client: EthereumClient, version: str
-    ):
+    def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
         """
         :param address: Safe address
         :param ethereum_client: Initialized ethereum client
@@ -106,10 +103,21 @@ class SafeBase(ContractCommon):
         self.ethereum_client = ethereum_client
         self.w3 = self.ethereum_client.w3
         self.address = address
-        self.version = version
 
     def __str__(self):
         return f"Safe={self.address}"
+
+    @property
+    @abstractmethod
+    def version(self) -> str:
+        """
+        :return: String with semantic version
+        """
+        raise NotImplementedError
+
+    @cached_property
+    def chain_id(self) -> int:
+        return self.ethereum_client.get_chain_id()
 
     def retrieve_version(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
@@ -374,7 +382,7 @@ class SafeBase(ContractCommon):
         self, to: str, value: int, data: Union[bytes, str], operation: int
     ):
         """
-        Try to get an estimation with Safe's `requiredTxGas`. If estimation if successful, try to set a gas limit and
+        Try to get an estimation with Safe's `requiredTxGas`. If estimation is successful, try to set a gas limit and
         estimate again. If gas estimation is ok, same gas estimation should be returned, if it's less than required
         estimation will not be completed, so estimation was not accurate and gas limit needs to be increased.
 
@@ -459,28 +467,11 @@ class SafeBase(ContractCommon):
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def estimate_tx_operational_gas(self, data_bytes_length: int) -> int:
-        """
-        DEPRECATED. `estimate_tx_base_gas` already includes this.
-        Estimates the gas for the verification of the signatures and other safe related tasks
-        before and after executing a transaction.
-        Calculation will be the sum of:
-
-            - Base cost of 15000 gas
-            - 100 of gas per word of `data_bytes`
-            - Validate the signatures 5000 * threshold (ecrecover for ecdsa ~= 4K gas)
-
-        :param data_bytes_length: Length of the data (in bytes, so `len(HexBytes('0x12'))` would be `1`
-        :return: gas costs per signature * threshold of Safe
-        """
-        threshold = self.retrieve_threshold()
-        return 15000 + data_bytes_length // 32 * 100 + 5000 * threshold
-
     def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
         """
         Return hash of a message that can be signed by owners.
 
-        :param message: Message that should be hashed
+        :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
         :return: Message hash
         """
 
@@ -661,7 +652,7 @@ class SafeBase(ContractCommon):
 
     def retrieve_is_message_signed(
         self,
-        message_hash: bytes,
+        message_hash: Hash32,
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> bool:
         return self.contract.functions.signedMessages(message_hash).call(
@@ -707,7 +698,6 @@ class SafeBase(ContractCommon):
         refund_receiver: str = NULL_ADDRESS,
         signatures: bytes = b"",
         safe_nonce: Optional[int] = None,
-        safe_version: Optional[str] = None,
     ) -> SafeTx:
         """
         Allows to execute a Safe transaction confirmed by required number of owners and then pays the account
@@ -722,7 +712,7 @@ class SafeBase(ContractCommon):
             (e.g. base transaction fee, signature check, payment of the refund)
         :param gas_price: Gas price that should be used for the payment calculation
         :param gas_token: Token address (or `0x000..000` if ETH) that is used for the payment
-        :param refund_receiver: Address of receiver of gas payment (or `0x000..000`  if tx.origin).
+        :param refund_receiver: Address of receiver of gas payment (or `0x000..000` if tx.origin).
         :param signatures: Packed signature data ({bytes32 r}{bytes32 s}{uint8 v})
         :param safe_nonce: Nonce of the safe (to calculate hash)
         :param safe_version: Safe version (to calculate hash)
@@ -731,7 +721,6 @@ class SafeBase(ContractCommon):
 
         if safe_nonce is None:
             safe_nonce = self.retrieve_nonce()
-        safe_version = safe_version or self.retrieve_version()
         return SafeTx(
             self.ethereum_client,
             self.address,
@@ -746,7 +735,8 @@ class SafeBase(ContractCommon):
             refund_receiver,
             signatures=signatures,
             safe_nonce=safe_nonce,
-            safe_version=safe_version,
+            safe_version=self.version,
+            chain_id=self.chain_id,
         )
 
     def send_multisig_tx(
@@ -815,53 +805,58 @@ class SafeBase(ContractCommon):
         return EthereumTxSent(tx_hash, tx, None)
 
 
-class SafeV130(SafeBase):
+class SafeV001(SafeBase):
+    @property
+    def version(self):
+        return "0.0.1"
+
     @cached_property
     def contract(self) -> Contract:
-        return get_safe_V1_3_0_contract(self.w3, address=self.address)
+        return get_safe_V0_0_1_contract(self.w3, address=self.address)
 
-    @classmethod
+    @staticmethod
     def deploy_master_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
+        ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
-        Deploy master contract v1.3.0. Takes deployer_account (if unlocked in the node) or the deployer private key
-        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+        Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
         """
 
-        return cls._deploy_master_contract(
-            ethereum_client, deployer_account, get_safe_V1_3_0_contract
+        safe_contract = get_safe_V0_0_1_contract(ethereum_client.w3)
+        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
+            "data"
+        ]
+        initializer_data = safe_contract.functions.setup(
+            # We use 2 owners that nobody controls for the master copy
+            [
+                "0x0000000000000000000000000000000000000002",
+                "0x0000000000000000000000000000000000000003",
+            ],
+            2,  # Threshold. Maximum security
+            NULL_ADDRESS,  # Address for optional DELEGATE CALL
+            b"",  # Data for optional DELEGATE CALL
+        ).build_transaction({"to": NULL_ADDRESS})["data"]
+
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
+            deployer_account, constructor_data, HexBytes(initializer_data)
         )
-
-
-class SafeV111(SafeBase):
-    @cached_property
-    def contract(self) -> Contract:
-        return get_safe_V1_1_1_contract(self.w3, address=self.address)
-
-    @classmethod
-    def deploy_master_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
-        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum account
-        :return: deployed contract address
-        """
-
-        return cls._deploy_master_contract(
-            ethereum_client, deployer_account, get_safe_V1_1_1_contract
+        logger.info(
+            "Deployed and initialized Old Safe Master Contract=%s by %s",
+            ethereum_tx_sent.contract_address,
+            deployer_account.address,
         )
+        return ethereum_tx_sent
 
 
 class SafeV100(SafeBase):
+    @property
+    def version(self):
+        return "1.0.0"
+
     @cached_property
     def contract(self) -> Contract:
         return get_safe_V1_0_0_contract(self.w3, address=self.address)
@@ -950,92 +945,113 @@ class SafeV100(SafeBase):
             raise CannotRetrieveSafeInfoException(self.address) from e
 
 
-class SafeV001(SafeBase):
+class SafeV111(SafeBase):
+    @property
+    def version(self):
+        return "1.1.1"
+
     @cached_property
     def contract(self) -> Contract:
-        return get_safe_V0_0_1_contract(self.w3, address=self.address)
+        return get_safe_V1_1_1_contract(self.w3, address=self.address)
 
-    @staticmethod
+    @classmethod
     def deploy_master_contract(
-        ethereum_client: EthereumClient, deployer_account: LocalAccount
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
-        Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
         """
 
-        safe_contract = get_safe_V0_0_1_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
-            "data"
-        ]
-        initializer_data = safe_contract.functions.setup(
-            # We use 2 owners that nobody controls for the master copy
-            [
-                "0x0000000000000000000000000000000000000002",
-                "0x0000000000000000000000000000000000000003",
-            ],
-            2,  # Threshold. Maximum security
-            NULL_ADDRESS,  # Address for optional DELEGATE CALL
-            b"",  # Data for optional DELEGATE CALL
-        ).build_transaction({"to": NULL_ADDRESS})["data"]
+        return cls._deploy_master_contract(
+            ethereum_client, deployer_account, get_safe_V1_1_1_contract
+        )
 
-        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
-            deployer_account, constructor_data, HexBytes(initializer_data)
+
+class SafeV130(SafeBase):
+    @property
+    def version(self):
+        return "1.3.0"
+
+    @cached_property
+    def contract(self) -> Contract:
+        return get_safe_V1_3_0_contract(self.w3, address=self.address)
+
+    @classmethod
+    def deploy_master_contract(
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
+    ) -> EthereumTxSent:
+        """
+        Deploy master contract v1.3.0. Takes deployer_account (if unlocked in the node) or the deployer private key
+        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        return cls._deploy_master_contract(
+            ethereum_client, deployer_account, get_safe_V1_3_0_contract
         )
-        logger.info(
-            "Deployed and initialized Old Safe Master Contract=%s by %s",
-            ethereum_tx_sent.contract_address,
-            deployer_account.address,
-        )
-        return ethereum_tx_sent
 
 
 class Safe:
     versions = {
-        "1.3.0": SafeV130,
-        "1.1.1": SafeV111,
-        "1.0.0": SafeV100,
         "0.0.1": SafeV001,
+        "1.0.0": SafeV100,
+        "1.1.1": SafeV111,
+        "1.3.0": SafeV130,
     }
 
     def __new__(cls, address: ChecksumAddress, ethereum_client: EthereumClient):
         assert fast_is_checksum_address(address), "%s is not a valid address" % address
+        version: Optional[str]
         try:
             contract = get_safe_contract(ethereum_client.w3, address=address)
             version = contract.functions.VERSION().call(block_identifier="latest")
-            safe_version = cls.versions.get(version, SafeV130)
-        except (Web3Exception, ValueError) as e:
-            # Done to pass the tests, but should instanciate a not deployed safe?
-            safe_version = SafeV130
-            version = "1.3.0"
+        except (Web3Exception, ValueError):
+            version = None  # Cannot detect the version
 
+        safe_version = cls.versions.get(version, SafeV130)
         instance = super().__new__(safe_version)
-        instance.__init__(address, ethereum_client, version)
+        instance.__init__(address, ethereum_client)
         return instance
 
     @staticmethod
     def create(
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
-        master_copy_address: str,
-        owners: List[str],
+        master_copy_address: ChecksumAddress,
+        owners: List[ChecksumAddress],
         threshold: int,
-        fallback_handler: str = NULL_ADDRESS,
-        proxy_factory_address: Optional[str] = None,
-        payment_token: str = NULL_ADDRESS,
+        fallback_handler: Optional[ChecksumAddress] = NULL_ADDRESS,
+        proxy_factory_address: Optional[ChecksumAddress] = None,
+        payment_token: Optional[ChecksumAddress] = NULL_ADDRESS,
         payment: int = 0,
-        payment_receiver: str = NULL_ADDRESS,
+        payment_receiver: Optional[ChecksumAddress] = NULL_ADDRESS,
     ) -> EthereumTxSent:
         """
         Deploy new Safe proxy pointing to the specified `master_copy` address and configured
         with the provided `owners` and `threshold`. By default, payment for the deployer of the tx will be `0`.
         If `proxy_factory_address` is set deployment will be done using the proxy factory instead of calling
         the `constructor` of a new `DelegatedProxy`
-        Using `proxy_factory_address` is recommended, as it takes less gas.
-        (Testing with `Ganache` and 1 owner 261534 without proxy vs 229022 with Proxy)
+        Using `proxy_factory_address` is recommended
+
+        :param ethereum_client:
+        :param deployer_account:
+        :param master_copy_address:
+        :param owners:
+        :param threshold:
+        :param fallback_handler:
+        :param proxy_factory_address:
+        :param payment_token:
+        :param payment:
+        :param payment_receiver:
+        :return:
         """
 
         assert owners, "At least one owner must be set"
@@ -1079,12 +1095,12 @@ class Safe:
         contract_address = tx_receipt["contractAddress"]
         return EthereumTxSent(tx_hash, tx, contract_address)
 
-    @classmethod
+    @staticmethod
     def deploy_compatibility_fallback_handler(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
+        ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
-        Deploy Compatibility Fallback handler v1.3.0
+        Deploy Last compatibility Fallback handler (v1.3.0)
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
@@ -1112,39 +1128,6 @@ class Safe:
             deployer_account.address,
         )
         return ethereum_tx_sent
-
-    @staticmethod
-    def estimate_safe_creation(
-        ethereum_client: EthereumClient,
-        old_master_copy_address: str,
-        number_owners: int,
-        gas_price: int,
-        payment_token: Optional[str],
-        payment_receiver: str = NULL_ADDRESS,
-        payment_token_eth_value: float = 1.0,
-        fixed_creation_cost: Optional[int] = None,
-    ) -> SafeCreationEstimate:
-        s = 15
-        owners = [get_eth_address_with_key()[0] for _ in range(number_owners)]
-        threshold = number_owners
-        safe_creation_tx = SafeCreationTx(
-            w3=ethereum_client.w3,
-            owners=owners,
-            threshold=threshold,
-            signature_s=s,
-            master_copy=old_master_copy_address,
-            gas_price=gas_price,
-            funder=payment_receiver,
-            payment_token=payment_token,
-            payment_token_eth_value=payment_token_eth_value,
-            fixed_creation_cost=fixed_creation_cost,
-        )
-        return SafeCreationEstimate(
-            safe_creation_tx.gas,
-            safe_creation_tx.gas_price,
-            safe_creation_tx.payment,
-            safe_creation_tx.payment_token,
-        )
 
     @staticmethod
     def estimate_safe_creation_2(
@@ -1187,40 +1170,6 @@ class Safe:
             safe_creation_tx.payment,
             safe_creation_tx.payment_token,
         )
-
-    @staticmethod
-    def build_safe_creation_tx(
-        ethereum_client: EthereumClient,
-        master_copy_old_address: str,
-        s: int,
-        owners: List[str],
-        threshold: int,
-        gas_price: int,
-        payment_token: Optional[str],
-        payment_receiver: str,
-        payment_token_eth_value: float = 1.0,
-        fixed_creation_cost: Optional[int] = None,
-    ) -> SafeCreationTx:
-        try:
-            safe_creation_tx = SafeCreationTx(
-                w3=ethereum_client.w3,
-                owners=owners,
-                threshold=threshold,
-                signature_s=s,
-                master_copy=master_copy_old_address,
-                gas_price=gas_price,
-                funder=payment_receiver,
-                payment_token=payment_token,
-                payment_token_eth_value=payment_token_eth_value,
-                fixed_creation_cost=fixed_creation_cost,
-            )
-        except InvalidERC20Token as exc:
-            raise InvalidPaymentToken(
-                "Invalid payment token %s" % payment_token
-            ) from exc
-
-        assert safe_creation_tx.tx_pyethereum.nonce == 0
-        return safe_creation_tx
 
     @staticmethod
     def build_safe_create2_tx(
