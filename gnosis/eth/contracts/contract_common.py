@@ -1,42 +1,12 @@
 from logging import getLogger
 from typing import Optional
 
-from eth_account.signers.local import LocalAccount
-from web3.contract import Contract
 from web3.types import TxParams
-
-from gnosis.eth import EthereumClient, EthereumTxSent
 
 logger = getLogger(__name__)
 
 
 class ContractCommon:
-    @staticmethod
-    def deploy_contract(
-        ethereum_client: EthereumClient,
-        deployer_account: LocalAccount,
-        contract: Contract,
-    ) -> EthereumTxSent:
-        tx = contract.constructor().build_transaction(
-            {"from": deployer_account.address}
-        )
-
-        tx_hash = ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
-        )
-        tx_receipt = ethereum_client.get_transaction_receipt(
-            tx_hash, timeout=ethereum_client.slow_timeout
-        )
-        assert tx_receipt
-        assert tx_receipt["status"]
-        contract_address = tx_receipt["contractAddress"]
-        logger.info(
-            "Deployed Contract=%s by %s",
-            contract_address,
-            deployer_account.address,
-        )
-        return EthereumTxSent(tx_hash, tx, contract_address)
-
     def configure_tx_parameters(
         self,
         from_address: str,

@@ -107,13 +107,23 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
     def __str__(self):
         return f"Safe={self.address}"
 
-    @property
     @abstractmethod
-    def version(self) -> str:
+    def get_version(self) -> str:
         """
-        :return: String with semantic version
+        :return: String with Safe Master Copy semantic version, must match `retrieve_version()`
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        """
+        :return: Contract function to get the proper Safe contract
+        """
+        raise NotImplementedError
+
+    @cached_property
+    def contract(self) -> Contract:
+        return self.get_contract_fn()(self.ethereum_client.w3, self.address)
 
     @cached_property
     def chain_id(self) -> int:
@@ -136,11 +146,10 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
             return None
 
     @classmethod
-    def _deploy_master_contract(
+    def deploy_master_contract(
         cls,
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
-        contract_fn: Callable[[Web3, Optional[str]], Contract],
     ) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
@@ -151,16 +160,26 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
         :param contract_fn: get contract function
         :return: deployed contract address
         """
+        contract_fn = cls.get_contract_fn(cls)
         safe_contract = contract_fn(ethereum_client.w3)
-        ethereum_tx_sent = cls.deploy_contract(
-            ethereum_client, deployer_account, contract=safe_contract
+        constructor_data = safe_contract.constructor().build_transaction(
+            {"gas": 0, "gasPrice": 0}
+        )["data"]
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
+            deployer_account, constructor_data
         )
+        deployed_version = (
+            contract_fn(ethereum_client.w3, ethereum_tx_sent.contract_address)
+            .functions.VERSION()
+            .call()
+        )
+        assert deployed_version == cls.get_version(
+            cls
+        ), f"Deployed version {deployed_version} is not matching expected {cls.get_version(cls)} version"
 
         logger.info(
             "Deployed and initialized Safe Master Contract version=%s on address %s by %s",
-            contract_fn(ethereum_client.w3, ethereum_tx_sent.contract_address)
-            .functions.VERSION()
-            .call(),
+            deployed_version,
             ethereum_tx_sent.contract_address,
             deployer_account.address,
         )
@@ -509,14 +528,24 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
         try:
             contract = self.contract
             master_copy = self.retrieve_master_copy_address()
+            if master_copy == NULL_ADDRESS:
+                raise CannotRetrieveSafeInfoException(self.address)
+
             fallback_handler = self.retrieve_fallback_handler()
-            guard = self.retrieve_guard()
+            guard = self.retrieve_guard()  # Guard was implemented in v1.1.1
+
+            # From v1.1.1:
+            # - `GetModulesPaginated` is available
+            # - `GetModules` returns only 10 modules
+            modules_fn = (
+                contract.functions.getModulesPaginated(SENTINEL_ADDRESS, 20)
+                if hasattr(contract.functions, "getModulesPaginated")
+                else contract.functions.getModules()
+            )
 
             results = self.ethereum_client.batch_call(
                 [
-                    contract.functions.getModulesPaginated(
-                        SENTINEL_ADDRESS, 20
-                    ),  # Does not exist in version < 1.1.1
+                    modules_fn,
                     contract.functions.nonce(),
                     contract.functions.getOwners(),
                     contract.functions.getThreshold(),
@@ -527,14 +556,20 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
                 raise_exception=False,
             )
             modules_response, nonce, owners, threshold, version = results
-            if not modules_response:
-                # < 1.1.1
-                modules = self.retrieve_modules()
-            else:
+            if (
+                modules_response
+                and len(modules_response) == 2
+                and isinstance(modules_response[0], (tuple, list))
+            ):
+                # Must be a Tuple[List[ChecksumAddress], ChecksumAddress]
+                # >= v1.1.1
                 modules, next_module = modules_response
                 if modules and next_module != SENTINEL_ADDRESS:
                     # Still more elements in the list
                     modules = self.retrieve_modules()
+            else:
+                # < v1.1.1
+                modules = modules_response
 
             return SafeInfo(
                 self.address,
@@ -735,7 +770,7 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
             refund_receiver,
             signatures=signatures,
             safe_nonce=safe_nonce,
-            safe_version=self.version,
+            safe_version=self.get_version(),
             chain_id=self.chain_id,
         )
 
@@ -806,13 +841,11 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
 
 
 class SafeV001(SafeBase):
-    @property
-    def version(self):
+    def get_version(self):
         return "0.0.1"
 
-    @cached_property
-    def contract(self) -> Contract:
-        return get_safe_V0_0_1_contract(self.w3, address=self.address)
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        return get_safe_V0_0_1_contract
 
     @staticmethod
     def deploy_master_contract(
@@ -839,7 +872,7 @@ class SafeV001(SafeBase):
             2,  # Threshold. Maximum security
             NULL_ADDRESS,  # Address for optional DELEGATE CALL
             b"",  # Data for optional DELEGATE CALL
-        ).build_transaction({"to": NULL_ADDRESS})["data"]
+        ).build_transaction({"to": NULL_ADDRESS, "gas": 0, "gasPrice": 0})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -853,13 +886,11 @@ class SafeV001(SafeBase):
 
 
 class SafeV100(SafeBase):
-    @property
-    def version(self):
+    def get_version(self):
         return "1.0.0"
 
-    @cached_property
-    def contract(self) -> Contract:
-        return get_safe_V1_0_0_contract(self.w3, address=self.address)
+    def get_contract_fn(self) -> Contract:
+        return get_safe_V1_0_0_contract
 
     @staticmethod
     def deploy_master_contract(
@@ -889,7 +920,7 @@ class SafeV100(SafeBase):
             NULL_ADDRESS,  # Payment token
             0,  # Payment
             NULL_ADDRESS,  # Refund receiver
-        ).build_transaction({"to": NULL_ADDRESS})["data"]
+        ).build_transaction({"to": NULL_ADDRESS, "gas": 0, "gasPrice": 0})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -901,102 +932,21 @@ class SafeV100(SafeBase):
         )
         return ethereum_tx_sent
 
-    def retrieve_all_info(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
-    ) -> SafeInfo:
-        """
-        Get all Safe info in the same batch call.
-
-        :param block_identifier:
-        :return:
-        :raises: CannotRetrieveSafeInfoException
-        """
-        try:
-            contract = self.contract
-            master_copy = self.retrieve_master_copy_address()
-            fallback_handler = self.retrieve_fallback_handler()
-            guard = self.retrieve_guard()
-            modules = self.retrieve_modules()
-
-            results = self.ethereum_client.batch_call(
-                [
-                    contract.functions.nonce(),
-                    contract.functions.getOwners(),
-                    contract.functions.getThreshold(),
-                    contract.functions.VERSION(),
-                ],
-                from_address=self.address,
-                block_identifier=block_identifier,
-                raise_exception=False,
-            )
-            nonce, owners, threshold, version = results
-            return SafeInfo(
-                self.address,
-                fallback_handler,
-                guard,
-                master_copy,
-                modules,
-                nonce,
-                owners,
-                threshold,
-                version,
-            )
-        except (Web3Exception, ValueError) as e:
-            raise CannotRetrieveSafeInfoException(self.address) from e
-
 
 class SafeV111(SafeBase):
-    @property
-    def version(self):
+    def get_version(self):
         return "1.1.1"
 
-    @cached_property
-    def contract(self) -> Contract:
-        return get_safe_V1_1_1_contract(self.w3, address=self.address)
-
-    @classmethod
-    def deploy_master_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy master contract v1.1.1. Takes deployer_account (if unlocked in the node) or the deployer private key
-        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum account
-        :return: deployed contract address
-        """
-
-        return cls._deploy_master_contract(
-            ethereum_client, deployer_account, get_safe_V1_1_1_contract
-        )
+    def get_contract_fn(self) -> Contract:
+        return get_safe_V1_1_1_contract
 
 
 class SafeV130(SafeBase):
-    @property
-    def version(self):
+    def get_version(self):
         return "1.3.0"
 
-    @cached_property
-    def contract(self) -> Contract:
-        return get_safe_V1_3_0_contract(self.w3, address=self.address)
-
-    @classmethod
-    def deploy_master_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy master contract v1.3.0. Takes deployer_account (if unlocked in the node) or the deployer private key
-        Safe with version > v1.1.1 doesn't need to be initialized as it already has a constructor
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum account
-        :return: deployed contract address
-        """
-
-        return cls._deploy_master_contract(
-            ethereum_client, deployer_account, get_safe_V1_3_0_contract
-        )
+    def get_contract_fn(self) -> Contract:
+        return get_safe_V1_3_0_contract
 
 
 class Safe:

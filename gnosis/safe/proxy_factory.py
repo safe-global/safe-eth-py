@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from functools import cached_property
 from typing import Callable, Optional
 
 from eth_account.signers.local import LocalAccount
@@ -38,10 +39,9 @@ class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @cache
-    def get_contract(self, address: Optional[ChecksumAddress] = None):
-        address = address or self.address
-        return self.get_contract_fn()(self.ethereum_client.w3, address)
+    @cached_property
+    def contract(self):
+        return self.get_contract_fn()(self.ethereum_client.w3, self.address)
 
     def check_proxy_code(self, address: ChecksumAddress) -> bool:
         """
@@ -115,9 +115,7 @@ class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
         :param nonce: Nonce
         :return: EthereumTxSent
         """
-        create_proxy_fn = self.get_contract().functions.createProxy(
-            master_copy, initializer
-        )
+        create_proxy_fn = self.contract.functions.createProxy(master_copy, initializer)
 
         return self._deploy_proxy_contract(
             deployer_account, create_proxy_fn, gas=gas, gas_price=gas_price, nonce=nonce
@@ -145,7 +143,7 @@ class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
         :param nonce: Nonce
         :return: EthereumTxSent
         """
-        create_proxy_fn = self.get_contract().functions.createProxyWithNonce(
+        create_proxy_fn = self.contract.functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
         )
 
@@ -165,17 +163,19 @@ class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
         :return: deployed contract address
         """
         proxy_factory_contract = cls.get_contract_fn(cls)(ethereum_client.w3)
-        return cls.deploy_contract(
-            ethereum_client, deployer_account, proxy_factory_contract
+        constructor_data = proxy_factory_contract.constructor().build_transaction(
+            {"gas": 0, "gasPrice": 0}
+        )["data"]
+        return ethereum_client.deploy_and_initialize_contract(
+            deployer_account, constructor_data
         )
 
     @cache
-    def get_proxy_runtime_code(self, address: Optional[ChecksumAddress] = None):
+    def get_proxy_runtime_code(self):
         """
         Get runtime code for current proxy factory
         """
-        address = address or self.address
-        return self.get_contract(address=address).functions.proxyRuntimeCode().call()
+        return self.contract.functions.proxyRuntimeCode().call()
 
 
 class ProxyFactoryV100(ProxyFactoryBase):
