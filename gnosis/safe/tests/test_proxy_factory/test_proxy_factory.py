@@ -5,9 +5,20 @@ from django.test import TestCase
 from eth_account import Account
 
 from gnosis.eth import EthereumClient
+from gnosis.eth.contracts import (
+    get_proxy_1_0_0_deployed_bytecode,
+    get_proxy_1_1_1_deployed_bytecode,
+    get_proxy_1_3_0_deployed_bytecode,
+)
 from gnosis.eth.tests.utils import just_test_if_mainnet_node
+from gnosis.eth.utils import compare_byte_code
 from gnosis.safe import Safe
-from gnosis.safe.proxy_factory import ProxyFactory
+from gnosis.safe.proxy_factory import (
+    ProxyFactory,
+    ProxyFactoryV100,
+    ProxyFactoryV111,
+    ProxyFactoryV130,
+)
 from gnosis.safe.tests.safe_test_case import SafeTestCaseMixin
 from gnosis.safe.tests.utils import generate_salt_nonce
 
@@ -36,6 +47,38 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         self.assertTrue(
             self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
         )
+        # Test every version
+        versions = [
+            ("1.0.0", ProxyFactoryV100, get_proxy_1_0_0_deployed_bytecode),
+            ("1.1.1", ProxyFactoryV111, get_proxy_1_1_1_deployed_bytecode),
+            ("1.3.0", ProxyFactoryV130, get_proxy_1_3_0_deployed_bytecode),
+        ]
+        for version, ProxyFactoryVersion, get_proxy_deployed_bytecode_fn in versions:
+            with self.subTest(version=version):
+                deployed_proxy_tx = ProxyFactoryVersion.deploy_proxy_factory_contract(
+                    self.ethereum_client, self.ethereum_test_account
+                )
+                proxy_factory = ProxyFactory(
+                    deployed_proxy_tx.contract_address,
+                    self.ethereum_client,
+                    version=version,
+                )
+                deployed_proxy_contract_tx = proxy_factory.deploy_proxy_contract(
+                    self.ethereum_test_account, self.safe_contract_address
+                )
+                self.assertTrue(
+                    proxy_factory.check_proxy_code(
+                        deployed_proxy_contract_tx.contract_address
+                    )
+                )
+                self.assertTrue(
+                    compare_byte_code(
+                        get_proxy_deployed_bytecode_fn(),
+                        self.w3.eth.get_code(
+                            deployed_proxy_contract_tx.contract_address
+                        ),
+                    )
+                )
 
     def test_check_proxy_code_mainnet(self):
         mainnet_node = just_test_if_mainnet_node()
