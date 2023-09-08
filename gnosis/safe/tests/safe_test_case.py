@@ -30,13 +30,13 @@ logger = logging.getLogger(__name__)
 
 
 _contract_addresses = {
-    "safe_V0_0_1": SafeV001.deploy_master_contract,
-    "safe_V1_0_0": SafeV100.deploy_master_contract,
-    "safe_V1_1_1": SafeV111.deploy_master_contract,
-    "safe_v1_3_0": SafeV130.deploy_master_contract,
+    "safe_V0_0_1": SafeV001.deploy_contract,
+    "safe_V1_0_0": SafeV100.deploy_contract,
+    "safe_V1_1_1": SafeV111.deploy_contract,
+    "safe_v1_3_0": SafeV130.deploy_contract,
     "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
-    "proxy_factory": ProxyFactoryV130.deploy_proxy_factory_contract,
-    "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_proxy_factory_contract,
+    "proxy_factory": ProxyFactoryV130.deploy_contract,
+    "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
     "multi_send": MultiSend.deploy_contract,
 }
 

@@ -1411,7 +1411,7 @@ class EthereumClient:
         constructor_data: bytes,
         initializer_data: bytes = b"",
         check_receipt: bool = True,
-    ):
+    ) -> EthereumTxSent:
         contract_address: Optional[ChecksumAddress] = None
         for data in (constructor_data, initializer_data):
             # Because initializer_data is not mandatory
@@ -1505,6 +1505,12 @@ class EthereumClient:
 
     @staticmethod
     def estimate_data_gas(data: bytes):
+        """
+        Estimate gas costs only for "storage" of the ``data`` bytes provided
+
+        :param data:
+        :return:
+        """
         if isinstance(data, str):
             data = HexBytes(data)
 
@@ -1697,6 +1703,57 @@ class EthereumClient:
 
     def is_contract(self, contract_address: ChecksumAddress) -> bool:
         return bool(self.w3.eth.get_code(contract_address))
+
+    @staticmethod
+    def build_tx_params(
+        from_address: Optional[ChecksumAddress] = None,
+        to_address: Optional[ChecksumAddress] = None,
+        value: Optional[int] = None,
+        gas: Optional[int] = None,
+        gas_price: Optional[int] = None,
+        nonce: Optional[int] = None,
+        chain_id: Optional[int] = None,
+        tx_params: Optional[TxParams] = None,
+    ) -> TxParams:
+        """
+        Build tx params dictionary.
+        If an existing TxParams dictionary is provided the fields will be replaced by the provided ones
+
+        :param from_address:
+        :param to_address:
+        :param value:
+        :param gas:
+        :param gas_price:
+        :param nonce:
+        :param chain_id:
+        :param tx_params: An existing TxParams dictionary will be replaced by the providen values
+        :return:
+        """
+
+        tx_params: TxParams = tx_params or {}
+
+        if from_address:
+            tx_params["from"] = from_address
+
+        if to_address:
+            tx_params["to"] = to_address
+
+        if value is not None:
+            tx_params["value"] = value
+
+        if gas_price is not None:
+            tx_params["gasPrice"] = gas_price
+
+        if gas is not None:
+            tx_params["gas"] = gas
+
+        if nonce is not None:
+            tx_params["nonce"] = nonce
+
+        if chain_id is not None:
+            tx_params["chainId"] = chain_id
+
+        return tx_params
 
     @tx_with_exception_handling
     def send_transaction(self, transaction_dict: TxParams) -> HexBytes:

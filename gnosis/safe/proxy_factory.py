@@ -1,5 +1,4 @@
-from abc import ABCMeta, abstractmethod
-from functools import cached_property
+from abc import ABCMeta
 from typing import Callable, Optional
 
 from eth_account.signers.local import LocalAccount
@@ -9,6 +8,7 @@ from web3.contract.contract import Contract, ContractFunction
 
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import (
+    ContractBase,
     get_paying_proxy_deployed_bytecode,
     get_proxy_1_0_0_deployed_bytecode,
     get_proxy_1_1_1_deployed_bytecode,
@@ -18,30 +18,30 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
 )
-from gnosis.eth.contracts.contract_common import ContractCommon
-from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
+from gnosis.eth.utils import compare_byte_code
 from gnosis.util import cache
 
 
-class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
-    def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
-        assert fast_is_checksum_address(address), (
-            "%s proxy factory address not valid" % address
+class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
+    @classmethod
+    def deploy_contract(
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
+    ) -> EthereumTxSent:
+        """
+        Deploy Proxy Factory contract
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum Account
+        :return: deployed contract address
+        """
+        contract_fn = cls.get_contract_fn(cls)
+        contract = contract_fn(ethereum_client.w3)
+        constructor_data = contract.constructor().build_transaction(
+            {"gas": 0, "gasPrice": 0}
+        )["data"]
+        return ethereum_client.deploy_and_initialize_contract(
+            deployer_account, constructor_data
         )
-        self.ethereum_client = ethereum_client
-        self.w3 = ethereum_client.w3
-        self.address = address
-
-    @abstractmethod
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
-        """
-        :return: Contract function to get the proper ProxyFactory contract
-        """
-        raise NotImplementedError
-
-    @cached_property
-    def contract(self):
-        return self.get_contract_fn()(self.ethereum_client.w3, self.address)
 
     def check_proxy_code(self, address: ChecksumAddress) -> bool:
         """
@@ -84,8 +84,11 @@ class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
         :return: EthereumTxSent
         """
 
-        tx_params = self.configure_tx_parameters(
-            deployer_account.address, gas=gas, gas_price=gas_price, nonce=nonce
+        tx_params = self.ethereum_client.build_tx_params(
+            from_address=deployer_account.address,
+            gas=gas,
+            gas_price=gas_price,
+            nonce=nonce,
         )
         contract_address = deploy_fn.call(tx_params)
         tx = deploy_fn.build_transaction(tx_params)
@@ -149,25 +152,6 @@ class ProxyFactoryBase(ContractCommon, metaclass=ABCMeta):
 
         return self._deploy_proxy_contract(
             deployer_account, create_proxy_fn, gas=gas, gas_price=gas_price, nonce=nonce
-        )
-
-    @classmethod
-    def deploy_proxy_factory_contract(
-        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy Proxy Factory contract
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum Account
-        :return: deployed contract address
-        """
-        proxy_factory_contract = cls.get_contract_fn(cls)(ethereum_client.w3)
-        constructor_data = proxy_factory_contract.constructor().build_transaction(
-            {"gas": 0, "gasPrice": 0}
-        )["data"]
-        return ethereum_client.deploy_and_initialize_contract(
-            deployer_account, constructor_data
         )
 
     @cache

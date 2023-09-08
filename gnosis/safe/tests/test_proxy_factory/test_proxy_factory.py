@@ -55,7 +55,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         ]
         for version, ProxyFactoryVersion, get_proxy_deployed_bytecode_fn in versions:
             with self.subTest(version=version):
-                deployed_proxy_tx = ProxyFactoryVersion.deploy_proxy_factory_contract(
+                deployed_proxy_tx = ProxyFactoryVersion.deploy_contract(
                     self.ethereum_client, self.ethereum_test_account
                 )
                 proxy_factory = ProxyFactory(

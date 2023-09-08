@@ -21,6 +21,7 @@ from web3.types import BlockIdentifier, Wei
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from gnosis.eth.contracts import (
+    ContractBase,
     get_compatibility_fallback_handler_V1_3_0_contract,
     get_delegate_constructor_proxy_contract,
     get_safe_contract,
@@ -29,7 +30,6 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
 )
-from gnosis.eth.contracts.contract_common import ContractCommon
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
@@ -75,7 +75,7 @@ class SafeInfo:
     version: str
 
 
-class SafeBase(ContractCommon, metaclass=ABCMeta):
+class SafeBase(ContractBase, metaclass=ABCMeta):
     """
     Collection of methods and utilies to handle a Safe
     """
@@ -94,16 +94,6 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
 
-    def __init__(self, address: ChecksumAddress, ethereum_client: EthereumClient):
-        """
-        :param address: Safe address
-        :param ethereum_client: Initialized ethereum client
-        """
-
-        self.ethereum_client = ethereum_client
-        self.w3 = self.ethereum_client.w3
-        self.address = address
-
     def __str__(self):
         return f"Safe={self.address}"
 
@@ -113,17 +103,6 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
         :return: String with Safe Master Copy semantic version, must match `retrieve_version()`
         """
         raise NotImplementedError
-
-    @abstractmethod
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
-        """
-        :return: Contract function to get the proper Safe contract
-        """
-        raise NotImplementedError
-
-    @cached_property
-    def contract(self) -> Contract:
-        return self.get_contract_fn()(self.ethereum_client.w3, self.address)
 
     @cached_property
     def chain_id(self) -> int:
@@ -146,7 +125,7 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
             return None
 
     @classmethod
-    def deploy_master_contract(
+    def deploy_contract(
         cls,
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
@@ -850,7 +829,7 @@ class SafeV001(SafeBase):
         return get_safe_V0_0_1_contract
 
     @staticmethod
-    def deploy_master_contract(
+    def deploy_contract(
         ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
@@ -895,7 +874,7 @@ class SafeV100(SafeBase):
         return get_safe_V1_0_0_contract
 
     @staticmethod
-    def deploy_master_contract(
+    def deploy_contract(
         ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """

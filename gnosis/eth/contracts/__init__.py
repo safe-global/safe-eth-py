@@ -1,3 +1,4 @@
+# flake8: noqa F401
 """
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
 https://github.com/safe-global/safe-deployments/tree/main/src/assets
@@ -32,19 +33,8 @@ from web3.contract import Contract
 
 from gnosis.util import cache
 
-
-def load_contract_interface(file_name):
-    return _load_json_file(_abi_file_path(file_name))
-
-
-def _abi_file_path(file):
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), file))
-
-
-def _load_json_file(path):
-    with open(path) as f:
-        return json.load(f)
-
+from .abis.multicall import multicall_v3_abi, multicall_v3_bytecode
+from .contract_base import ContractBase
 
 current_module = sys.modules[__name__]
 contracts = {
@@ -74,6 +64,19 @@ contracts = {
 }
 
 
+def load_contract_interface(file_name):
+    return _load_json_file(_abi_file_path(file_name))
+
+
+def _abi_file_path(file):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "abis", file))
+
+
+def _load_json_file(path):
+    with open(path) as f:
+        return json.load(f)
+
+
 def generate_contract_fn(contract: Dict[str, Any]):
     """
     Dynamically generate functions to work with the contracts
@@ -90,8 +93,8 @@ def generate_contract_fn(contract: Dict[str, Any]):
     return fn
 
 
-# Anotate functions that will be generated later with `setattr` so typing does not complains
-def get_safe_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+# Anotate functions that will be generated later with `setattr` so typing does not complain
+def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
     """
     :param w3:
     :param address:
@@ -100,114 +103,152 @@ def get_safe_contract(w3: Web3, address: Optional[str] = None) -> Contract:
     return get_safe_V1_3_0_contract(w3, address=address)
 
 
-def get_safe_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_safe_V1_3_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_safe_V1_1_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_safe_V1_1_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_safe_V1_0_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_safe_V1_0_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_safe_V0_0_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_safe_V0_0_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
 def get_compatibility_fallback_handler_V1_3_0_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
-def get_erc20_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_erc20_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
     pass
 
 
-def get_erc721_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_erc721_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_erc1155_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_erc1155_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_example_erc20_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_example_erc20_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
 def get_delegate_constructor_proxy_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
-def get_multi_send_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_multi_send_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_paying_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_paying_proxy_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_proxy_factory_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     return get_proxy_factory_V1_3_0_contract(w3, address)
 
 
 def get_proxy_factory_V1_3_0_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
 def get_proxy_factory_V1_1_1_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
 def get_proxy_factory_V1_0_0_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
-def get_proxy_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_proxy_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
     pass
 
 
-def get_uniswap_exchange_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_uniswap_exchange_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_uniswap_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_uniswap_factory_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
 def get_uniswap_v2_factory_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
-def get_uniswap_v2_pair_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_uniswap_v2_pair_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
-def get_uniswap_v2_router_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_uniswap_v2_router_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 
 def get_kyber_network_proxy_contract(
-    w3: Web3, address: Optional[str] = None
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
-def get_cpk_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_cpk_factory_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
+
+
+def get_multicall_v3_contract(w3: Web3, address: Optional[ChecksumAddress] = None):
+    return w3.eth.contract(
+        address=address,
+        abi=multicall_v3_abi,
+        bytecode=multicall_v3_bytecode,
+    )
 
 
 @cache
