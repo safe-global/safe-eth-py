@@ -535,8 +535,8 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
             guard = self.retrieve_guard()  # Guard was implemented in v1.1.1
 
             # From v1.1.1:
-            # - `GetModulesPaginated` is available
-            # - `GetModules` returns only 10 modules
+            # - `getModulesPaginated` is available
+            # - `getModules` returns only 10 modules
             modules_fn = (
                 contract.functions.getModulesPaginated(SENTINEL_ADDRESS, 20)
                 if hasattr(contract.functions, "getModulesPaginated")
@@ -630,46 +630,48 @@ class SafeBase(ContractCommon, metaclass=ABCMeta):
     def retrieve_modules(
         self,
         pagination: Optional[int] = 50,
-        block_identifier: Optional[BlockIdentifier] = "latest",
         max_modules_to_retrieve: Optional[int] = 500,
+        block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> List[ChecksumAddress]:
         """
+        Get modules enabled on the Safe
+        From v1.1.1:
+          - ``getModulesPaginated`` is available
+          - ``getModules`` returns only 10 modules
+
         :param pagination: Number of modules to get per request
-        :param block_identifier:
         :param max_modules_to_retrieve: Maximum number of modules to retrieve
+        :param block_identifier:
         :return: List of module addresses
         """
-        try:
-            # Contracts with Safe version < 1.1.0 were not paginated
-            contract = get_safe_V1_0_0_contract(
-                self.ethereum_client.w3, address=self.address
-            )
-            return contract.functions.getModules().call(
+        if not hasattr(self.contract.functions, "getModulesPaginated"):
+            return self.contract.functions.getModules().call(
                 block_identifier=block_identifier
             )
-        except Web3Exception:
-            pass
 
+        # We need to iterate the module paginator
         contract = self.contract
-        address = SENTINEL_ADDRESS
+        next_module = SENTINEL_ADDRESS
         all_modules: List[ChecksumAddress] = []
 
         for _ in range(max_modules_to_retrieve // pagination):
             # If we use a `while True` loop a custom coded Safe could get us into an infinite loop
-            (modules, address) = contract.functions.getModulesPaginated(
-                address, pagination
+            (modules, next_module) = contract.functions.getModulesPaginated(
+                next_module, pagination
             ).call(block_identifier=block_identifier)
-
-            if not modules or address in (NULL_ADDRESS, SENTINEL_ADDRESS):
-                # `NULL_ADDRESS` is only seen in uninitialized Safes
-                break
 
             # Safes with version < 1.4.0 don't include the `starter address` used as pagination in the module list
             # From 1.4.0 onwards it is included, so we check for duplicated addresses before inserting
             modules_to_insert = [
-                module for module in modules + [address] if module not in all_modules
+                module
+                for module in modules + [next_module]
+                if module not in all_modules + [NULL_ADDRESS, SENTINEL_ADDRESS]
             ]
             all_modules.extend(modules_to_insert)
+
+            if not modules or next_module in (NULL_ADDRESS, SENTINEL_ADDRESS):
+                # `NULL_ADDRESS` is only seen in uninitialized Safes
+                break
         return all_modules
 
     def retrieve_is_hash_approved(
