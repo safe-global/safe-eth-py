@@ -2,6 +2,7 @@ from functools import cached_property
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
 
 from eth_account import Account
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from packaging.version import Version
 from web3.exceptions import Web3Exception
@@ -41,19 +42,19 @@ class SafeTx:
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        safe_address: str,
-        to: Optional[str],
+        safe_address: ChecksumAddress,
+        to: Optional[ChecksumAddress],
         value: int,
         data: bytes,
         operation: int,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
-        gas_token: Optional[str],
-        refund_receiver: Optional[str],
+        gas_token: Optional[ChecksumAddress],
+        refund_receiver: Optional[ChecksumAddress],
         signatures: Optional[bytes] = None,
         safe_nonce: Optional[int] = None,
-        safe_version: str = None,
+        safe_version: Optional[str] = None,
         chain_id: Optional[int] = None,
     ):
         """

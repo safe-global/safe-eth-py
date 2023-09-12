@@ -19,6 +19,10 @@ from gnosis.eth.utils import fast_is_checksum_address, mk_contract_address_2
 
 logger = getLogger(__name__)
 
+# Gas required to transfer a regular token. Assume the worst scenario with a regular token transfer without storage
+# initialized (payment_receiver no previous owner of token)
+TOKEN_TRANSFER_GAS = 60_000
+
 
 class InvalidERC20Token(Exception):
     pass
@@ -50,6 +54,7 @@ class SafeCreate2TxBuilder:
     def __init__(self, w3: Web3, master_copy_address: str, proxy_factory_address: str):
         """
         Init builder for safe creation using create2
+
         :param w3: Web3 instance
         :param master_copy_address: `Gnosis Safe` master copy address
         :param proxy_factory_address: `Gnosis Proxy Factory` address
@@ -95,6 +100,7 @@ class SafeCreate2TxBuilder:
     ):
         """
         Prepare Safe creation
+
         :param owners: Owners of the Safe
         :param threshold: Minimum number of users required to operate the Safe
         :param fallback_handler: Handler for fallback calls to the Safe
@@ -125,12 +131,14 @@ class SafeCreate2TxBuilder:
             payment_receiver=payment_receiver,
         )
 
-        magic_gas: int = self._calculate_gas(owners, safe_setup_data, payment_token)
+        calculated_gas: int = self._calculate_gas(
+            owners, safe_setup_data, payment_token
+        )
         estimated_gas: int = self._estimate_gas(
             safe_setup_data, salt_nonce, payment_token, payment_receiver
         )
-        logger.debug("Magic gas %d - Estimated gas %d" % (magic_gas, estimated_gas))
-        gas = max(magic_gas, estimated_gas)
+        logger.debug("Magic gas %d - Estimated gas %d", calculated_gas, estimated_gas)
+        gas = max(calculated_gas, estimated_gas)
 
         # Payment will be safe deploy cost
         payment = self._calculate_refund_payment(
@@ -175,23 +183,25 @@ class SafeCreate2TxBuilder:
         owners: List[str], safe_setup_data: bytes, payment_token: str
     ) -> int:
         """
-        Calculate gas manually, based on tests of previosly deployed safes
+        Calculate gas manually, based on tests of previously deployed safes
+
         :param owners: Safe owners
         :param safe_setup_data: Data for proxy setup
         :param payment_token: If payment token, we will need more gas to transfer and maybe storage if first time
         :return: total gas needed for deployment
         """
-        base_gas = 205000  # Transaction base gas
+        base_gas = 250_000  # Transaction base gas
 
-        # If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 20K.
-        # The other 1K is for overhead of making the call
+        # If we already have the token, we don't have to pay for storage, so it will be just 5K instead of 60K.
         if payment_token != NULL_ADDRESS:
-            payment_token_gas = 55000
+            payment_token_gas = TOKEN_TRANSFER_GAS
         else:
             payment_token_gas = 0
 
         data_gas = GAS_CALL_DATA_BYTE * len(safe_setup_data)  # Data gas
-        gas_per_owner = 20000  # Magic number calculated by testing and averaging owners
+        gas_per_owner = (
+            25_000  # Magic number calculated by testing and averaging owners
+        )
         return base_gas + data_gas + payment_token_gas + len(owners) * gas_per_owner
 
     @staticmethod
@@ -234,40 +244,32 @@ class SafeCreate2TxBuilder:
         payment_receiver: str,
     ) -> int:
         """
-        Gas estimation done using web3 and calling the node
-        Payment cannot be estimated, as no ether is in the address. So we add some gas later.
+        Estimate gas via `eth_estimateGas`.
+        Payment cannot be estimated, as ether/tokens don't have to be in the calculated Safe address,
+        so we add some gas later.
+
         :param initializer: Data initializer to send to GnosisSafe setup method
         :param salt_nonce: Nonce that will be used to generate the salt to calculate
         the address of the new proxy contract.
         :return: Total gas estimation
         """
 
-        # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any fund
+        # Estimate the contract deployment. We cannot estimate the refunding, as the safe address has not any funds
         gas: int = self.proxy_factory_contract.functions.createProxyWithNonce(
             self.master_copy_address, initializer, salt_nonce
         ).estimate_gas()
 
-        # It's not very relevant if is 1 or 9999
-        payment: int = 1
-
         # We estimate the refund as a new tx
         if payment_token == NULL_ADDRESS:
             # Same cost to send 1 ether than 1000
-            gas += self.w3.eth.estimate_gas(
-                {"to": payment_receiver, "value": Wei(payment)}
-            )
+            gas += self.w3.eth.estimate_gas({"to": payment_receiver, "value": Wei(1)})
         else:
-            # Top should be around 52000 when storage is needed (funder no previous owner of token),
-            # we use value 1 as we are simulating an internal call, and in that calls you don't pay for the data.
-            # If it was a new tx sending 5000 tokens would be more expensive than sending 1 because of data costs
-            gas += 55000
-            # try:
-            #     gas += get_erc20_contract(self.w3,
-            #                               payment_token).functions.transfer(payment_receiver,
-            #                                                                 payment).estimate_gas({'from':
-            #                                                                                      payment_token})
-            # except ValueError as exc:
-            #     raise InvalidERC20Token from exc
+            # Assume the worst scenario with a regular token transfer without storage
+            # initialized (payment_receiver no previous owner of token)
+            gas += 60_000
+
+        # Add a little more for overhead
+        gas += 20_000
 
         return gas
 
