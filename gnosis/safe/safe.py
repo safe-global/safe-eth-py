@@ -11,7 +11,7 @@ from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress, Hash32
+from eth_typing import ChecksumAddress, Hash32, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
@@ -184,11 +184,11 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
 
     def estimate_tx_base_gas(
         self,
-        to: str,
+        to: ChecksumAddress,
         value: int,
         data: bytes,
         operation: int,
-        gas_token: str,
+        gas_token: ChecksumAddress,
         estimated_tx_gas: int,
     ) -> int:
         """
@@ -269,7 +269,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
 
     def estimate_tx_gas_with_safe(
         self,
-        to: str,
+        to: ChecksumAddress,
         value: int,
         data: bytes,
         operation: int,
@@ -360,7 +360,9 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
             f"Received {response.status_code} - {response.content} from ethereum node"
         )
 
-    def estimate_tx_gas_with_web3(self, to: str, value: int, data: EthereumData) -> int:
+    def estimate_tx_gas_with_web3(
+        self, to: ChecksumAddress, value: int, data: EthereumData
+    ) -> int:
         """
         :param to:
         :param value:
@@ -377,7 +379,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
             ) from exc
 
     def estimate_tx_gas_by_trying(
-        self, to: str, value: int, data: Union[bytes, str], operation: int
+        self, to: ChecksumAddress, value: int, data: Union[bytes, str], operation: int
     ):
         """
         Try to get an estimation with Safe's `requiredTxGas`. If estimation is successful, try to set a gas limit and
@@ -431,7 +433,9 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
                     return block_gas_limit
         return gas_estimated
 
-    def estimate_tx_gas(self, to: str, value: int, data: bytes, operation: int) -> int:
+    def estimate_tx_gas(
+        self, to: ChecksumAddress, value: int, data: bytes, operation: int
+    ) -> int:
         """
         Estimate tx gas. Use `requiredTxGas` on the Safe contract and fallbacks to `eth_estimateGas` if that method
         fails. Note: `eth_estimateGas` cannot estimate delegate calls
@@ -703,15 +707,15 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
 
     def build_multisig_tx(
         self,
-        to: str,
+        to: ChecksumAddress,
         value: int,
         data: bytes,
         operation: int = SafeOperation.CALL.value,
         safe_tx_gas: int = 0,
         base_gas: int = 0,
         gas_price: int = 0,
-        gas_token: str = NULL_ADDRESS,
-        refund_receiver: str = NULL_ADDRESS,
+        gas_token: ChecksumAddress = NULL_ADDRESS,
+        refund_receiver: ChecksumAddress = NULL_ADDRESS,
         signatures: bytes = b"",
         safe_nonce: Optional[int] = None,
     ) -> SafeTx:
@@ -732,7 +736,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
         :param signatures: Packed signature data ({bytes32 r}{bytes32 s}{uint8 v})
         :param safe_nonce: Nonce of the safe (to calculate hash)
         :param safe_version: Safe version (to calculate hash)
-        :return:
+        :return: SafeTx
         """
 
         if safe_nonce is None:
@@ -757,17 +761,17 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
 
     def send_multisig_tx(
         self,
-        to: str,
+        to: ChecksumAddress,
         value: int,
         data: bytes,
         operation: int,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
-        gas_token: str,
-        refund_receiver: str,
+        gas_token: ChecksumAddress,
+        refund_receiver: ChecksumAddress,
         signatures: bytes,
-        tx_sender_private_key: str,
+        tx_sender_private_key: HexStr,
         tx_gas=None,
         tx_gas_price=None,
         block_identifier: Optional[BlockIdentifier] = "latest",
