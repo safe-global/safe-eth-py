@@ -5,12 +5,22 @@ from django.test import TestCase
 from eth_account import Account
 
 from gnosis.eth import EthereumClient
+from gnosis.eth.contracts import (
+    get_proxy_1_0_0_deployed_bytecode,
+    get_proxy_1_1_1_deployed_bytecode,
+    get_proxy_1_3_0_deployed_bytecode,
+)
 from gnosis.eth.tests.utils import just_test_if_mainnet_node
+from gnosis.eth.utils import compare_byte_code
 from gnosis.safe import Safe
-
-from ..proxy_factory import ProxyFactory
-from .safe_test_case import SafeTestCaseMixin
-from .utils import generate_salt_nonce
+from gnosis.safe.proxy_factory import (
+    ProxyFactory,
+    ProxyFactoryV100,
+    ProxyFactoryV111,
+    ProxyFactoryV130,
+)
+from gnosis.safe.tests.safe_test_case import SafeTestCaseMixin
+from gnosis.safe.tests.utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
 
@@ -37,34 +47,38 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         self.assertTrue(
             self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
         )
-
-        # Test proxy factory v1.1.1
-        ethereum_tx_sent = ProxyFactory.deploy_proxy_factory_contract_v1_1_1(
-            self.ethereum_client, self.ethereum_test_account
-        )
-        proxy_factory_V1_1_1 = ProxyFactory(
-            ethereum_tx_sent.contract_address, self.ethereum_client
-        )
-        ethereum_tx_sent = proxy_factory_V1_1_1.deploy_proxy_contract(
-            self.ethereum_test_account, self.safe_contract_address
-        )
-        self.assertTrue(
-            self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
-        )
-
-        # Test proxy factory v1.0.0
-        ethereum_tx_sent = ProxyFactory.deploy_proxy_factory_contract_v1_0_0(
-            self.ethereum_client, self.ethereum_test_account
-        )
-        proxy_factory_V1_0_0 = ProxyFactory(
-            ethereum_tx_sent.contract_address, self.ethereum_client
-        )
-        ethereum_tx_sent = proxy_factory_V1_0_0.deploy_proxy_contract(
-            self.ethereum_test_account, self.safe_contract_address
-        )
-        self.assertTrue(
-            self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
-        )
+        # Test every version
+        versions = [
+            ("1.0.0", ProxyFactoryV100, get_proxy_1_0_0_deployed_bytecode),
+            ("1.1.1", ProxyFactoryV111, get_proxy_1_1_1_deployed_bytecode),
+            ("1.3.0", ProxyFactoryV130, get_proxy_1_3_0_deployed_bytecode),
+        ]
+        for version, ProxyFactoryVersion, get_proxy_deployed_bytecode_fn in versions:
+            with self.subTest(version=version):
+                deployed_proxy_tx = ProxyFactoryVersion.deploy_contract(
+                    self.ethereum_client, self.ethereum_test_account
+                )
+                proxy_factory = ProxyFactory(
+                    deployed_proxy_tx.contract_address,
+                    self.ethereum_client,
+                    version=version,
+                )
+                deployed_proxy_contract_tx = proxy_factory.deploy_proxy_contract(
+                    self.ethereum_test_account, self.safe_contract_address
+                )
+                self.assertTrue(
+                    proxy_factory.check_proxy_code(
+                        deployed_proxy_contract_tx.contract_address
+                    )
+                )
+                self.assertTrue(
+                    compare_byte_code(
+                        get_proxy_deployed_bytecode_fn(),
+                        self.w3.eth.get_code(
+                            deployed_proxy_contract_tx.contract_address
+                        ),
+                    )
+                )
 
     def test_check_proxy_code_mainnet(self):
         mainnet_node = just_test_if_mainnet_node()
@@ -83,47 +97,6 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         for safe in safes:
             with self.subTest(safe=safe):
                 self.assertTrue(proxy_factory.check_proxy_code(safe))
-
-    def test_deploy_proxy_contract(self):
-        s = 15
-        owners = [Account.create().address for _ in range(2)]
-        threshold = 2
-        payment_token = None
-        safe_creation_tx = Safe.build_safe_creation_tx(
-            self.ethereum_client,
-            self.safe_contract_V0_0_1_address,
-            s,
-            owners,
-            threshold,
-            self.gas_price,
-            payment_token,
-            payment_receiver=self.ethereum_test_account.address,
-        )
-        # Send ether for safe deploying costs
-        self.send_tx(
-            {"to": safe_creation_tx.safe_address, "value": safe_creation_tx.payment},
-            self.ethereum_test_account,
-        )
-
-        proxy_factory = ProxyFactory(
-            self.proxy_factory_contract_address, self.ethereum_client
-        )
-        ethereum_tx_sent = proxy_factory.deploy_proxy_contract(
-            self.ethereum_test_account,
-            safe_creation_tx.master_copy,
-            safe_creation_tx.safe_setup_data,
-            safe_creation_tx.gas,
-            gas_price=self.gas_price,
-        )
-        receipt = self.ethereum_client.get_transaction_receipt(
-            ethereum_tx_sent.tx_hash, timeout=20
-        )
-        self.assertEqual(receipt.status, 1)
-        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
-        self.assertEqual(
-            safe.retrieve_master_copy_address(), safe_creation_tx.master_copy
-        )
-        self.assertEqual(set(safe.retrieve_owners()), set(owners))
 
     def test_deploy_proxy_contract_with_nonce(self):
         salt_nonce = generate_salt_nonce()

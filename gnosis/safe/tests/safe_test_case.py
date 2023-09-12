@@ -19,23 +19,24 @@ from gnosis.eth.contracts import (
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
-from gnosis.safe.proxy_factory import ProxyFactory
+from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV111, ProxyFactoryV130
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
 from ...eth.constants import NULL_ADDRESS
+from ..safe import SafeV001, SafeV100, SafeV111, SafeV130
 from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
 
 
 _contract_addresses = {
-    "safe_V0_0_1": Safe.deploy_master_contract_v0_0_1,
-    "safe_V1_0_0": Safe.deploy_master_contract_v1_0_0,
-    "safe_V1_1_1": Safe.deploy_master_contract_v1_1_1,
-    "safe_v1_3_0": Safe.deploy_master_contract_v1_3_0,
+    "safe_V0_0_1": SafeV001.deploy_contract,
+    "safe_V1_0_0": SafeV100.deploy_contract,
+    "safe_V1_1_1": SafeV111.deploy_contract,
+    "safe_v1_3_0": SafeV130.deploy_contract,
     "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
-    "proxy_factory": ProxyFactory.deploy_proxy_factory_contract,
-    "proxy_factory_V1_0_0": ProxyFactory.deploy_proxy_factory_contract_v1_0_0,
+    "proxy_factory": ProxyFactoryV130.deploy_contract,
+    "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
     "multi_send": MultiSend.deploy_contract,
 }
 

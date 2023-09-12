@@ -17,7 +17,7 @@ from ..exceptions import (
     CouldNotPayGasWithToken,
     InvalidInternalTx,
 )
-from ..safe import Safe, SafeOperation
+from ..safe import Safe, SafeOperation, SafeV100, SafeV111, SafeV130
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -62,22 +62,6 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertTrue(
             safe.check_funds_for_tx_gas(safe_tx_gas, base_gas, gas_price, NULL_ADDRESS)
         )
-
-    def test_estimate_safe_creation(self):
-        number_owners = 4
-        gas_price = self.gas_price
-        payment_token = NULL_ADDRESS
-        safe_creation_estimate = Safe.estimate_safe_creation(
-            self.ethereum_client,
-            self.safe_contract_V0_0_1_address,
-            number_owners,
-            gas_price,
-            payment_token,
-        )
-        self.assertGreater(safe_creation_estimate.gas_price, 0)
-        self.assertGreater(safe_creation_estimate.gas, 0)
-        self.assertGreater(safe_creation_estimate.payment, 0)
-        self.assertEqual(safe_creation_estimate.payment_token, payment_token)
 
     def test_estimate_safe_creation_2(self):
         number_owners = 4
@@ -549,12 +533,6 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             ).build_transaction({"gas": 0})["data"]
             safe.estimate_tx_gas_with_web3(deployed_erc20.address, value, transfer_data)
 
-    def test_estimate_tx_operational_gas(self):
-        for threshold in range(2, 5):
-            safe = self.deploy_test_safe(threshold=threshold, number_owners=6)
-            tx_signature_gas_estimation = safe.estimate_tx_operational_gas(0)
-            self.assertGreaterEqual(tx_signature_gas_estimation, 20000)
-
     def test_retrieve_code(self):
         self.assertEqual(
             Safe(NULL_ADDRESS, self.ethereum_client).retrieve_code(), HexBytes("0x")
@@ -633,6 +611,16 @@ class TestSafe(SafeTestCaseMixin, TestCase):
                 CannotRetrieveSafeInfoException, invalid_address
             ):
                 invalid_safe.retrieve_all_info()
+
+    def test_safe_instance(self):
+        owners = [Account.create().address for _ in range(2)]
+        threshold = 2
+        safe_v1_0_0 = self.deploy_test_safe_v1_0_0(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_0_0, SafeV100))
+        safe_v1_1_1 = self.deploy_test_safe_v1_1_1(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_1_1, SafeV111))
+        safe_v1_3_0 = self.deploy_test_safe(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_3_0, SafeV130))
 
     def test_retrieve_modules(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
