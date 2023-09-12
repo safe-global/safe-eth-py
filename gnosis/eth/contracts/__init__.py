@@ -24,7 +24,7 @@ MultiSend: 0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761
 import json
 import os
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
@@ -64,28 +64,42 @@ contracts = {
 }
 
 
-def load_contract_interface(file_name):
+def load_contract_interface(file_name: str) -> Dict[str, Any]:
+    """
+    :param file_name:
+    :return: Get parsed JSON to ABI with the relative filename to this file path
+    """
     return _load_json_file(_abi_file_path(file_name))
 
 
-def _abi_file_path(file):
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "abis", file))
+def _abi_file_path(file_name: str) -> str:
+    """
+    :param file_name:
+    :return: Full path to the provided ``file_name``
+    """
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "abis", file_name))
 
 
-def _load_json_file(path):
+def _load_json_file(path) -> Dict[str, Any]:
+    """
+    :param path:
+    :return: Parsed json for the provided file
+    """
     with open(path) as f:
         return json.load(f)
 
 
-def generate_contract_fn(contract: Dict[str, Any]):
+def generate_contract_fn(
+    contract: Dict[str, Any]
+) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
     """
-    Dynamically generate functions to work with the contracts
+    Dynamically generate a function to build a Web3 Contract for the provided contract ABI
 
     :param contract:
-    :return:
+    :return: function that will return a Web3 Contract from an ABI
     """
 
-    def fn(w3: Web3, address: Optional[ChecksumAddress] = None):
+    def fn(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
         return w3.eth.contract(
             address=address, abi=contract["abi"], bytecode=contract.get("bytecode")
         )
