@@ -14,6 +14,7 @@ from gnosis.eth.contracts import (
     get_proxy_1_1_1_deployed_bytecode,
     get_proxy_1_1_1_mainnet_deployed_bytecode,
     get_proxy_1_3_0_deployed_bytecode,
+    get_proxy_1_4_1_deployed_bytecode,
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
@@ -53,6 +54,7 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
 
         deployed_proxy_code = self.w3.eth.get_code(address)
         proxy_code_fns = (
+            get_proxy_1_4_1_deployed_bytecode,
             get_proxy_1_3_0_deployed_bytecode,
             get_proxy_1_1_1_deployed_bytecode,
             get_proxy_1_1_1_mainnet_deployed_bytecode,
