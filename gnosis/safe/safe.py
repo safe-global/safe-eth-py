@@ -1,12 +1,13 @@
 import dataclasses
 import math
+import os
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 from functools import cached_property
 from logging import getLogger
 from typing import Callable, Dict, List, NamedTuple, Optional, Union
 
-from eth_abi import encode as encode_abi
+import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_packed
 from eth_account import Account
@@ -30,11 +31,13 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_simulate_tx_accessor_V1_4_1_contract,
 )
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
     fast_keccak,
+    get_empty_tx_params,
 )
 from gnosis.safe.proxy_factory import ProxyFactory
 
@@ -95,6 +98,21 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
 
+    def __init__(
+        self,
+        address: ChecksumAddress,
+        ethereum_client: EthereumClient,
+        simulate_tx_accessor_address: Optional[ChecksumAddress] = None,
+    ):
+        self.simulate_tx_accessor_address = (
+            simulate_tx_accessor_address
+            or os.environ.get(
+                "SAFE_SIMULATE_TX_ACCESSOR_ADDRESS",
+                "0x3d4BA2E0884aa488718476ca2FB8Efc291A46199",
+            )
+        )
+        super().__init__(address, ethereum_client)
+
     def __str__(self):
         return f"Safe={self.address}"
 
@@ -143,7 +161,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
         contract_fn = cls.get_contract_fn(cls)
         safe_contract = contract_fn(ethereum_client.w3)
         constructor_data = safe_contract.constructor().build_transaction(
-            {"gas": 0, "gasPrice": 0}
+            get_empty_tx_params()
         )["data"]
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data
@@ -240,7 +258,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
                 gas_token,
                 refund_receiver,
                 signatures,
-            ).build_transaction({"gas": 1, "gasPrice": 1})["data"]
+            ).build_transaction(get_empty_tx_params())["data"]
         )
 
         # If nonce == 0, nonce storage has to be initialized
@@ -483,7 +501,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
         message_hash = fast_keccak(message)
 
         safe_message_hash = Web3.keccak(
-            encode_abi(
+            eth_abi.encode(
                 ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
             )
         )
@@ -942,6 +960,60 @@ class SafeV141(SafeBase):
     def get_contract_fn(self) -> Contract:
         return get_safe_V1_4_1_contract
 
+    def estimate_tx_gas_with_safe(
+        self,
+        to: ChecksumAddress,
+        value: int,
+        data: bytes,
+        operation: int,
+        gas_limit: Optional[int] = None,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> int:
+        accessor = get_simulate_tx_accessor_V1_4_1_contract(
+            self.w3, address=self.simulate_tx_accessor_address
+        )
+        simulator = get_compatibility_fallback_handler_contract(
+            self.w3, address=self.address
+        )
+        simulation_data = accessor.functions.simulate(
+            to, value, data, operation
+        ).build_transaction(get_empty_tx_params())["data"]
+        accessible_data = simulator.functions.simulate(
+            accessor.address, simulation_data
+        ).call()
+        # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
+        try:
+            (estimate, success, return_data) = eth_abi.decode(
+                ["uint256", "bool", "bytes"], accessible_data
+            )
+            return estimate
+        except DecodingError as e:
+            try:
+                decoded_revert = eth_abi.decode(["string"], accessible_data)
+            except DecodingError:
+                decoded_revert = "No revert message"
+            raise CannotEstimateGas(
+                f"Cannot estimate gas using SimulateTxAccessor {e} - {decoded_revert}"
+            )
+
+        return estimate
+
+    def estimate_tx_gas(
+        self, to: ChecksumAddress, value: int, data: bytes, operation: int
+    ) -> int:
+        """
+        Estimate tx gas. Use `SimulateTxAccesor` and `simulate` on the `CompatibilityFallHandler`
+
+        :param to:
+        :param value:
+        :param data:
+        :param operation:
+        :return: Estimated gas for Safe inner tx
+        :raises: CannotEstimateGas
+        """
+
+        return self.estimate_tx_gas_with_safe(to, value, data, operation)
+
 
 class Safe:
     versions: Dict[str, SafeBase] = {
@@ -952,7 +1024,9 @@ class Safe:
         "1.4.1": SafeV141,
     }
 
-    def __new__(cls, address: ChecksumAddress, ethereum_client: EthereumClient):
+    def __new__(
+        cls, address: ChecksumAddress, ethereum_client: EthereumClient, **kwargs
+    ):
         assert fast_is_checksum_address(address), "%s is not a valid address" % address
         version: Optional[str]
         try:
@@ -963,7 +1037,7 @@ class Safe:
 
         version_class = cls.versions.get(version, SafeV141)
         instance = super().__new__(version_class)
-        instance.__init__(address, ethereum_client)
+        instance.__init__(address, ethereum_client, **kwargs)
         return instance
 
     @staticmethod
@@ -1053,20 +1127,42 @@ class Safe:
         """
 
         contract = get_compatibility_fallback_handler_contract(ethereum_client.w3)
-        constructor_tx = contract.constructor().build_transaction()
-        tx_hash = ethereum_client.send_unsigned_transaction(
-            constructor_tx, private_key=deployer_account.key
-        )
-        tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
-        assert tx_receipt
-        assert tx_receipt["status"]
-
-        ethereum_tx_sent = EthereumTxSent(
-            tx_hash, constructor_tx, tx_receipt["contractAddress"]
+        constructor_data = contract.constructor().build_transaction(
+            get_empty_tx_params()
+        )["data"]
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
+            deployer_account, constructor_data
         )
         logger.info(
             "Deployed and initialized Compatibility Fallback Handler version=%s on address %s by %s",
-            "1.3.0",
+            "1.4.1",
+            ethereum_tx_sent.contract_address,
+            deployer_account.address,
+        )
+        return ethereum_tx_sent
+
+    @staticmethod
+    def deploy_simulate_tx_accessor(
+        ethereum_client: EthereumClient, deployer_account: LocalAccount
+    ) -> EthereumTxSent:
+        """
+        Deploy Last compatibility Fallback handler
+
+        :param ethereum_client:
+        :param deployer_account: Ethereum account
+        :return: deployed contract address
+        """
+
+        contract = get_simulate_tx_accessor_V1_4_1_contract(ethereum_client.w3)
+        constructor_data = contract.constructor().build_transaction(
+            get_empty_tx_params()
+        )["data"]
+        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
+            deployer_account, constructor_data
+        )
+        logger.info(
+            "Deployed and initialized Simulate Tx Accessor contract version=%s on address %s by %s",
+            "1.4.1",
             ethereum_tx_sent.contract_address,
             deployer_account.address,
         )

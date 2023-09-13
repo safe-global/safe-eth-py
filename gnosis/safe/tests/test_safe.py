@@ -9,7 +9,7 @@ from web3 import Web3
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract
-from gnosis.eth.utils import get_eth_address_with_key
+from gnosis.eth.utils import get_empty_tx_params, get_eth_address_with_key
 
 from ..exceptions import (
     CannotEstimateGas,
@@ -365,6 +365,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         data = HexBytes("0xabcdef")
         operation = 1
         safe = self.deploy_test_safe(initial_funding_wei=value + 23000)
+        safe.simulate_tx_accessor_address = self.simulate_tx_accessor_V1_4_1.address
 
         safe_tx_gas = safe.estimate_tx_gas(to, value, data, operation)
         self.assertGreater(safe_tx_gas, 0)
@@ -558,7 +559,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         guard_address = Account.create().address
         set_guard_data = HexBytes(
             safe.contract.functions.setGuard(guard_address).build_transaction(
-                {"gas": 1, "gasPrice": 1}
+                get_empty_tx_params()
             )["data"]
         )
         set_guard_tx = safe.build_multisig_tx(safe.address, 0, set_guard_data)

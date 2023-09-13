@@ -9,6 +9,18 @@ from eth_typing import AnyAddress, ChecksumAddress, HexStr
 from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 from sha3 import keccak_256
+from web3.types import TxParams, Wei
+
+
+# TODO Search for uses of empty tx params and replace with this function
+def get_empty_tx_params() -> TxParams:
+    """
+    :return: Empty tx params, so calls like `build_transaction` don't call the RPC trying to get information
+    """
+    return {
+        "gas": Wei(1),
+        "gasPrice": Wei(1),
+    }
 
 
 def fast_keccak(value: bytes) -> bytes:

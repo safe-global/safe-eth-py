@@ -21,7 +21,10 @@ CompatibilityFallBackHandler V1.3.0: 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4
 
 Libraries
 CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
-MultiSend: 0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761
+MultiSend: 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
+MultiSendCallOnly: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
+SimulateTxAccessor: 0x3d4BA2E0884aa488718476ca2FB8Efc291A46199
+SignMessageLib: 0xd53cd0aB83D845Ac265BE939c57F53AD838012c9
 """
 
 import json
@@ -62,6 +65,7 @@ contracts = {
     "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
     "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
     "safe_V1_4_1": "Safe_V1_4_1.json",
+    "simulate_tx_accessor_V1_4_1": "SimulateTxAccessor_V1_4_1.json",
     "uniswap_exchange": "uniswap_exchange.json",
     "uniswap_factory": "uniswap_factory.json",
     "uniswap_v2_factory": "uniswap_v2_factory.json",
@@ -247,6 +251,12 @@ def get_proxy_factory_V1_4_1_contract(
 
 
 def get_proxy_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
+    pass
+
+
+def get_simulate_tx_accessor_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     pass
 
 

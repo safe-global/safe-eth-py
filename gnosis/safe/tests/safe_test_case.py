@@ -8,6 +8,7 @@ from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3.contract import Contract
 
+from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import (
     get_compatibility_fallback_handler_contract,
     get_multi_send_contract,
@@ -16,14 +17,15 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_simulate_tx_accessor_V1_4_1_contract,
 )
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
+from gnosis.eth.utils import get_empty_tx_params
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
 from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV111, ProxyFactoryV130
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
-from ...eth.constants import NULL_ADDRESS
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
 from .utils import generate_salt_nonce
 
@@ -37,6 +39,7 @@ _contract_addresses = {
     "safe_V1_3_0": SafeV130.deploy_contract,
     "safe_V1_4_1": SafeV141.deploy_contract,
     "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
+    "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
     "proxy_factory": ProxyFactoryV130.deploy_contract,
     "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
     "multi_send": MultiSend.deploy_contract,
@@ -44,21 +47,23 @@ _contract_addresses = {
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
-    safe_contract_address: ChecksumAddress
-    safe_contract: Contract
-    safe_contract_V1_3_0_address: ChecksumAddress
-    safe_contract_V1_3_0: Contract
-    safe_contract_V1_1_1_address: ChecksumAddress
-    safe_contract_V1_1_1: Contract
-    safe_contract_V1_0_0_address: ChecksumAddress
-    safe_contract_V1_0_0: Contract
-    safe_contract_V0_0_1_address: ChecksumAddress
-    safe_contract_V0_0_1: Contract
-    proxy_factory_contract_address: ChecksumAddress
-    proxy_factory_contract: Contract
-    proxy_factory: ProxyFactory
-    multi_send_contract: Contract
+    compatibility_fallback_handler: Contract
     multi_send: MultiSend
+    multi_send_contract: Contract
+    proxy_factory: ProxyFactory
+    proxy_factory_contract: Contract
+    proxy_factory_contract_address: ChecksumAddress
+    safe_contract: Contract
+    safe_contract_V0_0_1: Contract
+    safe_contract_V0_0_1_address: ChecksumAddress
+    safe_contract_V1_0_0: Contract
+    safe_contract_V1_0_0_address: ChecksumAddress
+    safe_contract_V1_1_1: Contract
+    safe_contract_V1_1_1_address: ChecksumAddress
+    safe_contract_V1_3_0: Contract
+    safe_contract_V1_3_0_address: ChecksumAddress
+    safe_contract_address: ChecksumAddress
+    simulate_tx_accessor_V1_4_1: Contract
 
     @classmethod
     def setUpClass(cls):
@@ -70,19 +75,22 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                     cls.ethereum_client, cls.ethereum_test_account
                 ).contract_address
 
+        settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
         settings.SAFE_DEFAULT_CALLBACK_HANDLER = _contract_addresses[
             "compatibility_fallback_handler"
         ]
         settings.SAFE_MULTISEND_ADDRESS = _contract_addresses["multi_send"]
-        settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
-        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_3_0"]
-        settings.SAFE_V1_1_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_1_1"]
-        settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_0_0"]
-        settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses["safe_V0_0_1"]
         settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses["proxy_factory"]
         settings.SAFE_PROXY_FACTORY_V1_0_0_ADDRESS = _contract_addresses[
             "proxy_factory_V1_0_0"
         ]
+        settings.SAFE_SIMULATE_TX_ACCESSOR = _contract_addresses[
+            "simulate_tx_accessor_V1_4_1"
+        ]
+        settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses["safe_V0_0_1"]
+        settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_0_0"]
+        settings.SAFE_V1_1_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_1_1"]
+        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_3_0"]
         settings.SAFE_VALID_CONTRACT_ADDRESSES = {
             settings.SAFE_CONTRACT_ADDRESS,
             settings.SAFE_V1_3_0_CONTRACT_ADDRESS,
@@ -94,6 +102,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             get_compatibility_fallback_handler_contract(
                 cls.w3, _contract_addresses["compatibility_fallback_handler"]
             )
+        )
+        cls.simulate_tx_accessor_V1_4_1 = get_simulate_tx_accessor_V1_4_1_contract(
+            cls.w3, _contract_addresses["simulate_tx_accessor_V1_4_1"]
         )
         cls.safe_contract_address = _contract_addresses["safe_V1_4_1"]
         cls.safe_contract = get_safe_V1_4_1_contract(cls.w3, cls.safe_contract_address)
@@ -156,6 +167,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             fixed_creation_cost=0,
         )
 
+    # TODO Refactor this
     def deploy_test_safe(
         self,
         number_owners: int = 3,
@@ -184,7 +196,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
-        empty_parameters = {"gas": 1, "gasPrice": 1}
+        empty_parameters = get_empty_tx_params()
         to = NULL_ADDRESS
         data = b""
         payment_token = NULL_ADDRESS
@@ -245,7 +257,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
-        empty_parameters = {"gas": 1, "gasPrice": 1}
+        empty_parameters = get_empty_tx_params()
         to = NULL_ADDRESS
         data = b""
         payment_token = NULL_ADDRESS
@@ -293,7 +305,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
-        empty_parameters = {"gas": 1, "gasPrice": 1}
+        empty_parameters = get_empty_tx_params()
         to = NULL_ADDRESS
         data = b""
         payment_token = NULL_ADDRESS
@@ -340,7 +352,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         if not threshold:
             threshold = len(owners) - 1 if len(owners) > 1 else 1
-        empty_parameters = {"gas": 1, "gasPrice": 1}
+        empty_parameters = get_empty_tx_params()
         to = NULL_ADDRESS
         data = b""
         payment_token = NULL_ADDRESS
