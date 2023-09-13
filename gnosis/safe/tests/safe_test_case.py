@@ -9,12 +9,13 @@ from hexbytes import HexBytes
 from web3.contract import Contract
 
 from gnosis.eth.contracts import (
-    get_compatibility_fallback_handler_V1_3_0_contract,
+    get_compatibility_fallback_handler_contract,
     get_multi_send_contract,
     get_proxy_factory_contract,
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
+    get_safe_V1_4_1_contract,
 )
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.safe import Safe
@@ -23,7 +24,7 @@ from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV111, ProxyFacto
 from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
 from ...eth.constants import NULL_ADDRESS
-from ..safe import SafeV001, SafeV100, SafeV111, SafeV130
+from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
 from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,8 @@ _contract_addresses = {
     "safe_V0_0_1": SafeV001.deploy_contract,
     "safe_V1_0_0": SafeV100.deploy_contract,
     "safe_V1_1_1": SafeV111.deploy_contract,
-    "safe_v1_3_0": SafeV130.deploy_contract,
+    "safe_V1_3_0": SafeV130.deploy_contract,
+    "safe_V1_4_1": SafeV141.deploy_contract,
     "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
     "proxy_factory": ProxyFactoryV130.deploy_contract,
     "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
@@ -44,6 +46,8 @@ _contract_addresses = {
 class SafeTestCaseMixin(EthereumTestCaseMixin):
     safe_contract_address: ChecksumAddress
     safe_contract: Contract
+    safe_contract_V1_3_0_address: ChecksumAddress
+    safe_contract_V1_3_0: Contract
     safe_contract_V1_1_1_address: ChecksumAddress
     safe_contract_V1_1_1: Contract
     safe_contract_V1_0_0_address: ChecksumAddress
@@ -70,7 +74,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             "compatibility_fallback_handler"
         ]
         settings.SAFE_MULTISEND_ADDRESS = _contract_addresses["multi_send"]
-        settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_v1_3_0"]
+        settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
+        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_3_0"]
         settings.SAFE_V1_1_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_1_1"]
         settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_0_0"]
         settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses["safe_V0_0_1"]
@@ -80,17 +85,22 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         ]
         settings.SAFE_VALID_CONTRACT_ADDRESSES = {
             settings.SAFE_CONTRACT_ADDRESS,
+            settings.SAFE_V1_3_0_CONTRACT_ADDRESS,
             settings.SAFE_V1_1_1_CONTRACT_ADDRESS,
             settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
             settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
         }
         cls.compatibility_fallback_handler = (
-            get_compatibility_fallback_handler_V1_3_0_contract(
+            get_compatibility_fallback_handler_contract(
                 cls.w3, _contract_addresses["compatibility_fallback_handler"]
             )
         )
-        cls.safe_contract_address = _contract_addresses["safe_v1_3_0"]
-        cls.safe_contract = get_safe_V1_3_0_contract(cls.w3, cls.safe_contract_address)
+        cls.safe_contract_address = _contract_addresses["safe_V1_4_1"]
+        cls.safe_contract = get_safe_V1_4_1_contract(cls.w3, cls.safe_contract_address)
+        cls.safe_contract_V1_3_0_address = _contract_addresses["safe_V1_3_0"]
+        cls.safe_contract_V1_3_0 = get_safe_V1_3_0_contract(
+            cls.w3, cls.safe_contract_V1_3_0_address
+        )
         cls.safe_contract_V1_1_1_address = _contract_addresses["safe_V1_1_1"]
         cls.safe_contract_V1_1_1 = get_safe_V1_1_1_contract(
             cls.w3, cls.safe_contract_V1_1_1_address
@@ -155,7 +165,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         fallback_handler: ChecksumAddress = None,
     ) -> Safe:
         """
-        Deploy a Safe v1.3.0
+        Deploy a Safe v1.4.1
 
         :param number_owners:
         :param threshold:
@@ -195,6 +205,67 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
             self.safe_contract.address,
+            initializer=initializer,
+        )
+        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
+        if initial_funding_wei:
+            self.send_ether(safe.address, initial_funding_wei)
+
+        self.assertEqual(safe.retrieve_version(), "1.4.1")
+        self.assertEqual(safe.retrieve_threshold(), threshold)
+        self.assertCountEqual(safe.retrieve_owners(), owners)
+
+        return safe
+
+    def deploy_test_safe_v1_3_0(
+        self,
+        number_owners: int = 3,
+        threshold: Optional[int] = None,
+        owners: Optional[List[ChecksumAddress]] = None,
+        initial_funding_wei: int = 0,
+        fallback_handler: ChecksumAddress = None,
+    ) -> Safe:
+        """
+        Deploy a Safe v1.3.0
+
+        :param number_owners:
+        :param threshold:
+        :param owners:
+        :param initial_funding_wei:
+        :param fallback_handler:
+        :return:
+        """
+        fallback_handler = (
+            fallback_handler or self.compatibility_fallback_handler.address
+        )
+        owners = (
+            owners
+            if owners
+            else [Account.create().address for _ in range(number_owners)]
+        )
+        if not threshold:
+            threshold = len(owners) - 1 if len(owners) > 1 else 1
+        empty_parameters = {"gas": 1, "gasPrice": 1}
+        to = NULL_ADDRESS
+        data = b""
+        payment_token = NULL_ADDRESS
+        payment = 0
+        payment_receiver = NULL_ADDRESS
+        initializer = HexBytes(
+            self.safe_contract_V1_3_0.functions.setup(
+                owners,
+                threshold,
+                to,
+                data,
+                fallback_handler,
+                payment_token,
+                payment,
+                payment_receiver,
+            ).build_transaction(empty_parameters)["data"]
+        )
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+            self.ethereum_test_account,
+            self.safe_contract_V1_3_0.address,
             initializer=initializer,
         )
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)

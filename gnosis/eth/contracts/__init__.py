@@ -118,9 +118,9 @@ def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Co
     """
     :param w3:
     :param address:
-    :return: Latest compatible safe contract (v1.3.0)
+    :return: Latest available Safe Contract
     """
-    return get_safe_V1_3_0_contract(w3, address=address)
+    return get_safe_V1_4_1_contract(w3, address=address)
 
 
 def get_safe_V0_0_1_contract(
@@ -147,6 +147,17 @@ def get_safe_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contrac
 
 def get_safe_V1_4_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
     pass
+
+
+def get_compatibility_fallback_handler_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    """
+    :param w3:
+    :param address:
+    :return: Latest available Compatibility Fallback handler contract
+    """
+    return get_compatibility_fallback_handler_V1_4_1_contract(w3, address=address)
 
 
 def get_compatibility_fallback_handler_V1_3_0_contract(
@@ -205,9 +216,10 @@ def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contr
     """
     :param w3:
     :param address:
-    :return: Latest compatible proxy factory (v1.3.0)
+    :return: Latest available Safe Proxy Factory
     """
-    return get_proxy_factory_V1_3_0_contract(w3, address)
+    return get_proxy_factory_V1_3_0_contract(w3, address=address)
+    # return get_proxy_factory_V1_4_1_contract(w3, address=address)
 
 
 def get_proxy_factory_V1_0_0_contract(

@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from functools import cached_property
 from logging import getLogger
-from typing import Callable, List, NamedTuple, Optional, Union
+from typing import Callable, Dict, List, NamedTuple, Optional, Union
 
 from eth_abi import encode as encode_abi
 from eth_abi.exceptions import DecodingError
@@ -22,13 +22,14 @@ from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from gnosis.eth.contracts import (
     ContractBase,
-    get_compatibility_fallback_handler_V1_3_0_contract,
+    get_compatibility_fallback_handler_contract,
     get_delegate_constructor_proxy_contract,
     get_safe_contract,
     get_safe_V0_0_1_contract,
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
+    get_safe_V1_4_1_contract,
 )
 from gnosis.eth.utils import (
     fast_bytes_to_checksum_address,
@@ -934,12 +935,21 @@ class SafeV130(SafeBase):
         return get_safe_V1_3_0_contract
 
 
+class SafeV141(SafeBase):
+    def get_version(self):
+        return "1.4.1"
+
+    def get_contract_fn(self) -> Contract:
+        return get_safe_V1_4_1_contract
+
+
 class Safe:
-    versions = {
+    versions: Dict[str, SafeBase] = {
         "0.0.1": SafeV001,
         "1.0.0": SafeV100,
         "1.1.1": SafeV111,
         "1.3.0": SafeV130,
+        "1.4.1": SafeV141,
     }
 
     def __new__(cls, address: ChecksumAddress, ethereum_client: EthereumClient):
@@ -951,8 +961,8 @@ class Safe:
         except (Web3Exception, ValueError):
             version = None  # Cannot detect the version
 
-        safe_version = cls.versions.get(version, SafeV130)
-        instance = super().__new__(safe_version)
+        version_class = cls.versions.get(version, SafeV141)
+        instance = super().__new__(version_class)
         instance.__init__(address, ethereum_client)
         return instance
 
@@ -1035,16 +1045,14 @@ class Safe:
         ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
-        Deploy Last compatibility Fallback handler (v1.3.0)
+        Deploy Last compatibility Fallback handler
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
         :return: deployed contract address
         """
 
-        contract = get_compatibility_fallback_handler_V1_3_0_contract(
-            ethereum_client.w3
-        )
+        contract = get_compatibility_fallback_handler_contract(ethereum_client.w3)
         constructor_tx = contract.constructor().build_transaction()
         tx_hash = ethereum_client.send_unsigned_transaction(
             constructor_tx, private_key=deployer_account.key

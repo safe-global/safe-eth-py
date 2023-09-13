@@ -18,6 +18,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
+    get_proxy_factory_V1_4_1_contract,
 )
 from gnosis.eth.utils import compare_byte_code
 from gnosis.util import cache
@@ -179,11 +180,27 @@ class ProxyFactoryV130(ProxyFactoryBase):
         return get_proxy_factory_V1_3_0_contract
 
 
+class ProxyFactoryV141(ProxyFactoryBase):
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        return get_proxy_factory_V1_4_1_contract
+
+    def deploy_proxy_contract(self, *args, **kwargs):
+        """
+        .. deprecated:: ``createProxy`` function was deprecated in v1.4.1, use ``deploy_proxy_contract_with_nonce``
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        raise NotImplementedError("Deprecated, use `deploy_proxy_contract_with_nonce`")
+
+
 class ProxyFactory:
     versions = {
         "1.0.0": ProxyFactoryV100,
         "1.1.1": ProxyFactoryV111,
         "1.3.0": ProxyFactoryV130,
+        "1.4.1": ProxyFactoryV141,
     }
 
     def __new__(
@@ -192,8 +209,7 @@ class ProxyFactory:
         ethereum_client: EthereumClient,
         version: str = "1.3.0",
     ):
-        # Return default version 1.3.0
-        proxy_factory_version = cls.versions.get(version, ProxyFactoryV130)
-        instance = super().__new__(proxy_factory_version)
+        version_class = cls.versions.get(version, ProxyFactoryV130)
+        instance = super().__new__(version_class)
         instance.__init__(address, ethereum_client)
         return instance

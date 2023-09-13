@@ -14,6 +14,7 @@ from gnosis.eth.contracts import (
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
+    get_safe_V1_4_1_contract,
 )
 from gnosis.eth.utils import fast_is_checksum_address, mk_contract_address_2
 
@@ -68,7 +69,11 @@ class SafeCreate2TxBuilder:
         self.safe_version = (
             get_safe_contract(w3, master_copy_address).functions.VERSION().call()
         )
-        if self.safe_version == "1.3.0":
+        if self.safe_version == "1.4.1":
+            self.master_copy_contract = get_safe_V1_4_1_contract(
+                w3, master_copy_address
+            )
+        elif self.safe_version == "1.3.0":
             self.master_copy_contract = get_safe_V1_3_0_contract(
                 w3, master_copy_address
             )
@@ -81,7 +86,7 @@ class SafeCreate2TxBuilder:
                 w3, master_copy_address
             )
         else:
-            raise ValueError("Safe version must be 1.3.0, 1.1.1 or 1.0.0")
+            raise ValueError("Safe version must be 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
         self.proxy_factory_contract = get_proxy_factory_contract(
             w3, proxy_factory_address
         )
@@ -287,7 +292,7 @@ class SafeCreate2TxBuilder:
             "gasPrice": Wei(1),
         }
 
-        if self.safe_version in ("1.3.0", "1.1.1"):
+        if self.safe_version in ("1.4.1", "1.3.0", "1.1.1"):
             return HexBytes(
                 self.master_copy_contract.functions.setup(
                     owners,
@@ -313,4 +318,4 @@ class SafeCreate2TxBuilder:
                 ).build_transaction(empty_params)["data"]
             )
         else:
-            raise ValueError("Safe version must be 1.3.0, 1.1.1 or 1.0.0")
+            raise ValueError("Safe version must be 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
