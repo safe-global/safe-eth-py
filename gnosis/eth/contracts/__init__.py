@@ -3,17 +3,20 @@
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
 https://github.com/safe-global/safe-deployments/tree/main/src/assets
 
+Safe V1.4.1: 0x41675C099F32341bf84BFc5382aF534df5C7461a
 GnosisSafe V1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
 GnosisSafe V1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
 GnosisSafe V1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
 GnosisSafe V1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
 
 Factories
+SafeProxyFactory V1.4.1: 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67
 ProxyFactory V1.3.0: 0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2
 ProxyFactory V1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
 ProxyFactory V1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
 
 FallbackHandler
+CompatibilityFallBackHandler V1.4.1: 0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99
 CompatibilityFallBackHandler V1.3.0: 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4
 
 Libraries
@@ -38,31 +41,32 @@ from .contract_base import ContractBase
 
 current_module = sys.modules[__name__]
 contracts = {
-    "safe_V1_4_1": "Safe_V1_4_1.json",
-    "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
-    "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
-    "safe_V1_0_0": "GnosisSafe_V1_0_0.json",
-    "safe_V0_0_1": "GnosisSafe_V0_0_1.json",
     "compatibility_fallback_handler_V1_3_0": "CompatibilityFallbackHandler_V1_3_0.json",
+    "compatibility_fallback_handler_V1_4_1": "CompatibilityFallbackHandler_V1_4_1.json",
+    "cpk_factory": "CPKFactory.json",
+    "delegate_constructor_proxy": "DelegateConstructorProxy.json",
+    "erc1155": "ERC1155.json",
     "erc20": "ERC20.json",
     "erc721": "ERC721.json",
-    "erc1155": "ERC1155.json",
     "example_erc20": "ERC20TestToken.json",
-    "delegate_constructor_proxy": "DelegateConstructorProxy.json",
+    "kyber_network_proxy": "kyber_network_proxy.json",
     "multi_send": "MultiSend.json",
     "paying_proxy": "PayingProxy.json",
-    "proxy_factory_V1_4_1": "ProxyFactory_V1_4_1.json",
-    "proxy_factory_V1_3_0": "ProxyFactory_V1_3_0.json",
-    "proxy_factory_V1_1_1": "ProxyFactory_V1_1_1.json",
-    "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",
     "proxy": "Proxy_V1_1_1.json",
+    "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",
+    "proxy_factory_V1_1_1": "ProxyFactory_V1_1_1.json",
+    "proxy_factory_V1_3_0": "ProxyFactory_V1_3_0.json",
+    "proxy_factory_V1_4_1": "ProxyFactory_V1_4_1.json",
+    "safe_V0_0_1": "GnosisSafe_V0_0_1.json",
+    "safe_V1_0_0": "GnosisSafe_V1_0_0.json",
+    "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
+    "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
+    "safe_V1_4_1": "Safe_V1_4_1.json",
     "uniswap_exchange": "uniswap_exchange.json",
     "uniswap_factory": "uniswap_factory.json",
     "uniswap_v2_factory": "uniswap_v2_factory.json",
     "uniswap_v2_pair": "uniswap_v2_pair.json",
     "uniswap_v2_router": "uniswap_v2_router.json",  # Router02
-    "kyber_network_proxy": "kyber_network_proxy.json",
-    "cpk_factory": "CPKFactory.json",
 }
 
 
@@ -119,15 +123,7 @@ def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Co
     return get_safe_V1_3_0_contract(w3, address=address)
 
 
-def get_safe_V1_4_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
-    pass
-
-
-def get_safe_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
-    pass
-
-
-def get_safe_V1_1_1_contract(
+def get_safe_V0_0_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
@@ -139,13 +135,27 @@ def get_safe_V1_0_0_contract(
     pass
 
 
-def get_safe_V0_0_1_contract(
+def get_safe_V1_1_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
 
 
+def get_safe_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
+def get_safe_V1_4_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    pass
+
+
 def get_compatibility_fallback_handler_V1_3_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    pass
+
+
+def get_compatibility_fallback_handler_V1_4_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
@@ -200,13 +210,9 @@ def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contr
     return get_proxy_factory_V1_3_0_contract(w3, address)
 
 
-def get_proxy_factory_V1_4_1_contract(
-    w3: Web3, address: Optional[str] = None
+def get_proxy_factory_V1_0_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
-
-
-def get_proxy_factory_V1_3_0_contract( w3: Web3, address: Optional[str] = None) -> Contract:
     pass
 
 
@@ -216,8 +222,14 @@ def get_proxy_factory_V1_1_1_contract(
     pass
 
 
-def get_proxy_factory_V1_0_0_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+def get_proxy_factory_V1_3_0_contract(
+    w3: Web3, address: Optional[str] = None
+) -> Contract:
+    pass
+
+
+def get_proxy_factory_V1_4_1_contract(
+    w3: Web3, address: Optional[str] = None
 ) -> Contract:
     pass
 
@@ -277,8 +289,13 @@ def get_multicall_v3_contract(w3: Web3, address: Optional[ChecksumAddress] = Non
 
 
 @cache
-def get_proxy_1_3_0_deployed_bytecode() -> bytes:
-    return HexBytes(load_contract_interface("Proxy_V1_3_0.json")["deployedBytecode"])
+def get_proxy_1_0_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_0_0.json")["deployedBytecode"])
+
+
+@cache
+def get_proxy_1_1_1_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_1_1.json")["deployedBytecode"])
 
 
 def get_proxy_1_1_1_mainnet_deployed_bytecode() -> bytes:
@@ -291,13 +308,13 @@ def get_proxy_1_1_1_mainnet_deployed_bytecode() -> bytes:
 
 
 @cache
-def get_proxy_1_1_1_deployed_bytecode() -> bytes:
-    return HexBytes(load_contract_interface("Proxy_V1_1_1.json")["deployedBytecode"])
+def get_proxy_1_3_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_3_0.json")["deployedBytecode"])
 
 
 @cache
-def get_proxy_1_0_0_deployed_bytecode() -> bytes:
-    return HexBytes(load_contract_interface("Proxy_V1_0_0.json")["deployedBytecode"])
+def get_proxy_1_4_1_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_4_1.json")["deployedByteCode"])
 
 
 @cache
@@ -305,6 +322,7 @@ def get_paying_proxy_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface("PayingProxy.json")["deployedBytecode"])
 
 
+# Dynamically create the functions for getting the contracts
 for contract_name, json_contract_filename in contracts.items():
     fn_name = "get_{}_contract".format(contract_name)
     contract_dict = load_contract_interface(json_contract_filename)
