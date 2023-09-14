@@ -527,6 +527,8 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
         :return:
         :raises: CannotRetrieveSafeInfoException
         """
+
+        # FIXME for not initialized Safes `getModules` get into an infinite loop on the RPC
         try:
             contract = self.contract
             master_copy = self.retrieve_master_copy_address()
@@ -578,7 +580,7 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
                 fallback_handler,
                 guard,
                 master_copy,
-                modules,
+                modules if modules else [],
                 nonce,
                 owners,
                 threshold,
@@ -647,6 +649,10 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
         :return: List of module addresses
         """
         if not hasattr(self.contract.functions, "getModulesPaginated"):
+            # Custom code for Safes < v1.3.0
+            # Safe V1_0_0 can get into an infinite loop if it's not initialized
+            if self.retrieve_threshold() == 0:
+                return []
             return self.contract.functions.getModules().call(
                 block_identifier=block_identifier
             )
@@ -664,12 +670,9 @@ class SafeBase(ContractBase, metaclass=ABCMeta):
 
             # Safes with version < 1.4.0 don't include the `starter address` used as pagination in the module list
             # From 1.4.0 onwards it is included, so we check for duplicated addresses before inserting
-            modules_to_insert = [
-                module
-                for module in modules + [next_module]
-                if module not in all_modules + [NULL_ADDRESS, SENTINEL_ADDRESS]
-            ]
-            all_modules.extend(modules_to_insert)
+            for module in modules + [next_module]:
+                if module not in all_modules + [NULL_ADDRESS, SENTINEL_ADDRESS]:
+                    all_modules.append(module)
 
             if not modules or next_module in (NULL_ADDRESS, SENTINEL_ADDRESS):
                 # `NULL_ADDRESS` is only seen in uninitialized Safes

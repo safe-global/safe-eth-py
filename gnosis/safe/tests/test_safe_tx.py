@@ -372,7 +372,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         chain_id = self.ethereum_client.w3.eth.chain_id
         safe_tx_hash = SafeTx(
             self.ethereum_client,
-            self.safe_contract_address,
+            self.safe_contract.address,
             to,
             value,
             data,

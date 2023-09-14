@@ -52,16 +52,12 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     multi_send_contract: Contract
     proxy_factory: ProxyFactory
     proxy_factory_contract: Contract
-    proxy_factory_contract_address: ChecksumAddress
     safe_contract: Contract
+    safe_contract_V1_4_1: Contract
     safe_contract_V0_0_1: Contract
-    safe_contract_V0_0_1_address: ChecksumAddress
     safe_contract_V1_0_0: Contract
-    safe_contract_V1_0_0_address: ChecksumAddress
     safe_contract_V1_1_1: Contract
-    safe_contract_V1_1_1_address: ChecksumAddress
     safe_contract_V1_3_0: Contract
-    safe_contract_V1_3_0_address: ChecksumAddress
     safe_contract_address: ChecksumAddress
     simulate_tx_accessor_V1_4_1: Contract
 
@@ -106,30 +102,28 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.simulate_tx_accessor_V1_4_1 = get_simulate_tx_accessor_V1_4_1_contract(
             cls.w3, _contract_addresses["simulate_tx_accessor_V1_4_1"]
         )
-        cls.safe_contract_address = _contract_addresses["safe_V1_4_1"]
-        cls.safe_contract = get_safe_V1_4_1_contract(cls.w3, cls.safe_contract_address)
-        cls.safe_contract_V1_3_0_address = _contract_addresses["safe_V1_3_0"]
+        cls.safe_contract_V1_4_1 = get_safe_V1_4_1_contract(
+            cls.w3, _contract_addresses["safe_V1_4_1"]
+        )
+        # TODO Remove this
+        cls.safe_contract = cls.safe_contract_V1_4_1
         cls.safe_contract_V1_3_0 = get_safe_V1_3_0_contract(
-            cls.w3, cls.safe_contract_V1_3_0_address
+            cls.w3, _contract_addresses["safe_V1_3_0"]
         )
-        cls.safe_contract_V1_1_1_address = _contract_addresses["safe_V1_1_1"]
         cls.safe_contract_V1_1_1 = get_safe_V1_1_1_contract(
-            cls.w3, cls.safe_contract_V1_1_1_address
+            cls.w3, _contract_addresses["safe_V1_1_1"]
         )
-        cls.safe_contract_V1_0_0_address = _contract_addresses["safe_V1_0_0"]
         cls.safe_contract_V1_0_0 = get_safe_V1_0_0_contract(
-            cls.w3, cls.safe_contract_V1_0_0_address
+            cls.w3, _contract_addresses["safe_V1_0_0"]
         )
-        cls.safe_contract_V0_0_1_address = _contract_addresses["safe_V0_0_1"]
         cls.safe_contract_V0_0_1 = get_safe_V1_0_0_contract(
-            cls.w3, cls.safe_contract_V0_0_1_address
+            cls.w3, _contract_addresses["safe_V0_0_1"]
         )
-        cls.proxy_factory_contract_address = _contract_addresses["proxy_factory"]
         cls.proxy_factory_contract = get_proxy_factory_contract(
-            cls.w3, cls.proxy_factory_contract_address
+            cls.w3, _contract_addresses["proxy_factory"]
         )
         cls.proxy_factory = ProxyFactory(
-            cls.proxy_factory_contract_address, cls.ethereum_client
+            cls.proxy_factory_contract.address, cls.ethereum_client
         )
         cls.multi_send_contract = get_multi_send_contract(
             cls.w3, _contract_addresses["multi_send"]
@@ -156,7 +150,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         gas_price = self.ethereum_client.w3.eth.gas_price
         return Safe.build_safe_create2_tx(
             self.ethereum_client,
-            self.safe_contract_address,
+            self.safe_contract.address,
             self.proxy_factory_contract_address,
             salt_nonce,
             owners,
@@ -167,8 +161,12 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             fixed_creation_cost=0,
         )
 
+    # TODO Remove this
+    def deploy_test_safe(self, *args, **kwargs) -> Safe:
+        return self.deploy_test_safe_v1_4_1(*args, **kwargs)
+
     # TODO Refactor this
-    def deploy_test_safe(
+    def deploy_test_safe_v1_4_1(
         self,
         number_owners: int = 3,
         threshold: Optional[int] = None,
@@ -203,7 +201,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         payment = 0
         payment_receiver = NULL_ADDRESS
         initializer = HexBytes(
-            self.safe_contract.functions.setup(
+            self.safe_contract_V1_4_1.functions.setup(
                 owners,
                 threshold,
                 to,
@@ -216,7 +214,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
-            self.safe_contract.address,
+            self.safe_contract_V1_4_1.address,
             initializer=initializer,
         )
         safe = Safe(
@@ -370,7 +368,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
-            self.safe_contract_V1_0_0_address,
+            self.safe_contract_V1_0_0.address,
             initializer=initializer,
         )
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
