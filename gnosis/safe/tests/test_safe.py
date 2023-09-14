@@ -365,7 +365,6 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         data = HexBytes("0xabcdef")
         operation = 1
         safe = self.deploy_test_safe(initial_funding_wei=value + 23000)
-        safe.simulate_tx_accessor_address = self.simulate_tx_accessor_V1_4_1.address
 
         safe_tx_gas = safe.estimate_tx_gas(to, value, data, operation)
         self.assertGreater(safe_tx_gas, 0)

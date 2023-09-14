@@ -219,7 +219,12 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             self.safe_contract.address,
             initializer=initializer,
         )
-        safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
+        safe = Safe(
+            ethereum_tx_sent.contract_address,
+            self.ethereum_client,
+            simulate_tx_accessor_address=self.simulate_tx_accessor_V1_4_1.address,
+        )
+
         if initial_funding_wei:
             self.send_ether(safe.address, initial_funding_wei)
 

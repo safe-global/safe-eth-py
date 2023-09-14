@@ -17,7 +17,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 from web3.exceptions import Web3Exception
-from web3.types import BlockIdentifier, Wei
+from web3.types import BlockIdentifier, TxParams, Wei
 
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
@@ -969,6 +969,17 @@ class SafeV141(SafeBase):
         gas_limit: Optional[int] = None,
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> int:
+        """
+        Estimate tx gas. Use `SimulateTxAccesor` and `simulate` on the `CompatibilityFallHandler`
+
+        :param to:
+        :param value:
+        :param data:
+        :param operation:
+        :param gas_limit:
+        :param block_identifier:
+        :return:
+        """
         accessor = get_simulate_tx_accessor_V1_4_1_contract(
             self.w3, address=self.simulate_tx_accessor_address
         )
@@ -978,14 +989,23 @@ class SafeV141(SafeBase):
         simulation_data = accessor.functions.simulate(
             to, value, data, operation
         ).build_transaction(get_empty_tx_params())["data"]
-        accessible_data = simulator.functions.simulate(
-            accessor.address, simulation_data
-        ).call()
-        # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
+        params: TxParams = {"gas": gas_limit} if gas_limit else {}
+        # params = {'gas': 2_045_741}
         try:
+            accessible_data = simulator.functions.simulate(
+                accessor.address, simulation_data
+            ).call(params)
+        except ValueError as e:
+            raise CannotEstimateGas(f"Reverted call using SimulateTxAccessor {e}")
+        try:
+            # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
             (estimate, success, return_data) = eth_abi.decode(
                 ["uint256", "bool", "bytes"], accessible_data
             )
+            if not success:
+                raise CannotEstimateGas(
+                    "Cannot estimate gas using SimulateTxAccessor - Execution not successful"
+                )
             return estimate
         except DecodingError as e:
             try:
@@ -995,24 +1015,6 @@ class SafeV141(SafeBase):
             raise CannotEstimateGas(
                 f"Cannot estimate gas using SimulateTxAccessor {e} - {decoded_revert}"
             )
-
-        return estimate
-
-    def estimate_tx_gas(
-        self, to: ChecksumAddress, value: int, data: bytes, operation: int
-    ) -> int:
-        """
-        Estimate tx gas. Use `SimulateTxAccesor` and `simulate` on the `CompatibilityFallHandler`
-
-        :param to:
-        :param value:
-        :param data:
-        :param operation:
-        :return: Estimated gas for Safe inner tx
-        :raises: CannotEstimateGas
-        """
-
-        return self.estimate_tx_gas_with_safe(to, value, data, operation)
 
 
 class Safe:
