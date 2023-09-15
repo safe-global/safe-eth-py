@@ -6,6 +6,7 @@ from typing import Any
 import pytest
 import requests
 from eth_account.signers.local import LocalAccount
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
@@ -75,6 +76,7 @@ def just_test_if_polygon_node() -> str:
     return polygon_node_url
 
 
+# TODO Move this to EthereumClient
 def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:
     tx["from"] = account.address
     if "nonce" not in tx:
@@ -87,8 +89,6 @@ def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:
 
     if "gas" not in tx:
         tx["gas"] = w3.eth.estimate_gas(tx)
-    else:
-        tx["gas"] *= 2
 
     signed_tx = account.sign_transaction(tx)
     tx_hash = w3.eth.send_raw_transaction(bytes(signed_tx.rawTransaction))
@@ -97,47 +97,27 @@ def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:
     return tx_hash
 
 
-def deploy_example_erc20(
-    w3: Web3,
-    amount: int,
-    owner: str,
-    deployer: str = None,
-    account: LocalAccount = None,
-) -> Contract:
-    return deploy_erc20(
-        w3, "Uxio", "UXI", owner, amount, deployer=deployer, account=account
-    )
-
-
 def deploy_erc20(
     w3: Web3,
+    account: LocalAccount,
     name: str,
     symbol: str,
-    owner: str,
+    owner: ChecksumAddress,
     amount: int,
     decimals: int = 18,
-    deployer: str = None,
-    account: LocalAccount = None,
 ) -> Contract:
-    if account:
-        erc20_contract = get_example_erc20_contract(w3)
-        tx = erc20_contract.constructor(
-            name, symbol, decimals, owner, amount
-        ).build_transaction(
-            {
-                "nonce": w3.eth.get_transaction_count(
-                    account.address, block_identifier="pending"
-                )
-            }
-        )
-        signed_tx = account.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-    else:
-        deployer = deployer or w3.eth.accounts[0]
-        erc20_contract = get_example_erc20_contract(w3)
-        tx_hash = erc20_contract.constructor(
-            name, symbol, decimals, owner, amount
-        ).transact({"from": deployer})
+    erc20_contract = get_example_erc20_contract(w3)
+    tx = erc20_contract.constructor(
+        name, symbol, decimals, owner, amount
+    ).build_transaction(
+        {
+            "nonce": w3.eth.get_transaction_count(
+                account.address, block_identifier="pending"
+            )
+        }
+    )
+    signed_tx = account.sign_transaction(tx)
+    tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
 
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     erc20_address = tx_receipt.contractAddress

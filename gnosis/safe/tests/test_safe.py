@@ -267,7 +267,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         funder = funder_account.address
         safe_balance_ether = 0.02
         safe_balance = self.w3.to_wei(safe_balance_ether, "ether")
-        owner_account = self.create_account(initial_ether=safe_balance_ether)
+        owner_account = self.create_and_fund_account(initial_ether=safe_balance_ether)
         owner = owner_account.address
 
         safe = self.deploy_test_safe(
@@ -744,7 +744,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
     def test_send_previously_approved_tx(self):
         number_owners = 4
         accounts = [
-            self.create_account(initial_ether=0.01) for _ in range(number_owners)
+            self.create_and_fund_account(initial_ether=0.01)
+            for _ in range(number_owners)
         ]
         accounts.sort(key=lambda x: x.address.lower())
         owners = [account.address for account in accounts]
