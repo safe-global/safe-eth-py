@@ -40,6 +40,7 @@ from gnosis.eth.utils import (
 )
 
 from ..eth.typing import EthereumData
+from .addresses import SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
 from .exceptions import CannotEstimateGas, CannotRetrieveSafeInfoException
 from .safe_creator import SafeCreator
 from .safe_tx import SafeTx
@@ -125,13 +126,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         ethereum_client: EthereumClient,
         simulate_tx_accessor_address: Optional[ChecksumAddress] = None,
     ):
-        self.simulate_tx_accessor_address = (
-            simulate_tx_accessor_address
-            or os.environ.get(
-                "SAFE_SIMULATE_TX_ACCESSOR_ADDRESS",
-                "0x3d4BA2E0884aa488718476ca2FB8Efc291A46199",
-            )
-        )
+        self._simulate_tx_accessor_address = simulate_tx_accessor_address
         super().__init__(address, ethereum_client)
 
     def __str__(self):
@@ -147,6 +142,18 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     @cached_property
     def chain_id(self) -> int:
         return self.ethereum_client.get_chain_id()
+
+    @property
+    def simulate_tx_accessor_address(self) -> ChecksumAddress:
+        if self._simulate_tx_accessor_address:
+            return self._simulate_tx_accessor_address
+        return os.environ.get(
+            "SAFE_SIMULATE_TX_ACCESSOR_ADDRESS", SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
+        )
+
+    @simulate_tx_accessor_address.setter
+    def simulate_tx_accessor_address(self, value: ChecksumAddress):
+        self._simulate_tx_accessor_address = value
 
     def retrieve_version(
         self, block_identifier: Optional[BlockIdentifier] = "latest"

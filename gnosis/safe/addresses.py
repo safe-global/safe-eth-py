@@ -5,7 +5,13 @@ Every entry contains a tuple with address, deployment block number and version
 """
 from typing import Dict, List, Tuple
 
+from eth_typing import ChecksumAddress
+
 from gnosis.eth import EthereumNetwork
+
+SAFE_SIMULATE_TX_ACCESSOR_ADDRESS: ChecksumAddress = (
+    "0x3d4BA2E0884aa488718476ca2FB8Efc291A46199"
+)
 
 MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.MAINNET: [

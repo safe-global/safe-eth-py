@@ -76,6 +76,7 @@ class Sourcify:
                 f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
             )
             metadata = self._do_request(url)
+            print(url)
             if metadata:
                 abi = self._get_abi_from_metadata(metadata)
                 name = self._get_name_from_metadata(metadata)
