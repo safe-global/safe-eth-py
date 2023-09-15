@@ -16,7 +16,11 @@ from gnosis.eth.contracts import (
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
 )
-from gnosis.eth.utils import fast_is_checksum_address, mk_contract_address_2
+from gnosis.eth.utils import (
+    fast_is_checksum_address,
+    get_empty_tx_params,
+    mk_contract_address_2,
+)
 
 logger = getLogger(__name__)
 
@@ -287,10 +291,7 @@ class SafeCreate2TxBuilder:
         payment: int = 0,
         payment_receiver: str = NULL_ADDRESS,
     ) -> bytes:
-        empty_params: TxParams = {
-            "gas": Wei(1),
-            "gasPrice": Wei(1),
-        }
+        empty_params: TxParams = get_empty_tx_params()
 
         if self.safe_version in ("1.4.1", "1.3.0", "1.1.1"):
             return HexBytes(

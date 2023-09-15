@@ -12,7 +12,6 @@ from sha3 import keccak_256
 from web3.types import TxParams, Wei
 
 
-# TODO Search for uses of empty tx params and replace with this function
 def get_empty_tx_params() -> TxParams:
     """
     :return: Empty tx params, so calls like `build_transaction` don't call the RPC trying to get information
@@ -38,7 +37,7 @@ def fast_keccak_hex(value: bytes) -> HexStr:
     than calling `digest()` and then `hex()`
 
     :param value:
-    :return: Keccak256 used by ethereum as an hex string (not 0x prefixed)
+    :return: Keccak256 used by ethereum as a hex string (not 0x prefixed)
     """
     return HexStr(keccak_256(value).hexdigest())
 

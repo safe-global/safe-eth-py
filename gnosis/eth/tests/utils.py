@@ -173,6 +173,6 @@ def to_json_with_hexbytes(o: Any) -> str:
     Convert RPC calls with nested bytes/Hexbytes to json and compare. Useful for RPC calls
 
     :param o:
-    :return: Object as JSON with Hexbytes/bytes parsed correctly as an hex string
+    :return: Object as JSON with Hexbytes/bytes parsed correctly as a hex string
     """
     return json.dumps(bytes_to_str(o), indent=4, sort_keys=True)

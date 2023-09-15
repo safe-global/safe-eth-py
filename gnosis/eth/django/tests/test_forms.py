@@ -41,7 +41,7 @@ class TestForms(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_hex_field_form(self):
-        form = HexForm(data={"value": "not an hexadecimal"})
+        form = HexForm(data={"value": "not a hexadecimal"})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors["value"], ["Enter a valid hexadecimal."])
 

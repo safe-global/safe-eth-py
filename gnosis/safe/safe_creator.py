@@ -5,7 +5,6 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3.types import Wei
 
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.constants import NULL_ADDRESS
@@ -83,7 +82,7 @@ class SafeCreator:
                 payment,
                 payment_receiver,
             )
-            .build_transaction({"gas": Wei(1), "gasPrice": Wei(1)})["data"]
+            .build_transaction(get_empty_tx_params())["data"]
         )
 
         if proxy_factory_address:

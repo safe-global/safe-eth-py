@@ -20,7 +20,7 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_3_0_contract,
     get_proxy_factory_V1_4_1_contract,
 )
-from gnosis.eth.utils import compare_byte_code
+from gnosis.eth.utils import compare_byte_code, get_empty_tx_params
 from gnosis.util import cache
 
 
@@ -51,7 +51,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         contract_fn = cls.get_contract_fn(cls)
         contract = contract_fn(ethereum_client.w3)
         constructor_data = contract.constructor().build_transaction(
-            {"gas": 0, "gasPrice": 0}
+            get_empty_tx_params()
         )["data"]
         return ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data
