@@ -12,7 +12,11 @@ logger = getLogger(__name__)
 
 class ContractBase(metaclass=ABCMeta):
     def __init__(
-        self, address: ChecksumAddress, ethereum_client: "EthereumClient"  # noqa F821
+        self,
+        address: ChecksumAddress,
+        ethereum_client: "EthereumClient",  # noqa F821
+        *args,
+        **kwargs
     ):
         self.address = address
         self.ethereum_client = ethereum_client

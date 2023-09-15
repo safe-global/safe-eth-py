@@ -24,7 +24,19 @@ from gnosis.eth.utils import compare_byte_code
 from gnosis.util import cache
 
 
-class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
+class ProxyFactory(ContractBase, metaclass=ABCMeta):
+    def __new__(cls, *args, version: str = "1.3.0", **kwargs):
+        # TODO Set v1.4.1
+        versions = {
+            "1.0.0": ProxyFactoryV100,
+            "1.1.1": ProxyFactoryV111,
+            "1.3.0": ProxyFactoryV130,
+            "1.4.1": ProxyFactoryV141,
+        }
+        instance_class = versions[version]
+        instance = super().__new__(instance_class)
+        return instance
+
     @classmethod
     def deploy_contract(
         cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
@@ -165,22 +177,22 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
         return self.contract.functions.proxyRuntimeCode().call()
 
 
-class ProxyFactoryV100(ProxyFactoryBase):
+class ProxyFactoryV100(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_0_0_contract
 
 
-class ProxyFactoryV111(ProxyFactoryBase):
+class ProxyFactoryV111(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_1_1_contract
 
 
-class ProxyFactoryV130(ProxyFactoryBase):
+class ProxyFactoryV130(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_3_0_contract
 
 
-class ProxyFactoryV141(ProxyFactoryBase):
+class ProxyFactoryV141(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_4_1_contract
 
@@ -193,23 +205,3 @@ class ProxyFactoryV141(ProxyFactoryBase):
         :return:
         """
         raise NotImplementedError("Deprecated, use `deploy_proxy_contract_with_nonce`")
-
-
-class ProxyFactory:
-    versions = {
-        "1.0.0": ProxyFactoryV100,
-        "1.1.1": ProxyFactoryV111,
-        "1.3.0": ProxyFactoryV130,
-        "1.4.1": ProxyFactoryV141,
-    }
-
-    def __new__(
-        cls,
-        address: ChecksumAddress,
-        ethereum_client: EthereumClient,
-        version: str = "1.3.0",
-    ):
-        version_class = cls.versions.get(version, ProxyFactoryV130)
-        instance = super().__new__(version_class)
-        instance.__init__(address, ethereum_client)
-        return instance
