@@ -7,10 +7,17 @@ from .test_safe import TestSafe
 
 
 class TestSafeV100(TestSafe):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.safe_contract = cls.safe_contract_V1_0_0
+    @property
+    def safe_contract(self):
+        """
+        :return: Last Safe Contract available
+        """
+        return self.safe_contract_V1_0_0
+
+    def deploy_test_safe(self, *args, **kwargs):
+        if "fallback_handler" in kwargs:
+            kwargs.pop("fallback_handler")  # It's not supported
+        return self.deploy_test_safe_v1_0_0(*args, **kwargs)
 
     def test_create(self):
         # Create test is creating new version of the Safe
@@ -19,11 +26,6 @@ class TestSafeV100(TestSafe):
     def test_send_multisig_tx(self):
         # TODO Check this test
         pass
-
-    def deploy_test_safe(self, *args, **kwargs):
-        if "fallback_handler" in kwargs:
-            kwargs.pop("fallback_handler")  # It's not supported
-        return self.deploy_test_safe_v1_0_0(*args, **kwargs)
 
     def test_retrieve_fallback_handler(self):
         # Fallback handler must be empty in Safes < v1.1.0

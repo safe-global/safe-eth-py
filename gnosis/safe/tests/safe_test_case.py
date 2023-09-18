@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List, Optional
 
 from django.conf import settings
@@ -24,26 +25,13 @@ from gnosis.eth.utils import get_empty_tx_params
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
 from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV111, ProxyFactoryV130
-from gnosis.safe.safe_create2_tx import SafeCreate2Tx
 
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
-from .utils import generate_salt_nonce
 
 logger = logging.getLogger(__name__)
 
 
-_contract_addresses = {
-    "safe_V0_0_1": SafeV001.deploy_contract,
-    "safe_V1_0_0": SafeV100.deploy_contract,
-    "safe_V1_1_1": SafeV111.deploy_contract,
-    "safe_V1_3_0": SafeV130.deploy_contract,
-    "safe_V1_4_1": SafeV141.deploy_contract,
-    "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
-    "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
-    "proxy_factory": ProxyFactoryV130.deploy_contract,
-    "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
-    "multi_send": MultiSend.deploy_contract,
-}
+_contract_addresses = {}
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
@@ -52,7 +40,6 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     multi_send_contract: Contract
     proxy_factory: ProxyFactory
     proxy_factory_contract: Contract
-    safe_contract: Contract
     safe_contract_V1_4_1: Contract
     safe_contract_V0_0_1: Contract
     safe_contract_V1_0_0: Contract
@@ -61,13 +48,34 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     safe_contract_address: ChecksumAddress
     simulate_tx_accessor_V1_4_1: Contract
 
+    contract_deployers = {
+        "safe_V0_0_1": SafeV001.deploy_contract,
+        "safe_V1_0_0": SafeV100.deploy_contract,
+        "safe_V1_1_1": SafeV111.deploy_contract,
+        "safe_V1_3_0": SafeV130.deploy_contract,
+        "safe_V1_4_1": SafeV141.deploy_contract,
+        "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
+        "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
+        "proxy_factory": ProxyFactoryV130.deploy_contract,
+        "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
+        "multi_send": MultiSend.deploy_contract,
+    }
+
+    @property
+    def safe_contract(self):
+        """
+        :return: Last Safe Contract available
+        """
+        return self.safe_contract_V1_4_1
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
-        for key, value in _contract_addresses.items():
-            if callable(value):
-                _contract_addresses[key] = value(
+        if not _contract_addresses:
+            # First time mixin is called, deploy Safe contracts
+            for key, function in cls.contract_deployers.items():
+                _contract_addresses[key] = function(
                     cls.ethereum_client, cls.ethereum_test_account
                 ).contract_address
 
@@ -79,6 +87,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses["proxy_factory"]
         settings.SAFE_PROXY_FACTORY_V1_0_0_ADDRESS = _contract_addresses[
             "proxy_factory_V1_0_0"
+        ]
+        os.environ["SAFE_SIMULATE_TX_ACCESSOR_ADDRESS"] = _contract_addresses[
+            "simulate_tx_accessor_V1_4_1"
         ]
         settings.SAFE_SIMULATE_TX_ACCESSOR = _contract_addresses[
             "simulate_tx_accessor_V1_4_1"
@@ -105,8 +116,6 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.safe_contract_V1_4_1 = get_safe_V1_4_1_contract(
             cls.w3, _contract_addresses["safe_V1_4_1"]
         )
-        # TODO Remove this
-        cls.safe_contract = cls.safe_contract_V1_4_1
         cls.safe_contract_V1_3_0 = get_safe_V1_3_0_contract(
             cls.w3, _contract_addresses["safe_V1_3_0"]
         )
@@ -132,37 +141,12 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             cls.ethereum_client, address=cls.multi_send_contract.address
         )
 
-    def build_test_safe(
-        self,
-        number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[str]] = None,
-        fallback_handler: Optional[str] = None,
-    ) -> SafeCreate2Tx:
-        salt_nonce = generate_salt_nonce()
-        owners = (
-            owners
-            if owners
-            else [Account.create().address for _ in range(number_owners)]
-        )
-        threshold = threshold if threshold else len(owners) - 1
-
-        gas_price = self.ethereum_client.w3.eth.gas_price
-        return Safe.build_safe_create2_tx(
-            self.ethereum_client,
-            self.safe_contract.address,
-            self.proxy_factory_contract_address,
-            salt_nonce,
-            owners,
-            threshold,
-            fallback_handler=fallback_handler,
-            gas_price=gas_price,
-            payment_token=None,
-            fixed_creation_cost=0,
-        )
-
-    # TODO Remove this
     def deploy_test_safe(self, *args, **kwargs) -> Safe:
+        """
+        :param args:
+        :param kwargs:
+        :return: Deploy last available Safe
+        """
         return self.deploy_test_safe_v1_4_1(*args, **kwargs)
 
     # TODO Refactor this

@@ -3,10 +3,12 @@ from .test_safe import TestSafe
 
 
 class TestSafeV130(TestSafe):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.safe_contract = cls.safe_contract_V1_3_0
+    @property
+    def safe_contract(self):
+        """
+        :return: Last Safe Contract available
+        """
+        return self.safe_contract_V1_3_0
 
     def deploy_test_safe(self, *args, **kwargs):
         return self.deploy_test_safe_v1_3_0(*args, **kwargs)
@@ -19,7 +21,7 @@ class TestSafeV130(TestSafe):
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
             self.ethereum_test_account,
-            self.safe_contract_V1_3_0.address,
+            self.safe_contract.address,
             initializer=b"",
         )
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)

@@ -24,13 +24,19 @@ logger = logging.getLogger(__name__)
 
 
 class TestSafe(SafeTestCaseMixin, TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.safe_contract = cls.safe_contract
+    @property
+    def safe_contract(self):
+        """
+        :return: Last Safe Contract available
+        """
+        return self.safe_contract_V1_4_1
 
     def deploy_test_safe(self, *args, **kwargs):
-        # Use last version, currently v1.4.1
+        """
+        :param args:
+        :param kwargs:
+        :return: Deployed Safe Contract with the last version available
+        """
         return super().deploy_test_safe_v1_4_1(*args, **kwargs)
 
     def test_create(self):
