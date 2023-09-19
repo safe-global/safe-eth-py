@@ -222,8 +222,7 @@ def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contr
     :param address:
     :return: Latest available Safe Proxy Factory
     """
-    return get_proxy_factory_V1_3_0_contract(w3, address=address)
-    # return get_proxy_factory_V1_4_1_contract(w3, address=address)
+    return get_proxy_factory_V1_4_1_contract(w3, address=address)
 
 
 def get_proxy_factory_V1_0_0_contract(
@@ -336,7 +335,7 @@ def get_proxy_1_3_0_deployed_bytecode() -> bytes:
 
 @cache
 def get_proxy_1_4_1_deployed_bytecode() -> bytes:
-    return HexBytes(load_contract_interface("Proxy_V1_4_1.json")["deployedByteCode"])
+    return HexBytes(load_contract_interface("Proxy_V1_4_1.json")["deployedBytecode"])
 
 
 @cache

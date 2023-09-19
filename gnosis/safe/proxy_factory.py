@@ -1,3 +1,4 @@
+import secrets
 from abc import ABCMeta
 from typing import Callable, Optional
 
@@ -25,8 +26,7 @@ from gnosis.util import cache
 
 
 class ProxyFactory(ContractBase, metaclass=ABCMeta):
-    def __new__(cls, *args, version: str = "1.3.0", **kwargs):
-        # TODO Set v1.4.1
+    def __new__(cls, *args, version: str = "1.4.1", **kwargs) -> "ProxyFactory":
         versions = {
             "1.0.0": ProxyFactoryV100,
             "1.1.1": ProxyFactoryV111,
@@ -66,6 +66,8 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         """
 
         deployed_proxy_code = self.w3.eth.get_code(address)
+        print(deployed_proxy_code.hex())
+        print(get_proxy_1_4_1_deployed_bytecode())
         proxy_code_fns = (
             get_proxy_1_4_1_deployed_bytecode,
             get_proxy_1_3_0_deployed_bytecode,
@@ -76,7 +78,8 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             self.get_proxy_runtime_code,
         )
         for proxy_code_fn in proxy_code_fns:
-            if compare_byte_code(deployed_proxy_code, proxy_code_fn()):
+            proxy_code = proxy_code_fn()
+            if proxy_code and compare_byte_code(deployed_proxy_code, proxy_code):
                 return True
         return False
 
@@ -143,8 +146,8 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         self,
         deployer_account: LocalAccount,
         master_copy: ChecksumAddress,
-        initializer: bytes,
-        salt_nonce: int,
+        initializer: bytes = b"",
+        salt_nonce: Optional[int] = None,
         gas: Optional[int] = None,
         gas_price: Optional[int] = None,
         nonce: Optional[int] = None,
@@ -155,12 +158,13 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         :param deployer_account: Ethereum account
         :param master_copy: Address the proxy will point at
         :param initializer: Initializer for the deployed proxy
-        :param salt_nonce: Uint256 for ``CREATE2`` salt
+        :param salt_nonce: Uint256 for ``CREATE2`` salt. If not provided, a random one will be used
         :param gas: Gas
         :param gas_price: Gas Price
         :param nonce: Nonce
         :return: EthereumTxSent
         """
+        salt_nonce = salt_nonce if salt_nonce is not None else secrets.randbits(256)
         create_proxy_fn = self.contract.functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
         )
@@ -170,11 +174,13 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         )
 
     @cache
-    def get_proxy_runtime_code(self):
+    def get_proxy_runtime_code(self) -> Optional[bytes]:
         """
-        Get runtime code for current proxy factory
+        :return: Runtime code for current proxy factory. For v1.4.1 onwards the method is not avaiable, so `None`
+            will be returned
         """
-        return self.contract.functions.proxyRuntimeCode().call()
+        if hasattr(self.contract.functions, "proxyRuntimeCode"):
+            return self.contract.functions.proxyRuntimeCode().call()
 
 
 class ProxyFactoryV100(ProxyFactory):

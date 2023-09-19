@@ -1,8 +1,8 @@
 from .. import Safe
-from .test_safe import TestSafe
+from .test_safe import TestSafe as BaseTestSafe  # So it's not run twice by pytest
 
 
-class TestSafeV130(TestSafe):
+class TestSafeV130(BaseTestSafe):
     @property
     def safe_contract(self):
         """
@@ -19,7 +19,7 @@ class TestSafeV130(TestSafe):
         `getModulesPaginated`, as `SENTINEL_ADDRESS` is only set when initialized
         """
 
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract.address,
             initializer=b"",

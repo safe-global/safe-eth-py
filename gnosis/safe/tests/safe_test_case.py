@@ -24,7 +24,7 @@ from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.utils import get_empty_tx_params
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
-from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV111, ProxyFactoryV130
+from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV141
 
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
 
@@ -56,8 +56,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         "safe_V1_4_1": SafeV141.deploy_contract,
         "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
         "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
-        "proxy_factory": ProxyFactoryV130.deploy_contract,
-        "proxy_factory_V1_0_0": ProxyFactoryV111.deploy_contract,
+        "proxy_factory": ProxyFactoryV141.deploy_contract,
         "multi_send": MultiSend.deploy_contract,
     }
 
@@ -85,9 +84,6 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         ]
         settings.SAFE_MULTISEND_ADDRESS = _contract_addresses["multi_send"]
         settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses["proxy_factory"]
-        settings.SAFE_PROXY_FACTORY_V1_0_0_ADDRESS = _contract_addresses[
-            "proxy_factory_V1_0_0"
-        ]
         os.environ["SAFE_SIMULATE_TX_ACCESSOR_ADDRESS"] = _contract_addresses[
             "simulate_tx_accessor_V1_4_1"
         ]
@@ -196,7 +192,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_receiver,
             ).build_transaction(empty_parameters)["data"]
         )
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract_V1_4_1.address,
             initializer=initializer,
@@ -262,7 +258,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_receiver,
             ).build_transaction(empty_parameters)["data"]
         )
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract_V1_3_0.address,
             initializer=initializer,
@@ -310,7 +306,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 payment_receiver,
             ).build_transaction(empty_parameters)["data"]
         )
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract_V1_1_1.address,
             initializer=initializer,
@@ -350,7 +346,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                 owners, threshold, to, data, payment_token, payment, payment_receiver
             ).build_transaction(empty_parameters)["data"]
         )
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract_V1_0_0.address,
             initializer=initializer,

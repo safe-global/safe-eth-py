@@ -88,7 +88,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     def __new__(
         cls, address: ChecksumAddress, ethereum_client: EthereumClient, *args, **kwargs
-    ):
+    ) -> "Safe":
         """
         Hacky factory for Safe
 

@@ -3,10 +3,10 @@ from packaging.version import Version
 
 from ...eth.constants import NULL_ADDRESS
 from .. import Safe
-from .test_safe import TestSafe
+from .test_safe import TestSafe as BaseTestSafe
 
 
-class TestSafeV100(TestSafe):
+class TestSafeV100(BaseTestSafe):
     @property
     def safe_contract(self):
         """
@@ -61,7 +61,7 @@ class TestSafeV100(TestSafe):
         Unitialized Safes from V1.4.1 will revert
         """
 
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract.address,
             initializer=b"",

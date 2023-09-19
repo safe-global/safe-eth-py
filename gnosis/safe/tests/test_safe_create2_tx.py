@@ -64,6 +64,8 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
         logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
         )
+        print(logs)
+        print(tx_receipt.logs)
         log = logs[0]
         self.assertIsNone(tx_receipt.contractAddress)
         self.assertEqual(log["event"], "ProxyCreation")

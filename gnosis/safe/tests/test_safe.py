@@ -113,9 +113,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         )
 
     def test_retrieve_master_copy_address(self):
-        # Test with master copy starting by 0x00
-        master_copy_address = "0x004e2e9E6D637b8138B022D16083093Cb2Ee76aa"
-        ethereum_tx_send = self.proxy_factory.deploy_proxy_contract(
+        master_copy_address = self.safe_contract.address
+        ethereum_tx_send = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account, master_copy_address
         )
         safe = Safe(ethereum_tx_send.contract_address, self.ethereum_client)
@@ -669,7 +668,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         Unitialized Safes from V1.4.1 will revert
         """
 
-        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract(
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
             self.safe_contract.address,
             initializer=b"",
