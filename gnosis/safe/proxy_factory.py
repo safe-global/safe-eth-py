@@ -66,8 +66,6 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         """
 
         deployed_proxy_code = self.w3.eth.get_code(address)
-        print(deployed_proxy_code.hex())
-        print(get_proxy_1_4_1_deployed_bytecode())
         proxy_code_fns = (
             get_proxy_1_4_1_deployed_bytecode,
             get_proxy_1_3_0_deployed_bytecode,
