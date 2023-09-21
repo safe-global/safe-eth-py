@@ -79,4 +79,4 @@ db.sqlite3
 .mypy_cache
 
 # Scripts results
-scripts/chainlist/result.txt
+scripts/generators/generate_chains_list/result.txt
