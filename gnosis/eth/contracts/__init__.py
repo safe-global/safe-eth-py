@@ -158,7 +158,7 @@ def get_compatibility_fallback_handler_contract(
 ) -> Contract:
     """
     :param w3:
-    :param address:
+    :param address: Usually a Safe address
     :return: Latest available Compatibility Fallback handler contract
     """
     return get_compatibility_fallback_handler_V1_4_1_contract(w3, address=address)

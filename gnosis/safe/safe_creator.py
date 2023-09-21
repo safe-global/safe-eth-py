@@ -114,7 +114,7 @@ class SafeCreator:
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
 
         contract = get_compatibility_fallback_handler_contract(ethereum_client.w3)
@@ -141,7 +141,7 @@ class SafeCreator:
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
 
         contract = get_simulate_tx_accessor_V1_4_1_contract(ethereum_client.w3)
@@ -162,16 +162,29 @@ class SafeCreator:
     @staticmethod
     def estimate_safe_creation_2(
         ethereum_client: EthereumClient,
-        master_copy_address: str,
-        proxy_factory_address: str,
+        master_copy_address: ChecksumAddress,
+        proxy_factory_address: ChecksumAddress,
         number_owners: int,
         gas_price: int,
-        payment_token: Optional[str],
-        payment_receiver: str = NULL_ADDRESS,
-        fallback_handler: Optional[str] = None,
+        payment_token: Optional[ChecksumAddress],
+        payment_receiver: ChecksumAddress = NULL_ADDRESS,
+        fallback_handler: Optional[ChecksumAddress] = None,
         payment_token_eth_value: float = 1.0,
         fixed_creation_cost: Optional[int] = None,
     ) -> SafeCreationEstimate:
+        """
+        :param ethereum_client:
+        :param master_copy_address:
+        :param proxy_factory_address:
+        :param number_owners:
+        :param gas_price:
+        :param payment_token:
+        :param payment_receiver:
+        :param fallback_handler:
+        :param payment_token_eth_value:
+        :param fixed_creation_cost:
+        :return: An estimation for creating a Safe with the provided parameters
+        """
         salt_nonce = 15
         owners = [Account.create().address for _ in range(number_owners)]
         threshold = number_owners
@@ -204,15 +217,17 @@ class SafeCreator:
     @staticmethod
     def build_safe_create2_tx(
         ethereum_client: EthereumClient,
-        master_copy_address: str,
-        proxy_factory_address: str,
+        master_copy_address: ChecksumAddress,
+        proxy_factory_address: ChecksumAddress,
         salt_nonce: int,
-        owners: List[str],
+        owners: List[ChecksumAddress],
         threshold: int,
         gas_price: int,
-        payment_token: Optional[str],
-        payment_receiver: Optional[str] = None,  # If none, it will be `tx.origin`
-        fallback_handler: Optional[str] = NULL_ADDRESS,
+        payment_token: Optional[ChecksumAddress],
+        payment_receiver: Optional[
+            ChecksumAddress
+        ] = None,  # If none, it will be `tx.origin`
+        fallback_handler: Optional[ChecksumAddress] = NULL_ADDRESS,
         payment_token_eth_value: float = 1.0,
         fixed_creation_cost: Optional[int] = None,
     ) -> SafeCreate2Tx:

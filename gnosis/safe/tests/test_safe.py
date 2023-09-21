@@ -543,7 +543,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             deployed_erc20 = self.deploy_example_erc20(100, Account.create().address)
             transfer_data = deployed_erc20.functions.transfer(
                 to, 200
-            ).build_transaction({"gas": 0})["data"]
+            ).build_transaction(get_empty_tx_params())["data"]
             safe.estimate_tx_gas_with_web3(deployed_erc20.address, value, transfer_data)
 
     def test_retrieve_code(self):
@@ -698,9 +698,9 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         message = b"12345"
         message_hash = safe_contract.functions.getMessageHash(message).call()
         sign_message_data = HexBytes(
-            safe_contract.functions.signMessage(message).build_transaction({"gas": 0})[
-                "data"
-            ]
+            safe_contract.functions.signMessage(message).build_transaction(
+                get_empty_tx_params()
+            )["data"]
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
         safe_tx.sign(self.ethereum_test_account.key)

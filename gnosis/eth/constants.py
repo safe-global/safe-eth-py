@@ -1,9 +1,11 @@
+from eth_typing import ChecksumAddress
+
 SECPK1_N = (
     115792089237316195423570985008687907852837564279074904382605163141518161494337
 )
 
-NULL_ADDRESS: str = "0x" + "0" * 40
-SENTINEL_ADDRESS: str = "0x" + "0" * 39 + "1"
+NULL_ADDRESS: ChecksumAddress = ChecksumAddress("0x" + "0" * 40)
+SENTINEL_ADDRESS: ChecksumAddress = ChecksumAddress("0x" + "0" * 39 + "1")
 
 # keccak('Transfer(address,address,uint256)')
 ERC20_721_TRANSFER_TOPIC: str = (

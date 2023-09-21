@@ -183,8 +183,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
-        :param contract_fn: get contract function
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
         contract_fn = cls.get_contract_fn(cls)
         safe_contract = contract_fn(ethereum_client.w3)
@@ -891,13 +890,13 @@ class SafeV001(Safe):
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
 
         safe_contract = get_safe_V0_0_1_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
-            "data"
-        ]
+        constructor_data = safe_contract.constructor().build_transaction(
+            get_empty_tx_params()
+        )["data"]
         initializer_data = safe_contract.functions.setup(
             # We use 2 owners that nobody controls for the master copy
             [
@@ -936,13 +935,13 @@ class SafeV100(Safe):
 
         :param ethereum_client:
         :param deployer_account: Ethereum account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
 
         safe_contract = get_safe_V1_0_0_contract(ethereum_client.w3)
-        constructor_data = safe_contract.constructor().build_transaction({"gas": 0})[
-            "data"
-        ]
+        constructor_data = safe_contract.constructor().build_transaction(
+            get_empty_tx_params()
+        )["data"]
         initializer_data = safe_contract.functions.setup(
             # We use 2 owners that nobody controls for the master copy
             [

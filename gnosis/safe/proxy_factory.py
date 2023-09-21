@@ -46,7 +46,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
         contract_fn = cls.get_contract_fn(cls)
         contract = contract_fn(ethereum_client.w3)

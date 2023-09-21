@@ -275,7 +275,7 @@ class MultiSend:
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
         contract = get_multi_send_contract(ethereum_client.w3)
         tx = contract.constructor().build_transaction(
