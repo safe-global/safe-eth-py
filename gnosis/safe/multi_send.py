@@ -10,7 +10,11 @@ from web3 import Web3
 from gnosis.eth import EthereumClient, EthereumTxSent
 from gnosis.eth.contracts import get_multi_send_contract
 from gnosis.eth.typing import EthereumData
-from gnosis.eth.utils import fast_bytes_to_checksum_address, fast_is_checksum_address
+from gnosis.eth.utils import (
+    fast_bytes_to_checksum_address,
+    fast_is_checksum_address,
+    get_empty_tx_params,
+)
 
 logger = getLogger(__name__)
 
@@ -271,7 +275,7 @@ class MultiSend:
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
         contract = get_multi_send_contract(ethereum_client.w3)
         tx = contract.constructor().build_transaction(
@@ -306,4 +310,4 @@ class MultiSend:
         encoded_multisend_data = b"".join([x.encoded_data for x in multi_send_txs])
         return multisend_contract.functions.multiSend(
             encoded_multisend_data
-        ).build_transaction({"gas": 1, "gasPrice": 1})["data"]
+        ).build_transaction(get_empty_tx_params())["data"]

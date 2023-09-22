@@ -138,7 +138,7 @@ class GnosisProtocolAPI:
         """
         Place order. If `feeAmount=0` in Order it will be calculated calling `get_fee(order, from_address)`
 
-        :return: UUID for the order as an hex hash
+        :return: UUID for the order as a hex hash
         """
         assert (
             order.buyAmount and order.sellAmount

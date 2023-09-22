@@ -114,7 +114,6 @@ class TransactionServiceApi(SafeBaseAPI):
             )
         else:
             result = response.json()
-            # TODO return tx-hash if executed
             signatures = self.parse_signatures(result)
             if not self.ethereum_client:
                 logger.warning(

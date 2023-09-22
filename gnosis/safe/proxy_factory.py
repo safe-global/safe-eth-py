@@ -1,3 +1,4 @@
+import secrets
 from abc import ABCMeta
 from typing import Callable, Optional
 
@@ -18,12 +19,24 @@ from gnosis.eth.contracts import (
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
+    get_proxy_factory_V1_4_1_contract,
 )
-from gnosis.eth.utils import compare_byte_code
+from gnosis.eth.utils import compare_byte_code, get_empty_tx_params
 from gnosis.util import cache
 
 
-class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
+class ProxyFactory(ContractBase, metaclass=ABCMeta):
+    def __new__(cls, *args, version: str = "1.4.1", **kwargs) -> "ProxyFactory":
+        versions = {
+            "1.0.0": ProxyFactoryV100,
+            "1.1.1": ProxyFactoryV111,
+            "1.3.0": ProxyFactoryV130,
+            "1.4.1": ProxyFactoryV141,
+        }
+        instance_class = versions[version]
+        instance = super().__new__(instance_class)
+        return instance
+
     @classmethod
     def deploy_contract(
         cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
@@ -33,12 +46,12 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
         contract_fn = cls.get_contract_fn(cls)
         contract = contract_fn(ethereum_client.w3)
         constructor_data = contract.constructor().build_transaction(
-            {"gas": 0, "gasPrice": 0}
+            get_empty_tx_params()
         )["data"]
         return ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data
@@ -63,7 +76,8 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
             self.get_proxy_runtime_code,
         )
         for proxy_code_fn in proxy_code_fns:
-            if compare_byte_code(deployed_proxy_code, proxy_code_fn()):
+            proxy_code = proxy_code_fn()
+            if proxy_code and compare_byte_code(deployed_proxy_code, proxy_code):
                 return True
         return False
 
@@ -130,8 +144,8 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
         self,
         deployer_account: LocalAccount,
         master_copy: ChecksumAddress,
-        initializer: bytes,
-        salt_nonce: int,
+        initializer: bytes = b"",
+        salt_nonce: Optional[int] = None,
         gas: Optional[int] = None,
         gas_price: Optional[int] = None,
         nonce: Optional[int] = None,
@@ -142,12 +156,13 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
         :param deployer_account: Ethereum account
         :param master_copy: Address the proxy will point at
         :param initializer: Initializer for the deployed proxy
-        :param salt_nonce: Uint256 for ``CREATE2`` salt
+        :param salt_nonce: Uint256 for ``CREATE2`` salt. If not provided, a random one will be used
         :param gas: Gas
         :param gas_price: Gas Price
         :param nonce: Nonce
         :return: EthereumTxSent
         """
+        salt_nonce = salt_nonce if salt_nonce is not None else secrets.randbits(256)
         create_proxy_fn = self.contract.functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
         )
@@ -157,43 +172,40 @@ class ProxyFactoryBase(ContractBase, metaclass=ABCMeta):
         )
 
     @cache
-    def get_proxy_runtime_code(self):
+    def get_proxy_runtime_code(self) -> Optional[bytes]:
         """
-        Get runtime code for current proxy factory
+        :return: Runtime code for current proxy factory. For v1.4.1 onwards the method is not avaiable, so `None`
+            will be returned
         """
-        return self.contract.functions.proxyRuntimeCode().call()
+        if hasattr(self.contract.functions, "proxyRuntimeCode"):
+            return self.contract.functions.proxyRuntimeCode().call()
 
 
-class ProxyFactoryV100(ProxyFactoryBase):
+class ProxyFactoryV100(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_0_0_contract
 
 
-class ProxyFactoryV111(ProxyFactoryBase):
+class ProxyFactoryV111(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_1_1_contract
 
 
-class ProxyFactoryV130(ProxyFactoryBase):
+class ProxyFactoryV130(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
         return get_proxy_factory_V1_3_0_contract
 
 
-class ProxyFactory:
-    versions = {
-        "1.0.0": ProxyFactoryV100,
-        "1.1.1": ProxyFactoryV111,
-        "1.3.0": ProxyFactoryV130,
-    }
+class ProxyFactoryV141(ProxyFactory):
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+        return get_proxy_factory_V1_4_1_contract
 
-    def __new__(
-        cls,
-        address: ChecksumAddress,
-        ethereum_client: EthereumClient,
-        version: str = "1.3.0",
-    ):
-        # Return default version 1.3.0
-        proxy_factory_version = cls.versions.get(version, ProxyFactoryV130)
-        instance = super().__new__(proxy_factory_version)
-        instance.__init__(address, ethereum_client)
-        return instance
+    def deploy_proxy_contract(self, *args, **kwargs):
+        """
+        .. deprecated:: ``createProxy`` function was deprecated in v1.4.1, use ``deploy_proxy_contract_with_nonce``
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        raise NotImplementedError("Deprecated, use `deploy_proxy_contract_with_nonce`")

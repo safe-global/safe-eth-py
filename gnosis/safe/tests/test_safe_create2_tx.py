@@ -27,8 +27,8 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         safe_creation_tx = SafeCreate2TxBuilder(
             w3=w3,
-            master_copy_address=self.safe_contract_address,
-            proxy_factory_address=self.proxy_factory_contract_address,
+            master_copy_address=self.safe_contract.address,
+            proxy_factory_address=self.proxy_factory_contract.address,
         ).build(
             owners=owners,
             threshold=threshold,
@@ -48,7 +48,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
         funder_balance = self.ethereum_client.get_balance(funder_account.address)
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             funder_account,
-            self.safe_contract_address,
+            self.safe_contract.address,
             safe_creation_tx.safe_setup_data,
             salt_nonce,
             safe_creation_tx.gas,
@@ -101,7 +101,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
         safe_creation_tx = SafeCreate2TxBuilder(
             w3=w3,
             master_copy_address=master_copy,
-            proxy_factory_address=self.proxy_factory_contract_address,
+            proxy_factory_address=self.proxy_factory_contract.address,
         ).build(
             owners=owners,
             threshold=threshold,
@@ -170,8 +170,8 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         safe_creation_tx = SafeCreate2TxBuilder(
             w3=w3,
-            master_copy_address=self.safe_contract_address,
-            proxy_factory_address=self.proxy_factory_contract_address,
+            master_copy_address=self.safe_contract.address,
+            proxy_factory_address=self.proxy_factory_contract.address,
         ).build(
             owners=owners,
             threshold=threshold,
@@ -191,7 +191,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             funder_account,
-            self.safe_contract_address,
+            self.safe_contract.address,
             safe_creation_tx.safe_setup_data,
             salt_nonce,
             gas=safe_creation_tx.gas,
@@ -236,8 +236,8 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         safe_creation_tx = SafeCreate2TxBuilder(
             w3=w3,
-            master_copy_address=self.safe_contract_address,
-            proxy_factory_address=self.proxy_factory_contract_address,
+            master_copy_address=self.safe_contract.address,
+            proxy_factory_address=self.proxy_factory_contract.address,
         ).build(
             owners=owners,
             threshold=threshold,
@@ -262,7 +262,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             funder_account,
-            self.safe_contract_address,
+            self.safe_contract.address,
             safe_creation_tx.safe_setup_data,
             salt_nonce,
             gas=safe_creation_tx.gas,
@@ -315,8 +315,8 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         safe_creation_tx = SafeCreate2TxBuilder(
             w3=w3,
-            master_copy_address=self.safe_contract_address,
-            proxy_factory_address=self.proxy_factory_contract_address,
+            master_copy_address=self.safe_contract.address,
+            proxy_factory_address=self.proxy_factory_contract.address,
         ).build(
             owners=owners,
             threshold=threshold,
@@ -345,7 +345,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             funder_account,
-            self.safe_contract_address,
+            self.safe_contract.address,
             safe_creation_tx.safe_setup_data,
             salt_nonce,
             gas=safe_creation_tx.gas,
@@ -392,8 +392,8 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
             safe_creation_tx = SafeCreate2TxBuilder(
                 w3=w3,
-                master_copy_address=self.safe_contract_address,
-                proxy_factory_address=self.proxy_factory_contract_address,
+                master_copy_address=self.safe_contract.address,
+                proxy_factory_address=self.proxy_factory_contract.address,
             ).build(
                 owners=owners,
                 threshold=threshold,
@@ -411,7 +411,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
 
             ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
                 funder_account,
-                self.safe_contract_address,
+                self.safe_contract.address,
                 safe_creation_tx.safe_setup_data,
                 salt_nonce,
                 gas=safe_creation_tx.gas,

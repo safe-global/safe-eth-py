@@ -23,7 +23,7 @@ from ..contracts import (
     get_uniswap_v2_pair_contract,
     get_uniswap_v2_router_contract,
 )
-from ..utils import fast_bytes_to_checksum_address, fast_keccak
+from ..utils import fast_bytes_to_checksum_address, fast_keccak, get_empty_tx_params
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.cream_abis import cream_ctoken_abi
@@ -151,7 +151,7 @@ class UniswapOracle(PriceOracle):
             "id": 0,
         }
         erc20 = get_erc20_contract(self.w3, token_address)
-        params = {"gas": 0, "gasPrice": 0}
+        params = get_empty_tx_params()
         decimals_data = erc20.functions.decimals().build_transaction(params)["data"]
         token_balance_data = erc20.functions.balanceOf(
             uniswap_exchange_address

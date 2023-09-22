@@ -35,7 +35,7 @@ from .mocks.mock_trace_block import (
 )
 from .mocks.mock_trace_filter import trace_filter_mock_1
 from .mocks.mock_trace_transaction import trace_transaction_mocks
-from .utils import deploy_example_erc20, just_test_if_mainnet_node
+from .utils import just_test_if_mainnet_node
 
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
@@ -239,10 +239,10 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
 
     def test_get_total_transfer_history(self):
         amount = 50
-        owner_account = self.create_account(initial_ether=0.01)
-        account_1 = self.create_account(initial_ether=0.01)
-        account_2 = self.create_account(initial_ether=0.01)
-        account_3 = self.create_account(initial_ether=0.01)
+        owner_account = self.create_and_fund_account(initial_ether=0.01)
+        account_1 = self.create_and_fund_account(initial_ether=0.01)
+        account_2 = self.create_and_fund_account(initial_ether=0.01)
+        account_3 = self.create_and_fund_account(initial_ether=0.01)
         erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
         # `owner` sends `amount // 2` to `account_1` and `account_3`
         self.send_tx(
@@ -301,13 +301,13 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
 
     def test_get_transfer_history(self):
         amount = 1000
-        owner_account = self.create_account(initial_ether=0.01)
+        owner_account = self.create_and_fund_account(initial_ether=0.01)
 
         # Owner will send amount / 2 to receiver and receiver2. Then receiver1 and receiver 2
         # will send amount / 4 to receiver3
-        receiver_account = self.create_account(initial_ether=0.01)
-        receiver2_account = self.create_account(initial_ether=0.01)
-        receiver3_account = self.create_account(initial_ether=0.01)
+        receiver_account = self.create_and_fund_account(initial_ether=0.01)
+        receiver2_account = self.create_and_fund_account(initial_ether=0.01)
+        receiver3_account = self.create_and_fund_account(initial_ether=0.01)
         erc20_contract = self.deploy_example_erc20(amount, owner_account.address)
         block_number = self.w3.eth.block_number
         events = self.ethereum_client.erc20.get_transfer_history(
@@ -1015,7 +1015,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
     @pytest.mark.xfail(reason="Last ganache-cli version broke the test")
     def test_send_unsigned_transaction_with_private_key(self):
-        account = self.create_account(initial_ether=0.1)
+        account = self.create_and_fund_account(initial_ether=0.1)
         key = account.key
         to, _ = get_eth_address_with_key()
         value = 4
@@ -1176,9 +1176,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.is_contract(self.ethereum_test_account.address)
         )
 
-        erc20 = deploy_example_erc20(
-            self.ethereum_client.w3, 2, self.ethereum_test_account.address
-        )
+        erc20 = self.deploy_example_erc20(2, self.ethereum_test_account.address)
         self.assertTrue(self.ethereum_client.is_contract(erc20.address))
 
     def test_is_eip1559_supported(self):

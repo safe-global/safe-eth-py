@@ -21,6 +21,7 @@ from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from .contracts import ContractBase, get_multicall_v3_contract
 from .ethereum_client import EthereumTxSent
 from .exceptions import BatchCallFunctionFailed
+from .utils import get_empty_tx_params
 
 logger = logging.getLogger(__name__)
 
@@ -98,12 +99,12 @@ class Multicall(ContractBase):
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
-        :return: deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address
         """
         contract_fn = cls.get_contract_fn(cls)
         contract = contract_fn(ethereum_client.w3)
         constructor_data = contract.constructor().build_transaction(
-            {"gas": 0, "gasPrice": 0}
+            get_empty_tx_params()
         )["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(

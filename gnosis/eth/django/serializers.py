@@ -62,7 +62,7 @@ class HexadecimalField(serializers.Field):
     """
 
     default_error_messages = {
-        "invalid": _("{value} is not an hexadecimal value."),
+        "invalid": _("{value} is not a hexadecimal value."),
         "blank": _("This field may not be blank."),
         "max_length": _(
             "Ensure this field has no more than {max_length} hexadecimal chars (not counting 0x)."

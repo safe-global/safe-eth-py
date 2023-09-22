@@ -5,6 +5,7 @@ from django.test import TestCase
 from eth_account import Account
 from hexbytes import HexBytes
 
+from ...eth.utils import get_empty_tx_params
 from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
 from ..multi_send import MultiSendOperation, MultiSendTx
 from ..safe import SafeOperation
@@ -39,12 +40,12 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         data = HexBytes(
             safe_contract.functions.addOwnerWithThreshold(
                 new_owner.address, new_threshold
-            ).build_transaction({"gas": 0})["data"]
+            ).build_transaction(get_empty_tx_params())["data"]
         )
         data_2 = HexBytes(
             safe_contract.functions.removeOwner(
                 prev_owner.address, owner_to_remove.address, new_threshold
-            ).build_transaction({"gas": 0})["data"]
+            ).build_transaction(get_empty_tx_params())["data"]
         )
 
         multisend_txs = [
@@ -372,7 +373,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         chain_id = self.ethereum_client.w3.eth.chain_id
         safe_tx_hash = SafeTx(
             self.ethereum_client,
-            self.safe_contract_address,
+            self.safe_contract.address,
             to,
             value,
             data,

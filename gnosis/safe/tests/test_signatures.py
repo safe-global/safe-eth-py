@@ -4,7 +4,7 @@ from eth_account import Account
 from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
-from gnosis.eth.contracts import get_compatibility_fallback_handler_V1_3_0_contract
+from gnosis.eth.contracts import get_compatibility_fallback_handler_contract
 
 from ..signatures import get_signing_address
 from .safe_test_case import SafeTestCaseMixin
@@ -39,7 +39,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
             safe.contract.functions.domainSeparator().call(), safe.domain_separator
         )
 
-        compatibility_contract = get_compatibility_fallback_handler_V1_3_0_contract(
+        compatibility_contract = get_compatibility_fallback_handler_contract(
             self.w3, safe.address
         )
         safe_message_hash = safe.get_message_hash(message)

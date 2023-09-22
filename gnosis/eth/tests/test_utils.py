@@ -3,7 +3,6 @@ import os
 from django.test import TestCase
 
 from eth_abi.packed import encode_packed
-from eth_account import Account
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 
@@ -61,7 +60,8 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         initializer = b""  # Should be the safe `setup()` call with `owners`, `threshold`, `payment`...
         salt_nonce = 0  # Random. For sure. I used a dice
 
-        master_copy = Account.create().address
+        # From v1.4.1 createProxyWithNonce requires a valid singleton address, so we will use any deployed contract
+        master_copy = proxy_factory_contract.address
         tx = proxy_factory_contract.functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
         ).build_transaction(
