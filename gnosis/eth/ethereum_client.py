@@ -428,10 +428,17 @@ class Erc20Manager(EthereumClientManager):
             if topics_len == 1:
                 # Not standard Transfer(address from, address to, uint256 unknown)
                 # 1 topic (transfer topic)
-                _from, to, unknown = eth_abi.decode(
-                    ["address", "address", "uint256"], HexBytes(data)
-                )
-                return {"from": _from, "to": to, "unknown": unknown}
+                try:
+                    _from, to, unknown = eth_abi.decode(
+                        ["address", "address", "uint256"], HexBytes(data)
+                    )
+                    return {"from": _from, "to": to, "unknown": unknown}
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to, uint256 unknown` from data=%s",
+                        data.hex(),
+                    )
+                    return None
             elif topics_len == 3:
                 # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
                 # 3 topics (transfer topic + from + to)
@@ -452,23 +459,31 @@ class Erc20Manager(EthereumClientManager):
                             ["address", "address"], from_to_data
                         )
                     )
+                    return {"from": _from, "to": to, "value": value}
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `address from, address to` from topics=%s",
                         HexBytes(from_to_data).hex(),
                     )
                     return None
-                return {"from": _from, "to": to, "value": value}
             elif topics_len == 4:
                 # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
                 # 4 topics (transfer topic + from + to + tokenId)
-                _from, to, token_id = eth_abi.decode(
-                    ["address", "address", "uint256"], b"".join(topics[1:])
-                )
-                _from, to = [
-                    fast_to_checksum_address(address) for address in (_from, to)
-                ]
-                return {"from": _from, "to": to, "tokenId": token_id}
+                try:
+                    from_to_token_id_data = b"".join(topics[1:])
+                    _from, to, token_id = eth_abi.decode(
+                        ["address", "address", "uint256"], from_to_token_id_data
+                    )
+                    _from, to = [
+                        fast_to_checksum_address(address) for address in (_from, to)
+                    ]
+                    return {"from": _from, "to": to, "tokenId": token_id}
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to` from topics=%s",
+                        HexBytes(from_to_token_id_data).hex(),
+                    )
+                    return None
         return None
 
     def get_balance(self, address: str, token_address: str) -> int:
