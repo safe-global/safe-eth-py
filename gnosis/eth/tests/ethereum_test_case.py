@@ -1,6 +1,5 @@
 import logging
-
-from django.conf import settings
+import os
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -22,6 +21,7 @@ _cached_data = {
 
 class EthereumTestCaseMixin:
     ethereum_client: EthereumClient
+    ethereum_node_url: str
     w3: Web3
     ethereum_test_account: LocalAccount
     multicall: Multicall
@@ -30,7 +30,7 @@ class EthereumTestCaseMixin:
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.ethereum_test_account = Account.from_key(settings.ETHEREUM_TEST_PRIVATE_KEY)
+        cls.ethereum_test_account = cls.get_ethereum_test_account(cls)
         # Caching ethereum_client to prevent initializing again
         cls.ethereum_client = _cached_data["ethereum_client"]
 
@@ -39,9 +39,23 @@ class EthereumTestCaseMixin:
             Multicall.deploy_contract(cls.ethereum_client, cls.ethereum_test_account)
             _cached_data["ethereum_client"] = cls.ethereum_client
 
+        cls.ethereum_node_url = cls.ethereum_client.ethereum_node_url
+
         cls.w3 = cls.ethereum_client.w3
         cls.multicall = cls.ethereum_client.multicall
         assert cls.multicall, "Multicall must be defined"
+
+    def get_ethereum_test_account(self):
+        try:
+            from django.conf import settings
+
+            key = settings.ETHEREUM_TEST_PRIVATE_KEY
+        except ModuleNotFoundError:
+            key = os.environ.get(
+                "ETHEREUM_TEST_PRIVATE_KEY",
+                "b0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773",  # Ganache account 9
+            )
+        return Account.from_key(key)
 
     @property
     def gas_price(self):
