@@ -14,8 +14,8 @@ Ethereum utils
 gnosis.eth
 ~~~~~~~~~~
 - ``class EthereumClient (ethereum_node_url: str)``: Class to connect and do operations
-  with a ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
-  Only ``http/https`` urls are suppored for the node url.
+  with an ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
+  Only ``http/https`` urls are supported for the node url.
 
 ``EthereumClient`` has some utils that improve a lot performance using Ethereum nodes, like
 the possibility of doing ``batch_calls`` (a single request making read-only calls to multiple contracts):
@@ -74,7 +74,7 @@ gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
 - ``SENTINEL_ADDRESS (0x000...1)``: Used for Gnosis Safe's linked lists (modules, owners...).
-- Maximum an minimum values for `R`, `S` and `V` in ethereum signatures.
+- Maximum and minimum values for `R`, `S` and `V` in ethereum signatures.
 
 gnosis.eth.eip712
 ~~~~~~~~~~~~~~~~~~~~
