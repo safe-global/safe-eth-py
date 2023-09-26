@@ -2,8 +2,6 @@ import logging
 import os
 from typing import List, Optional
 
-from django.conf import settings
-
 from eth_account import Account
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
@@ -79,29 +77,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
                     cls.ethereum_client, cls.ethereum_test_account
                 ).contract_address
 
-        settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
-        settings.SAFE_DEFAULT_CALLBACK_HANDLER = _contract_addresses[
-            "compatibility_fallback_handler"
-        ]
-        settings.SAFE_MULTISEND_ADDRESS = _contract_addresses["multi_send"]
-        settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses["proxy_factory"]
-        os.environ["SAFE_SIMULATE_TX_ACCESSOR_ADDRESS"] = _contract_addresses[
-            "simulate_tx_accessor_V1_4_1"
-        ]
-        settings.SAFE_SIMULATE_TX_ACCESSOR = _contract_addresses[
-            "simulate_tx_accessor_V1_4_1"
-        ]
-        settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses["safe_V0_0_1"]
-        settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_0_0"]
-        settings.SAFE_V1_1_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_1_1"]
-        settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_3_0"]
-        settings.SAFE_VALID_CONTRACT_ADDRESSES = {
-            settings.SAFE_CONTRACT_ADDRESS,
-            settings.SAFE_V1_3_0_CONTRACT_ADDRESS,
-            settings.SAFE_V1_1_1_CONTRACT_ADDRESS,
-            settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
-            settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
-        }
+        cls.configure_django_settings(cls)
+        cls.configure_envvars(cls)
+
         cls.compatibility_fallback_handler = (
             get_compatibility_fallback_handler_contract(
                 cls.w3, _contract_addresses["compatibility_fallback_handler"]
@@ -137,6 +115,51 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         cls.multi_send = MultiSend(
             cls.ethereum_client, address=cls.multi_send_contract.address
         )
+
+    def configure_django_settings(self):
+        """
+        Configure settings for django based applications
+
+        :return:
+        """
+
+        try:
+            from django.conf import settings
+
+            settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
+            settings.SAFE_DEFAULT_CALLBACK_HANDLER = _contract_addresses[
+                "compatibility_fallback_handler"
+            ]
+            settings.SAFE_MULTISEND_ADDRESS = _contract_addresses["multi_send"]
+            settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses["proxy_factory"]
+            settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses["safe_V0_0_1"]
+            settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_0_0"]
+            settings.SAFE_V1_1_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_1_1"]
+            settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_3_0"]
+            settings.SAFE_V1_4_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
+            settings.SAFE_SIMULATE_TX_ACCESSOR = _contract_addresses[
+                "simulate_tx_accessor_V1_4_1"
+            ]
+            settings.SAFE_VALID_CONTRACT_ADDRESSES = {
+                settings.SAFE_CONTRACT_ADDRESS,
+                settings.SAFE_V1_3_0_CONTRACT_ADDRESS,
+                settings.SAFE_V1_1_1_CONTRACT_ADDRESS,
+                settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
+                settings.SAFE_V0_0_1_CONTRACT_ADDRESS,
+            }
+
+        except ModuleNotFoundError:
+            logger.info("Django library is not installed")
+
+    def configure_envvars(self):
+        """
+        Configure environment variables
+
+        :return:
+        """
+        os.environ["SAFE_SIMULATE_TX_ACCESSOR_ADDRESS"] = _contract_addresses[
+            "simulate_tx_accessor_V1_4_1"
+        ]
 
     def deploy_test_safe(self, *args, **kwargs) -> Safe:
         """

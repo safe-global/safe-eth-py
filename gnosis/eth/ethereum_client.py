@@ -176,10 +176,15 @@ class TxSpeed(Enum):
 class EthereumClientProvider:
     def __new__(cls):
         if not hasattr(cls, "instance"):
-            from django.conf import settings
+            try:
+                from django.conf import settings
+
+                ethereum_node_url = settings.ETHEREUM_NODE_URL
+            except ModuleNotFoundError:
+                ethereum_node_url = os.environ.get("ETHEREUM_NODE_URL")
 
             cls.instance = EthereumClient(
-                settings.ETHEREUM_NODE_URL,
+                ethereum_node_url,
                 provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
                 slow_provider_timeout=int(
                     os.environ.get("ETHEREUM_RPC_SLOW_TIMEOUT", 60)
