@@ -25,7 +25,7 @@ the possibility of doing ``batch_calls`` (a single request making read-only call
   from gnosis.eth import EthereumClient
   from gnosis.eth.contracts import get_erc721_contract
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
-  erc721_contract = get_erc721_contract(self.w3, token_address)
+  erc721_contract = get_erc721_contract(ethereum_client.w3, token_address)
   name, symbol = ethereum_client.batch_call([
                       erc721_contract.functions.name(),
                       erc721_contract.functions.symbol(),
@@ -38,7 +38,7 @@ More optimal in case you want to call the same function in multiple contracts
   from gnosis.eth import EthereumClient
   from gnosis.eth.contracts import get_erc20_contract
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
-  erc20_contract = get_erc20_contract(self.w3, token_address)
+  erc20_contract = get_erc20_contract(ethereum_client.w3, token_address)
   my_account = '0xD0E03B027A367fED4fd0E7834a82CD8A73E76B45'
   name, symbol = ethereum_client.batch_call_same_function(
                       erc20_contract.functions.balanceOf(my_account),
