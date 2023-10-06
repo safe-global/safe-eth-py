@@ -50,6 +50,8 @@ class EtherscanClient:
         EthereumNetwork.ZKSYNC_V2: "https://explorer.zksync.io/",
         EthereumNetwork.FANTOM_OPERA: "https://ftmscan.com",
         EthereumNetwork.FANTOM_TESTNET: "https://testnet.ftmscan.com/",
+        EthereumNetwork.LINEA: "https://www.lineascan.build",
+        EthereumNetwork.LINEA_TESTNET: "https://goerli.lineascan.build",
     }
 
     NETWORK_WITH_API_URL = {
@@ -80,6 +82,8 @@ class EtherscanClient:
         EthereumNetwork.ZKSYNC_V2: "https://block-explorer-api.mainnet.zksync.io/",
         EthereumNetwork.FANTOM_OPERA: "https://api.ftmscan.com",
         EthereumNetwork.FANTOM_TESTNET: "https://api-testnet.ftmscan.com",
+        EthereumNetwork.LINEA: "https://api.lineascan.build",
+        EthereumNetwork.LINEA_TESTNET: "https://api-testnet.lineascan.build",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
