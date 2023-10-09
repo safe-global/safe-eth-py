@@ -473,7 +473,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             {"from": self.w3.eth.accounts[0]}
         )
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
-        nester = self.w3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
+        nester = self.w3.eth.contract(address=tx_receipt["contractAddress"], abi=abi)
 
         safe = self.deploy_test_safe(
             owners=[self.ethereum_test_account.address],

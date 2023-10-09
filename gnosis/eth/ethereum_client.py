@@ -713,10 +713,9 @@ class Erc20Manager(EthereumClientManager):
         # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
         erc20_events = []
         for event in all_events:
-            e = LogReceipt(event)  # Convert `AttributeDict` to `Dict`
-            e["args"] = self._decode_transfer_log(e["data"], e["topics"])
-            if e["args"]:
-                erc20_events.append(e)
+            event["args"] = self._decode_transfer_log(event["data"], event["topics"])
+            if event["args"]:
+                erc20_events.append(event)
         erc20_events.sort(key=lambda x: x["blockNumber"])
         return erc20_events
 
@@ -1206,6 +1205,10 @@ class EthereumClient:
         )
         self.w3: Web3 = Web3(self.w3_provider)
         self.slow_w3: Web3 = Web3(self.w3_slow_provider)
+        # Remove not needed middlewares
+        for w3 in self.w3, self.slow_w3:
+            w3.middleware_onion.remove("attrdict")
+
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
         self.tracing: TracingManager = TracingManager(self)

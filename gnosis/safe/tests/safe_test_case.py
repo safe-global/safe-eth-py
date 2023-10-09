@@ -381,5 +381,5 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             {"from": self.w3.eth.accounts[0]}
         )
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
-        assert tx_receipt.status == 1, "Problem deploying example guard"
-        return tx_receipt.contractAddress
+        assert tx_receipt["status"] == 1, "Problem deploying example guard"
+        return tx_receipt["contractAddress"]

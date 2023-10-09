@@ -135,7 +135,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         receipt = self.ethereum_client.get_transaction_receipt(
             ethereum_tx_sent.tx_hash, timeout=20
         )
-        self.assertEqual(receipt.status, 1)
+        self.assertEqual(receipt["status"], 1)
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
         self.assertEqual(
             ethereum_tx_sent.contract_address, safe_create2_tx.safe_address

@@ -376,8 +376,8 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         )
         self.assertEqual(len(events), 2)
         for event in events:
-            self.assertEqual(event.args.value, amount // 4)
-            self.assertEqual(event.args.to, receiver3_account.address)
+            self.assertEqual(event["args"]["value"], amount // 4)
+            self.assertEqual(event["args"]["to"], receiver3_account.address)
 
         events = self.ethereum_client.erc20.get_transfer_history(
             block_number,
@@ -386,9 +386,9 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         )
         self.assertEqual(len(events), 1)
         event = events[0]
-        self.assertEqual(event.args.value, amount // 4)
-        self.assertEqual(event.args["from"], receiver2_account.address)
-        self.assertEqual(event.args.to, receiver3_account.address)
+        self.assertEqual(event["args"]["value"], amount // 4)
+        self.assertEqual(event["args"]["from"], receiver2_account.address)
+        self.assertEqual(event["args"]["to"], receiver3_account.address)
 
     def test_get_info(self):
         amount = 1
@@ -751,10 +751,10 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         value = 123
         tx_hash = self.send_ether(to, value)
         tx = self.ethereum_client.get_transaction(tx_hash)
-        self.assertEqual(tx.to, to)
-        self.assertEqual(tx.value, value)
-        block = self.ethereum_client.get_block(tx.blockNumber)
-        self.assertEqual(block.number, tx.blockNumber)
+        self.assertEqual(tx["to"], to)
+        self.assertEqual(tx["value"], value)
+        block = self.ethereum_client.get_block(tx["blockNumber"])
+        self.assertEqual(block["number"], tx["blockNumber"])
 
     def test_get_transactions(self):
         self.assertEqual(self.ethereum_client.get_transactions([]), [])
