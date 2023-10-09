@@ -41,10 +41,10 @@ def generate_safe_deployments_py():
         repo.git.checkout(SAFE_DEPLOYMENTS_VERSION)
         for root, dirs, files in os.walk(DEPLOYMENTS_FOLDER, topdown=False):
             for filename in files:
-                safe_deployment = json.load(open(os.path.join(root, filename)))
-                safe_deployments[safe_deployment["version"]] = {
-                    safe_deployment["contractName"]: safe_deployment["networkAddresses"]
-                }
+                repo_safe_deployment = json.load(open(os.path.join(root, filename)))
+                safe_deployments.setdefault(repo_safe_deployment["version"], {})[
+                    repo_safe_deployment["contractName"]
+                ] = repo_safe_deployment["networkAddresses"]
 
         # Write file
         with open(SAFE_ETH_PY_DEPLOYMENTS_PATH, "w") as file:
