@@ -1,5 +1,5 @@
 Safe-eth-py (previously known as Gnosis-py)
-##########################################
+###########################################
 
 .. class:: no-web no-pdf
 

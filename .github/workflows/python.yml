@@ -98,6 +98,7 @@ jobs:
       run: |
         python -m pip install --upgrade build twine
         python -m build
+        twine check dist/*
         twine upload dist/*
       env:
         TWINE_USERNAME: __token__
