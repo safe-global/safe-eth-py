@@ -25,7 +25,16 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             12504423,
             "1.3.0+L2",
         ),  # default singleton address
-        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 12504268, "1.3.0"),
+        (
+            "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
+            17530813,
+            "1.3.0",
+        ),  # safe singleton factory
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            12504268,
+            "1.3.0",
+        ),  # default singleton address
         ("0x6851D6fDFAfD08c0295C392436245E5bc78B0185", 10329734, "1.2.0"),
         ("0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F", 9084503, "1.1.1"),
         ("0xaE32496491b53841efb51829d6f886387708F99B", 8915728, "1.1.0"),
