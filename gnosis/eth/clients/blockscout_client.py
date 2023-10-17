@@ -64,6 +64,8 @@ class BlockscoutClient:
         EthereumNetwork.RSK_TESTNET: "https://rootstock-testnet.blockscout.com/graphiql",
         EthereumNetwork.LINEA: "https://explorer.linea.build/graphiql",
         EthereumNetwork.LINEA_TESTNET: "https://explorer.goerli.linea.build/graphiql",
+        EthereumNetwork.NEON_EVM_MAINNET: "https://neon.blockscout.com/graphiql",
+        EthereumNetwork.NEON_EVM_DEVNET: "https://neon-devnet.blockscout.com/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
