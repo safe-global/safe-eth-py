@@ -21,9 +21,7 @@ def just_test_if_mainnet_node() -> str:
         return mainnet_node_url
 
     if not mainnet_node_url:
-        pytest.skip(
-            "Mainnet node not defined, cannot test oracles", allow_module_level=True
-        )
+        pytest.skip("Mainnet node not defined, skipping test", allow_module_level=True)
     else:
         try:
             response = requests.post(

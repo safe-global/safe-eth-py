@@ -45,7 +45,7 @@ class EthereumTestCaseMixin:
         cls.multicall = cls.ethereum_client.multicall
         assert cls.multicall, "Multicall must be defined"
 
-    def get_ethereum_test_account(self):
+    def get_ethereum_test_account(self) -> LocalAccount:
         try:
             from django.conf import settings
 
