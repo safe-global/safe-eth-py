@@ -69,6 +69,8 @@ class BlockscoutClient:
         EthereumNetwork.OASIS_SAPPHIRE: "https://explorer.sapphire.oasis.io/graphiql",
         EthereumNetwork.OASIS_SAPPHIRE_TESTNET: "https://testnet.explorer.sapphire.oasis.dev/graphiql",
         EthereumNetwork.CASCADIA_TESTNET: "https://explorer.cascadia.foundation/graphiql",
+        EthereumNetwork.TENET: "https://tenetscan.io/graphiql",
+        EthereumNetwork.TENET_TESTNET: "https://testnet.tenetscan.io/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
