@@ -60,6 +60,8 @@ class BlockscoutClient:
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz/graphiql",
         EthereumNetwork.ZETACHAIN_ATHENS_TESTNET: "https://zetachain-athens-3.blockscout.com/graphiql",
         EthereumNetwork.SCROLL: "https://blockscout.scroll.io/graphiql",
+        EthereumNetwork.RSK_MAINNET: "https://rootstock.blockscout.com/graphiql",
+        EthereumNetwork.RSK_TESTNET: "https://rootstock-testnet.blockscout.com/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
