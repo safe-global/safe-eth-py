@@ -74,6 +74,8 @@ class BlockscoutClient:
         EthereumNetwork.VELAS_EVM_MAINNET: "https://evmexplorer.velas.com/graphiql",
         EthereumNetwork.CRONOS_MAINNET_BETA: "https://cronos.org/explorer/graphiql",
         EthereumNetwork.CRONOS_TESTNET: "https://cronos.org/explorer/testnet3/graphiql",
+        EthereumNetwork.THUNDERCORE_MAINNET: "https://explorer-mainnet.thundercore.com/graphiql",
+        EthereumNetwork.THUNDERCORE_TESTNET: "https://explorer-testnet.thundercore.com/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
