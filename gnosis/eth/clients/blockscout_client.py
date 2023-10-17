@@ -72,6 +72,8 @@ class BlockscoutClient:
         EthereumNetwork.TENET: "https://tenetscan.io/graphiql",
         EthereumNetwork.TENET_TESTNET: "https://testnet.tenetscan.io/graphiql",
         EthereumNetwork.VELAS_EVM_MAINNET: "https://evmexplorer.velas.com/graphiql",
+        EthereumNetwork.CRONOS_MAINNET_BETA: "https://cronos.org/explorer/graphiql",
+        EthereumNetwork.CRONOS_TESTNET: "https://cronos.org/explorer/testnet3/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
