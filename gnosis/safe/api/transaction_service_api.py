@@ -159,7 +159,7 @@ class TransactionServiceApi(SafeBaseAPI):
         return response.json().get("results", [])
 
     def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
-        response = self._get_request(f"/api/v1/safes/{safe_address}/delegates/")
+        response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
