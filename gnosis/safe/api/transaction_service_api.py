@@ -3,7 +3,7 @@ import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_account.signers.local import LocalAccount
-from eth_typing import HexStr
+from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -20,18 +20,21 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
         EthereumNetwork.AURORA_MAINNET: "https://safe-transaction-aurora.safe.global",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
+        EthereumNetwork.BASE_MAINNET: "https://safe-transaction-base.safe.global",
+        EthereumNetwork.BASE_GOERLI_TESTNET: "https://safe-transaction-base-testnet.safe.global",
         EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
-        EthereumNetwork.ENERGY_WEB_CHAIN: "https://safe-transaction-ewc.safe.global",
+        EthereumNetwork.CELO_MAINNET: "https://safe-transaction-celo.safe.global",
+        EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
         EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
         EthereumNetwork.MAINNET: "https://safe-transaction-mainnet.safe.global",
-        EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
         EthereumNetwork.OPTIMISM: "https://safe-transaction-optimism.safe.global",
-        EthereumNetwork.ENERGY_WEB_VOLTA_TESTNET: "https://safe-transaction-volta.safe.global",
-        EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
+        EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
+        EthereumNetwork.ZKSYNC_V2: "https://safe-transaction-zksync.safe.global",
+        EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
     }
 
     @classmethod
-    def create_delegate_message_hash(cls, delegate_address: str) -> str:
+    def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
         totp = int(time.time()) // 3600
         hash_to_sign = Web3.keccak(text=delegate_address + str(totp))
         return hash_to_sign
@@ -76,7 +79,13 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
     @classmethod
-    def parse_signatures(cls, raw_tx: Dict[str, Any]) -> Optional[HexBytes]:
+    def parse_signatures(cls, raw_tx: Dict[str, Any]) -> Optional[bytes]:
+        """
+        Parse signatures in `confirmations` list to build a valid signature (owners must be sorted lexicographically)
+
+        :param raw_tx:
+        :return: Valid signature with signatures sorted lexicographically
+        """
         if raw_tx["signatures"]:
             # Tx was executed and signatures field is populated
             return raw_tx["signatures"]
@@ -96,8 +105,7 @@ class TransactionServiceApi(SafeBaseAPI):
         response = self._get_request(f"/api/v1/safes/{safe_address}/balances/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get balances: {response.content}")
-        else:
-            return response.json()
+        return response.json()
 
     def get_safe_transaction(
         self, safe_tx_hash: Union[bytes, HexStr]
@@ -112,55 +120,51 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(
                 f"Cannot get transaction with safe-tx-hash={safe_tx_hash}: {response.content}"
             )
-        else:
-            result = response.json()
-            signatures = self.parse_signatures(result)
-            if not self.ethereum_client:
-                logger.warning(
-                    "EthereumClient should be defined to get a executable SafeTx"
-                )
-            safe_tx = SafeTx(
-                self.ethereum_client,
-                result["safe"],
-                result["to"],
-                int(result["value"]),
-                HexBytes(result["data"]) if result["data"] else b"",
-                int(result["operation"]),
-                int(result["safeTxGas"]),
-                int(result["baseGas"]),
-                int(result["gasPrice"]),
-                result["gasToken"],
-                result["refundReceiver"],
-                signatures=signatures if signatures else b"",
-                safe_nonce=int(result["nonce"]),
-                chain_id=self.network.value,
-            )
-            tx_hash = (
-                HexBytes(result["transactionHash"])
-                if result["transactionHash"]
-                else None
-            )
-            if tx_hash:
-                safe_tx.tx_hash = tx_hash
-            return (safe_tx, tx_hash)
 
-    def get_transactions(self, safe_address: str) -> List[Dict[str, Any]]:
+        result = response.json()
+        signatures = self.parse_signatures(result)
+        if not self.ethereum_client:
+            logger.warning(
+                "EthereumClient should be defined to get a executable SafeTx"
+            )
+        safe_tx = SafeTx(
+            self.ethereum_client,
+            result["safe"],
+            result["to"],
+            int(result["value"]),
+            HexBytes(result["data"]) if result["data"] else b"",
+            int(result["operation"]),
+            int(result["safeTxGas"]),
+            int(result["baseGas"]),
+            int(result["gasPrice"]),
+            result["gasToken"],
+            result["refundReceiver"],
+            signatures=signatures if signatures else b"",
+            safe_nonce=int(result["nonce"]),
+            chain_id=self.network.value,
+        )
+        tx_hash = (
+            HexBytes(result["transactionHash"]) if result["transactionHash"] else None
+        )
+        if tx_hash:
+            safe_tx.tx_hash = tx_hash
+        return safe_tx, tx_hash
+
+    def get_transactions(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
         response = self._get_request(
             f"/api/v1/safes/{safe_address}/multisig-transactions/"
         )
         if not response.ok:
             raise SafeAPIException(f"Cannot get transactions: {response.content}")
-        else:
-            return response.json().get("results", [])
+        return response.json().get("results", [])
 
-    def get_delegates(self, safe_address: str) -> List[Dict[str, Any]]:
+    def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
         response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
-        else:
-            return response.json().get("results", [])
+        return response.json().get("results", [])
 
-    def post_signatures(self, safe_tx_hash: bytes, signatures: bytes) -> None:
+    def post_signatures(self, safe_tx_hash: bytes, signatures: bytes) -> bool:
         safe_tx_hash = HexBytes(safe_tx_hash).hex()
         response = self._post_request(
             f"/api/v1/multisig-transactions/{safe_tx_hash}/confirmations/",
@@ -170,14 +174,15 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(
                 f"Cannot post signatures for tx with safe-tx-hash={safe_tx_hash}: {response.content}"
             )
+        return True
 
     def add_delegate(
         self,
-        safe_address: str,
-        delegate_address: str,
+        safe_address: ChecksumAddress,
+        delegate_address: ChecksumAddress,
         label: str,
         signer_account: LocalAccount,
-    ):
+    ) -> bool:
         hash_to_sign = self.create_delegate_message_hash(delegate_address)
         signature = signer_account.signHash(hash_to_sign)
         add_payload = {
@@ -191,10 +196,14 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(f"Cannot add delegate: {response.content}")
+        return True
 
     def remove_delegate(
-        self, safe_address: str, delegate_address: str, signer_account: LocalAccount
-    ):
+        self,
+        safe_address: ChecksumAddress,
+        delegate_address: ChecksumAddress,
+        signer_account: LocalAccount,
+    ) -> bool:
         hash_to_sign = self.create_delegate_message_hash(delegate_address)
         signature = signer_account.signHash(hash_to_sign)
         remove_payload = {"signature": signature.signature.hex()}
@@ -204,8 +213,9 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(f"Cannot remove delegate: {response.content}")
+        return True
 
-    def post_transaction(self, safe_tx: SafeTx):
+    def post_transaction(self, safe_tx: SafeTx) -> bool:
         random_sender = "0x0000000000000000000000000000000000000002"
         sender = safe_tx.sorted_signers[0] if safe_tx.sorted_signers else random_sender
         data = {
@@ -229,3 +239,4 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
+        return True
