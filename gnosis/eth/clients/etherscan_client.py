@@ -69,6 +69,7 @@ class EtherscanClient:
         EthereumNetwork.ARBITRUM_ONE: "https://api.arbiscan.io",
         EthereumNetwork.ARBITRUM_NOVA: "https://api-nova.arbiscan.io",
         EthereumNetwork.ARBITRUM_GOERLI: "https://api-goerli.arbiscan.io",
+        EthereumNetwork.ARBITRUM_SEPOLIA: "https://api-sepolia.arbiscan.io",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://api.snowtrace.io",
         EthereumNetwork.GNOSIS: "https://api.gnosisscan.io",
         EthereumNetwork.MOONBEAM: "https://api-moonbeam.moonscan.io",
