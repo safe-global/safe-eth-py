@@ -104,6 +104,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 "0.0.1": SafeV001,
                 "1.0.0": SafeV100,
                 "1.1.1": SafeV111,
+                "1.2.0": SafeV120,
                 "1.3.0": SafeV130,
                 "1.4.1": SafeV141,
             }
@@ -970,6 +971,14 @@ class SafeV100(Safe):
 class SafeV111(Safe):
     def get_version(self):
         return "1.1.1"
+
+    def get_contract_fn(self) -> Contract:
+        return get_safe_V1_1_1_contract
+
+
+class SafeV120(Safe):
+    def get_version(self):
+        return "1.2.0"
 
     def get_contract_fn(self) -> Contract:
         return get_safe_V1_1_1_contract
