@@ -57,6 +57,8 @@ class BlockscoutClient:
         EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://sepolia-blockscout.scroll.io/",
         EthereumNetwork.MANTLE: "https://explorer.mantle.xyz/graphiql",
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz/graphiql",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org/graphiql",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
