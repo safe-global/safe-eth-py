@@ -1,4 +1,3 @@
-import warnings
 from secrets import token_bytes
 from typing import Tuple, Union
 
@@ -206,21 +205,3 @@ def mk_contract_address_2(
     init_code_hash = fast_keccak(init_code)
     contract_address = fast_keccak(HexBytes("ff") + from_ + salt + init_code_hash)
     return fast_bytes_to_checksum_address(contract_address[12:])
-
-
-def generate_address_2(
-    from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]
-) -> ChecksumAddress:
-    """
-    .. deprecated:: use mk_contract_address_2
-
-    :param from_:
-    :param salt:
-    :param init_code:
-    :return:
-    """
-    warnings.warn(
-        "`generate_address_2` is deprecated, use `mk_contract_address_2`",
-        DeprecationWarning,
-    )
-    return mk_contract_address_2(from_, salt, init_code)
