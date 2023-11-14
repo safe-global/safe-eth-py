@@ -14,7 +14,6 @@ from ..utils import (
     fast_is_checksum_address,
     fast_keccak,
     fast_to_checksum_address,
-    generate_address_2,
     mk_contract_address,
     mk_contract_address_2,
 )
@@ -35,10 +34,6 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         init_code = HexBytes("0x00abcd")
         expected = "0x8D02C796Dd019916F65EBa1C9D65a7079Ece00E0"
         address2 = mk_contract_address_2(from_, salt, init_code)
-        self.assertEqual(address2, expected)
-
-        # Make sure deprecated function is working
-        address2 = generate_address_2(from_, salt, init_code)
         self.assertEqual(address2, expected)
 
     def test_generate_address2_with_proxy(self):
