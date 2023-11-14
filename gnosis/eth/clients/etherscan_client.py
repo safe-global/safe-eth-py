@@ -56,6 +56,8 @@ class EtherscanClient:
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz",
         EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org",
         EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org",
+        EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://sepolia.scrollscan.dev",
+        EthereumNetwork.SCROLL: "https://scrollscan.com",
     }
 
     NETWORK_WITH_API_URL = {
@@ -92,6 +94,8 @@ class EtherscanClient:
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz",
         EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org/api",
         EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org/api",
+        EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://api-sepolia.scrollscan.dev",
+        EthereumNetwork.SCROLL: "https://api.scrollscan.com",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
