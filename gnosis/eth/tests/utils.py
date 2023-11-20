@@ -1,3 +1,4 @@
+import functools
 import json
 import os
 from copy import deepcopy
@@ -72,6 +73,29 @@ def just_test_if_polygon_node() -> str:
             )
     just_test_if_polygon_node.checked = True
     return polygon_node_url
+
+
+def skip_on(exception, reason="Test skipped due to a controlled exception"):
+    """
+    Decorator to skip a test if an exception is raised instead of failing it
+
+    :param exception:
+    :param reason:
+    :return:
+    """
+
+    def decorator_func(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                # Run the test
+                return f(*args, **kwargs)
+            except exception:
+                pytest.skip(reason)
+
+        return wrapper
+
+    return decorator_func
 
 
 # TODO Move this to EthereumClient
