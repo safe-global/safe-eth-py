@@ -1193,6 +1193,8 @@ class EthereumClient:
         self.ethereum_node_url: str = ethereum_node_url
         self.timeout = provider_timeout
         self.slow_timeout = slow_provider_timeout
+        self.use_caching_middleware = use_caching_middleware
+
         self.w3_provider = HTTPProvider(
             self.ethereum_node_url,
             request_kwargs={"timeout": provider_timeout},
@@ -1205,26 +1207,31 @@ class EthereumClient:
         )
         self.w3: Web3 = Web3(self.w3_provider)
         self.slow_w3: Web3 = Web3(self.w3_slow_provider)
-        # Remove not needed middlewares
+
+        # Adjust Web3.py middleware
         for w3 in self.w3, self.slow_w3:
+            # Don't spend resources con converting dictionaries to attribute dictionaries
             w3.middleware_onion.remove("attrdict")
+            # Disable web3 automatic retry, it's handled on our HTTP Session
+            w3.provider.middlewares = []
+            if self.use_caching_middleware:
+                w3.middleware_onion.add(simple_cache_middleware)
+
+        # The geth_poa_middleware is required to connect to geth --dev or the Goerli public network.
+        # It may also be needed for other EVM compatible blockchains like Polygon or BNB Chain (Binance Smart Chain).
+        try:
+            if self.get_network() != EthereumNetwork.MAINNET:
+                for w3 in self.w3, self.slow_w3:
+                    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        except (IOError, OSError):
+            # For tests using dummy connections (like IPC)
+            for w3 in self.w3, self.slow_w3:
+                w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
         self.tracing: TracingManager = TracingManager(self)
         self.batch_call_manager: BatchCallManager = BatchCallManager(self)
-        try:
-            if self.get_network() != EthereumNetwork.MAINNET:
-                self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-            # For tests using dummy connections (like IPC)
-        except (IOError, FileNotFoundError):
-            self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-
-        self.use_caching_middleware = use_caching_middleware
-        if self.use_caching_middleware:
-            self.w3.middleware_onion.add(simple_cache_middleware)
-            self.slow_w3.middleware_onion.add(simple_cache_middleware)
-
         self.batch_request_max_size = batch_request_max_size
 
     def __str__(self):
@@ -1238,10 +1245,19 @@ class EthereumClient:
         https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
         """
         session = requests.Session()
+        retry_conf = (
+            requests.adapters.Retry(
+                total=retry_count,
+                backoff_factor=0.3,
+            )
+            if retry_count
+            else 0
+        )
+
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=1,  # Doing all the connections to the same url
             pool_maxsize=100,  # Number of concurrent connections
-            max_retries=retry_count,  # Nodes are not very responsive some times
+            max_retries=retry_conf,  # Nodes are not very responsive some times
             pool_block=False,
         )
         session.mount("http://", adapter)
