@@ -165,6 +165,17 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
 
+    def get_safes(self, owner_address: ChecksumAddress) -> List[ChecksumAddress]:
+        """
+
+        :param owner_address:
+        :return: return a List of Safe addresses which the owner_address is an owner
+        """
+        response = self._get_request(f"/api/v1/owners/{owner_address}/safes/")
+        if not response.ok:
+            raise SafeAPIException(f"Cannot get delegates: {response.content}")
+        return response.json().get("safes", [])
+
     def post_signatures(self, safe_tx_hash: bytes, signatures: bytes) -> bool:
         safe_tx_hash = HexBytes(safe_tx_hash).hex()
         response = self._post_request(
