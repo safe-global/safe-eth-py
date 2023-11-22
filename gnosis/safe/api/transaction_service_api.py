@@ -180,7 +180,9 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
 
-    def get_safes(self, owner_address: ChecksumAddress) -> List[ChecksumAddress]:
+    def get_safes_for_owner(
+        self, owner_address: ChecksumAddress
+    ) -> List[ChecksumAddress]:
         """
 
         :param owner_address:
