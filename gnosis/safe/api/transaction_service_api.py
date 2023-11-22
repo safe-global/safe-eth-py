@@ -103,6 +103,11 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: a list of balances for provided Safe
+        """
         response = self._get_request(f"/api/v1/safes/{safe_address}/balances/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get balances: {response.content}")
@@ -152,6 +157,11 @@ class TransactionServiceApi(SafeBaseAPI):
         return safe_tx, tx_hash
 
     def get_transactions(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: a list of transactions for provided Safe
+        """
         response = self._get_request(
             f"/api/v1/safes/{safe_address}/multisig-transactions/"
         )
@@ -160,6 +170,11 @@ class TransactionServiceApi(SafeBaseAPI):
         return response.json().get("results", [])
 
     def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: a list of delegates for provided Safe
+        """
         response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
@@ -169,7 +184,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
 
         :param owner_address:
-        :return: return a List of Safe addresses which the owner_address is an owner
+        :return: a List of Safe addresses which the owner_address is an owner
         """
         response = self._get_request(f"/api/v1/owners/{owner_address}/safes/")
         if not response.ok:
@@ -177,6 +192,12 @@ class TransactionServiceApi(SafeBaseAPI):
         return response.json().get("safes", [])
 
     def post_signatures(self, safe_tx_hash: bytes, signatures: bytes) -> bool:
+        """
+        Create a new confirmation with provided signature for the given safe_tx_hash
+        :param safe_tx_hash:
+        :param signatures:
+        :return: True if new confirmation was created
+        """
         safe_tx_hash = HexBytes(safe_tx_hash).hex()
         response = self._post_request(
             f"/api/v1/multisig-transactions/{safe_tx_hash}/confirmations/",
