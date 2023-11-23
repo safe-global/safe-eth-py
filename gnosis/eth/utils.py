@@ -184,7 +184,6 @@ def mk_contract_address(address: Union[str, bytes], nonce: int) -> ChecksumAddre
 def mk_contract_address_2(
     from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]
 ) -> ChecksumAddress:
-
     """
     Generate expected contract address when using EVM CREATE2.
 
