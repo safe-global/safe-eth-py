@@ -102,3 +102,8 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def test_get_transactions(self):
         transactions = self.transaction_service_api.get_transactions(self.safe_address)
         self.assertIsInstance(transactions, list)
+
+    def test_get_safes_for_owner(self):
+        owner_address = "0x5aC255889882aCd3da2aA939679E3f3d4cea221e"
+        safes = self.transaction_service_api.get_safes_for_owner(owner_address)
+        self.assertIn(self.safe_address, safes)

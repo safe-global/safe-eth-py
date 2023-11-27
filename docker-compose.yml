@@ -7,3 +7,8 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: postgres
+  ganache:
+    image: trufflesuite/ganache:latest
+    ports:
+      - "8545:8545"
+    command: --defaultBalanceEther 10000 --gasLimit 10000000 -a 30 --chain.chainId 1337 --chain.networkId 1337 -d

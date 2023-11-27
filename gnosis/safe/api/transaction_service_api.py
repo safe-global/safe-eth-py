@@ -20,8 +20,8 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
         EthereumNetwork.AURORA_MAINNET: "https://safe-transaction-aurora.safe.global",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
-        EthereumNetwork.BASE_MAINNET: "https://safe-transaction-base.safe.global",
         EthereumNetwork.BASE_GOERLI_TESTNET: "https://safe-transaction-base-testnet.safe.global",
+        EthereumNetwork.BASE_MAINNET: "https://safe-transaction-base.safe.global",
         EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
         EthereumNetwork.CELO_MAINNET: "https://safe-transaction-celo.safe.global",
         EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
@@ -29,8 +29,9 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.MAINNET: "https://safe-transaction-mainnet.safe.global",
         EthereumNetwork.OPTIMISM: "https://safe-transaction-optimism.safe.global",
         EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
-        EthereumNetwork.ZKSYNC_V2: "https://safe-transaction-zksync.safe.global",
         EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
+        EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
+        EthereumNetwork.ZKSYNC_V2: "https://safe-transaction-zksync.safe.global",
     }
 
     @classmethod
@@ -102,6 +103,11 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: a list of balances for provided Safe
+        """
         response = self._get_request(f"/api/v1/safes/{safe_address}/balances/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get balances: {response.content}")
@@ -151,6 +157,11 @@ class TransactionServiceApi(SafeBaseAPI):
         return safe_tx, tx_hash
 
     def get_transactions(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: a list of transactions for provided Safe
+        """
         response = self._get_request(
             f"/api/v1/safes/{safe_address}/multisig-transactions/"
         )
@@ -159,12 +170,36 @@ class TransactionServiceApi(SafeBaseAPI):
         return response.json().get("results", [])
 
     def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: a list of delegates for provided Safe
+        """
         response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
 
+    def get_safes_for_owner(
+        self, owner_address: ChecksumAddress
+    ) -> List[ChecksumAddress]:
+        """
+
+        :param owner_address:
+        :return: a List of Safe addresses which the owner_address is an owner
+        """
+        response = self._get_request(f"/api/v1/owners/{owner_address}/safes/")
+        if not response.ok:
+            raise SafeAPIException(f"Cannot get delegates: {response.content}")
+        return response.json().get("safes", [])
+
     def post_signatures(self, safe_tx_hash: bytes, signatures: bytes) -> bool:
+        """
+        Create a new confirmation with provided signature for the given safe_tx_hash
+        :param safe_tx_hash:
+        :param signatures:
+        :return: True if new confirmation was created
+        """
         safe_tx_hash = HexBytes(safe_tx_hash).hex()
         response = self._post_request(
             f"/api/v1/multisig-transactions/{safe_tx_hash}/confirmations/",

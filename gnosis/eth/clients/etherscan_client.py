@@ -54,6 +54,10 @@ class EtherscanClient:
         EthereumNetwork.LINEA_TESTNET: "https://goerli.lineascan.build",
         EthereumNetwork.MANTLE: "https://explorer.mantle.xyz",
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org",
+        EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://sepolia.scrollscan.dev",
+        EthereumNetwork.SCROLL: "https://scrollscan.com",
     }
 
     NETWORK_WITH_API_URL = {
@@ -69,6 +73,7 @@ class EtherscanClient:
         EthereumNetwork.ARBITRUM_ONE: "https://api.arbiscan.io",
         EthereumNetwork.ARBITRUM_NOVA: "https://api-nova.arbiscan.io",
         EthereumNetwork.ARBITRUM_GOERLI: "https://api-goerli.arbiscan.io",
+        EthereumNetwork.ARBITRUM_SEPOLIA: "https://api-sepolia.arbiscan.io",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://api.snowtrace.io",
         EthereumNetwork.GNOSIS: "https://api.gnosisscan.io",
         EthereumNetwork.MOONBEAM: "https://api-moonbeam.moonscan.io",
@@ -88,6 +93,10 @@ class EtherscanClient:
         EthereumNetwork.LINEA_TESTNET: "https://api-testnet.lineascan.build",
         EthereumNetwork.MANTLE: "https://explorer.mantle.xyz",
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org/api",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org/api",
+        EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://api-sepolia.scrollscan.dev",
+        EthereumNetwork.SCROLL: "https://api.scrollscan.com",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",

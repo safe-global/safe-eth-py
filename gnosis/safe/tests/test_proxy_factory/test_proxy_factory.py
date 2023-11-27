@@ -3,6 +3,7 @@ import logging
 from django.test import TestCase
 
 from eth_account import Account
+from web3 import Web3
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (
@@ -100,6 +101,45 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
             with self.subTest(safe=safe):
                 self.assertTrue(proxy_factory.check_proxy_code(safe))
 
+    def test_calculate_proxy_address(self):
+        salt_nonce = 12
+        address = self.proxy_factory.calculate_proxy_address(
+            self.safe_contract_V1_4_1.address, b"", salt_nonce
+        )
+        self.assertTrue(Web3.is_checksum_address(address))
+        # Same call with same parameters should return the same address
+        same_address = self.proxy_factory.calculate_proxy_address(
+            self.safe_contract_V1_4_1.address, b"", salt_nonce
+        )
+        self.assertEqual(address, same_address)
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
+            self.ethereum_test_account,
+            self.safe_contract_V1_4_1.address,
+            initializer=b"",
+            salt_nonce=salt_nonce,
+        )
+        self.assertEqual(ethereum_tx_sent.contract_address, address)
+
+        # Calculating the proxy address after deployment should return the same address
+        address_after_deploying = self.proxy_factory.calculate_proxy_address(
+            self.safe_contract_V1_4_1.address, b"", salt_nonce
+        )
+        self.assertEqual(ethereum_tx_sent.contract_address, address_after_deploying)
+
+        chain_specific_address = self.proxy_factory.calculate_proxy_address(
+            self.safe_contract_V1_4_1.address, b"", salt_nonce, chain_specific=True
+        )
+        self.assertTrue(Web3.is_checksum_address(chain_specific_address))
+        self.assertNotEqual(address, chain_specific_address)
+        ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
+            self.ethereum_test_account,
+            self.safe_contract_V1_4_1.address,
+            initializer=b"",
+            salt_nonce=salt_nonce,
+            chain_specific=True,
+        )
+        self.assertEqual(ethereum_tx_sent.contract_address, chain_specific_address)
+
     def test_deploy_proxy_contract_with_nonce(self):
         salt_nonce = generate_salt_nonce()
         owners = [Account.create().address for _ in range(2)]
@@ -146,4 +186,5 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         )
 
     def test_get_proxy_runtime_code(self):
-        self.assertIsNone(self.proxy_factory.get_proxy_runtime_code())
+        with self.assertRaises(NotImplementedError):
+            self.proxy_factory.get_proxy_runtime_code()
