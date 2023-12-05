@@ -28,10 +28,10 @@ gnosis.eth.clients.etherscan\_client module
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.clients.sourcify module
+gnosis.eth.clients.sourcify_client module
 ----------------------------------
 
-.. automodule:: gnosis.eth.clients.sourcify
+.. automodule:: gnosis.eth.clients.sourcify_client
    :members:
    :undoc-members:
    :show-inheritance:
