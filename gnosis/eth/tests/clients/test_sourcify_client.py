@@ -3,12 +3,27 @@ from typing import List
 from django.test import TestCase
 
 from ... import EthereumNetwork
-from ...clients import Sourcify
+from ...clients import SourcifyClient
+from ...clients.sourcify_client import SourcifyClientConfigurationProblem
 
 
-class TestSourcify(TestCase):
-    def test_sourcify_get_contract_metadata(self):
-        sourcify = Sourcify()
+class TestSourcifyClient(TestCase):
+    def test_init(self):
+        with self.assertRaises(SourcifyClientConfigurationProblem):
+            SourcifyClient(EthereumNetwork.OLYMPIC)
+
+        self.assertIsInstance(SourcifyClient(), SourcifyClient)
+        self.assertIsInstance(SourcifyClient(EthereumNetwork.GNOSIS), SourcifyClient)
+
+    def test_is_chain_supported(self):
+        sourcify = SourcifyClient()
+
+        self.assertTrue(sourcify.is_chain_supported(EthereumNetwork.MAINNET.value))
+        self.assertTrue(sourcify.is_chain_supported(EthereumNetwork.GNOSIS.value))
+        self.assertFalse(sourcify.is_chain_supported(2))
+
+    def test_get_contract_metadata(self):
+        sourcify = SourcifyClient()
         safe_contract_address = "0x6851D6fDFAfD08c0295C392436245E5bc78B0185"
         try:
             contract_metadata = sourcify.get_contract_metadata(safe_contract_address)
@@ -18,7 +33,7 @@ class TestSourcify(TestCase):
         self.assertIsInstance(contract_metadata.abi, List)
         self.assertTrue(contract_metadata.abi)
         self.assertFalse(contract_metadata.partial_match)
-        contract_metadata_rinkeby = Sourcify(
+        contract_metadata_rinkeby = SourcifyClient(
             EthereumNetwork.RINKEBY
         ).get_contract_metadata(safe_contract_address)
         self.assertEqual(contract_metadata, contract_metadata_rinkeby)
