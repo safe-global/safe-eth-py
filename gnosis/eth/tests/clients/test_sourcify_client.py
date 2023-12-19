@@ -1,4 +1,6 @@
 from typing import List
+from unittest import mock
+from unittest.mock import MagicMock
 
 from django.test import TestCase
 
@@ -8,21 +10,28 @@ from ...clients.sourcify_client import SourcifyClientConfigurationProblem
 
 
 class TestSourcifyClient(TestCase):
-    def test_init(self):
+    @mock.patch.object(SourcifyClient, "is_chain_supported")
+    def test_init(self, is_chain_supported_mock: MagicMock):
+        is_chain_supported_mock.return_value = False
         with self.assertRaises(SourcifyClientConfigurationProblem):
             SourcifyClient(EthereumNetwork.OLYMPIC)
 
+        is_chain_supported_mock.return_value = True
         self.assertIsInstance(SourcifyClient(), SourcifyClient)
         self.assertIsInstance(SourcifyClient(EthereumNetwork.GNOSIS), SourcifyClient)
 
     def test_is_chain_supported(self):
-        sourcify = SourcifyClient()
+        try:
+            sourcify = SourcifyClient()
+        except IOError:
+            self.skipTest("Cannot connect to Sourcify")
 
         self.assertTrue(sourcify.is_chain_supported(EthereumNetwork.MAINNET.value))
         self.assertTrue(sourcify.is_chain_supported(EthereumNetwork.GNOSIS.value))
         self.assertFalse(sourcify.is_chain_supported(2))
 
-    def test_get_contract_metadata(self):
+    @mock.patch.object(SourcifyClient, "is_chain_supported", return_value=True)
+    def test_get_contract_metadata(self, is_chain_supported_mock: MagicMock):
         sourcify = SourcifyClient()
         safe_contract_address = "0x6851D6fDFAfD08c0295C392436245E5bc78B0185"
         try:
