@@ -81,6 +81,9 @@ class SourcifyClient:
         return response.json()
 
     def is_chain_supported(self, chain_id: int) -> bool:
+        chains = self.get_chains()
+        if not chains:
+            raise IOError("Cannot get chains for SourcifyClient")
         return chain_id in (int(chain["chainId"]) for chain in self.get_chains())
 
     @cache
