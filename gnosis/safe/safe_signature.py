@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from logging import getLogger
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
 
 from eth_abi import decode as decode_abi
 from eth_abi import encode as encode_abi
@@ -148,10 +148,42 @@ class SafeSignature(ABC):
             safe_signatures.append(safe_signature)
         return safe_signatures
 
+    @classmethod
+    def export_signatures(cls, safe_signatures: Sequence["SafeSignature"]) -> HexBytes:
+        """
+        Takes a list of SafeSignature objects and exports them as a valid signature for the contract
+
+        :param safe_signatures:
+        :return: Valid signature for the Safe contract
+        """
+
+        signature = b""
+        dynamic_part = b""
+        dynamic_offset = len(safe_signatures) * 65
+        # Signatures must be sorted by owner
+        for safe_signature in sorted(safe_signatures, key=lambda s: s.owner.lower()):
+            if isinstance(safe_signature, SafeSignatureContract):
+                signature += signature_to_bytes(
+                    safe_signature.v, safe_signature.r, dynamic_offset
+                )
+                # encode_abi adds {32 bytes offset}{32 bytes size}. We don't need offset
+                contract_signature_padded = encode_abi(
+                    ["bytes"], [safe_signature.contract_signature]
+                )[32:]
+                contract_signature = contract_signature_padded[
+                    : 32 + len(safe_signature.contract_signature)
+                ]
+                dynamic_part += contract_signature
+                dynamic_offset += len(contract_signature)
+            else:
+                signature += safe_signature.export_signature()
+        return signature + dynamic_part
+
     def export_signature(self) -> HexBytes:
         """
         Exports signature in a format that's valid individually. That's important for contract signatures, as it
         will fix the offset
+
         :return:
         """
         return self.signature
@@ -200,6 +232,19 @@ class SafeSignatureContract(SafeSignature):
         self.safe_hash_preimage = HexBytes(safe_hash_preimage)
         self.contract_signature = HexBytes(contract_signature)
 
+    @classmethod
+    def from_values(
+        cls,
+        safe_owner: ChecksumAddress,
+        safe_hash: EthereumBytes,
+        safe_hash_preimage: EthereumBytes,
+        contract_signature: EthereumBytes,
+    ) -> "SafeSignatureContract":
+        signature = signature_to_bytes(
+            0, int.from_bytes(HexBytes(safe_owner), byteorder="big"), 65
+        )
+        return cls(signature, safe_hash, safe_hash_preimage, contract_signature)
+
     @property
     def owner(self) -> ChecksumAddress:
         """
@@ -220,7 +265,12 @@ class SafeSignatureContract(SafeSignature):
         :return:
         """
         # encode_abi adds {32 bytes offset}{32 bytes size}. We don't need offset
-        contract_signature = encode_abi(["bytes"], [self.contract_signature])[32:]
+        contract_signature_padded = encode_abi(["bytes"], [self.contract_signature])[
+            32:
+        ]
+        contract_signature = contract_signature_padded[
+            : 32 + len(self.contract_signature)
+        ]
         dynamic_offset = 65
 
         return HexBytes(
