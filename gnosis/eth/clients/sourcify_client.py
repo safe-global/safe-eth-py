@@ -3,12 +3,22 @@ from urllib.parse import urljoin
 
 import requests
 
+from gnosis.util import cache
+
 from .. import EthereumNetwork
 from ..utils import fast_is_checksum_address
 from .contract_metadata import ContractMetadata
 
 
-class Sourcify:
+class SourcifyClientException(Exception):
+    pass
+
+
+class SourcifyClientConfigurationProblem(Exception):
+    pass
+
+
+class SourcifyClient:
     """
     Get contract metadata from Sourcify. Matches can be full or partial:
 
@@ -23,13 +33,20 @@ class Sourcify:
     def __init__(
         self,
         network: EthereumNetwork = EthereumNetwork.MAINNET,
-        base_url: str = "https://repo.sourcify.dev/",
+        base_url_api: str = "https://sourcify.dev",
+        base_url_repo: str = "https://repo.sourcify.dev/",
         request_timeout: int = 10,
     ):
         self.network = network
-        self.base_url = base_url
+        self.base_url_api = base_url_api
+        self.base_url_repo = base_url_repo
         self.http_session = self._prepare_http_session()
         self.request_timeout = request_timeout
+
+        if not self.is_chain_supported(network.value):
+            raise SourcifyClientConfigurationProblem(
+                f"Network {network.name} - {network.value} not supported"
+            )
 
     def _prepare_http_session(self) -> requests.Session:
         """
@@ -63,6 +80,17 @@ class Sourcify:
 
         return response.json()
 
+    def is_chain_supported(self, chain_id: int) -> bool:
+        chains = self.get_chains()
+        if not chains:
+            raise IOError("Cannot get chains for SourcifyClient")
+        return chain_id in (int(chain["chainId"]) for chain in self.get_chains())
+
+    @cache
+    def get_chains(self) -> Dict[str, Any]:
+        url = urljoin(self.base_url_api, "/server/chains")
+        return self._do_request(url)
+
     def get_contract_metadata(
         self, contract_address: str
     ) -> Optional[ContractMetadata]:
@@ -72,7 +100,7 @@ class Sourcify:
 
         for match_type in ("full_match", "partial_match"):
             url = urljoin(
-                self.base_url,
+                self.base_url_repo,
                 f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
             )
             metadata = self._do_request(url)
