@@ -81,6 +81,7 @@ class BlockscoutClient:
         EthereumNetwork.MANTA_PACIFIC_MAINNET: "https://pacific-explorer.manta.network/graphiql",
         EthereumNetwork.KROMA: "https://blockscout.kroma.network/graphiql",
         EthereumNetwork.KROMA_SEPOLIA: "https://blockscout.sepolia.kroma.network/graphiql",
+        EthereumNetwork.ZORA_NETWORK: "https://explorer.mode.network/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
