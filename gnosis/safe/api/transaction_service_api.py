@@ -275,3 +275,74 @@ class TransactionServiceApi(SafeBaseAPI):
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
         return True
+
+    def post_message(
+        self,
+        safe_address: ChecksumAddress,
+        message: Union[str, Dict],
+        signature: bytes,
+        safe_app_id: Optional[int] = 0,
+    ) -> bool:
+        """
+        Create safe message on transaction service for provided Safe address
+
+        :param safe_address:
+        :param message:
+        :param signature:
+        :return:
+        """
+        payload = {
+            "message": message,
+            "safeAppId": safe_app_id,
+            "signature": HexBytes(signature).hex(),
+        }
+        response = self._post_request(
+            f"/api/v1/safes/{safe_address}/messages/", payload
+        )
+        if not response.ok:
+            raise SafeAPIException(f"Error posting message: {response.content}")
+        return True
+
+    def get_messages(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+        """
+
+        :param safe_address:
+        :return: list of messages for provided Safe address
+        """
+        response = self._get_request(f"/api/v1/safes/{safe_address}/messages/")
+        if not response.ok:
+            raise SafeAPIException(f"Cannot get messages: {response.content}")
+        return response.json().get("results", [])
+
+    def post_message_signature(
+        self, safe_message_hash: bytes, signature: bytes
+    ) -> bool:
+        """
+        Add a new confirmation for provided Safe message hash
+
+        :param safe_message_hash:
+        :param signature:
+        :return:
+        """
+        payload = {"signature": HexBytes(signature).hex()}
+        response = self._post_request(
+            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/signatures/", payload
+        )
+        if not response.ok:
+            raise SafeAPIException(
+                f"Error posting message signature: {response.content}"
+            )
+        return True
+
+    def get_message(self, safe_message_hash: bytes) -> Dict[str, Any]:
+        """
+
+        :param safe_message_hash:
+        :return: Safe message for provided Safe message hash
+        """
+        response = self._get_request(
+            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
+        )
+        if not response.ok:
+            raise SafeAPIException(f"Cannot get messages: {response.content}")
+        return response.json()
