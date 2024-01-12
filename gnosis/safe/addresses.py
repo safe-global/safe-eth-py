@@ -1084,4 +1084,48 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 4186337),  # v1.4.1
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 119959),  # v1.3.0
     ],
+    EthereumNetwork.CONFLUX_ESPACE: [
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            38647055,
+            "1.3.0",
+        ),
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            12504423,
+            "1.3.0+L2",
+        ),  # default singleton address,
+        (
+            "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            86875322,
+            "1.4.1",
+        ),
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            86875310,
+            "1.4.1+L2",
+        ),
+    ],
+    EthereumNetwork.CONFLUX_ESPACE_TESTNET: [
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            66095665,
+            "1.3.0",
+        ),
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            66095645,
+            "1.3.0+L2",
+        ),
+        (
+            "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            153642305,
+            "1.4.1",
+        ),
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            153642290,
+            "1.4.1+L2",
+        ),
+    ],
 }
