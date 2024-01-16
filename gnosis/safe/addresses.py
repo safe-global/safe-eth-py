@@ -658,7 +658,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.HAQQ_NETWORK: [
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 9054796, "1.4.1+L2"),
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 9054798, "1.4.1"),
-        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 422246, "1.3.0+L2"),
+        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 422246, "1.3.0+L2"),
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 422357, "1.3.0"),
     ],
     EthereumNetwork.HAQQ_TESTNET: [
