@@ -79,6 +79,8 @@ class BlockscoutClient:
         EthereumNetwork.PGN_TESTNET: "https://explorer.sepolia.publicgoods.network/graphiql",
         EthereumNetwork.ARTHERA_TESTNET: "https://explorer-test.arthera.net/graphiql",
         EthereumNetwork.MANTA_PACIFIC_MAINNET: "https://pacific-explorer.manta.network/graphiql",
+        EthereumNetwork.KROMA: "https://blockscout.kroma.network/graphiql",
+        EthereumNetwork.KROMA_SEPOLIA: "https://blockscout.sepolia.kroma.network/graphiql",
         EthereumNetwork.HAQQ_NETWORK: "https://explorer.haqq.network/graphiql",
         EthereumNetwork.HAQQ_TESTNET: "https://explorer.testedge2.haqq.network/graphiql",
     }

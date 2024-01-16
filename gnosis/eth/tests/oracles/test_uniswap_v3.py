@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 
 from ... import EthereumClient
@@ -15,6 +16,7 @@ from ..utils import just_test_if_mainnet_node
 
 
 class TestUniswapV3Oracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.xfail(reason="Could fail due to liquidity changes")
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
