@@ -58,6 +58,8 @@ class EtherscanClient:
         EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org",
         EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://sepolia.scrollscan.dev",
         EthereumNetwork.SCROLL: "https://scrollscan.com",
+        EthereumNetwork.KROMA: "https://kromascan.com",
+        EthereumNetwork.KROMA_SEPOLIA: "https://sepolia.kromascan.com",
     }
 
     NETWORK_WITH_API_URL = {
@@ -97,6 +99,8 @@ class EtherscanClient:
         EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org/api",
         EthereumNetwork.SCROLL_SEPOLIA_TESTNET: "https://api-sepolia.scrollscan.dev",
         EthereumNetwork.SCROLL: "https://api.scrollscan.com",
+        EthereumNetwork.KROMA: "https://api.kromascan.com",
+        EthereumNetwork.KROMA_SEPOLIA: "https://api-sepolia.kromascan.com",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
