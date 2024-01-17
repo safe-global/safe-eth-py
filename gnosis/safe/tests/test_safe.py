@@ -697,6 +697,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe_contract = safe.contract
         message = b"12345"
         message_hash = safe.get_message_hash(message)
+        self.assertFalse(safe.retrieve_is_message_signed(message_hash))
         sign_message_data = HexBytes(
             safe_contract.functions.signMessage(message).build_transaction(
                 get_empty_tx_params()
@@ -713,7 +714,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         sign_message_contract = get_sign_message_lib_contract(self.w3, safe.address)
         message = b"12345"
         message_hash = safe.get_message_hash(message)
-
+        self.assertFalse(safe.retrieve_is_message_signed(message_hash))
         sign_message_data = sign_message_contract.functions.signMessage(
             message
         ).build_transaction(get_empty_tx_params())["data"]
