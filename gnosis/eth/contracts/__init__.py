@@ -66,6 +66,7 @@ contracts = {
     "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
     "safe_V1_4_1": "Safe_V1_4_1.json",
     "simulate_tx_accessor_V1_4_1": "SimulateTxAccessor_V1_4_1.json",
+    "sign_message_lib": "SignMessageLib.json",
     "uniswap_exchange": "uniswap_exchange.json",
     "uniswap_factory": "uniswap_factory.json",
     "uniswap_v2_factory": "uniswap_v2_factory.json",
@@ -171,6 +172,12 @@ def get_compatibility_fallback_handler_V1_3_0_contract(
 
 
 def get_compatibility_fallback_handler_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    pass
+
+
+def get_sign_message_lib_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     pass
