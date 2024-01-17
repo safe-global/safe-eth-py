@@ -86,6 +86,7 @@ class BlockscoutClient:
         EthereumNetwork.HAQQ_CHAIN_TESTNET: "https://explorer.testedge2.haqq.network/graphiql",
         EthereumNetwork.MODE: "https://explorer.mode.network/graphiql",
         EthereumNetwork.ZORA_SEPOLIA_TESTNET: "https://sepolia.explorer.zora.energy/graphiql",
+        EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
