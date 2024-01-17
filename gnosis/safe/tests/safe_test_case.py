@@ -17,6 +17,7 @@ from gnosis.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_sign_message_lib_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
 )
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
@@ -382,4 +383,16 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         assert tx_receipt["status"] == 1, "Problem deploying example guard"
+        return tx_receipt["contractAddress"]
+
+    def deploy_sign_message_lib(self) -> ChecksumAddress:
+        """
+        Deploy sign message lib
+
+        :return: Deployed address
+        """
+        contract = get_sign_message_lib_contract(self.ethereum_client.w3)
+        tx_hash = contract.constructor().transact({"from": self.w3.eth.accounts[0]})
+        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        assert tx_receipt["status"] == 1, "Problem deploying sign message lib"
         return tx_receipt["contractAddress"]
