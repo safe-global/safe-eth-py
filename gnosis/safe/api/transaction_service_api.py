@@ -287,7 +287,7 @@ class TransactionServiceApi(SafeBaseAPI):
         Create safe message on transaction service for provided Safe address
 
         :param safe_address:
-        :param message:
+        :param message: If str it will be encoded using EIP191, and if it's a dictionary it will be encoded using EIP712
         :param signature:
         :return:
         """
@@ -302,6 +302,19 @@ class TransactionServiceApi(SafeBaseAPI):
         if not response.ok:
             raise SafeAPIException(f"Error posting message: {response.content}")
         return True
+
+    def get_message(self, safe_message_hash: bytes) -> Dict[str, Any]:
+        """
+
+        :param safe_message_hash:
+        :return: Safe message for provided Safe message hash
+        """
+        response = self._get_request(
+            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
+        )
+        if not response.ok:
+            raise SafeAPIException(f"Cannot get messages: {response.content}")
+        return response.json()
 
     def get_messages(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
         """
@@ -333,16 +346,3 @@ class TransactionServiceApi(SafeBaseAPI):
                 f"Error posting message signature: {response.content}"
             )
         return True
-
-    def get_message(self, safe_message_hash: bytes) -> Dict[str, Any]:
-        """
-
-        :param safe_message_hash:
-        :return: Safe message for provided Safe message hash
-        """
-        response = self._get_request(
-            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
-        )
-        if not response.ok:
-            raise SafeAPIException(f"Cannot get messages: {response.content}")
-        return response.json()
