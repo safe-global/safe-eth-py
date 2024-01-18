@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
-from gnosis.eth.contracts import get_safe_contract
+from gnosis.eth.contracts import get_safe_contract, get_sign_message_lib_contract
 from gnosis.eth.utils import get_empty_tx_params, get_eth_address_with_key
 
 from ..exceptions import (
@@ -692,17 +692,38 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             )
         )
 
-    def test_retrieve_is_message_signed(self):
+    def test_retrieve_is_message_signed_v1_1_1(self):
         safe = self.deploy_test_safe_v1_1_1(owners=[self.ethereum_test_account.address])
         safe_contract = safe.contract
         message = b"12345"
-        message_hash = safe_contract.functions.getMessageHash(message).call()
+        message_hash = safe.get_message_hash(message)
+        self.assertFalse(safe.retrieve_is_message_signed(message_hash))
         sign_message_data = HexBytes(
             safe_contract.functions.signMessage(message).build_transaction(
                 get_empty_tx_params()
             )["data"]
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
+        safe_tx.sign(self.ethereum_test_account.key)
+        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
+        self.assertTrue(safe.retrieve_is_message_signed(message_hash))
+
+    def test_retrieve_is_message_signed(self):
+        safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
+        sign_message_lib_address = self.deploy_sign_message_lib()
+        sign_message_contract = get_sign_message_lib_contract(self.w3, safe.address)
+        message = b"12345"
+        message_hash = safe.get_message_hash(message)
+        self.assertFalse(safe.retrieve_is_message_signed(message_hash))
+        sign_message_data = sign_message_contract.functions.signMessage(
+            message
+        ).build_transaction(get_empty_tx_params())["data"]
+        safe_tx = safe.build_multisig_tx(
+            sign_message_lib_address,
+            0,
+            sign_message_data,
+            SafeOperation.DELEGATE_CALL.value,
+        )
         safe_tx.sign(self.ethereum_test_account.key)
         safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
         self.assertTrue(safe.retrieve_is_message_signed(message_hash))
