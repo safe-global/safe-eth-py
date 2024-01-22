@@ -27,7 +27,6 @@ class KyberOracle(PriceOracle):
         EthereumNetwork.MAINNET: "0x9AAb3f75489902f3a48495025729a0AF77d4b11e",
         EthereumNetwork.RINKEBY: "0x0d5371e5EE23dec7DF251A8957279629aa79E9C5",
         EthereumNetwork.ROPSTEN: "0xd719c34261e099Fdb33030ac8909d5788D3039C4",
-        EthereumNetwork.KOVAN: "0xc153eeAD19e0DBbDb3462Dcc2B703cC6D738A37c",
     }
 
     def __init__(
