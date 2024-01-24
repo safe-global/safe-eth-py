@@ -21,8 +21,8 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.AURORA_MAINNET: "https://safe-transaction-aurora.safe.global",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
         EthereumNetwork.BASE_GOERLI_TESTNET: "https://safe-transaction-base-testnet.safe.global",
-        EthereumNetwork.BASE_MAINNET: "https://safe-transaction-base.safe.global",
-        EthereumNetwork.BINANCE_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
+        EthereumNetwork.BASE: "https://safe-transaction-base.safe.global",
+        EthereumNetwork.BNB_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
         EthereumNetwork.CELO_MAINNET: "https://safe-transaction-celo.safe.global",
         EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
         EthereumNetwork.GOERLI: "https://safe-transaction-goerli.safe.global",
@@ -31,7 +31,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
         EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
         EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
-        EthereumNetwork.ZKSYNC_V2: "https://safe-transaction-zksync.safe.global",
+        EthereumNetwork.ZKSYNC_MAINNET: "https://safe-transaction-zksync.safe.global",
     }
 
     @classmethod
