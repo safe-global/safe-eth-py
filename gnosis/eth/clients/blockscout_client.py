@@ -84,6 +84,7 @@ class BlockscoutClient:
         EthereumNetwork.ZORA: "https://explorer.mode.network/graphiql",
         EthereumNetwork.HAQQ_NETWORK: "https://explorer.haqq.network/graphiql",
         EthereumNetwork.HAQQ_CHAIN_TESTNET: "https://explorer.testedge2.haqq.network/graphiql",
+        EthereumNetwork.MODE: "https://explorer.mode.network/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
