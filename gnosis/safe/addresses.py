@@ -659,7 +659,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ),
         (
             "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
-            12504423,
+            38647045,
             "1.3.0+L2",
         ),  # default singleton address,
         (
