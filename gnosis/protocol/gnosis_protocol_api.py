@@ -46,12 +46,14 @@ class GnosisProtocolAPI:
         EthereumNetwork.MAINNET: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.GOERLI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.GNOSIS: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+        EthereumNetwork.SEPOLIA: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     }
 
     API_BASE_URLS = {
-        EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet/api/v1/",
-        EthereumNetwork.GOERLI: "https://api.cow.fi/goerli/api/v1/",
-        EthereumNetwork.GNOSIS: "https://api.cow.fi/xdai/api/v1/",
+        EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet",
+        EthereumNetwork.GOERLI: "https://api.cow.fi/goerli",
+        EthereumNetwork.GNOSIS: "https://api.cow.fi/xdai",
+        EthereumNetwork.SEPOLIA: "https://api.cow.fi/sepolia",
     }
 
     def __init__(self, ethereum_network: EthereumNetwork, request_timeout: int = 10):
@@ -100,7 +102,7 @@ class GnosisProtocolAPI:
     def get_quote(
         self, order: Order, from_address: ChecksumAddress
     ) -> Union[Dict[str, Any], ErrorResponse]:
-        url = self.base_url + "quote"
+        url = self.base_url + "/api/v1/quote"
         data_json = {
             "sellToken": order.sellToken.lower(),
             "buyToken": order.buyToken.lower(),
@@ -144,7 +146,7 @@ class GnosisProtocolAPI:
             order.buyAmount and order.sellAmount
         ), "Order buyAmount and sellAmount cannot be empty"
 
-        url = self.base_url + "orders/"
+        url = self.base_url + "/api/v1/orders"
         from_address = Account.from_key(private_key).address
         if not order.feeAmount:
             fee_amount = self.get_fee(order, from_address)
@@ -196,7 +198,7 @@ class GnosisProtocolAPI:
             total number of returned results. When a response contains less than the limit
             the last page has been reached.
         """
-        url = self.base_url + f"account/{owner}/orders"
+        url = self.base_url + f"/api/v1/account/{owner}/orders"
         r = self.http_session.get(url, timeout=self.request_timeout)
         if r.ok:
             return cast(List[Dict[str, Any]], r.json())
@@ -209,7 +211,7 @@ class GnosisProtocolAPI:
         assert bool(order_ui) ^ bool(
             owner
         ), "order_ui or owner must be provided, but not both"
-        url = self.base_url + "trades/?"
+        url = self.base_url + "/api/v1/trades/?"
         if order_ui:
             url += f"orderUid={order_ui}"
         elif owner:

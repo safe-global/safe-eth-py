@@ -4,8 +4,6 @@ from urllib.parse import urljoin
 import requests
 from eth_typing import ChecksumAddress, HexStr
 
-from gnosis.eth.ethereum_client import EthereumNetwork
-
 from .. import SafeTx
 from ..signatures import signature_split
 from .base_api import SafeAPIException, SafeBaseAPI
@@ -27,9 +25,7 @@ class RelaySentTransaction(TypedDict):
 
 class RelayServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
-        EthereumNetwork.GOERLI: "https://safe-relay.goerli.gnosis.io/",
-        EthereumNetwork.MAINNET: "https://safe-relay.gnosis.io",
-        EthereumNetwork.RINKEBY: "https://safe-relay.rinkeby.gnosis.io",
+        # Currently there's no official relayer operated
     }
 
     def send_transaction(
