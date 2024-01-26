@@ -103,7 +103,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def test_get_transactions(self):
         transactions = self.transaction_service_api.get_transactions(self.safe_address)
         self.assertIsInstance(transactions, list)
-        self.assertEqual(len(transactions), 6)
+        self.assertEqual(len(transactions), 7)
 
     def test_get_safes_for_owner(self):
         owner_address = "0x3066786706Ff0B6e71044e55074dBAE7D01573cB"
