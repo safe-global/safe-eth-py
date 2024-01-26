@@ -9,8 +9,8 @@ from web3 import Web3
 
 from gnosis.eth import EthereumNetwork
 from gnosis.safe import SafeTx
-
-from .base_api import SafeAPIException, SafeBaseAPI
+from gnosis.safe.api.base_api import SafeAPIException, SafeBaseAPI
+from gnosis.safe.api.transaction_service_api.SafeApiServiceTx import SafeApiServiceTx
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +133,8 @@ class TransactionServiceApi(SafeBaseAPI):
             logger.warning(
                 "EthereumClient should be defined to get a executable SafeTx"
             )
-        safe_tx = SafeTx(
+        safe_tx = SafeApiServiceTx(
+            result["proposer"],
             self.ethereum_client,
             result["safe"],
             result["to"],
