@@ -7,12 +7,12 @@ def get_totp():
     return int(time.time()) // 3600
 
 
-def generate_delegate_message(cls, delegate_address: ChecksumAddress) -> str:
+def get_delegate_message(cls, delegate_address: ChecksumAddress) -> str:
     totp = get_totp()
     return delegate_address + str(totp)
 
 
-def generate_remove_transaction_message(
+def get_remove_transaction_message(
     safe_address: ChecksumAddress, safe_tx_hash: bytes, chain_id: int
 ):
     remove_transaction_message = {

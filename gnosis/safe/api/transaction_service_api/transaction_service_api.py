@@ -8,10 +8,12 @@ from web3 import Web3
 
 from gnosis.eth import EthereumNetwork
 from gnosis.safe import SafeTx
-from gnosis.safe.api.transaction_service_api.SafeApiServiceTx import SafeApiServiceTx
+from gnosis.safe.api.transaction_service_api.transaction_service_tx import (
+    TransactionServiceTx,
+)
 
 from ..base_api import SafeAPIException, SafeBaseAPI
-from .message_api_helper import generate_delegate_message
+from .transaction_service_messages import get_delegate_message
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     @classmethod
     def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
-        return Web3.keccak(text=generate_delegate_message(delegate_address))
+        return Web3.keccak(text=get_delegate_message(delegate_address))
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:
@@ -132,7 +134,7 @@ class TransactionServiceApi(SafeBaseAPI):
             logger.warning(
                 "EthereumClient should be defined to get a executable SafeTx"
             )
-        safe_tx = SafeApiServiceTx(
+        safe_tx = TransactionServiceTx(
             result["proposer"],
             self.ethereum_client,
             result["safe"],
@@ -279,7 +281,7 @@ class TransactionServiceApi(SafeBaseAPI):
     def delete_transaction(self, safe_tx_hash: str, signature: str) -> bool:
         """
 
-        :param safe_tx_hash: hash of eip712 see in message_api_helper.py generate_remove_transaction_message function
+        :param safe_tx_hash: hash of eip712 see in transaction_service_messages.py generate_remove_transaction_message function
         :param signature: signature of safe_tx_hash by transaction proposer
         :return:
         """
