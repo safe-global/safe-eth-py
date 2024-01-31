@@ -116,7 +116,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def get_safe_transaction(
         self, safe_tx_hash: Union[bytes, HexStr]
-    ) -> Tuple[SafeTx, Optional[HexBytes]]:
+    ) -> Tuple[TransactionServiceTx, Optional[HexBytes]]:
         """
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
