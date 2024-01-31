@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_account.signers.local import LocalAccount
@@ -9,8 +8,10 @@ from web3 import Web3
 
 from gnosis.eth import EthereumNetwork
 from gnosis.safe import SafeTx
-from gnosis.safe.api.base_api import SafeAPIException, SafeBaseAPI
 from gnosis.safe.api.transaction_service_api.SafeApiServiceTx import SafeApiServiceTx
+
+from ..base_api import SafeAPIException, SafeBaseAPI
+from .message_api_helper import generate_delegate_message
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     @classmethod
     def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
-        totp = int(time.time()) // 3600
-        hash_to_sign = Web3.keccak(text=delegate_address + str(totp))
-        return hash_to_sign
+        return Web3.keccak(text=generate_delegate_message(delegate_address))
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:
@@ -275,6 +274,21 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
+        return True
+
+    def delete_transaction(self, safe_tx_hash: str, signature: str) -> bool:
+        """
+
+        :param safe_tx_hash: hash of eip712 see in message_api_helper.py generate_remove_transaction_message function
+        :param signature: signature of safe_tx_hash by transaction proposer
+        :return:
+        """
+        payload = {"safeTxHash": safe_tx_hash, "signature": signature}
+        response = self._delete_request(
+            f"/api/v1/multisig-transactions/{safe_tx_hash}/", payload
+        )
+        if not response.ok:
+            raise SafeAPIException(f"Error deleting transaction: {response.content}")
         return True
 
     def post_message(
