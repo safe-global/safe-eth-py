@@ -578,8 +578,26 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 203994202, "1.3.0"),
     ],
     EthereumNetwork.SCROLL_SEPOLIA_TESTNET: [
-        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 6261, "1.3.0+L2"),
-        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 6262, "1.3.0"),
+        (
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
+            2913895,
+            "1.3.0+L2",
+        ),  # safe singleton address
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            6261,
+            "1.3.0+L2",
+        ),  # default singleton address
+        (
+            "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
+            2913898,
+            "1.3.0",
+        ),  # safe singleton address
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            6262,
+            "1.3.0",
+        ),  # default singleton address
     ],
     EthereumNetwork.FANTOM_OPERA: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 38810826, "1.3.0+L2"),
@@ -611,8 +629,26 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 1962981, "1.3.0"),
     ],
     EthereumNetwork.SCROLL: [
-        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 187, "1.3.0+L2"),
-        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 189, "1.3.0"),
+        (
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
+            2905495,
+            "1.3.0+L2",
+        ),  # safe singleton address
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            187,
+            "1.3.0+L2",
+        ),  # default singleton address
+        (
+            "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
+            2905498,
+            "1.3.0",
+        ),  # safe singleton address
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            189,
+            "1.3.0",
+        ),  # default singleton address
     ],
     EthereumNetwork.TELOS_EVM_MAINNET: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 237435759, "1.3.0+L2"),
@@ -1042,7 +1078,14 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 203993869),  # v1.3.0
     ],
     EthereumNetwork.SCROLL_SEPOLIA_TESTNET: [
-        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 6254),  # v1.3.0
+        (
+            "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
+            2913883,
+        ),  # v1.3.0 safe singleton address
+        (
+            "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
+            6254,
+        ),  # v1.3.0 default singleton address
     ],
     EthereumNetwork.FANTOM_OPERA: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 38810826),  # v1.3.0
@@ -1068,7 +1111,14 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 1962972),  # v1.3.0
     ],
     EthereumNetwork.SCROLL: [
-        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 179),  # v1.3.0
+        (
+            "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
+            2905472,
+        ),  # v1.3.0 safe singleton address
+        (
+            "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
+            179,
+        ),  # v1.3.0 default singleton address
     ],
     EthereumNetwork.TELOS_EVM_MAINNET: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 237435678),  # v1.3.0
