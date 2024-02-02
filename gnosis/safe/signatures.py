@@ -35,12 +35,10 @@ def signature_to_bytes(v: int, r: int, s: int) -> bytes:
     :return: signature in form of {bytes32 r}{bytes32 s}{uint8 v}
     """
 
-    byte_order = "big"
-
     return (
-        r.to_bytes(32, byteorder=byte_order)
-        + s.to_bytes(32, byteorder=byte_order)
-        + v.to_bytes(1, byteorder=byte_order)
+        r.to_bytes(32, byteorder="big")
+        + s.to_bytes(32, byteorder="big")
+        + v.to_bytes(1, byteorder="big")
     )
 
 

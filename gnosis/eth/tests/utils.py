@@ -16,17 +16,28 @@ from web3.types import TxParams
 from ..contracts import get_example_erc20_contract
 
 
-def just_test_if_mainnet_node() -> str:
-    mainnet_node_url = os.environ.get("ETHEREUM_MAINNET_NODE")
-    if hasattr(just_test_if_mainnet_node, "checked"):  # Just check node first time
-        return mainnet_node_url
+def just_test_if_node_available(node_url_variable_name: str) -> str:
+    """
+    Just run the test if ``node url`` is defined on the ``node_url_variable_name`` environment variable
+    and it's accessible. Node JSON RPC url will only be tested the first call to this function.
 
-    if not mainnet_node_url:
-        pytest.skip("Mainnet node not defined, skipping test", allow_module_level=True)
+    :param node_url_variable_name: Environment variable name for ``node url``
+    :return: ``node url``
+    """
+    node_url = getattr(just_test_if_node_available, node_url_variable_name, None)
+    if node_url:  # Just check node first time
+        return node_url
+
+    node_url = os.environ.get(node_url_variable_name)
+    if not node_url:
+        pytest.skip(
+            f"{node_url_variable_name} not defined, skipping test",
+            allow_module_level=True,
+        )
     else:
         try:
             response = requests.post(
-                mainnet_node_url,
+                node_url,
                 timeout=5,
                 json={
                     "jsonrpc": "2.0",
@@ -37,42 +48,20 @@ def just_test_if_mainnet_node() -> str:
             )
             if not response.ok:
                 pytest.fail(
-                    f"Problem connecting to mainnet node {response.status_code} - {response.content}"
+                    f"Problem connecting to node {node_url}: {response.status_code} - {response.content}"
                 )
         except IOError:
-            pytest.fail("Problem connecting to the mainnet node")
-    just_test_if_mainnet_node.checked = True
-    return mainnet_node_url
+            pytest.fail(f"Problem connecting to {node_url}")
+    setattr(just_test_if_node_available, node_url_variable_name, node_url)
+    return node_url
+
+
+def just_test_if_mainnet_node() -> str:
+    return just_test_if_node_available("ETHEREUM_MAINNET_NODE")
 
 
 def just_test_if_polygon_node() -> str:
-    polygon_node_url = os.environ.get("ETHEREUM_POLYGON_NODE")
-    if hasattr(just_test_if_polygon_node, "checked"):  # Just check node first time
-        return polygon_node_url
-
-    if not polygon_node_url:
-        pytest.skip(
-            "Polygon node not defined, cannot test oracles", allow_module_level=True
-        )
-    else:
-        try:
-            if not requests.post(
-                polygon_node_url,
-                timeout=5,
-                json={
-                    "jsonrpc": "2.0",
-                    "method": "eth_blockNumber",
-                    "params": [],
-                    "id": 1,
-                },
-            ).ok:
-                pytest.skip("Cannot connect to polygon node", allow_module_level=True)
-        except IOError:
-            pytest.skip(
-                "Problem connecting to the polygon node", allow_module_level=True
-            )
-    just_test_if_polygon_node.checked = True
-    return polygon_node_url
+    return just_test_if_node_available("ETHEREUM_POLYGON_NODE")
 
 
 def skip_on(exception, reason="Test skipped due to a controlled exception"):
