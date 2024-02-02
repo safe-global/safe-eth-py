@@ -704,18 +704,19 @@ class Erc20Manager(EthereumClientManager):
         if token_address:
             parameters["address"] = token_address
 
-        all_events: List[LogReceipt] = []
+        erc20_events = []
         # Do the request to `eth_getLogs`
         for topics in all_topics:
             parameters["topics"] = topics
-            all_events.extend(self.slow_w3.eth.get_logs(parameters))
 
-        # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
-        erc20_events = []
-        for event in all_events:
-            event["args"] = self._decode_transfer_log(event["data"], event["topics"])
-            if event["args"]:
-                erc20_events.append(event)
+            # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
+            for event in self.slow_w3.eth.get_logs(parameters):
+                event["args"] = self._decode_transfer_log(
+                    event["data"], event["topics"]
+                )
+                if event["args"]:
+                    erc20_events.append(event)
+
         erc20_events.sort(key=lambda x: x["blockNumber"])
         return erc20_events
 
