@@ -139,8 +139,6 @@ gnosis.eth.utils
 
 Contains utils for ethereum operations:
 
-- ``get_eth_address_with_key() -> Tuple[str, bytes]``: Returns a tuple of a valid public ethereum checksumed
-  address with the private key.
 - ``mk_contract_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: [str, bytes]) -> str``:
   Calculates the address of a new contract created using the new CREATE2 opcode.
 
