@@ -208,7 +208,7 @@ class Keccak256Field(models.BinaryField):
 
     def _to_bytes(self, value) -> Optional[bytes]:
         if value is None:
-            return
+            return None
         else:
             try:
                 result = HexBytes(value)
@@ -226,9 +226,7 @@ class Keccak256Field(models.BinaryField):
                     params={"value": value},
                 )
 
-    def from_db_value(
-        self, value: memoryview, expression, connection
-    ) -> Optional[bytes]:
+    def from_db_value(self, value: memoryview, expression, connection) -> Optional[str]:
         if value:
             return HexBytes(value.tobytes()).hex()
 
@@ -239,7 +237,7 @@ class Keccak256Field(models.BinaryField):
     def value_to_string(self, obj):
         return str(self.value_from_object(obj))
 
-    def to_python(self, value) -> Optional[str]:
+    def to_python(self, value) -> Optional[bytes]:
         if value is not None:
             try:
                 return self._to_bytes(value)

@@ -32,7 +32,7 @@ class MultiSendTx:
     def __init__(
         self,
         operation: MultiSendOperation,
-        to: str,
+        to: ChecksumAddress,
         value: int,
         data: EthereumData,
         old_encoding: bool = False,
