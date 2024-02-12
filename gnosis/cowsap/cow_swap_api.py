@@ -2,7 +2,6 @@ import json
 from functools import cached_property
 from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 
-import requests
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_typing import AnyAddress, ChecksumAddress, HexStr
@@ -11,6 +10,7 @@ from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.eip712 import eip712_encode_hash
 
 from ..eth.constants import NULL_ADDRESS
+from ..util.http import prepare_http_session
 from .order import Order, OrderKind
 
 
@@ -64,25 +64,8 @@ class CowSwapAPI:
             self.network
         ]
         self.base_url = self.API_BASE_URLS[self.network]
-        self.http_session = self._prepare_http_session()
+        self.http_session = prepare_http_session(10, 100)
         self.request_timeout = request_timeout
-
-    def _prepare_http_session(self) -> requests.Session:
-        """
-        Prepare http session with custom pooling. See:
-        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://docs.python-requests.org/en/v1.2.3/api/#requests.adapters.HTTPAdapter
-        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
-        """
-        session = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=10,
-            pool_maxsize=100,
-            pool_block=False,
-        )
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
 
     @cached_property
     def weth_address(self) -> ChecksumAddress:
