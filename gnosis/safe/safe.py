@@ -99,26 +99,27 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         assert fast_is_checksum_address(address), "%s is not a valid address" % address
         if cls is not Safe:
             return super().__new__(cls, address, ethereum_client, *args, **kwargs)
-        else:
-            versions: Dict[str, Safe] = {
-                "0.0.1": SafeV001,
-                "1.0.0": SafeV100,
-                "1.1.1": SafeV111,
-                "1.3.0": SafeV130,
-                "1.4.1": SafeV141,
-            }
-            default_version = SafeV141
 
-            version: Optional[str]
-            try:
-                contract = get_safe_contract(ethereum_client.w3, address=address)
-                version = contract.functions.VERSION().call(block_identifier="latest")
-            except (Web3Exception, ValueError):
-                version = None  # Cannot detect the version
+        versions: Dict[str, Safe] = {
+            "0.0.1": SafeV001,
+            "1.0.0": SafeV100,
+            "1.1.1": SafeV111,
+            "1.2.0": SafeV120,
+            "1.3.0": SafeV130,
+            "1.4.1": SafeV141,
+        }
+        default_version = SafeV141
 
-            instance_class = versions.get(version, default_version)
-            instance = super().__new__(instance_class)
-            return instance
+        version: Optional[str]
+        try:
+            contract = get_safe_contract(ethereum_client.w3, address=address)
+            version = contract.functions.VERSION().call(block_identifier="latest")
+        except (Web3Exception, ValueError):
+            version = None  # Cannot detect the version
+
+        instance_class = versions.get(version, default_version)
+        instance = super().__new__(instance_class)
+        return instance
 
     def __init__(
         self,
@@ -970,6 +971,14 @@ class SafeV100(Safe):
 class SafeV111(Safe):
     def get_version(self):
         return "1.1.1"
+
+    def get_contract_fn(self) -> Contract:
+        return get_safe_V1_1_1_contract
+
+
+class SafeV120(Safe):
+    def get_version(self):
+        return "1.2.0"
 
     def get_contract_fn(self) -> Contract:
         return get_safe_V1_1_1_contract

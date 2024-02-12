@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from git import Repo
 
 GIT_URL = "https://github.com/safe-global/safe-deployments.git"
-SAFE_DEPLOYMENTS_VERSION = "v1.27.0"  # safe-deployments tag version
+SAFE_DEPLOYMENTS_VERSION = "v1.32.0"  # safe-deployments tag version
 REPO_DIR = "safe-deployments"  # temporary folder to clone the repo
 DEPLOYMENTS_FOLDER = REPO_DIR + "/src/assets"  # folder where the deployments are
 SAFE_ETH_PY_DEPLOYMENTS_PATH = "../../gnosis/safe/safe_deployments.py"  # Full path where the deployment dictionary will be stored
@@ -39,8 +39,8 @@ def generate_safe_deployments_py():
     # Clone repo
     with get_safe_deployments() as repo:
         repo.git.checkout(SAFE_DEPLOYMENTS_VERSION)
-        for root, dirs, files in os.walk(DEPLOYMENTS_FOLDER, topdown=False):
-            for filename in files:
+        for root, _, files in sorted(os.walk(DEPLOYMENTS_FOLDER, topdown=False)):
+            for filename in sorted(files):
                 repo_safe_deployment = json.load(open(os.path.join(root, filename)))
                 safe_deployments.setdefault(repo_safe_deployment["version"], {})[
                     repo_safe_deployment["contractName"]

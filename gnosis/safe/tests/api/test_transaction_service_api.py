@@ -11,9 +11,9 @@ from ...api.transaction_service_api import TransactionServiceApi
 class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def setUp(self) -> None:
         self.transaction_service_api = TransactionServiceApi(
-            EthereumNetwork.GOERLI, ethereum_client=self.ethereum_client
+            EthereumNetwork.GNOSIS, ethereum_client=self.ethereum_client
         )
-        self.safe_address = "0x24833C9c4644a70250BCCBcB5f8529b609eaE6EC"
+        self.safe_address = "0xAedF684C1c41B51CbD228116e11484425d2FACB9"
 
     def test_constructor(self):
         ethereum_network = EthereumNetwork.GOERLI
@@ -98,7 +98,14 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def test_get_balances(self):
         balances = self.transaction_service_api.get_balances(self.safe_address)
         self.assertIsInstance(balances, list)
+        self.assertGreaterEqual(len(balances), 1)
 
     def test_get_transactions(self):
         transactions = self.transaction_service_api.get_transactions(self.safe_address)
         self.assertIsInstance(transactions, list)
+        self.assertEqual(len(transactions), 6)
+
+    def test_get_safes_for_owner(self):
+        owner_address = "0x3066786706Ff0B6e71044e55074dBAE7D01573cB"
+        safes = self.transaction_service_api.get_safes_for_owner(owner_address)
+        self.assertListEqual(safes, [self.safe_address])

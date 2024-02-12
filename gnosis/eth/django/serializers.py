@@ -112,9 +112,9 @@ class HexadecimalField(serializers.Field):
             data_hex = HexBytes(data)
             data_len = len(data_hex)
             if self.min_length and data_len < self.min_length:
-                self.fail("min_length", min_length=data_len)
+                self.fail("min_length", min_length=self.min_length)
             elif self.max_length and data_len > self.max_length:
-                self.fail("max_length", max_length=data_len)
+                self.fail("max_length", max_length=self.max_length)
             return data_hex
         except ValueError:
             self.fail("invalid", value=data)
