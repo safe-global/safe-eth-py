@@ -95,6 +95,7 @@ class BlockscoutClient:
         EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://blockscout.com/shibuya/graphiql", #SHIBUYA
         EthereumNetwork.ZKATANA: "https://zkatana.blockscout.com/graphiql",
         EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/graphiql",
+        EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
