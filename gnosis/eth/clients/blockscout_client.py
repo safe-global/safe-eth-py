@@ -85,6 +85,17 @@ class BlockscoutClient:
         EthereumNetwork.HAQQ_NETWORK: "https://explorer.haqq.network/graphiql",
         EthereumNetwork.HAQQ_CHAIN_TESTNET: "https://explorer.testedge2.haqq.network/graphiql",
         EthereumNetwork.MODE: "https://explorer.mode.network/graphiql",
+        EthereumNetwork.OP_SEPOLIA_TESTNET: "https://optimism-sepolia.blockscout.com/graphiql",
+        EthereumNetwork.UNREAL_TESTNET: "https://unreal.blockscout.com/graphiql",
+        EthereumNetwork.MODE_TESTNET: "https://sepolia.explorer.mode.network/graphiql",
+        EthereumNetwork.ZORA_SEPOLIA_TESTNET: "https://sepolia.explorer.zora.energy/graphiql",
+        EthereumNetwork.ZETACHAIN_MAINNET: "https://zetachain.blockscout.com/graphiql",
+        EthereumNetwork.IMMUTABLE_ZKEVM_TESTNET: "https://explorer.testnet.immutable.com/graphiql",
+        EthereumNetwork.IMMUTABLE_ZKEVM: "https://explorer.immutable.com/graphiql",
+        EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://blockscout.com/shibuya/graphiql", #SHIBUYA
+        EthereumNetwork.ZKATANA: "https://zkatana.blockscout.com/graphiql",
+        EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/graphiql",
+        EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
