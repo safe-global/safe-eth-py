@@ -5,6 +5,8 @@ from eth_typing import ChecksumAddress, HexStr
 
 from gnosis.util.http import prepare_http_session
 
+from .user_operation import UserOperation
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,14 +43,15 @@ class BundlerClient:
 
     def get_user_operation_by_hash(
         self, user_operation_hash: HexStr
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[UserOperation]:
         payload = {
             "jsonrpc": "2.0",
             "method": "eth_getUserOperationByHash",
             "params": [user_operation_hash],
             "id": 1,
         }
-        return self._do_request(payload)
+        result = self._do_request(payload)
+        return UserOperation(user_operation_hash, result) if result else None
 
     def get_user_operation_receipt(
         self, user_operation_hash: HexStr

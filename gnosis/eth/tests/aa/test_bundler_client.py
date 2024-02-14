@@ -5,8 +5,9 @@ from django.test import TestCase
 
 import requests
 
-from ..bundler_client import BundlerClient
-from .mocks.mock_bundler import (
+from ...aa import BundlerClient, UserOperation
+from ..mocks.mock_bundler import (
+    safe_4337_user_operation_hash_mock,
     supported_entrypoint_mock,
     user_operation_mock,
     user_operation_receipt_mock,
@@ -23,14 +24,13 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(
             return_value={"jsonrpc": "2.0", "id": 1, "result": None}
         )
-        user_operation_hash = (
-            "0x5ca9bed4befc5ffa1c5e42fff0348b5013a6ccdd6887a5d0b0409080fe87edcc"
-        )
+        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
+
         self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
         mock_session.return_value.json = MagicMock(return_value=user_operation_mock)
         self.assertEqual(
             self.bundler.get_user_operation_by_hash(user_operation_hash),
-            user_operation_mock["result"],
+            UserOperation(user_operation_hash, user_operation_mock["result"]),
         )
         mock_session.return_value.json = MagicMock(
             return_value={
@@ -50,9 +50,7 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(
             return_value={"jsonrpc": "2.0", "id": 1, "result": None}
         )
-        user_operation_hash = (
-            "0x5ca9bed4befc5ffa1c5e42fff0348b5013a6ccdd6887a5d0b0409080fe87edcc"
-        )
+        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
         self.assertIsNone(self.bundler.get_user_operation_receipt(user_operation_hash))
         mock_session.return_value.json = MagicMock(
             return_value=user_operation_receipt_mock
