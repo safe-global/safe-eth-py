@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
-from transaction_service_tx import TransactionServiceTx
 from web3 import Web3
 
 from gnosis.eth import EthereumNetwork
@@ -12,6 +11,7 @@ from gnosis.safe import SafeTx
 
 from ..base_api import SafeAPIException, SafeBaseAPI
 from .transaction_service_messages import get_delegate_message
+from .transaction_service_tx import TransactionServiceTx
 
 logger = logging.getLogger(__name__)
 
