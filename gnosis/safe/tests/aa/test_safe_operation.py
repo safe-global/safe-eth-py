@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from gnosis.eth.aa import UserOperation
+from gnosis.eth.account_abstraction import UserOperation
 from gnosis.eth.tests.mocks.mock_bundler import (
     safe_4337_chain_id_mock,
     safe_4337_module_address_mock,
@@ -10,7 +10,7 @@ from gnosis.eth.tests.mocks.mock_bundler import (
     user_operation_mock,
 )
 
-from ...aa import SafeOperation
+from ...account_abstraction import SafeOperation
 
 
 class TestSafeOperation(TestCase):

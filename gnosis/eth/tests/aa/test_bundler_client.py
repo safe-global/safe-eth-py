@@ -5,7 +5,7 @@ from django.test import TestCase
 
 import requests
 
-from ...aa import BundlerClient, UserOperation
+from ...account_abstraction import BundlerClient, UserOperation
 from ..mocks.mock_bundler import (
     safe_4337_user_operation_hash_mock,
     supported_entrypoint_mock,
@@ -28,10 +28,14 @@ class TestBundlerClient(TestCase):
 
         self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
         mock_session.return_value.json = MagicMock(return_value=user_operation_mock)
+        expected_user_operation = UserOperation(
+            user_operation_hash, user_operation_mock["result"]
+        )
         self.assertEqual(
             self.bundler.get_user_operation_by_hash(user_operation_hash),
-            UserOperation(user_operation_hash, user_operation_mock["result"]),
+            expected_user_operation,
         )
+
         mock_session.return_value.json = MagicMock(
             return_value={
                 "jsonrpc": "2.0",

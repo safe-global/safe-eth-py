@@ -5,7 +5,7 @@ from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 
-from gnosis.eth.aa import UserOperation
+from gnosis.eth.account_abstraction import UserOperation
 from gnosis.eth.utils import fast_keccak
 
 
