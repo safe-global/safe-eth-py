@@ -1,8 +1,9 @@
+import json
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Literal
 
-from eth_typing import ChecksumAddress, Hash32
+from eth_typing import ChecksumAddress
 
 
 @dataclass
@@ -13,7 +14,7 @@ class Order:
     sellAmount: int
     buyAmount: int
     validTo: int
-    appData: Hash32
+    appData: Dict
     feeAmount: int
     kind: Literal["sell", "buy"]
     partiallyFillable: bool
@@ -40,7 +41,7 @@ class Order:
                 {"name": "sellAmount", "type": "uint256"},
                 {"name": "buyAmount", "type": "uint256"},
                 {"name": "validTo", "type": "uint32"},
-                {"name": "appData", "type": "bytes32"},
+                {"name": "appData", "type": "string"},
                 {"name": "feeAmount", "type": "uint256"},
                 {"name": "kind", "type": "string"},
                 {"name": "partiallyFillable", "type": "bool"},
@@ -55,7 +56,7 @@ class Order:
             "sellAmount": self.sellAmount,
             "buyAmount": self.buyAmount,
             "validTo": self.validTo,
-            "appData": self.appData,
+            "appData": json.dumps(self.appData),
             "feeAmount": self.feeAmount,
             "kind": self.kind,
             "partiallyFillable": self.partiallyFillable,
@@ -67,7 +68,7 @@ class Order:
             "types": types,
             "primaryType": "Order",
             "domain": {
-                "name": "Gnosis Protocol",
+                "name": "CowSwap",
                 "version": "v2",
                 "chainId": chain_id,
                 "verifyingContract": verifying_contract,

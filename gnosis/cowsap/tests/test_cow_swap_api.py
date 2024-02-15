@@ -4,38 +4,34 @@ from django.test import TestCase
 
 import pytest
 from eth_account import Account
-from web3 import Web3
 
 from ...eth import EthereumNetwork
 from ...eth.constants import NULL_ADDRESS
-from .. import GnosisProtocolAPI, Order, OrderKind
+from .. import CowSwapAPI, Order, OrderKind
 
 
-@pytest.skip("Having issues often", allow_module_level=True)
-class TestGnosisProtocolAPI(TestCase):
+class TestCowSwapAPI(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.mainnet_gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.MAINNET)
-        cls.goerli_gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.GOERLI)
+        cls.mainnet_cow_swap_api = CowSwapAPI(EthereumNetwork.MAINNET)
+        cls.sepolia_cow_swap_api = CowSwapAPI(EthereumNetwork.SEPOLIA)
         cls.mainnet_gno_token_address = "0x6810e776880C02933D47DB1b9fc05908e5386b96"
-        cls.goerli_cow_token_address = "0x3430d04E42a722c5Ae52C5Bffbf1F230C2677600"
+        cls.sepolia_cow_token_address = "0x0625aFB445C3B6B7B929342a04A22599fd5dBB59"
 
     def test_api_is_available(self):
         random_owner = Account.create().address
         for ethereum_network in (
             EthereumNetwork.MAINNET,
-            EthereumNetwork.GOERLI,
+            EthereumNetwork.SEPOLIA,
             EthereumNetwork.GNOSIS,
         ):
             with self.subTest(ethereum_network=ethereum_network):
-                self.assertEqual(
-                    self.goerli_gnosis_protocol_api.get_orders(random_owner), []
-                )
+                self.assertEqual(self.sepolia_cow_swap_api.get_orders(random_owner), [])
 
     def test_get_estimated_amount(self):
-        gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.MAINNET)
-        response = gnosis_protocol_api.get_estimated_amount(
+        cow_swap = CowSwapAPI(EthereumNetwork.MAINNET)
+        response = cow_swap.get_estimated_amount(
             self.mainnet_gno_token_address,
             self.mainnet_gno_token_address,
             OrderKind.SELL,
@@ -49,7 +45,7 @@ class TestGnosisProtocolAPI(TestCase):
             },
         )
 
-        response = gnosis_protocol_api.get_estimated_amount(
+        response = cow_swap.get_estimated_amount(
             "0x6820e776880c02933d47db1b9fc05908e5386b96",
             self.mainnet_gno_token_address,
             OrderKind.SELL,
@@ -58,9 +54,9 @@ class TestGnosisProtocolAPI(TestCase):
         self.assertIn("errorType", response)
         self.assertIn("description", response)
 
-        response = gnosis_protocol_api.get_estimated_amount(
+        response = cow_swap.get_estimated_amount(
             self.mainnet_gno_token_address,
-            self.mainnet_gnosis_protocol_api.weth_address,
+            self.mainnet_cow_swap_api.weth_address,
             OrderKind.SELL,
             int(1e18),
         )
@@ -76,7 +72,7 @@ class TestGnosisProtocolAPI(TestCase):
             sellAmount=int(1e18),
             buyAmount=1,
             validTo=int(time()) + 3600,
-            appData=Web3.keccak(text="hola"),
+            appData={"version": "1.2.2", "metadata": {}},
             feeAmount=0,
             kind="sell",
             partiallyFillable=False,
@@ -85,21 +81,21 @@ class TestGnosisProtocolAPI(TestCase):
         )
         from_address = Account.create().address
         self.assertEqual(
-            self.mainnet_gnosis_protocol_api.get_fee(order, from_address),
+            self.mainnet_cow_swap_api.get_fee(order, from_address),
             {
                 "errorType": "SameBuyAndSellToken",
                 "description": "Buy token is the same as the sell token.",
             },
         )
-        order.buyToken = self.mainnet_gnosis_protocol_api.weth_address
+        order.buyToken = self.mainnet_cow_swap_api.weth_address
         self.assertGreaterEqual(
-            self.mainnet_gnosis_protocol_api.get_fee(order, from_address), 0
+            self.mainnet_cow_swap_api.get_fee(order, from_address), 0
         )
 
     def test_get_trades(self):
         mainnet_order_ui = "0x65F1206182C77A040ED41D507B59C622FA94AB5E71CCA567202CFF3909F3D5C4DBE338E45276630FD8237149DD47EE027AF26F9C619723D0"
         self.assertEqual(
-            self.mainnet_gnosis_protocol_api.get_trades(order_ui=mainnet_order_ui),
+            self.mainnet_cow_swap_api.get_trades(order_ui=mainnet_order_ui),
             [
                 {
                     "blockNumber": 13643462,
@@ -124,16 +120,14 @@ class TestGnosisProtocolAPI(TestCase):
             sellAmount=1,
             buyAmount=1,
             validTo=int(time()) + 3600,
-            appData=Web3.keccak(text="hola"),
+            appData={},
             feeAmount=0,
             kind="sell",
             partiallyFillable=False,
             sellTokenBalance="erc20",
             buyTokenBalance="erc20",
         )
-        result = self.goerli_gnosis_protocol_api.place_order(
-            order, Account().create().key
-        )
+        result = self.sepolia_cow_swap_api.place_order(order, Account().create().key)
         self.assertEqual(
             order.feeAmount, 0
         )  # Cannot estimate, as buy token is the same as the sell token
@@ -145,11 +139,9 @@ class TestGnosisProtocolAPI(TestCase):
             },
         )
 
-        order.sellToken = self.goerli_gnosis_protocol_api.weth_address
-        order.buyToken = self.goerli_cow_token_address
-        order_id = self.goerli_gnosis_protocol_api.place_order(
-            order, Account().create().key
-        )
+        order.sellToken = self.sepolia_cow_swap_api.weth_address
+        order.buyToken = self.sepolia_cow_token_address
+        order_id = self.sepolia_cow_swap_api.place_order(order, Account().create().key)
 
         if type(order_id) is dict:
             pytest.xfail(order_id["errorType"])
