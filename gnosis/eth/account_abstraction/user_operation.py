@@ -82,7 +82,7 @@ class UserOperation:
     def __str__(self):
         return f"User Operation sender={self.sender} nonce={self.nonce} hash={self.user_operation_hash.hex()}"
 
-    def get_user_operation_hash(self, chain_id: int) -> bytes:
+    def calculate_user_operation_hash(self, chain_id: int) -> bytes:
         hash_init_code = fast_keccak(self.init_code)
         hash_call_data = fast_keccak(self.call_data)
         hash_paymaster_and_data = fast_keccak(self.paymaster_and_data)
