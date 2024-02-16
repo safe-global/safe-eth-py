@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from gnosis.protocol import GnosisProtocolAPI, OrderKind
+from gnosis.cowsap import CowSwapAPI, OrderKind
 
 from .. import EthereumClient, EthereumNetworkNotSupported
 from .exceptions import CannotGetPriceFromOracle
@@ -27,7 +27,7 @@ class CowswapOracle(PriceOracle):
         """
         self.ethereum_client = ethereum_client
         self.w3 = ethereum_client.w3
-        self.api = GnosisProtocolAPI(ethereum_client.get_network())
+        self.api = CowSwapAPI(ethereum_client.get_network())
 
     @classmethod
     def is_available(
@@ -39,7 +39,7 @@ class CowswapOracle(PriceOracle):
         :return: `True` if CowSwap is available for the EthereumClient provided, `False` otherwise
         """
         try:
-            GnosisProtocolAPI(ethereum_client.get_network())
+            CowSwapAPI(ethereum_client.get_network())
             return True
         except EthereumNetworkNotSupported:
             return False
