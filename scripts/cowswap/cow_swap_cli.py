@@ -20,7 +20,7 @@ if __name__ == "__main__":
         print("Set PRIVATE_KEY as an environment variable")
         sys.exit(1)
 
-    parser = argparse.ArgumentParser(description="Place orders on CowSwap V2")
+    parser = argparse.ArgumentParser(description="Place orders on CowSwap")
     parser.add_argument(
         "--network",
         default=EthereumNetwork.RINKEBY.name,

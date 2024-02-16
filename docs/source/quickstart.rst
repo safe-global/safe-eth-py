@@ -186,7 +186,7 @@ To work with Multisig Transactions:
 
 CowSwap
 ~~~~~~~~
-On ``gnosis.cowswap`` there're classes to work with `CowSwap v2 <https://docs.cowswap.app>`_
+On ``gnosis.cowswap`` there're classes to work with `CowSwap <https://docs.cowswap.app>`_
 
 .. code-block:: python
 
@@ -196,7 +196,7 @@ On ``gnosis.cowswap`` there're classes to work with `CowSwap v2 <https://docs.co
 
   account_address = ''  # Fill with checksummed version of a CowSwap user address
   account_private_key = ''  # Fill with private key of a user address
-  cow_swap_api = CowSwapAPI(EthereumNetwork.RINKEBY)
+  cow_swap_api = CowSwapAPI(EthereumNetwork.SEPOLIA)
   print(cow_swap_api.get_trades(owner=account_address))
   buy_amount = cow_swap_api.get_estimated_amount(base_token, quote_token, OrderKind.SELL, sell_amount)
   valid_to = int(time.time() + (24 * 60 * 60))  # Order valid for 1 day
