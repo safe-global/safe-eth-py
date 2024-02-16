@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_account.signers.local import LocalAccount
@@ -10,7 +9,9 @@ from web3 import Web3
 from gnosis.eth import EthereumNetwork
 from gnosis.safe import SafeTx
 
-from .base_api import SafeAPIException, SafeBaseAPI
+from ..base_api import SafeAPIException, SafeBaseAPI
+from .transaction_service_messages import get_delegate_message
+from .transaction_service_tx import TransactionServiceTx
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     @classmethod
     def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
-        totp = int(time.time()) // 3600
-        hash_to_sign = Web3.keccak(text=delegate_address + str(totp))
-        return hash_to_sign
+        return Web3.keccak(text=get_delegate_message(delegate_address))
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:
@@ -115,7 +114,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def get_safe_transaction(
         self, safe_tx_hash: Union[bytes, HexStr]
-    ) -> Tuple[SafeTx, Optional[HexBytes]]:
+    ) -> Tuple[TransactionServiceTx, Optional[HexBytes]]:
         """
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
@@ -133,7 +132,8 @@ class TransactionServiceApi(SafeBaseAPI):
             logger.warning(
                 "EthereumClient should be defined to get a executable SafeTx"
             )
-        safe_tx = SafeTx(
+        safe_tx = TransactionServiceTx(
+            result["proposer"],
             self.ethereum_client,
             result["safe"],
             result["to"],
@@ -274,6 +274,21 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
+        return True
+
+    def delete_transaction(self, safe_tx_hash: str, signature: str) -> bool:
+        """
+
+        :param safe_tx_hash: hash of eip712 see in transaction_service_messages.py generate_remove_transaction_message function
+        :param signature: signature of safe_tx_hash by transaction proposer
+        :return:
+        """
+        payload = {"safeTxHash": safe_tx_hash, "signature": signature}
+        response = self._delete_request(
+            f"/api/v1/multisig-transactions/{safe_tx_hash}/", payload
+        )
+        if not response.ok:
+            raise SafeAPIException(f"Error deleting transaction: {response.content}")
         return True
 
     def post_message(
