@@ -41,42 +41,32 @@ class UserOperation:
         self.sender = ChecksumAddress(
             user_operation_response["userOperation"]["sender"]
         )
-        self.nonce: int = int(user_operation_response["userOperation"]["nonce"], 16)
-        self.init_code: bytes = HexBytes(
-            user_operation_response["userOperation"]["initCode"]
-        )
-        self.call_data: bytes = HexBytes(
-            user_operation_response["userOperation"]["callData"]
-        )
-        self.call_gas_limit: int = int(
+        self.nonce = int(user_operation_response["userOperation"]["nonce"], 16)
+        self.init_code = HexBytes(user_operation_response["userOperation"]["initCode"])
+        self.call_data = HexBytes(user_operation_response["userOperation"]["callData"])
+        self.call_gas_limit = int(
             user_operation_response["userOperation"]["callGasLimit"], 16
         )
-        self.verification_gas_limit: int = int(
+        self.verification_gas_limit = int(
             user_operation_response["userOperation"]["verificationGasLimit"], 16
         )
-        self.pre_verification_gas: int = int(
+        self.pre_verification_gas = int(
             user_operation_response["userOperation"]["preVerificationGas"], 16
         )
-        self.max_fee_per_gas: int = int(
+        self.max_fee_per_gas = int(
             user_operation_response["userOperation"]["maxFeePerGas"], 16
         )
-        self.max_priority_fee_per_gas: int = int(
+        self.max_priority_fee_per_gas = int(
             user_operation_response["userOperation"]["maxPriorityFeePerGas"], 16
         )
-        self.paymaster_and_data: bytes = HexBytes(
+        self.paymaster_and_data = HexBytes(
             user_operation_response["userOperation"]["paymasterAndData"]
         )
-        self.signature: bytes = HexBytes(
-            user_operation_response["userOperation"]["signature"]
-        )
-        self.entry_point: ChecksumAddress = ChecksumAddress(
-            user_operation_response["entryPoint"]
-        )
-        self.transaction_hash: bytes = HexBytes(
-            user_operation_response["transactionHash"]
-        )
-        self.block_hash: bytes = HexBytes(user_operation_response["blockHash"])
-        self.block_number: int = int(user_operation_response["blockNumber"], 16)
+        self.signature = HexBytes(user_operation_response["userOperation"]["signature"])
+        self.entry_point = ChecksumAddress(user_operation_response["entryPoint"])
+        self.transaction_hash = HexBytes(user_operation_response["transactionHash"])
+        self.block_hash = HexBytes(user_operation_response["blockHash"])
+        self.block_number = int(user_operation_response["blockNumber"], 16)
         self.user_operation_hash = HexBytes(user_operation_hash)
 
     def __str__(self):
