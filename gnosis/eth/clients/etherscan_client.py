@@ -3,8 +3,7 @@ import time
 from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
-import requests
-
+from ...util.http import prepare_http_session
 from .. import EthereumNetwork
 from .contract_metadata import ContractMetadata
 
@@ -118,26 +117,9 @@ class EtherscanClient:
             raise EtherscanClientConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
             )
-        self.http_session = self._prepare_http_session()
+        self.http_session = prepare_http_session(10, 100)
         self.http_session.headers = self.HTTP_HEADERS
         self.request_timeout = request_timeout
-
-    def _prepare_http_session(self) -> requests.Session:
-        """
-        Prepare http session with custom pooling. See:
-        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://docs.python-requests.org/en/v1.2.3/api/#requests.adapters.HTTPAdapter
-        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
-        """
-        session = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=10,
-            pool_maxsize=100,
-            pool_block=False,
-        )
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
 
     def build_url(self, path: str):
         url = urljoin(self.base_api_url, path)

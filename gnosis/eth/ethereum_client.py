@@ -16,7 +16,6 @@ from typing import (
 )
 
 import eth_abi
-import requests
 from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -60,6 +59,7 @@ from gnosis.eth.utils import (
 )
 from gnosis.util import cache, chunks
 
+from ..util.http import prepare_http_session
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
     GAS_CALL_DATA_BYTE,
@@ -1189,7 +1189,7 @@ class EthereumClient:
         :param use_caching_middleware: Use web3 simple cache middleware: https://web3py.readthedocs.io/en/stable/middleware.html#web3.middleware.construct_simple_cache_middleware
         :param batch_request_max_size: Max size for JSON RPC Batch requests. Some providers have a limitation on 500
         """
-        self.http_session = self._prepare_http_session(retry_count)
+        self.http_session = prepare_http_session(1, 100, retry_count=retry_count)
         self.ethereum_node_url: str = ethereum_node_url
         self.timeout = provider_timeout
         self.slow_timeout = slow_provider_timeout
@@ -1236,33 +1236,6 @@ class EthereumClient:
 
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
-
-    def _prepare_http_session(self, retry_count: int) -> requests.Session:
-        """
-        Prepare http session with custom pooling. See:
-        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://docs.python-requests.org/en/v1.2.3/api/#requests.adapters.HTTPAdapter
-        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
-        """
-        session = requests.Session()
-        retry_conf = (
-            requests.adapters.Retry(
-                total=retry_count,
-                backoff_factor=0.3,
-            )
-            if retry_count
-            else 0
-        )
-
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=1,  # Doing all the connections to the same url
-            pool_maxsize=100,  # Number of concurrent connections
-            max_retries=retry_conf,  # Nodes are not very responsive some times
-            pool_block=False,
-        )
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
 
     def raw_batch_request(
         self, payload: List[Dict[str, Any]], batch_size: Optional[int] = None
