@@ -89,6 +89,7 @@ class BlockscoutClient:
         EthereumNetwork.MODE_TESTNET: "https://sepolia.explorer.mode.network/graphiql",
         EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/graphiql",
         EthereumNetwork.OP_SEPOLIA_TESTNET: "https://optimism-sepolia.blockscout.com/graphiql",
+        EthereumNetwork.UNREAL_TESTNET: "https://unreal.blockscout.com/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
