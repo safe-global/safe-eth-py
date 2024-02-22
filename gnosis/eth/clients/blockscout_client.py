@@ -97,6 +97,7 @@ class BlockscoutClient:
         EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/graphiql",
         EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
         EthereumNetwork.SEI_DEVNET: "https://seitrace.com/graphiql",
+        EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
