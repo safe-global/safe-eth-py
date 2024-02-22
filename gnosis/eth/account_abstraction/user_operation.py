@@ -1,9 +1,11 @@
 import dataclasses
-from typing import Any, Dict, Union
+from functools import cached_property
+from typing import Any, Dict, Optional, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
+from web3 import Web3
 
 from gnosis.eth.utils import fast_keccak
 
@@ -71,6 +73,16 @@ class UserOperation:
 
     def __str__(self):
         return f"User Operation sender={self.sender} nonce={self.nonce} hash={self.user_operation_hash.hex()}"
+
+    @cached_property
+    def paymaster(self) -> Optional[ChecksumAddress]:
+        if self.paymaster_and_data and len(self.paymaster_and_data) >= 20:
+            return Web3.to_checksum_address(self.paymaster_and_data[:20])
+        return None
+
+    @cached_property
+    def paymaster_data(self) -> bytes:
+        return self.paymaster_and_data[:20]
 
     def calculate_user_operation_hash(self, chain_id: int) -> bytes:
         hash_init_code = fast_keccak(self.init_code)
