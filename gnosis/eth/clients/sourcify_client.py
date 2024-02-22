@@ -1,10 +1,9 @@
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
-import requests
-
 from gnosis.util import cache
 
+from ...util.http import prepare_http_session
 from .. import EthereumNetwork
 from ..utils import fast_is_checksum_address
 from .contract_metadata import ContractMetadata
@@ -40,30 +39,13 @@ class SourcifyClient:
         self.network = network
         self.base_url_api = base_url_api
         self.base_url_repo = base_url_repo
-        self.http_session = self._prepare_http_session()
+        self.http_session = prepare_http_session(10, 100)
         self.request_timeout = request_timeout
 
         if not self.is_chain_supported(network.value):
             raise SourcifyClientConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
             )
-
-    def _prepare_http_session(self) -> requests.Session:
-        """
-        Prepare http session with custom pooling. See:
-        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://docs.python-requests.org/en/v1.2.3/api/#requests.adapters.HTTPAdapter
-        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
-        """
-        session = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=10,
-            pool_maxsize=100,
-            pool_block=False,
-        )
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
 
     def _get_abi_from_metadata(self, metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
         return metadata["output"]["abi"]

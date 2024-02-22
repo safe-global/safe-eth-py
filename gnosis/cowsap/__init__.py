@@ -1,9 +1,9 @@
 # flake8: noqa F401
-from .gnosis_protocol_api import GnosisProtocolAPI
+from .cow_swap_api import CowSwapAPI
 from .order import Order, OrderKind
 
 __all__ = [
-    "GnosisProtocolAPI",
+    "CowSwapAPI",
     "Order",
     "OrderKind",
 ]

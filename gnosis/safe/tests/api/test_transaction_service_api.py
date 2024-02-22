@@ -4,8 +4,7 @@ from django.test import TestCase
 
 from gnosis.eth import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
-
-from ...api.transaction_service_api import TransactionServiceApi
+from gnosis.safe.api.transaction_service_api import TransactionServiceApi
 
 
 class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
