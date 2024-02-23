@@ -91,6 +91,7 @@ class BlockscoutClient:
         EthereumNetwork.OP_SEPOLIA_TESTNET: "https://optimism-sepolia.blockscout.com/graphiql",
         EthereumNetwork.UNREAL_TESTNET: "https://unreal.blockscout.com/graphiql",
         EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
+        EthereumNetwork.SHIBARIUM: "https://www.shibariumscan.io/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
