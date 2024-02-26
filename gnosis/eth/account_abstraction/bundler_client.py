@@ -1,4 +1,5 @@
 import logging
+from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 from eth_typing import ChecksumAddress, HexStr
@@ -41,6 +42,8 @@ class BundlerClient:
             )
         return result
 
+    # TODO This is caching issues, use exceptions
+    @lru_cache(maxsize=1024)
     def get_user_operation_by_hash(
         self, user_operation_hash: HexStr
     ) -> Optional[UserOperation]:
@@ -51,8 +54,13 @@ class BundlerClient:
             "id": 1,
         }
         result = self._do_request(payload)
-        return UserOperation(user_operation_hash, result) if result else None
+        return (
+            UserOperation.from_bundler_response(user_operation_hash, result)
+            if result
+            else None
+        )
 
+    @lru_cache(maxsize=1024)
     def get_user_operation_receipt(
         self, user_operation_hash: HexStr
     ) -> Optional[Dict[str, Any]]:
@@ -64,6 +72,7 @@ class BundlerClient:
         }
         return self._do_request(payload)
 
+    @lru_cache(maxsize=None)
     def supported_entry_points(self) -> List[ChecksumAddress]:
         payload = {
             "jsonrpc": "2.0",

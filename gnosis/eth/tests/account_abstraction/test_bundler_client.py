@@ -28,7 +28,8 @@ class TestBundlerClient(TestCase):
 
         self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
         mock_session.return_value.json = MagicMock(return_value=user_operation_mock)
-        expected_user_operation = UserOperation(
+        self.bundler.get_user_operation_by_hash.cache_clear()
+        expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
         )
         self.assertEqual(
@@ -46,6 +47,7 @@ class TestBundlerClient(TestCase):
                 },
             }
         )
+        self.bundler.get_user_operation_by_hash.cache_clear()
         self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
 
     @mock.patch.object(requests.Session, "post")
@@ -59,6 +61,7 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(
             return_value=user_operation_receipt_mock
         )
+        self.bundler.get_user_operation_receipt.cache_clear()
         self.assertEqual(
             self.bundler.get_user_operation_receipt(user_operation_hash),
             user_operation_receipt_mock["result"],
@@ -73,6 +76,7 @@ class TestBundlerClient(TestCase):
                 },
             }
         )
+        self.bundler.get_user_operation_receipt.cache_clear()
         self.assertIsNone(self.bundler.get_user_operation_receipt(user_operation_hash))
 
     @mock.patch.object(requests.Session, "post")

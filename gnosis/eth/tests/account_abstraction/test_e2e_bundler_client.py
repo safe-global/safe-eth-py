@@ -25,7 +25,7 @@ class TestE2EBundlerClient(TestCase):
     def test_get_user_operation_by_hash(self):
         user_operation_hash = safe_4337_user_operation_hash_mock.hex()
 
-        expected_user_operation = UserOperation(
+        expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
         )
         self.assertEqual(
