@@ -1,10 +1,7 @@
 import os
 import random
-from logging import getLogger
 
 from gnosis.eth.constants import SECPK1_N
-
-logger = getLogger(__name__)
 
 
 def generate_salt_nonce() -> int:

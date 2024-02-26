@@ -1,12 +1,13 @@
 from django.test import TestCase
 
+from eth_account import Account
+
 from gnosis.eth.constants import (
     SIGNATURE_R_MAX_VALUE,
     SIGNATURE_R_MIN_VALUE,
     SIGNATURE_S_MAX_VALUE,
     SIGNATURE_S_MIN_VALUE,
 )
-from gnosis.eth.utils import get_eth_address_with_key
 
 from ..serializers import SafeMultisigEstimateTxSerializer, SafeSignatureSerializer
 
@@ -78,8 +79,8 @@ class TestSerializers(TestCase):
             )
 
     def test_safe_multisig_tx_estimate_serializer(self):
-        safe_address, _ = get_eth_address_with_key()
-        eth_address, _ = get_eth_address_with_key()
+        safe_address = Account.create().address
+        eth_address = Account.create().address
         data = {
             "safe": safe_address,
             "to": None,

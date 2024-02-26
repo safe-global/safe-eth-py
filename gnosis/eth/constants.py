@@ -1,14 +1,13 @@
-from eth_typing import ChecksumAddress
+from eth.constants import SECPK1_N
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 
-SECPK1_N = (
-    115792089237316195423570985008687907852837564279074904382605163141518161494337
+NULL_ADDRESS: ChecksumAddress = ChecksumAddress(HexAddress(HexStr("0x" + "0" * 40)))
+SENTINEL_ADDRESS: ChecksumAddress = ChecksumAddress(
+    HexAddress(HexStr("0x" + "0" * 39 + "1"))
 )
 
-NULL_ADDRESS: ChecksumAddress = ChecksumAddress("0x" + "0" * 40)
-SENTINEL_ADDRESS: ChecksumAddress = ChecksumAddress("0x" + "0" * 39 + "1")
-
 # keccak('Transfer(address,address,uint256)')
-ERC20_721_TRANSFER_TOPIC: str = (
+ERC20_721_TRANSFER_TOPIC: HexStr = HexStr(
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 )
 
