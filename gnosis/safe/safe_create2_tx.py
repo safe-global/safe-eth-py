@@ -3,6 +3,7 @@ from logging import getLogger
 from typing import List, NamedTuple, Optional
 
 from eth_abi.packed import encode_packed
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.types import TxParams, Wei
@@ -56,7 +57,12 @@ class SafeCreate2Tx(NamedTuple):
 
 
 class SafeCreate2TxBuilder:
-    def __init__(self, w3: Web3, master_copy_address: str, proxy_factory_address: str):
+    def __init__(
+        self,
+        w3: Web3,
+        master_copy_address: ChecksumAddress,
+        proxy_factory_address: ChecksumAddress,
+    ):
         """
         Init builder for safe creation using create2
 

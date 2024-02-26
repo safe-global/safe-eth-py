@@ -19,7 +19,7 @@ import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexStr
+from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
@@ -46,6 +46,7 @@ from web3.types import (
     FilterTrace,
     LogReceipt,
     Nonce,
+    TraceFilterParams,
     TxData,
     TxParams,
     TxReceipt,
@@ -86,7 +87,7 @@ from .exceptions import (
     TransactionQueueLimitReached,
     UnknownAccount,
 )
-from .typing import BalanceDict, EthereumData, EthereumHash
+from .typing import BalanceDict, EthereumData, EthereumHash, LogReceiptDecoded
 from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
@@ -415,7 +416,7 @@ class Erc20Manager(EthereumClientManager):
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
 
-    def decode_logs(self, logs: List[LogReceipt]):
+    def decode_logs(self, logs: Sequence[LogReceipt]):
         decoded_logs = []
         for log in logs:
             decoded = self._decode_transfer_log(log["data"], log["topics"])
@@ -441,7 +442,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `address from, address to, uint256 unknown` from data=%s",
-                        data.hex(),
+                        data.hex() if isinstance(data, bytes) else data,
                     )
                     return None
             elif topics_len == 3:
@@ -491,7 +492,9 @@ class Erc20Manager(EthereumClientManager):
                     return None
         return None
 
-    def get_balance(self, address: str, token_address: str) -> int:
+    def get_balance(
+        self, address: ChecksumAddress, token_address: ChecksumAddress
+    ) -> int:
         """
         Get balance of address for `erc20_address`
 
@@ -506,7 +509,7 @@ class Erc20Manager(EthereumClientManager):
         )
 
     def get_balances(
-        self, address: str, token_addresses: List[str]
+        self, address: ChecksumAddress, token_addresses: Sequence[ChecksumAddress]
     ) -> List[BalanceDict]:
         """
         Get balances for Ether and tokens for an `address`
@@ -540,7 +543,7 @@ class Erc20Manager(EthereumClientManager):
             }
         ] + return_balances
 
-    def get_name(self, erc20_address: str) -> str:
+    def get_name(self, erc20_address: ChecksumAddress) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
         data = erc20.functions.name().build_transaction(
             {"gas": Wei(0), "gasPrice": Wei(0)}
@@ -548,7 +551,7 @@ class Erc20Manager(EthereumClientManager):
         result = self.w3.eth.call({"to": erc20_address, "data": data})
         return decode_string_or_bytes32(result)
 
-    def get_symbol(self, erc20_address: str) -> str:
+    def get_symbol(self, erc20_address: ChecksumAddress) -> str:
         erc20 = get_erc20_contract(self.w3, erc20_address)
         data = erc20.functions.symbol().build_transaction(
             {"gas": Wei(0), "gasPrice": Wei(0)}
@@ -556,11 +559,11 @@ class Erc20Manager(EthereumClientManager):
         result = self.w3.eth.call({"to": erc20_address, "data": data})
         return decode_string_or_bytes32(result)
 
-    def get_decimals(self, erc20_address: str) -> int:
+    def get_decimals(self, erc20_address: ChecksumAddress) -> int:
         erc20 = get_erc20_contract(self.w3, erc20_address)
         return erc20.functions.decimals().call()
 
-    def get_info(self, erc20_address: str) -> Erc20Info:
+    def get_info(self, erc20_address: ChecksumAddress) -> Erc20Info:
         """
         Get erc20 information (`name`, `symbol` and `decimals`). Use batching to get
         all info in the same request.
@@ -614,7 +617,7 @@ class Erc20Manager(EthereumClientManager):
         from_block: BlockIdentifier = BlockNumber(0),
         to_block: Optional[BlockIdentifier] = None,
         token_address: Optional[ChecksumAddress] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[LogReceiptDecoded]:
         """
         Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually.
         Example of an erc20 event:
@@ -704,18 +707,19 @@ class Erc20Manager(EthereumClientManager):
         if token_address:
             parameters["address"] = token_address
 
-        all_events: List[LogReceipt] = []
+        erc20_events = []
         # Do the request to `eth_getLogs`
         for topics in all_topics:
             parameters["topics"] = topics
-            all_events.extend(self.slow_w3.eth.get_logs(parameters))
 
-        # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
-        erc20_events = []
-        for event in all_events:
-            event["args"] = self._decode_transfer_log(event["data"], event["topics"])
-            if event["args"]:
-                erc20_events.append(event)
+            # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
+            for event in self.slow_w3.eth.get_logs(parameters):
+                event["args"] = self._decode_transfer_log(
+                    event["data"], event["topics"]
+                )
+                if event["args"]:
+                    erc20_events.append(LogReceiptDecoded(event))
+
         erc20_events.sort(key=lambda x: x["blockNumber"])
         return erc20_events
 
@@ -780,7 +784,7 @@ class Erc20Manager(EthereumClientManager):
         self,
         to: str,
         amount: int,
-        erc20_address: str,
+        erc20_address: ChecksumAddress,
         private_key: str,
         nonce: Optional[int] = None,
         gas_price: Optional[int] = None,
@@ -819,7 +823,9 @@ class Erc721Manager(EthereumClientManager):
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = Erc20Manager.TRANSFER_TOPIC
 
-    def get_balance(self, address: str, token_address: str) -> int:
+    def get_balance(
+        self, address: ChecksumAddress, token_address: ChecksumAddress
+    ) -> int:
         """
         Get balance of address for `erc20_address`
 
@@ -834,7 +840,7 @@ class Erc721Manager(EthereumClientManager):
         )
 
     def get_balances(
-        self, address: str, token_addresses: List[str]
+        self, address: ChecksumAddress, token_addresses: Sequence[ChecksumAddress]
     ) -> List[TokenBalance]:
         """
         Get balances for tokens for an `address`. If there's a problem with a token_address `0` will be
@@ -844,10 +850,12 @@ class Erc721Manager(EthereumClientManager):
         :param token_addresses: token addresses to check
         :return:
         """
+        function = get_erc721_contract(self.ethereum_client.w3).functions.balanceOf(
+            address
+        )
         balances = self.ethereum_client.batch_call_same_function(
-            get_erc721_contract(self.ethereum_client.w3)
-            .functions.balanceOf(address)
-            .token_addresses,
+            function,
+            token_addresses,
             raise_exception=False,
         )
         return [
@@ -855,7 +863,7 @@ class Erc721Manager(EthereumClientManager):
             for (token_address, balance) in zip(token_addresses, balances)
         ]
 
-    def get_info(self, token_address: str) -> Erc721Info:
+    def get_info(self, token_address: ChecksumAddress) -> Erc721Info:
         """
         Get erc721 information (`name`, `symbol`). Use batching to get
         all info in the same request.
@@ -879,14 +887,16 @@ class Erc721Manager(EthereumClientManager):
             raise InvalidERC721Info
 
     def get_owners(
-        self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]
+        self, token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]]
     ) -> List[Optional[ChecksumAddress]]:
         """
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of owner addresses, `None` if not found
         """
         return [
-            ChecksumAddress(owner) if isinstance(owner, str) else None
+            ChecksumAddress(HexAddress(HexStr(owner)))
+            if isinstance(owner, str)
+            else None
             for owner in self.ethereum_client.batch_call(
                 [
                     get_erc721_contract(
@@ -899,7 +909,7 @@ class Erc721Manager(EthereumClientManager):
         ]
 
     def get_token_uris(
-        self, token_addresses_with_token_ids: Sequence[Tuple[str, int]]
+        self, token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]]
     ) -> List[Optional[str]]:
         """
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
@@ -982,7 +992,7 @@ class TracingManager(EthereumClientManager):
         trace_address: Sequence[int],
         remove_delegate_calls: bool = False,
         remove_calls: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[FilterTrace]:
         """
         :param tx_hash:
         :param trace_address:
@@ -992,7 +1002,7 @@ class TracingManager(EthereumClientManager):
         :raises: ``ValueError`` if tracing is not supported
         """
         trace_address_len = len(trace_address)
-        traces = []
+        traces: List[FilterTrace] = []
         for trace in self.trace_transaction(tx_hash):
             if (
                 trace_address_len + 1 == len(trace["traceAddress"])
@@ -1013,7 +1023,7 @@ class TracingManager(EthereumClientManager):
         return self.slow_w3.tracing.trace_block(block_identifier)
 
     def trace_blocks(
-        self, block_identifiers: List[BlockIdentifier]
+        self, block_identifiers: Sequence[BlockIdentifier]
     ) -> List[List[Dict[str, Any]]]:
         if not block_identifiers:
             return []
@@ -1147,7 +1157,7 @@ class TracingManager(EthereumClientManager):
         assert (
             from_address or to_address
         ), "You must provide at least `from_address` or `to_address`"
-        parameters: FilterParams = {}
+        parameters: TraceFilterParams = {}
         if after:
             parameters["after"] = after
         if count:
@@ -1238,7 +1248,7 @@ class EthereumClient:
         return f"EthereumClient for url={self.ethereum_node_url}"
 
     def raw_batch_request(
-        self, payload: List[Dict[str, Any]], batch_size: Optional[int] = None
+        self, payload: Sequence[Dict[str, Any]], batch_size: Optional[int] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         Perform a raw batch JSON RPC call
@@ -1316,7 +1326,7 @@ class EthereumClient:
         return EthereumNetwork(self.get_chain_id())
 
     @cache
-    def is_eip1559_supported(self) -> EthereumNetwork:
+    def is_eip1559_supported(self) -> bool:
         """
         :return: `True` if EIP1559 is supported by the node, `False` otherwise
         """
@@ -1572,7 +1582,7 @@ class EthereumClient:
         :raises: ValueError if EIP1559 not supported
         """
         base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1559(tx_speed)
-        tx = dict(tx)  # Don't modify provided tx
+        tx = TxParams(tx)  # Don't modify provided tx
         if "gasPrice" in tx:
             del tx["gasPrice"]
 
@@ -1596,7 +1606,9 @@ class EthereumClient:
         except TransactionNotFound:
             return None
 
-    def get_transactions(self, tx_hashes: List[EthereumHash]) -> List[Optional[TxData]]:
+    def get_transactions(
+        self, tx_hashes: Sequence[EthereumHash]
+    ) -> List[Optional[TxData]]:
         if not tx_hashes:
             return []
         payload = [

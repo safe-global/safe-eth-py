@@ -8,7 +8,7 @@ from web3 import Web3
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract, get_sign_message_lib_contract
-from gnosis.eth.utils import get_empty_tx_params, get_eth_address_with_key
+from gnosis.eth.utils import get_empty_tx_params
 
 from ..exceptions import (
     CannotEstimateGas,
@@ -125,12 +125,12 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         w3 = self.w3
         funder_account = self.ethereum_test_account
         funder = funder_account.address
-        owners_with_keys = [get_eth_address_with_key(), get_eth_address_with_key()]
+        accounts = [Account.create() for _ in range(2)]
         # Signatures must be sorted!
-        owners_with_keys.sort(key=lambda x: x[0].lower())
-        owners = [x[0] for x in owners_with_keys]
-        keys = [x[1] for x in owners_with_keys]
-        threshold = len(owners_with_keys)
+        accounts.sort(key=lambda a: a.address.lower())
+        owners = [account.address for account in accounts]
+        keys = [account.key for account in accounts]
+        threshold = len(accounts)
 
         safe = self.deploy_test_safe(threshold=threshold, owners=owners)
         my_safe_address = safe.address
@@ -266,7 +266,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
     def test_send_multisig_tx_gas_token(self):
         # Create safe with one owner, fund the safe and the owner with `safe_balance`
-        receiver, _ = get_eth_address_with_key()
+        receiver = Account.create().address
         threshold = 1
         funder_account = self.ethereum_test_account
         funder = funder_account.address
@@ -776,7 +776,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe = Safe(safe_address, self.ethereum_client)
         safe_instance = get_safe_contract(self.w3, safe_address)
 
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
         value = self.w3.to_wei(0.001, "ether")
         data = b""
         operation = 0

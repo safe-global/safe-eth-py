@@ -25,11 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import re
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Tuple
 
 from eth_abi import encode as encode_abi
-from eth_account import Account
-from eth_typing import Hash32, HexStr
+from eth_typing import Hash32
 from hexbytes import HexBytes
 
 from ..utils import fast_keccak
@@ -139,9 +138,9 @@ def hash_struct(primary_type: str, data, types) -> Hash32:
     return fast_keccak(encode_data(primary_type, data, types))
 
 
-def eip712_encode(typed_data: Dict[str, Any]) -> List[bytes]:
+def eip712_encode(typed_data: Dict[str, Any]) -> Tuple[bytes, Hash32, Hash32]:
     """
-    Given a dict of structured data and types, return a 3-element list of
+    Given a dict of structured data and types, return a 3-element tuple of
     the encoded, signable data.
 
       0: The magic & version (0x1901)
@@ -149,19 +148,22 @@ def eip712_encode(typed_data: Dict[str, Any]) -> List[bytes]:
       2: The encoded data
     """
     try:
-        parts = [
+        parts = (
             bytes.fromhex("1901"),
             hash_struct("EIP712Domain", typed_data["domain"], typed_data["types"]),
-        ]
-        if typed_data["primaryType"] != "EIP712Domain":
-            parts.append(
-                hash_struct(
-                    typed_data["primaryType"],
-                    typed_data["message"],
-                    typed_data["types"],
-                )
-            )
-        return parts
+        )
+        if typed_data["primaryType"] == "EIP712Domain":
+            raise TypeError("primaryType cannot be EIP712Domain")
+
+        return (
+            *parts,
+            hash_struct(
+                typed_data["primaryType"],
+                typed_data["message"],
+                typed_data["types"],
+            ),
+        )
+
     except (KeyError, AttributeError, TypeError, IndexError) as exc:
         raise ValueError(f"Not valid {typed_data}") from exc
 
@@ -172,23 +174,3 @@ def eip712_encode_hash(typed_data: Dict[str, Any]) -> Hash32:
     :return: Keccak256 hash of encoded signable data
     """
     return fast_keccak(b"".join(eip712_encode(typed_data)))
-
-
-def eip712_signature(
-    payload: Dict[str, Any], private_key: Union[HexStr, bytes]
-) -> bytes:
-    """
-    Given a bytes object and a private key, return a signature suitable for
-    EIP712 and EIP191 messages.
-    """
-    if isinstance(payload, (list, tuple)):
-        payload = b"".join(payload)
-
-    if isinstance(private_key, str) and private_key.startswith("0x"):
-        private_key = private_key[2:]
-    elif isinstance(private_key, bytes):
-        private_key = bytes.hex()
-
-    account = Account.from_key(private_key)
-    hashed_payload = fast_keccak(payload)
-    return account.signHash(hashed_payload)["signature"]

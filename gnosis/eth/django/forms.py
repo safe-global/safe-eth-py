@@ -69,11 +69,11 @@ class Keccak256FieldForm(HexFieldForm):
         return value
 
     def to_python(self, value: Optional[Any]) -> HexBytes:
-        value: Optional[HexBytes] = super().to_python(value)
-        if value and len(value) != 32:
+        python_value: Optional[HexBytes] = super().to_python(value)
+        if python_value and len(python_value) != 32:
             raise ValidationError(
                 self.error_messages["length"],
                 code="length",
-                params={"value": value.hex()},
+                params={"value": python_value.hex()},
             )
-        return value
+        return python_value
