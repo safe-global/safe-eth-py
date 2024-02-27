@@ -1,6 +1,3 @@
-from gnosis.eth.utils import fast_keccak
-
-
 def confirm_prompt(question: str) -> bool:
     reply = None
     while reply not in ("y", "n"):
@@ -14,16 +11,16 @@ if __name__ == "__main__":
     import sys
     import time
 
+    from gnosis.cowsap import CowSwapAPI, Order, OrderKind
     from gnosis.eth import EthereumNetwork
     from gnosis.eth.constants import NULL_ADDRESS
-    from gnosis.protocol import GnosisProtocolAPI, Order, OrderKind
 
     PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
     if not PRIVATE_KEY:
         print("Set PRIVATE_KEY as an environment variable")
         sys.exit(1)
 
-    parser = argparse.ArgumentParser(description="Place orders on Gnosis Protocol V2")
+    parser = argparse.ArgumentParser(description="Place orders on CowSwap")
     parser.add_argument(
         "--network",
         default=EthereumNetwork.RINKEBY.name,
@@ -38,8 +35,8 @@ if __name__ == "__main__":
     from_token = args.from_token
     to_token = args.to_token
     amount_wei = args.amount_wei
-    gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork[args.network.upper()])
-    buy_amount_response = gnosis_protocol_api.get_estimated_amount(
+    cow_swap_api = CowSwapAPI(EthereumNetwork[args.network.upper()])
+    buy_amount_response = cow_swap_api.get_estimated_amount(
         from_token, to_token, OrderKind.SELL, amount_wei
     )
 
@@ -55,7 +52,7 @@ if __name__ == "__main__":
         sellAmount=amount_wei,
         buyAmount=buy_amount,
         validTo=int(time.time()) + (60 * 60),  # Valid for 1 hour
-        appData=fast_keccak(text="gp-cli"),
+        appData={"version": "1.2.2", "appCode": "CowSwap CLI", "metadata": {}},
         feeAmount=0,
         kind="sell",  # `sell` or `buy`
         partiallyFillable=not args.require_full_fill,
@@ -63,12 +60,12 @@ if __name__ == "__main__":
         buyTokenBalance="erc20",  # `erc20` or `internal`
     )
 
-    order.feeAmount = gnosis_protocol_api.get_fee(order)
+    order.feeAmount = cow_swap_api.get_fee(order)
 
     if confirm_prompt(
         f"Exchanging {amount_wei} {from_token} to {buy_amount} {to_token}?"
     ):
-        result = gnosis_protocol_api.place_order(order, PRIVATE_KEY)
+        result = cow_swap_api.place_order(order, PRIVATE_KEY)
         if isinstance(result, dict):
             print(f"Cannot place order {result}")
         else:

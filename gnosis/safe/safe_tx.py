@@ -5,6 +5,7 @@ from eth_account import Account
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from packaging.version import Version
+from web3.contract.contract import ContractFunction
 from web3.exceptions import Web3Exception
 from web3.types import BlockIdentifier, TxParams, Wei
 
@@ -121,7 +122,7 @@ class SafeTx:
             return self.ethereum_client.get_chain_id()
 
     @cached_property
-    def safe_nonce(self) -> str:
+    def safe_nonce(self) -> int:
         if self._safe_nonce is not None:
             return self._safe_nonce
         else:
@@ -209,7 +210,7 @@ class SafeTx:
         return sorted(self.signers, key=lambda x: int(x, 16))
 
     @property
-    def w3_tx(self):
+    def w3_tx(self) -> ContractFunction:
         """
         :return: Web3 contract tx prepared for `call`, `transact` or `build_transaction`
         """
@@ -383,7 +384,7 @@ class SafeTx:
         if tx_nonce is not None:
             tx_parameters["nonce"] = tx_nonce
 
-        self.tx = self.w3_tx.build_transaction(tx_parameters)
+        self.tx: TxParams = self.w3_tx.build_transaction(tx_parameters)
         self.tx["gas"] = Wei(
             tx_gas or (max(self.tx["gas"] + 75000, self.recommended_gas()))
         )

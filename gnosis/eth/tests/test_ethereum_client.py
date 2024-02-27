@@ -24,7 +24,6 @@ from ..ethereum_client import (
     TracingManager,
 )
 from ..exceptions import BatchCallException, ChainIdIsRequired, InvalidERC20Info
-from ..utils import get_eth_address_with_key
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -774,7 +773,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
     def test_check_tx_with_confirmations(self):
         value = 1
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
 
         tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
@@ -794,7 +793,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_estimate_gas(self):
         send_ether_gas = 21000
         from_ = self.ethereum_test_account.address
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
         gas = self.ethereum_client.estimate_gas(
             to, from_=from_, value=5, data=None, block_identifier="pending"
         )
@@ -812,7 +811,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         amount_to_send = amount_tokens // 2
         from_account = self.ethereum_test_account
         from_ = from_account.address
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
 
         erc20_contract = self.deploy_example_erc20(amount_tokens, from_)
         transfer_tx = erc20_contract.functions.transfer(
@@ -928,7 +927,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertEqual(ethereum_client1, ethereum_client2)
 
     def test_send_eth_to(self):
-        address, _ = get_eth_address_with_key()
+        address = Account.create().address
         value = 1
         self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, address, self.gas_price, value
@@ -942,7 +941,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_transaction(self):
         account = self.ethereum_test_account
         address = account.address
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
         value = 1
         tx = {
             "to": to,
@@ -975,7 +974,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_unsigned_transaction(self):
         account = self.ethereum_test_account
         address = account.address
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
         value = 4
 
         tx = {
@@ -1017,7 +1016,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_unsigned_transaction_with_private_key(self):
         account = self.create_and_fund_account(initial_ether=0.1)
         key = account.key
-        to, _ = get_eth_address_with_key()
+        to = Account.create().address
         value = 4
 
         tx = {

@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List
+from typing import Any, Iterable, Sequence
 
 try:
     from functools import cache
@@ -8,7 +8,7 @@ except ImportError:
     cache = lru_cache(maxsize=None)
 
 
-def chunks(elements: List[Any], n: int) -> Iterable[Any]:
+def chunks(elements: Sequence[Any], n: int) -> Iterable[Any]:
     """
     :param elements: List
     :param n: Number of elements per chunk

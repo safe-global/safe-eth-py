@@ -1,11 +1,12 @@
 from django.test import TestCase
 
+from eth_account import Account
 from hexbytes import HexBytes
 from rest_framework import serializers
 from web3 import Web3
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
-from ...utils import get_eth_address_with_invalid_checksum, get_eth_address_with_key
+from ...utils import get_eth_address_with_invalid_checksum
 from ..serializers import EthereumAddressField, HexadecimalField, Sha3HashField
 
 
@@ -39,7 +40,7 @@ class Sha3HashSerializerTest(serializers.Serializer):
 
 class TestSerializers(TestCase):
     def test_ethereum_address_field(self):
-        valid_address, _ = get_eth_address_with_key()
+        valid_address = Account.create().address
         for value in [
             "0x674647242239941B2D35368E66A4EDc39b161Da1",
             "0x40f3F89639Bffc7B23Ca5d9FCb9ed9a9c579664A",
@@ -67,14 +68,14 @@ class TestSerializers(TestCase):
         self.assertIn("0x0 address is not allowed", serializer.errors["value"])
 
     def test_ethereum_zero_address_field(self):
-        valid_address, _ = get_eth_address_with_key()
+        valid_address = Account.create().address
         S = EthereumZeroAddressSerializerTest
         self.assertTrue(S(data={"value": valid_address}).is_valid())
         self.assertTrue(S(data={"value": NULL_ADDRESS}).is_valid())
         self.assertFalse(S(data={"value": SENTINEL_ADDRESS}).is_valid())
 
     def test_ethereum_sentinel_address_field(self):
-        valid_address, _ = get_eth_address_with_key()
+        valid_address = Account.create().address
         S = EthereumSentinelAddressSerializerTest
         self.assertTrue(S(data={"value": valid_address}).is_valid())
         self.assertTrue(S(data={"value": SENTINEL_ADDRESS}).is_valid())

@@ -139,8 +139,6 @@ gnosis.eth.utils
 
 Contains utils for ethereum operations:
 
-- ``get_eth_address_with_key() -> Tuple[str, bytes]``: Returns a tuple of a valid public ethereum checksumed
-  address with the private key.
 - ``mk_contract_address_2(from_: Union[str, bytes], salt: Union[str, bytes], init_code: [str, bytes]) -> str``:
   Calculates the address of a new contract created using the new CREATE2 opcode.
 
@@ -184,21 +182,21 @@ To work with Multisig Transactions:
   safe_tx.call()  # Check it works
   safe_tx.execute(tx_sender_private_key)
 
-Protocol
+CowSwap
 ~~~~~~~~
-On ``gnosis.protocol`` there're classes to work with `Gnosis Protocol v2 <https://docs.cowswap.app>`_
+On ``gnosis.cowswap`` there're classes to work with `CowSwap <https://docs.cowswap.app>`_
 
 .. code-block:: python
 
   import time
   from gnosis.eth import EthereumNetwork
-  from gnosis.protocol import Order, OrderKind, GnosisProtocolAPI
+  from gnosis.cowswap import Order, OrderKind, CowSwapAPI
 
-  account_address = ''  # Fill with checksummed version of a Gnosis Protocol user address
+  account_address = ''  # Fill with checksummed version of a CowSwap user address
   account_private_key = ''  # Fill with private key of a user address
-  gnosis_protocol_api = GnosisProtocolAPI(EthereumNetwork.RINKEBY)
-  print(gnosis_protocol_api.get_trades(owner=account_address))
-  buy_amount = gnosis_protocol_api.get_estimated_amount(base_token, quote_token, OrderKind.SELL, sell_amount)
+  cow_swap_api = CowSwapAPI(EthereumNetwork.SEPOLIA)
+  print(cow_swap_api.get_trades(owner=account_address))
+  buy_amount = cow_swap_api.get_estimated_amount(base_token, quote_token, OrderKind.SELL, sell_amount)
   valid_to = int(time.time() + (24 * 60 * 60))  # Order valid for 1 day
   order = Order(
         sellToken=base_token,
@@ -207,11 +205,11 @@ On ``gnosis.protocol`` there're classes to work with `Gnosis Protocol v2 <https:
         sellAmount=sell_amount,
         buyAmount=buy_amount,
         validTo=valid_to,  # timestamp
-        appData=ipfs_hash,  # IPFS hash for metadata
+        appData={},  # Dict with CowSwap AppData schema definition (https://github.com/cowprotocol/app-data)
         fee_amount=0,  # If set to `0` it will be autodetected
         kind='sell',  # `sell` or `buy`
         partiallyFillable=True,  # `True` or `False`
         sellTokenBalance='erc20',  # `erc20`, `external` or `internal`
         buyTokenBalance='erc20',  # `erc20` or `internal`
     )
-  gnosis_protocol_api.place_order(order, account_private_key)
+  cow_swap_api.place_order(order, account_private_key)

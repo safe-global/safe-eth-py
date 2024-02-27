@@ -1,16 +1,16 @@
+import json
 from functools import cached_property
 from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 
-import requests
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_typing import AnyAddress, ChecksumAddress, HexStr
-from hexbytes import HexBytes
 
 from gnosis.eth import EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.eip712 import eip712_encode_hash
 
 from ..eth.constants import NULL_ADDRESS
+from ..util.http import prepare_http_session
 from .order import Order, OrderKind
 
 
@@ -37,21 +37,19 @@ class ErrorResponse(TypedDict):
     description: str
 
 
-class GnosisProtocolAPI:
+class CowSwapAPI:
     """
-    Client for GnosisProtocol API. More info: https://docs.cowswap.exchange/
+    Client for CowSwap API. More info: https://docs.cowswap.exchange/
     """
 
     SETTLEMENT_CONTRACT_ADDRESSES = {
         EthereumNetwork.MAINNET: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
-        EthereumNetwork.GOERLI: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.GNOSIS: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
         EthereumNetwork.SEPOLIA: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     }
 
     API_BASE_URLS = {
         EthereumNetwork.MAINNET: "https://api.cow.fi/mainnet",
-        EthereumNetwork.GOERLI: "https://api.cow.fi/goerli",
         EthereumNetwork.GNOSIS: "https://api.cow.fi/xdai",
         EthereumNetwork.SEPOLIA: "https://api.cow.fi/sepolia",
     }
@@ -60,31 +58,14 @@ class GnosisProtocolAPI:
         self.network = ethereum_network
         if self.network not in self.API_BASE_URLS:
             raise EthereumNetworkNotSupported(
-                f"{self.network.name} network not supported by Gnosis Protocol"
+                f"{self.network.name} network not supported by CowSwap"
             )
         self.settlement_contract_address = self.SETTLEMENT_CONTRACT_ADDRESSES[
             self.network
         ]
         self.base_url = self.API_BASE_URLS[self.network]
-        self.http_session = self._prepare_http_session()
+        self.http_session = prepare_http_session(10, 100)
         self.request_timeout = request_timeout
-
-    def _prepare_http_session(self) -> requests.Session:
-        """
-        Prepare http session with custom pooling. See:
-        https://urllib3.readthedocs.io/en/stable/advanced-usage.html
-        https://docs.python-requests.org/en/v1.2.3/api/#requests.adapters.HTTPAdapter
-        https://web3py.readthedocs.io/en/stable/providers.html#httpprovider
-        """
-        session = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=10,
-            pool_maxsize=100,
-            pool_block=False,
-        )
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
 
     @cached_property
     def weth_address(self) -> ChecksumAddress:
@@ -93,8 +74,6 @@ class GnosisProtocolAPI:
         """
         if self.network == EthereumNetwork.GNOSIS:  # WXDAI
             return ChecksumAddress("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d")
-        if self.network == EthereumNetwork.GOERLI:  # Goerli WETH9
-            return ChecksumAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6")
 
         # Mainnet WETH9
         return ChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
@@ -108,9 +87,7 @@ class GnosisProtocolAPI:
             "buyToken": order.buyToken.lower(),
             "sellAmountAfterFee": str(order.sellAmount),
             # "validTo": order.validTo,
-            "appData": HexBytes(order.appData).hex()
-            if isinstance(order.appData, bytes)
-            else order.appData,
+            "appData": json.dumps(order.appData),
             "feeAmount": str(order.feeAmount),
             "kind": order.kind,
             "partiallyFillable": order.partiallyFillable,
@@ -169,9 +146,7 @@ class GnosisProtocolAPI:
             "sellAmount": str(order.sellAmount),
             "buyAmount": str(order.buyAmount),
             "validTo": order.validTo,
-            "appData": HexBytes(order.appData).hex()
-            if isinstance(order.appData, bytes)
-            else order.appData,
+            "appData": json.dumps(order.appData),
             "feeAmount": str(order.feeAmount),
             "kind": order.kind,
             "partiallyFillable": order.partiallyFillable,
@@ -245,7 +220,7 @@ class GnosisProtocolAPI:
             sellAmount=amount_wei * 10 if kind == OrderKind.SELL else 0,
             buyAmount=amount_wei * 10 if kind == OrderKind.BUY else 0,
             validTo=0,  # Valid for 1 hour
-            appData="0x0000000000000000000000000000000000000000000000000000000000000000",
+            appData={},
             feeAmount=0,
             kind=kind.name.lower(),  # `sell` or `buy`
             partiallyFillable=False,

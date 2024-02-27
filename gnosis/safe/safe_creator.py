@@ -1,5 +1,5 @@
 import logging
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple, Optional, Sequence
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -220,7 +220,7 @@ class SafeCreator:
         master_copy_address: ChecksumAddress,
         proxy_factory_address: ChecksumAddress,
         salt_nonce: int,
-        owners: List[ChecksumAddress],
+        owners: Sequence[ChecksumAddress],
         threshold: int,
         gas_price: int,
         payment_token: Optional[ChecksumAddress],

@@ -1,10 +1,9 @@
-from secrets import token_bytes
-from typing import Tuple, Union
+from typing import Union
 
 import eth_abi
 from eth._utils.address import generate_contract_address
-from eth_keys import keys
-from eth_typing import AnyAddress, ChecksumAddress, HexStr
+from eth_account import Account
+from eth_typing import Address, AnyAddress, ChecksumAddress, Hash32, HexAddress, HexStr
 from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 from sha3 import keccak_256
@@ -21,7 +20,7 @@ def get_empty_tx_params() -> TxParams:
     }
 
 
-def fast_keccak(value: bytes) -> bytes:
+def fast_keccak(value: bytes) -> Hash32:
     """
     Calculates ethereum keccak256 using fast library `pysha3`
     :param value:
@@ -52,15 +51,19 @@ def _build_checksum_address(
     :return:
     """
     return ChecksumAddress(
-        "0x"
-        + (
-            "".join(
-                (
-                    norm_address[i].upper()
-                    if int(address_hash[i], 16) > 7
-                    else norm_address[i]
+        HexAddress(
+            HexStr(
+                "0x"
+                + (
+                    "".join(
+                        (
+                            norm_address[i].upper()
+                            if int(address_hash[i], 16) > 7
+                            else norm_address[i]
+                        )
+                        for i in range(0, 40)
+                    )
                 )
-                for i in range(0, 40)
             )
         )
     )
@@ -73,7 +76,7 @@ def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAd
     :param value:
     :return:
     """
-    norm_address = to_normalized_address(value)[2:]
+    norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
     address_hash = fast_keccak_hex(norm_address.encode())
     return _build_checksum_address(norm_address, address_hash)
 
@@ -90,7 +93,7 @@ def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
         raise ValueError(
             "Cannot convert %s to a checksum address, 20 bytes were expected"
         )
-    norm_address = bytes(value).hex()
+    norm_address = HexAddress(HexStr(bytes(value).hex()))
     address_hash = fast_keccak_hex(norm_address.encode())
     return _build_checksum_address(norm_address, address_hash)
 
@@ -110,14 +113,8 @@ def fast_is_checksum_address(value: Union[AnyAddress, str, bytes]) -> bool:
         return False
 
 
-def get_eth_address_with_key() -> Tuple[str, bytes]:
-    private_key = keys.PrivateKey(token_bytes(32))
-    address = private_key.public_key.to_checksum_address()
-    return address, private_key.to_bytes()
-
-
 def get_eth_address_with_invalid_checksum() -> str:
-    address, _ = get_eth_address_with_key()
+    address = Account.create().address
     return "0x" + "".join(
         [c.lower() if c.isupper() else c.upper() for c in address[2:]]
     )
@@ -178,11 +175,15 @@ def mk_contract_address(address: Union[str, bytes], nonce: int) -> ChecksumAddre
     :param nonce:
     :return:
     """
-    return fast_to_checksum_address(generate_contract_address(HexBytes(address), nonce))
+    return fast_to_checksum_address(
+        generate_contract_address(Address(HexBytes(address)), nonce)
+    )
 
 
 def mk_contract_address_2(
-    from_: Union[str, bytes], salt: Union[str, bytes], init_code: Union[str, bytes]
+    from_: Union[ChecksumAddress, bytes],
+    salt: Union[HexStr, bytes],
+    init_code: Union[HexStr, bytes],
 ) -> ChecksumAddress:
     """
     Generate expected contract address when using EVM CREATE2.
