@@ -5,7 +5,12 @@ from django.test import TestCase
 
 import requests
 
-from ...account_abstraction import BundlerClient, UserOperation
+from ...account_abstraction import (
+    BundlerClient,
+    BundlerClientConnectionException,
+    BundlerClientResponseException,
+    UserOperation,
+)
 from ..mocks.mock_bundler import (
     safe_4337_user_operation_hash_mock,
     supported_entrypoint_mock,
@@ -28,7 +33,8 @@ class TestBundlerClient(TestCase):
 
         self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
         mock_session.return_value.json = MagicMock(return_value=user_operation_mock)
-        expected_user_operation = UserOperation(
+        self.bundler.get_user_operation_by_hash.cache_clear()
+        expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
         )
         self.assertEqual(
@@ -46,7 +52,16 @@ class TestBundlerClient(TestCase):
                 },
             }
         )
-        self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
+        self.bundler.get_user_operation_by_hash.cache_clear()
+        with self.assertRaises(BundlerClientResponseException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_by_hash(user_operation_hash)
+            )
+        mock_session.side_effect = IOError
+        with self.assertRaises(BundlerClientConnectionException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_by_hash(user_operation_hash)
+            )
 
     @mock.patch.object(requests.Session, "post")
     def test_get_user_operation_receipt(self, mock_session: MagicMock):
@@ -59,6 +74,7 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(
             return_value=user_operation_receipt_mock
         )
+        self.bundler.get_user_operation_receipt.cache_clear()
         self.assertEqual(
             self.bundler.get_user_operation_receipt(user_operation_hash),
             user_operation_receipt_mock["result"],
@@ -73,7 +89,16 @@ class TestBundlerClient(TestCase):
                 },
             }
         )
-        self.assertIsNone(self.bundler.get_user_operation_receipt(user_operation_hash))
+        self.bundler.get_user_operation_receipt.cache_clear()
+        with self.assertRaises(BundlerClientResponseException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_receipt(user_operation_hash)
+            )
+        mock_session.side_effect = IOError
+        with self.assertRaises(BundlerClientConnectionException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_receipt(user_operation_hash)
+            )
 
     @mock.patch.object(requests.Session, "post")
     def test_supported_entry_points(self, mock_session: MagicMock):

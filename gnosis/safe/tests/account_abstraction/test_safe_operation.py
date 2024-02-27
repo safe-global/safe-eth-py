@@ -23,7 +23,7 @@ class TestSafeOperation(TestCase):
 
     def test_safe_operation(self):
         safe_operation = SafeOperation.from_user_operation(
-            UserOperation(
+            UserOperation.from_bundler_response(
                 safe_4337_user_operation_hash_mock, user_operation_mock["result"]
             )
         )
