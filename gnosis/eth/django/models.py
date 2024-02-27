@@ -2,6 +2,7 @@ import binascii
 from typing import Optional, Union
 
 from django.core import exceptions
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -132,6 +133,18 @@ class Uint256Field(models.DecimalField):
             return value
         return int(value)
 
+    def pre_save(self, model_instance, add):
+        """
+        Override pre_save to ensure that field is unsigned before save it
+        :param model_instance:
+        :param add:
+        :return:
+        """
+        value = getattr(model_instance, self.attname)
+        if value is not None and value < 0:
+            raise ValidationError("Value must be an unsigned 256-bit integer")
+        return super().pre_save(model_instance, add)
+
 
 class Uint96Field(models.DecimalField):
     """
@@ -156,6 +169,18 @@ class Uint96Field(models.DecimalField):
         if value is None:
             return value
         return int(value)
+
+    def pre_save(self, model_instance, add):
+        """
+        Override pre_save to ensure that field is unsigned before save it
+        :param model_instance:
+        :param add:
+        :return:
+        """
+        value = getattr(model_instance, self.attname)
+        if value is not None and value < 0:
+            raise ValidationError("Value must be an unsigned 96-bit integer")
+        return super().pre_save(model_instance, add)
 
 
 class HexField(models.CharField):
