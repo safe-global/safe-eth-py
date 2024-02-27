@@ -5,7 +5,12 @@ from django.test import TestCase
 
 import requests
 
-from ...account_abstraction import BundlerClient, UserOperation
+from ...account_abstraction import (
+    BundlerClient,
+    BundlerClientConnectionException,
+    BundlerClientResponseException,
+    UserOperation,
+)
 from ..mocks.mock_bundler import (
     safe_4337_user_operation_hash_mock,
     supported_entrypoint_mock,
@@ -48,7 +53,15 @@ class TestBundlerClient(TestCase):
             }
         )
         self.bundler.get_user_operation_by_hash.cache_clear()
-        self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
+        with self.assertRaises(BundlerClientResponseException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_by_hash(user_operation_hash)
+            )
+        mock_session.side_effect = IOError
+        with self.assertRaises(BundlerClientConnectionException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_by_hash(user_operation_hash)
+            )
 
     @mock.patch.object(requests.Session, "post")
     def test_get_user_operation_receipt(self, mock_session: MagicMock):
@@ -77,7 +90,15 @@ class TestBundlerClient(TestCase):
             }
         )
         self.bundler.get_user_operation_receipt.cache_clear()
-        self.assertIsNone(self.bundler.get_user_operation_receipt(user_operation_hash))
+        with self.assertRaises(BundlerClientResponseException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_receipt(user_operation_hash)
+            )
+        mock_session.side_effect = IOError
+        with self.assertRaises(BundlerClientConnectionException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_receipt(user_operation_hash)
+            )
 
     @mock.patch.object(requests.Session, "post")
     def test_supported_entry_points(self, mock_session: MagicMock):
