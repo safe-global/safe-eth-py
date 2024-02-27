@@ -133,6 +133,31 @@ class Uint256Field(models.DecimalField):
         return int(value)
 
 
+class Uint96Field(models.DecimalField):
+    """
+    Field to store ethereum uint96 values. Uses Decimal db type without decimals to store
+    in the database, but retrieve as `int` instead of `Decimal` (https://docs.python.org/3/library/decimal.html)
+    """
+
+    description = _("Ethereum uint96 number")
+
+    def __init__(self, *args, **kwargs):
+        kwargs["max_digits"] = 29  # 2 ** 96 is 29 digits
+        kwargs["decimal_places"] = 0
+        super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs["max_digits"]
+        del kwargs["decimal_places"]
+        return name, path, args, kwargs
+
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        return int(value)
+
+
 class HexField(models.CharField):
     """
     Field to store hex values (without 0x). Returns hex with 0x prefix.
