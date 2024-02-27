@@ -1,13 +1,18 @@
 import dataclasses
-from functools import cached_property
 from typing import Any, Dict, Optional, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
-from web3 import Web3
 
 from gnosis.eth.utils import fast_keccak
+
+
+@dataclasses.dataclass
+class UserOperationMetadata:
+    transaction_hash: bytes
+    block_hash: bytes
+    block_number: int
 
 
 @dataclasses.dataclass
@@ -18,6 +23,7 @@ class UserOperation:
     https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0
     """
 
+    user_operation_hash: bytes
     sender: ChecksumAddress
     nonce: int
     init_code: bytes
@@ -30,59 +36,37 @@ class UserOperation:
     paymaster_and_data: bytes
     signature: bytes
     entry_point: ChecksumAddress
-    transaction_hash: bytes
-    block_hash: bytes
-    block_number: int
-    user_operation_hash: bytes
+    metadata: Optional[UserOperationMetadata] = None
 
-    def __init__(
-        self,
+    @classmethod
+    def from_bundler_response(
+        cls,
         user_operation_hash: Union[HexStr, bytes],
         user_operation_response: Dict[str, Any],
-    ):
-        self.sender = ChecksumAddress(
-            user_operation_response["userOperation"]["sender"]
+    ) -> "UserOperation":
+        return cls(
+            HexBytes(user_operation_hash),
+            ChecksumAddress(user_operation_response["userOperation"]["sender"]),
+            int(user_operation_response["userOperation"]["nonce"], 16),
+            HexBytes(user_operation_response["userOperation"]["initCode"]),
+            HexBytes(user_operation_response["userOperation"]["callData"]),
+            int(user_operation_response["userOperation"]["callGasLimit"], 16),
+            int(user_operation_response["userOperation"]["verificationGasLimit"], 16),
+            int(user_operation_response["userOperation"]["preVerificationGas"], 16),
+            int(user_operation_response["userOperation"]["maxFeePerGas"], 16),
+            int(user_operation_response["userOperation"]["maxPriorityFeePerGas"], 16),
+            HexBytes(user_operation_response["userOperation"]["paymasterAndData"]),
+            HexBytes(user_operation_response["userOperation"]["signature"]),
+            ChecksumAddress(user_operation_response["entryPoint"]),
+            metadata=UserOperationMetadata(
+                HexBytes(user_operation_response["transactionHash"]),
+                HexBytes(user_operation_response["blockHash"]),
+                int(user_operation_response["blockNumber"], 16),
+            ),
         )
-        self.nonce = int(user_operation_response["userOperation"]["nonce"], 16)
-        self.init_code = HexBytes(user_operation_response["userOperation"]["initCode"])
-        self.call_data = HexBytes(user_operation_response["userOperation"]["callData"])
-        self.call_gas_limit = int(
-            user_operation_response["userOperation"]["callGasLimit"], 16
-        )
-        self.verification_gas_limit = int(
-            user_operation_response["userOperation"]["verificationGasLimit"], 16
-        )
-        self.pre_verification_gas = int(
-            user_operation_response["userOperation"]["preVerificationGas"], 16
-        )
-        self.max_fee_per_gas = int(
-            user_operation_response["userOperation"]["maxFeePerGas"], 16
-        )
-        self.max_priority_fee_per_gas = int(
-            user_operation_response["userOperation"]["maxPriorityFeePerGas"], 16
-        )
-        self.paymaster_and_data = HexBytes(
-            user_operation_response["userOperation"]["paymasterAndData"]
-        )
-        self.signature = HexBytes(user_operation_response["userOperation"]["signature"])
-        self.entry_point = ChecksumAddress(user_operation_response["entryPoint"])
-        self.transaction_hash = HexBytes(user_operation_response["transactionHash"])
-        self.block_hash = HexBytes(user_operation_response["blockHash"])
-        self.block_number = int(user_operation_response["blockNumber"], 16)
-        self.user_operation_hash = HexBytes(user_operation_hash)
 
     def __str__(self):
         return f"User Operation sender={self.sender} nonce={self.nonce} hash={self.user_operation_hash.hex()}"
-
-    @cached_property
-    def paymaster(self) -> Optional[ChecksumAddress]:
-        if self.paymaster_and_data and len(self.paymaster_and_data) >= 20:
-            return Web3.to_checksum_address(self.paymaster_and_data[:20])
-        return None
-
-    @cached_property
-    def paymaster_data(self) -> bytes:
-        return self.paymaster_and_data[:20]
 
     def calculate_user_operation_hash(self, chain_id: int) -> bytes:
         hash_init_code = fast_keccak(self.init_code)
