@@ -118,7 +118,7 @@ class Uint256Field(models.DecimalField):
     description = _("Ethereum uint256 number")
 
     def __init__(self, *args, **kwargs):
-        kwargs["max_digits"] = 79  # 2 ** 256 is 78 digits
+        kwargs["max_digits"] = 78  # 2 ** 256 is 78 digits
         kwargs["decimal_places"] = 0
         super().__init__(*args, **kwargs)
 
