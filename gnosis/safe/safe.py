@@ -2,7 +2,6 @@ import dataclasses
 import math
 import os
 from abc import ABCMeta, abstractmethod
-from enum import Enum
 from functools import cached_property
 from logging import getLogger
 from typing import Callable, Dict, List, Optional, Union
@@ -41,17 +40,12 @@ from gnosis.eth.utils import (
 
 from ..eth.typing import EthereumData
 from .addresses import SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
+from .enums import SafeOperationEnum
 from .exceptions import CannotEstimateGas, CannotRetrieveSafeInfoException
 from .safe_creator import SafeCreator
 from .safe_tx import SafeTx
 
 logger = getLogger(__name__)
-
-
-class SafeOperation(Enum):
-    CALL = 0
-    DELEGATE_CALL = 1
-    CREATE = 2
 
 
 @dataclasses.dataclass
@@ -760,7 +754,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         to: ChecksumAddress,
         value: int,
         data: bytes,
-        operation: int = SafeOperation.CALL.value,
+        operation: int = SafeOperationEnum.CALL.value,
         safe_tx_gas: int = 0,
         base_gas: int = 0,
         gas_price: int = 0,

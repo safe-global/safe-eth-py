@@ -11,7 +11,7 @@ from gnosis.eth.constants import (
 )
 from gnosis.eth.django.serializers import EthereumAddressField, HexadecimalField
 
-from .safe import SafeOperation
+from .enums import SafeOperationEnum
 
 
 class SafeSignatureSerializer(serializers.Serializer):
@@ -74,7 +74,7 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
 
     def validate_operation(self, value):
         try:
-            return SafeOperation(value).value
+            return SafeOperationEnum(value).value
         except ValueError:
             raise ValidationError("Unknown operation")
 
@@ -87,7 +87,7 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
         if not data["to"] and not data["data"]:
             raise ValidationError("`data` and `to` cannot both be null")
 
-        if data["operation"] == SafeOperation.CREATE.value:
+        if data["operation"] == SafeOperationEnum.CREATE.value:
             raise ValidationError(
                 "Operation CREATE not supported. Please use Gnosis Safe CreateLib"
             )
