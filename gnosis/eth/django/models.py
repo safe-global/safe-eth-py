@@ -2,6 +2,7 @@ import binascii
 from typing import Optional, Union
 
 from django.core import exceptions
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -117,7 +118,7 @@ class Uint256Field(models.DecimalField):
     description = _("Ethereum uint256 number")
 
     def __init__(self, *args, **kwargs):
-        kwargs["max_digits"] = 79  # 2 ** 256 is 78 digits
+        kwargs["max_digits"] = 78  # 2 ** 256 is 78 digits
         kwargs["decimal_places"] = 0
         super().__init__(*args, **kwargs)
 
@@ -131,6 +132,55 @@ class Uint256Field(models.DecimalField):
         if value is None:
             return value
         return int(value)
+
+    def pre_save(self, model_instance, add):
+        """
+        Override pre_save to ensure that field is unsigned before save it
+        :param model_instance:
+        :param add:
+        :return:
+        """
+        value = getattr(model_instance, self.attname)
+        if value is not None and value < 0:
+            raise ValidationError("Value must be an unsigned 256-bit integer")
+        return super().pre_save(model_instance, add)
+
+
+class Uint96Field(models.DecimalField):
+    """
+    Field to store ethereum uint96 values. Uses Decimal db type without decimals to store
+    in the database, but retrieve as `int` instead of `Decimal` (https://docs.python.org/3/library/decimal.html)
+    """
+
+    description = _("Ethereum uint96 number")
+
+    def __init__(self, *args, **kwargs):
+        kwargs["max_digits"] = 29  # 2 ** 96 is 29 digits
+        kwargs["decimal_places"] = 0
+        super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs["max_digits"]
+        del kwargs["decimal_places"]
+        return name, path, args, kwargs
+
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        return int(value)
+
+    def pre_save(self, model_instance, add):
+        """
+        Override pre_save to ensure that field is unsigned before save it
+        :param model_instance:
+        :param add:
+        :return:
+        """
+        value = getattr(model_instance, self.attname)
+        if value is not None and value < 0:
+            raise ValidationError("Value must be an unsigned 96-bit integer")
+        return super().pre_save(model_instance, add)
 
 
 class HexField(models.CharField):
