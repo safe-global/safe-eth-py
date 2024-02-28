@@ -9,7 +9,14 @@ from web3 import Web3
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
 from ...utils import fast_is_checksum_address
-from .models import EthereumAddress, EthereumAddressV2, Keccak256Hash, Sha3Hash, Uint256
+from .models import (
+    EthereumAddress,
+    EthereumAddressV2,
+    Keccak256Hash,
+    Sha3Hash,
+    Uint96,
+    Uint256,
+)
 
 faker = Faker()
 
@@ -52,9 +59,7 @@ class TestModels(TestCase):
     def test_uint256_field(self):
         for value in [
             2,
-            -2,
             2**256,
-            2**260,
             25572735541615049941137326092682691158109824779649981270427004917341670006487,
             None,
         ]:
@@ -66,6 +71,30 @@ class TestModels(TestCase):
         with self.assertRaises(Exception):
             value = 2**263
             Uint256.objects.create(value=value)
+
+        # Signed
+        with self.assertRaises(ValidationError):
+            Uint256.objects.create(value=-2)
+
+    def test_uint96_field(self):
+        for value in [
+            2,
+            2**96,
+            79228162514264337593543950336,
+            None,
+        ]:
+            uint96 = Uint96.objects.create(value=value)
+            uint96.refresh_from_db()
+            self.assertEqual(uint96.value, value)
+
+        # Overflow
+        with self.assertRaises(Exception):
+            value = 2**97
+            uint96.objects.create(value=value)
+
+        # Signed
+        with self.assertRaises(ValidationError):
+            Uint96.objects.create(value=-2)
 
     def test_sha3_hash_field(self):
         value_hexbytes = Web3.keccak(text=faker.name())
@@ -172,7 +201,7 @@ class TestModels(TestCase):
         self.assertIn(address, serialized)
 
     def test_serialize_uint256_field_to_json(self):
-        value = 2**260
+        value = 2**256
         Uint256.objects.create(value=value)
         serialized = serialize("json", Uint256.objects.all())
         # value should be in serialized data

@@ -10,13 +10,14 @@ from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract, get_sign_message_lib_contract
 from gnosis.eth.utils import get_empty_tx_params
 
+from ..enums import SafeOperationEnum
 from ..exceptions import (
     CannotEstimateGas,
     CannotRetrieveSafeInfoException,
     CouldNotPayGasWithToken,
     InvalidInternalTx,
 )
-from ..safe import Safe, SafeOperation, SafeV100, SafeV111, SafeV130, SafeV141
+from ..safe import Safe, SafeV100, SafeV111, SafeV130, SafeV141
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -485,10 +486,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         nester_data = nester_tx["data"]
 
         safe_tx_gas_no_call = safe.estimate_tx_gas_with_safe(
-            nester.address, 0, nester_data, SafeOperation.CALL.value
+            nester.address, 0, nester_data, SafeOperationEnum.CALL.value
         )
         safe_tx_gas = safe.estimate_tx_gas_by_trying(
-            nester.address, 0, nester_data, SafeOperation.CALL.value
+            nester.address, 0, nester_data, SafeOperationEnum.CALL.value
         )
         self.assertGreater(safe_tx_gas, safe_tx_gas_no_call)
 
@@ -496,7 +497,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             nester.address,
             0,
             nester_data,
-            SafeOperation.CALL.value,
+            SafeOperationEnum.CALL.value,
             NULL_ADDRESS,
             safe_tx_gas,
         )
@@ -722,7 +723,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             sign_message_lib_address,
             0,
             sign_message_data,
-            SafeOperation.DELEGATE_CALL.value,
+            SafeOperationEnum.DELEGATE_CALL.value,
         )
         safe_tx.sign(self.ethereum_test_account.key)
         safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)

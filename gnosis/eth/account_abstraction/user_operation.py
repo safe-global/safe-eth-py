@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
@@ -104,3 +104,16 @@ class UserOperation:
                 [fast_keccak(user_operation_encoded), self.entry_point, chain_id],
             )
         )
+
+
+class UserOperationReceipt(TypedDict):
+    userOpHash: HexStr
+    entryPoint: HexStr
+    sender: ChecksumAddress
+    nonce: int
+    paymaster: ChecksumAddress
+    actualGasCost: int
+    actualGasUsed: int
+    success: bool
+    reason: str
+    logs: List[Dict[str, Any]]

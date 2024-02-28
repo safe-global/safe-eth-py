@@ -1,4 +1,5 @@
 # flake8: noqa F401
+from .enums import SafeOperationEnum
 from .exceptions import (
     CannotEstimateGas,
     CouldNotPayGasWithEther,
@@ -11,7 +12,7 @@ from .exceptions import (
     SignatureNotProvidedByOwner,
 )
 from .proxy_factory import ProxyFactory
-from .safe import Safe, SafeOperation, SafeTx
+from .safe import Safe, SafeTx
 
 __all__ = [
     "CannotEstimateGas",
@@ -25,6 +26,6 @@ __all__ = [
     "SignatureNotProvidedByOwner",
     "ProxyFactory",
     "Safe",
-    "SafeOperation",
+    "SafeOperationEnum",
     "SafeTx",
 ]
