@@ -1,3 +1,4 @@
+import copy
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -16,6 +17,7 @@ from ..mocks.mock_bundler import (
     supported_entrypoint_mock,
     user_operation_mock,
     user_operation_receipt_mock,
+    user_operation_receipt_parsed_mock,
 )
 
 
@@ -72,12 +74,12 @@ class TestBundlerClient(TestCase):
         user_operation_hash = safe_4337_user_operation_hash_mock.hex()
         self.assertIsNone(self.bundler.get_user_operation_receipt(user_operation_hash))
         mock_session.return_value.json = MagicMock(
-            return_value=user_operation_receipt_mock
+            return_value=copy.deepcopy(user_operation_receipt_mock)
         )
         self.bundler.get_user_operation_receipt.cache_clear()
         self.assertEqual(
             self.bundler.get_user_operation_receipt(user_operation_hash),
-            user_operation_receipt_mock["result"],
+            user_operation_receipt_parsed_mock["result"],
         )
         mock_session.return_value.json = MagicMock(
             return_value={
@@ -98,6 +100,63 @@ class TestBundlerClient(TestCase):
         with self.assertRaises(BundlerClientConnectionException):
             self.assertIsNone(
                 self.bundler.get_user_operation_receipt(user_operation_hash)
+            )
+
+    @mock.patch.object(requests.Session, "post")
+    def test_get_user_operation_and_receipt(self, mock_session: MagicMock):
+        mock_session.return_value.ok = True
+        mock_session.return_value.json = MagicMock(
+            return_value=[
+                {"jsonrpc": "2.0", "id": 1, "result": None},
+                {"jsonrpc": "2.0", "id": 2, "result": None},
+            ]
+        )
+        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
+        self.assertIsNone(
+            self.bundler.get_user_operation_and_receipt(user_operation_hash)
+        )
+        mock_session.return_value.json = MagicMock(
+            return_value=[
+                user_operation_mock,
+                copy.deepcopy(user_operation_receipt_mock),
+            ]
+        )
+        self.bundler.get_user_operation_and_receipt.cache_clear()
+        expected_user_operation = UserOperation.from_bundler_response(
+            user_operation_hash, user_operation_mock["result"]
+        )
+        (
+            user_operation,
+            user_operation_receipt,
+        ) = self.bundler.get_user_operation_and_receipt(user_operation_hash)
+
+        self.assertEqual(
+            user_operation,
+            expected_user_operation,
+        )
+        self.assertDictEqual(
+            user_operation_receipt,
+            user_operation_receipt_parsed_mock["result"],
+        )
+        mock_session.return_value.json = MagicMock(
+            return_value={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "error": {
+                    "code": -32600,
+                    "message": "Unspecified origin not on whitelist.",
+                },
+            }
+        )
+        self.bundler.get_user_operation_and_receipt.cache_clear()
+        with self.assertRaises(BundlerClientResponseException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_and_receipt(user_operation_hash)
+            )
+        mock_session.side_effect = IOError
+        with self.assertRaises(BundlerClientConnectionException):
+            self.assertIsNone(
+                self.bundler.get_user_operation_and_receipt(user_operation_hash)
             )
 
     @mock.patch.object(requests.Session, "post")
