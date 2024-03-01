@@ -43,7 +43,7 @@ class BundlerClient:
         except IOError as exception:
             raise BundlerClientConnectionException(
                 f"Error connecting to bundler {self.url} : {exception}"
-            )
+            ) from exception
 
         if not response.ok:
             raise BundlerClientConnectionException(
@@ -133,6 +133,13 @@ class BundlerClient:
     def get_user_operation_and_receipt(
         self, user_operation_hash: HexStr
     ) -> Optional[Tuple[UserOperation, UserOperationReceipt]]:
+        """
+        Get UserOperation and UserOperationReceipt in the same request using a batch query.
+        NOTE: Batch requests are not supported by Pimlico
+
+        :param user_operation_hash:
+        :return: Tuple with UserOperation and UserOperationReceipt, or None if not found
+        """
         payload = [
             self._get_user_operation_by_hash_payload(user_operation_hash, request_id=1),
             self._get_user_operation_receipt_payload(user_operation_hash, request_id=2),
@@ -150,7 +157,7 @@ class BundlerClient:
         """
         https://docs.alchemy.com/reference/eth-supportedentrypoints
 
-        :return:
+        :return: List of supported entrypoints
         """
         payload = {
             "jsonrpc": "2.0",
