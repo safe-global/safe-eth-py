@@ -858,7 +858,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.BOTANIX_TESTNET: [
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 165429, "1.4.1+L2"),
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 165430, "1.4.1"),
-    ]
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
