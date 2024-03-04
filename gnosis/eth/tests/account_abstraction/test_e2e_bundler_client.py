@@ -9,7 +9,7 @@ from ..mocks.mock_bundler import (
     safe_4337_user_operation_hash_mock,
     supported_entrypoint_mock,
     user_operation_mock,
-    user_operation_receipt_mock,
+    user_operation_receipt_parsed_mock,
 )
 
 
@@ -22,23 +22,23 @@ class TestE2EBundlerClient(TestCase):
 
         self.bundler = BundlerClient(bundler_client_url)
 
-    def test_get_user_operation_by_hash(self):
+    def test_get_user_operation_and_receipt(self):
         user_operation_hash = safe_4337_user_operation_hash_mock.hex()
 
-        expected_user_operation = UserOperation(
+        expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
         )
+        (
+            user_operation,
+            user_operation_receipt,
+        ) = self.bundler.get_user_operation_and_receipt(user_operation_hash)
         self.assertEqual(
-            self.bundler.get_user_operation_by_hash(user_operation_hash),
+            user_operation,
             expected_user_operation,
         )
-
-    def test_get_user_operation_receipt(self):
-        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
-
-        self.assertEqual(
-            self.bundler.get_user_operation_receipt(user_operation_hash),
-            user_operation_receipt_mock["result"],
+        self.assertDictEqual(
+            user_operation_receipt,
+            user_operation_receipt_parsed_mock["result"],
         )
 
     def test_supported_entry_points(self):
