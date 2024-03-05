@@ -1,14 +1,18 @@
-from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 
 import requests
-from cache_memoize import cache_memoize
+from eth_typing import HexStr
 from hexbytes import HexBytes
 
 from gnosis.eth import EthereumNetwork
+from gnosis.util import cache
 
 
 class EnsClient:
+    """
+    Resolves Ethereum Name Service domains using ``thegraph`` API
+    """
+
     def __init__(self, network_id: int):
         self.ethereum_network = EthereumNetwork(network_id)
         if network_id == self.ethereum_network.SEPOLIA:
@@ -21,7 +25,7 @@ class EnsClient:
         self.request_timeout = 5  # Seconds
         self.request_session = requests.Session()
 
-    def is_available(self):
+    def is_available(self) -> bool:
         """
         :return: True if service is available, False if it's down
         """
@@ -31,18 +35,17 @@ class EnsClient:
             return False
 
     @staticmethod
-    def domain_hash_to_hex_str(domain_hash: Union[str, bytes, int]) -> str:
+    def domain_hash_to_hex_str(domain_hash: Union[HexStr, bytes, int]) -> HexStr:
         """
         :param domain_hash:
         :return: Domain hash as an hex string of 66 chars (counting with 0x), padding with zeros if needed
         """
         if not domain_hash:
             domain_hash = b""
-        return "0x" + HexBytes(domain_hash).hex()[2:].rjust(64, "0")
+        return HexStr("0x" + HexBytes(domain_hash).hex()[2:].rjust(64, "0"))
 
-    @lru_cache
-    @cache_memoize(60 * 60 * 24, prefix="ens-_query_by_domain_hash")  # 1 day
-    def _query_by_domain_hash(self, domain_hash_str: str) -> Optional[str]:
+    @cache
+    def _query_by_domain_hash(self, domain_hash_str: HexStr) -> Optional[str]:
         query = """
                 {
                     domains(where: {labelhash: "domain_hash"}) {
@@ -80,7 +83,7 @@ class EnsClient:
         return None
 
     def query_by_domain_hash(
-        self, domain_hash: Union[str, bytes, int]
+        self, domain_hash: Union[HexStr, bytes, int]
     ) -> Optional[str]:
         """
         Get domain label from domain_hash (keccak of domain name without the TLD, don't confuse with namehash)
