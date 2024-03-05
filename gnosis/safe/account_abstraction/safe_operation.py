@@ -54,6 +54,7 @@ class SafeOperation:
         "0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
     )  # bytes32
     safe_operation_hash: Optional[bytes] = None
+    safe_operation_hash_preimage: Optional[bytes] = None
 
     @classmethod
     def from_user_operation(cls, user_operation: UserOperation):
@@ -87,11 +88,11 @@ class SafeOperation:
             )
         return _domain_separator_cache[key]
 
-    def get_safe_operation_hash(
+    def get_safe_operation_hash_preimage(
         self, chain_id: int, module_address: ChecksumAddress
     ) -> bytes:
         # Cache safe_operation_hash
-        if not self.safe_operation_hash:
+        if not self.safe_operation_hash_preimage:
             encoded_safe_op_struct = abi_encode(
                 [
                     "bytes32",
@@ -126,7 +127,17 @@ class SafeOperation:
                     self.entry_point,
                 ],
             )
-            safe_op_struct_hash = fast_keccak(encoded_safe_op_struct)
+            self.safe_operation_hash_preimage = fast_keccak(encoded_safe_op_struct)
+        return self.safe_operation_hash_preimage
+
+    def get_safe_operation_hash(
+        self, chain_id: int, module_address: ChecksumAddress
+    ) -> bytes:
+        # Cache safe_operation_hash
+        if not self.safe_operation_hash:
+            safe_op_struct_hash = self.get_safe_operation_hash_preimage(
+                chain_id, module_address
+            )
             operation_data = encode_packed(
                 ["bytes1", "bytes1", "bytes32", "bytes32"],
                 [
