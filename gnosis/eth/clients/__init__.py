@@ -5,6 +5,7 @@ from .blockscout_client import (
     BlockScoutConfigurationProblem,
 )
 from .contract_metadata import ContractMetadata
+from .ens_client import EnsClient
 from .etherscan_client import (
     EtherscanClient,
     EtherscanClientConfigurationProblem,
@@ -22,6 +23,7 @@ __all__ = [
     "BlockscoutClient",
     "BlockscoutClientException",
     "ContractMetadata",
+    "EnsClient",
     "EtherscanClient",
     "EtherscanClientConfigurationProblem",
     "EtherscanClientException",
