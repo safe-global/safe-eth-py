@@ -123,7 +123,7 @@ def get_eth_address_with_invalid_checksum() -> str:
 def decode_string_or_bytes32(data: bytes) -> str:
     try:
         return eth_abi.decode(["string"], data)[0]
-    except OverflowError:
+    except (OverflowError, eth_abi.exceptions.DecodingError):
         name = eth_abi.decode(["bytes32"], data)[0]
         end_position = name.find(b"\x00")
         if end_position == -1:
