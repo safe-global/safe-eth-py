@@ -36,7 +36,7 @@ class UserOperation:
     max_fee_per_gas: int
     max_priority_fee_per_gas: int
     paymaster_and_data: bytes
-    signature: Optional[bytes]
+    signature: bytes
     entry_point: ChecksumAddress
     metadata: Optional[UserOperationMetadata] = None
 
