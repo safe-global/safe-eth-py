@@ -14,6 +14,7 @@ from .models import (
     EthereumAddressV2,
     Keccak256Hash,
     Sha3Hash,
+    Uint32,
     Uint96,
     Uint256,
 )
@@ -90,11 +91,30 @@ class TestModels(TestCase):
         # Overflow
         with self.assertRaises(Exception):
             value = 2**97
-            uint96.objects.create(value=value)
+            Uint96.objects.create(value=value)
 
         # Signed
         with self.assertRaises(ValidationError):
             Uint96.objects.create(value=-2)
+
+    def test_uint32_field(self):
+        for value in [
+            2,
+            2**32,
+            4294967296,
+            None,
+        ]:
+            uint32 = Uint32.objects.create(value=value)
+            uint32.refresh_from_db()
+            self.assertEqual(uint32.value, value)
+        # Overflow
+        with self.assertRaises(Exception):
+            value = 2**34
+            Uint32.objects.create(value=value)
+
+        # Signed
+        with self.assertRaises(ValidationError):
+            Uint32.objects.create(value=-2)
 
     def test_sha3_hash_field(self):
         value_hexbytes = Web3.keccak(text=faker.name())
