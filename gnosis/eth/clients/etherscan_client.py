@@ -61,6 +61,7 @@ class EtherscanClient:
         EthereumNetwork.KROMA_SEPOLIA: "https://sepolia.kromascan.com",
         EthereumNetwork.BLAST_SEPOLIA_TESTNET: "https://testnet.blastscan.io",
         EthereumNetwork.HOLESKY: "https://holesky.etherscan.io",
+        EthereumNetwork.FRAXTAL_MAINNET: "https://fraxscan.com",
     }
 
     NETWORK_WITH_API_URL = {
@@ -103,6 +104,7 @@ class EtherscanClient:
         EthereumNetwork.KROMA_SEPOLIA: "https://api-sepolia.kromascan.com",
         EthereumNetwork.BLAST_SEPOLIA_TESTNET: "https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan/api",
         EthereumNetwork.HOLESKY: "https://api-holesky.etherscan.io",
+        EthereumNetwork.FRAXTAL_MAINNET: "https://api.fraxscan.com",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
