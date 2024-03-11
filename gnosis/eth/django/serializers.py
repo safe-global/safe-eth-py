@@ -127,6 +127,22 @@ class Sha3HashField(HexadecimalField):
         super().__init__(**kwargs)
 
 
+class Uint96Field(serializers.DecimalField):
+    def __init__(self, **kwargs):
+        kwargs["min_value"] = 0
+        kwargs["max_digits"] = 29
+        kwargs["decimal_places"] = 0
+        super().__init__(**kwargs)
+
+
+class Uint32Field(serializers.DecimalField):
+    def __init__(self, **kwargs):
+        kwargs["min_value"] = 0
+        kwargs["max_digits"] = 10
+        kwargs["decimal_places"] = 0
+        super().__init__(**kwargs)
+
+
 # ================================================ #
 #                Base Serializers
 # ================================================ #
