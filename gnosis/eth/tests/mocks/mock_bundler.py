@@ -1,6 +1,10 @@
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 
 # Module address and chainId used for the following mocks
+safe_4337_address = ChecksumAddress(
+    HexStr(HexAddress("0xB0B5c0578Aa134b0496a6C0e51A7aae47C522861"))
+)
 safe_4337_user_operation_hash_mock = HexBytes(
     "0x39b3e2171c04539d9b3f848d04364dfaa42cc0b412ff65ce2a85c566cf8bf281"
 )
