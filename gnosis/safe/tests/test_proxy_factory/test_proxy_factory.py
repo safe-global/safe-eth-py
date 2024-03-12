@@ -1,4 +1,5 @@
 import logging
+import secrets
 
 from django.test import TestCase
 
@@ -11,6 +12,7 @@ from gnosis.eth.contracts import (
     get_proxy_1_1_1_deployed_bytecode,
     get_proxy_1_3_0_deployed_bytecode,
 )
+from gnosis.eth.exceptions import ContractAlreadyDeployed
 from gnosis.eth.tests.utils import just_test_if_mainnet_node
 from gnosis.eth.utils import compare_byte_code
 from gnosis.safe import Safe
@@ -56,11 +58,16 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         ]
         for version, ProxyFactoryVersion, get_proxy_deployed_bytecode_fn in versions:
             with self.subTest(version=version):
-                deployed_proxy_tx = ProxyFactoryVersion.deploy_contract(
-                    self.ethereum_client, self.ethereum_test_account
-                )
+                try:
+                    deployed_proxy_tx = ProxyFactoryVersion.deploy_contract(
+                        self.ethereum_client, self.ethereum_test_account
+                    )
+                    contract_address = deployed_proxy_tx.contract_address
+                except ContractAlreadyDeployed as e:
+                    contract_address = e.address
+
                 proxy_factory = ProxyFactory(
-                    deployed_proxy_tx.contract_address,
+                    contract_address,
                     self.ethereum_client,
                     version=version,
                 )
@@ -102,7 +109,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
                 self.assertTrue(proxy_factory.check_proxy_code(safe))
 
     def test_calculate_proxy_address(self):
-        salt_nonce = 12
+        salt_nonce = secrets.randbits(256)
         address = self.proxy_factory.calculate_proxy_address(
             self.safe_contract_V1_4_1.address, b"", salt_nonce
         )

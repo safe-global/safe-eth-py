@@ -1,3 +1,6 @@
+from eth_typing import ChecksumAddress
+
+
 class EthereumClientException(ValueError):
     pass
 
@@ -52,6 +55,12 @@ class GasLimitExceeded(EthereumClientException):
 
 class TransactionGasPriceTooLow(EthereumClientException):
     pass
+
+
+class ContractAlreadyDeployed(EthereumClientException):
+    def __init__(self, message: str, address: ChecksumAddress):
+        super().__init__(message)
+        self.address = address
 
 
 class InvalidERC20Info(EthereumClientException):

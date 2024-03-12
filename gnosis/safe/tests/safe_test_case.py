@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from eth_account import Account
 from eth_typing import ChecksumAddress
@@ -8,7 +8,7 @@ from hexbytes import HexBytes
 from web3.contract import Contract
 from web3.types import Wei
 
-from gnosis.eth.constants import NULL_ADDRESS
+from gnosis.eth.constants import NULL_ADDRESS, SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS
 from gnosis.eth.contracts import (
     get_compatibility_fallback_handler_contract,
     get_multi_send_contract,
@@ -20,7 +20,9 @@ from gnosis.eth.contracts import (
     get_sign_message_lib_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
 )
+from gnosis.eth.exceptions import ContractAlreadyDeployed
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
+from gnosis.eth.tests.utils import send_tx
 from gnosis.eth.utils import get_empty_tx_params
 from gnosis.safe import Safe
 from gnosis.safe.multi_send import MultiSend
@@ -29,9 +31,6 @@ from gnosis.safe.proxy_factory import ProxyFactory, ProxyFactoryV141
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
 
 logger = logging.getLogger(__name__)
-
-
-_contract_addresses = {}
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin):
@@ -60,6 +59,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         "multi_send": MultiSend.deploy_contract,
     }
 
+    contract_addresses: Dict[str, ChecksumAddress] = {}
+
     @property
     def safe_contract(self):
         """
@@ -71,53 +72,59 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
     def setUpClass(cls):
         super().setUpClass()
 
-        if not _contract_addresses:
+        cls.deploy_safe_singleton_factory()
+
+        if not cls.contract_addresses:
             # First time mixin is called, deploy Safe contracts
             for key, function in cls.contract_deployers.items():
-                _contract_addresses[key] = function(
-                    cls.ethereum_client, cls.ethereum_test_account
-                ).contract_address
+                try:
+                    cls.contract_addresses[key] = function(
+                        cls.ethereum_client, cls.ethereum_test_account
+                    ).contract_address
+                except ContractAlreadyDeployed as e:
+                    cls.contract_addresses[key] = e.address
 
-        cls.configure_django_settings(cls)
-        cls.configure_envvars(cls)
+        cls.configure_django_settings()
+        cls.configure_envvars()
 
         cls.compatibility_fallback_handler = (
             get_compatibility_fallback_handler_contract(
-                cls.w3, _contract_addresses["compatibility_fallback_handler"]
+                cls.w3, cls.contract_addresses["compatibility_fallback_handler"]
             )
         )
         cls.simulate_tx_accessor_V1_4_1 = get_simulate_tx_accessor_V1_4_1_contract(
-            cls.w3, _contract_addresses["simulate_tx_accessor_V1_4_1"]
+            cls.w3, cls.contract_addresses["simulate_tx_accessor_V1_4_1"]
         )
         cls.safe_contract_V1_4_1 = get_safe_V1_4_1_contract(
-            cls.w3, _contract_addresses["safe_V1_4_1"]
+            cls.w3, cls.contract_addresses["safe_V1_4_1"]
         )
         cls.safe_contract_V1_3_0 = get_safe_V1_3_0_contract(
-            cls.w3, _contract_addresses["safe_V1_3_0"]
+            cls.w3, cls.contract_addresses["safe_V1_3_0"]
         )
         cls.safe_contract_V1_1_1 = get_safe_V1_1_1_contract(
-            cls.w3, _contract_addresses["safe_V1_1_1"]
+            cls.w3, cls.contract_addresses["safe_V1_1_1"]
         )
         cls.safe_contract_V1_0_0 = get_safe_V1_0_0_contract(
-            cls.w3, _contract_addresses["safe_V1_0_0"]
+            cls.w3, cls.contract_addresses["safe_V1_0_0"]
         )
         cls.safe_contract_V0_0_1 = get_safe_V1_0_0_contract(
-            cls.w3, _contract_addresses["safe_V0_0_1"]
+            cls.w3, cls.contract_addresses["safe_V0_0_1"]
         )
         cls.proxy_factory_contract = get_proxy_factory_contract(
-            cls.w3, _contract_addresses["proxy_factory"]
+            cls.w3, cls.contract_addresses["proxy_factory"]
         )
         cls.proxy_factory = ProxyFactory(
             cls.proxy_factory_contract.address, cls.ethereum_client
         )
         cls.multi_send_contract = get_multi_send_contract(
-            cls.w3, _contract_addresses["multi_send"]
+            cls.w3, cls.contract_addresses["multi_send"]
         )
         cls.multi_send = MultiSend(
             cls.ethereum_client, address=cls.multi_send_contract.address
         )
 
-    def configure_django_settings(self):
+    @classmethod
+    def configure_django_settings(cls):
         """
         Configure settings for django based applications
 
@@ -127,18 +134,30 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         try:
             from django.conf import settings
 
-            settings.SAFE_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
-            settings.SAFE_DEFAULT_CALLBACK_HANDLER = _contract_addresses[
+            settings.SAFE_CONTRACT_ADDRESS = cls.contract_addresses["safe_V1_4_1"]
+            settings.SAFE_DEFAULT_CALLBACK_HANDLER = cls.contract_addresses[
                 "compatibility_fallback_handler"
             ]
-            settings.SAFE_MULTISEND_ADDRESS = _contract_addresses["multi_send"]
-            settings.SAFE_PROXY_FACTORY_ADDRESS = _contract_addresses["proxy_factory"]
-            settings.SAFE_V0_0_1_CONTRACT_ADDRESS = _contract_addresses["safe_V0_0_1"]
-            settings.SAFE_V1_0_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_0_0"]
-            settings.SAFE_V1_1_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_1_1"]
-            settings.SAFE_V1_3_0_CONTRACT_ADDRESS = _contract_addresses["safe_V1_3_0"]
-            settings.SAFE_V1_4_1_CONTRACT_ADDRESS = _contract_addresses["safe_V1_4_1"]
-            settings.SAFE_SIMULATE_TX_ACCESSOR = _contract_addresses[
+            settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses["multi_send"]
+            settings.SAFE_PROXY_FACTORY_ADDRESS = cls.contract_addresses[
+                "proxy_factory"
+            ]
+            settings.SAFE_V0_0_1_CONTRACT_ADDRESS = cls.contract_addresses[
+                "safe_V0_0_1"
+            ]
+            settings.SAFE_V1_0_0_CONTRACT_ADDRESS = cls.contract_addresses[
+                "safe_V1_0_0"
+            ]
+            settings.SAFE_V1_1_1_CONTRACT_ADDRESS = cls.contract_addresses[
+                "safe_V1_1_1"
+            ]
+            settings.SAFE_V1_3_0_CONTRACT_ADDRESS = cls.contract_addresses[
+                "safe_V1_3_0"
+            ]
+            settings.SAFE_V1_4_1_CONTRACT_ADDRESS = cls.contract_addresses[
+                "safe_V1_4_1"
+            ]
+            settings.SAFE_SIMULATE_TX_ACCESSOR = cls.contract_addresses[
                 "simulate_tx_accessor_V1_4_1"
             ]
             settings.SAFE_VALID_CONTRACT_ADDRESSES = {
@@ -152,15 +171,48 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         except ModuleNotFoundError:
             logger.info("Django library is not installed")
 
-    def configure_envvars(self):
+    @classmethod
+    def configure_envvars(cls):
         """
         Configure environment variables
 
         :return:
         """
-        os.environ["SAFE_SIMULATE_TX_ACCESSOR_ADDRESS"] = _contract_addresses[
+        os.environ["SAFE_SIMULATE_TX_ACCESSOR_ADDRESS"] = cls.contract_addresses[
             "simulate_tx_accessor_V1_4_1"
         ]
+
+    @classmethod
+    def deploy_safe_singleton_factory(cls) -> bool:
+        """
+        Deploy Safe Singleton Factory for deterministic deployments and speeding up tests,
+        due to being able to check quickly if contracts are deployed in their expected addresses
+
+        Singleton factory with `1337` chainId is used
+        Deployer address: 0xE1CB04A0fA36DdD16a06ea828007E35e1a3cBC37
+        Expected factory address: 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7
+
+        :return: `True` if deployed, `False` otherwise
+        """
+        if cls.ethereum_client.get_singleton_factory_address():
+            return False
+
+        raw_tx = HexBytes(
+            "0xf8a78085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3820a96a0460c6ea9b8f791e5d9e67fbf2c70aba92bf88591c39ac3747ea1bedc2ef1750ca04b08a4b5cea15a56276513da7a0c0b34f16e89811d5dd911efba5f8625a921cc"
+        )
+        send_tx(
+            cls.w3,
+            {"to": SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS, "value": 10000000000000000},
+            cls.ethereum_test_account,
+        )
+        tx_hash = cls.ethereum_client.send_raw_transaction(raw_tx)
+        tx_receipt = cls.ethereum_client.get_transaction_receipt(tx_hash, timeout=30)
+        assert tx_receipt["status"] == 1
+
+        # Clear cached empty singleton factory
+        cls.ethereum_client.get_singleton_factory_address.cache_clear()
+
+        return True
 
     def deploy_test_safe(self, *args, **kwargs) -> Safe:
         """
