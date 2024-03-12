@@ -8,11 +8,7 @@ from hexbytes import HexBytes
 from web3.contract import Contract
 from web3.types import Wei
 
-from gnosis.eth.constants import (
-    NULL_ADDRESS,
-    SAFE_SINGLETON_FACTORY_ADDRESS,
-    SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS,
-)
+from gnosis.eth.constants import NULL_ADDRESS, SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS
 from gnosis.eth.contracts import (
     get_compatibility_fallback_handler_contract,
     get_multi_send_contract,
@@ -24,6 +20,7 @@ from gnosis.eth.contracts import (
     get_sign_message_lib_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
 )
+from gnosis.eth.exceptions import ContractAlreadyDeployed
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.eth.tests.utils import send_tx
 from gnosis.eth.utils import get_empty_tx_params
@@ -80,9 +77,12 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         if not cls.contract_addresses:
             # First time mixin is called, deploy Safe contracts
             for key, function in cls.contract_deployers.items():
-                cls.contract_addresses[key] = function(
-                    cls.ethereum_client, cls.ethereum_test_account
-                ).contract_address
+                try:
+                    cls.contract_addresses[key] = function(
+                        cls.ethereum_client, cls.ethereum_test_account
+                    ).contract_address
+                except ContractAlreadyDeployed as e:
+                    cls.contract_addresses[key] = e.address
 
         cls.configure_django_settings()
         cls.configure_envvars()
@@ -194,7 +194,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
 
         :return: `True` if deployed, `False` otherwise
         """
-        if cls.ethereum_client.is_contract(SAFE_SINGLETON_FACTORY_ADDRESS):
+        if cls.ethereum_client.get_singleton_factory_address():
             return False
 
         raw_tx = HexBytes(
@@ -208,6 +208,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         tx_hash = cls.ethereum_client.send_raw_transaction(raw_tx)
         tx_receipt = cls.ethereum_client.get_transaction_receipt(tx_hash, timeout=30)
         assert tx_receipt["status"] == 1
+
+        # Clear cached empty singleton factory
+        cls.ethereum_client.get_singleton_factory_address.cache_clear()
+
         return True
 
     def deploy_test_safe(self, *args, **kwargs) -> Safe:

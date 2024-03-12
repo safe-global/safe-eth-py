@@ -1329,6 +1329,23 @@ class EthereumClient:
         return EthereumNetwork(self.get_chain_id())
 
     @cache
+    def get_singleton_factory_address(self) -> Optional[ChecksumAddress]:
+        """
+        Get singleton factory address if available. Try the singleton managed by Safe by default unless
+        SAFE_SINGLETON_FACTORY_ADDRESS environment variable is defined.
+
+        More info: https://github.com/safe-global/safe-singleton-factory
+
+        :return: Get singleton factory address if available
+        """
+        address = os.environ.get(
+            "SAFE_SINGLETON_FACTORY_ADDRESS", SAFE_SINGLETON_FACTORY_ADDRESS
+        )
+        if self.is_contract(address):
+            return address
+        return None
+
+    @cache
     def is_eip1559_supported(self) -> bool:
         """
         :return: `True` if EIP1559 is supported by the node, `False` otherwise
@@ -1434,7 +1451,7 @@ class EthereumClient:
         self,
         deployer_account: LocalAccount,
         constructor_data: Union[bytes, HexStr],
-        initializer_data: Union[bytes, HexStr] = b"",
+        initializer_data: Optional[Union[bytes, HexStr]] = None,
         check_receipt: bool = True,
         deterministic: bool = True,
     ) -> EthereumTxSent:
@@ -1459,22 +1476,27 @@ class EthereumClient:
                     "value": Wei(0),
                     "to": contract_address if contract_address else "",
                     "chainId": self.get_chain_id(),
+                    "nonce": self.get_nonce_for_account(deployer_account.address),
                 }
-                if (
-                    deterministic
-                    and not contract_address
-                    and self.is_contract(SAFE_SINGLETON_FACTORY_ADDRESS)
-                ):
-                    salt = HexBytes("0" * 64)
-                    tx["to"] = SAFE_SINGLETON_FACTORY_ADDRESS
-                    tx["data"] = salt + data  # Add 32 bytes salt for singleton factory
-                    contract_address = mk_contract_address_2(
-                        SAFE_SINGLETON_FACTORY_ADDRESS, salt, data
-                    )
-                    if self.is_contract(contract_address):
-                        raise ContractAlreadyDeployed(
-                            f"Contract {contract_address} already deployed"
+                if not contract_address:
+                    if deterministic and (
+                        singleton_factory_address := self.get_singleton_factory_address()
+                    ):
+                        salt = HexBytes("0" * 64)
+                        tx["data"] = (
+                            salt + data
+                        )  # Add 32 bytes salt for singleton factory
+                        tx["to"] = singleton_factory_address
+                        contract_address = mk_contract_address_2(
+                            singleton_factory_address, salt, data
                         )
+                        if self.is_contract(contract_address):
+                            raise ContractAlreadyDeployed(
+                                f"Contract {contract_address} already deployed",
+                                contract_address,
+                            )
+                    else:
+                        contract_address = mk_contract_address(tx["from"], tx["nonce"])
 
                 tx["gas"] = self.w3.eth.estimate_gas(tx)
                 tx_hash = self.send_unsigned_transaction(
@@ -1486,9 +1508,6 @@ class EthereumClient:
                     )
                     assert tx_receipt
                     assert tx_receipt["status"]
-
-                if not contract_address:
-                    contract_address = mk_contract_address(tx["from"], tx["nonce"])
 
         return EthereumTxSent(tx_hash, tx, contract_address)
 
