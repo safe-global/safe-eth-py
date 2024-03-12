@@ -54,6 +54,10 @@ class TransactionGasPriceTooLow(EthereumClientException):
     pass
 
 
+class ContractAlreadyDeployed(EthereumClientException):
+    pass
+
+
 class InvalidERC20Info(EthereumClientException):
     pass
 

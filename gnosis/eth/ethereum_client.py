@@ -57,6 +57,7 @@ from gnosis.eth.utils import (
     fast_is_checksum_address,
     fast_to_checksum_address,
     mk_contract_address,
+    mk_contract_address_2,
 )
 from gnosis.util import cache, chunks
 
@@ -66,12 +67,14 @@ from .constants import (
     GAS_CALL_DATA_BYTE,
     GAS_CALL_DATA_ZERO_BYTE,
     NULL_ADDRESS,
+    SAFE_SINGLETON_FACTORY_ADDRESS,
 )
 from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .exceptions import (
     BatchCallFunctionFailed,
     ChainIdIsRequired,
+    ContractAlreadyDeployed,
     FromAddressNotFound,
     GasLimitExceeded,
     InsufficientFunds,
@@ -1430,14 +1433,25 @@ class EthereumClient:
     def deploy_and_initialize_contract(
         self,
         deployer_account: LocalAccount,
-        constructor_data: bytes,
-        initializer_data: bytes = b"",
+        constructor_data: Union[bytes, HexStr],
+        initializer_data: Union[bytes, HexStr] = b"",
         check_receipt: bool = True,
+        deterministic: bool = True,
     ) -> EthereumTxSent:
+        """
+
+        :param deployer_account:
+        :param constructor_data:
+        :param initializer_data:
+        :param check_receipt:
+        :param deterministic: Use Safe singleton factory for CREATE2 deterministic deployment
+        :return:
+        """
         contract_address: Optional[ChecksumAddress] = None
         for data in (constructor_data, initializer_data):
             # Because initializer_data is not mandatory
             if data:
+                data = HexBytes(data)
                 tx: TxParams = {
                     "from": deployer_account.address,
                     "data": data,
@@ -1446,6 +1460,22 @@ class EthereumClient:
                     "to": contract_address if contract_address else "",
                     "chainId": self.get_chain_id(),
                 }
+                if (
+                    deterministic
+                    and not contract_address
+                    and self.is_contract(SAFE_SINGLETON_FACTORY_ADDRESS)
+                ):
+                    salt = HexBytes("0" * 64)
+                    tx["to"] = SAFE_SINGLETON_FACTORY_ADDRESS
+                    tx["data"] = salt + data  # Add 32 bytes salt for singleton factory
+                    contract_address = mk_contract_address_2(
+                        SAFE_SINGLETON_FACTORY_ADDRESS, salt, data
+                    )
+                    if self.is_contract(contract_address):
+                        raise ContractAlreadyDeployed(
+                            f"Contract {contract_address} already deployed"
+                        )
+
                 tx["gas"] = self.w3.eth.estimate_gas(tx)
                 tx_hash = self.send_unsigned_transaction(
                     tx, private_key=deployer_account.key
@@ -1458,9 +1488,7 @@ class EthereumClient:
                     assert tx_receipt["status"]
 
                 if not contract_address:
-                    contract_address = ChecksumAddress(
-                        mk_contract_address(tx["from"], tx["nonce"])
-                    )
+                    contract_address = mk_contract_address(tx["from"], tx["nonce"])
 
         return EthereumTxSent(tx_hash, tx, contract_address)
 

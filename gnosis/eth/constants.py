@@ -6,6 +6,13 @@ SENTINEL_ADDRESS: ChecksumAddress = ChecksumAddress(
     HexAddress(HexStr("0x" + "0" * 39 + "1"))
 )
 
+SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS: ChecksumAddress = ChecksumAddress(
+    HexAddress(HexStr("0xE1CB04A0fA36DdD16a06ea828007E35e1a3cBC37"))
+)
+SAFE_SINGLETON_FACTORY_ADDRESS: ChecksumAddress = ChecksumAddress(
+    HexAddress(HexStr("0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7"))
+)
+
 # keccak('Transfer(address,address,uint256)')
 ERC20_721_TRANSFER_TOPIC: HexStr = HexStr(
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
