@@ -1,12 +1,11 @@
 import dataclasses
 from functools import cached_property
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
-from web3.types import LogReceipt
 
 from gnosis.eth.utils import fast_keccak
 
@@ -117,36 +116,4 @@ class UserOperation:
                 ["bytes32", "address", "uint256"],
                 [fast_keccak(user_operation_encoded), self.entry_point, chain_id],
             )
-        )
-
-
-@dataclasses.dataclass(eq=True, frozen=True)
-class UserOperationReceipt:
-    user_operation_hash: bytes
-    entry_point: ChecksumAddress
-    sender: ChecksumAddress
-    nonce: int
-    paymaster: ChecksumAddress
-    actual_gas_cost: int
-    actual_gas_used: int
-    success: bool
-    reason: str
-    logs: List[LogReceipt]
-
-    @classmethod
-    def from_bundler_response(
-        cls,
-        user_operation_receipt_response: Dict[str, Any],
-    ) -> "UserOperationReceipt":
-        return cls(
-            HexBytes(user_operation_receipt_response["userOpHash"]),
-            user_operation_receipt_response["entryPoint"],
-            user_operation_receipt_response["sender"],
-            int(user_operation_receipt_response["nonce"], 16),
-            user_operation_receipt_response["paymaster"],
-            int(user_operation_receipt_response["actualGasCost"], 16),
-            int(user_operation_receipt_response["actualGasUsed"], 16),
-            user_operation_receipt_response["success"],
-            user_operation_receipt_response["reason"],
-            user_operation_receipt_response["logs"],
         )

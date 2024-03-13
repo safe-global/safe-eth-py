@@ -8,7 +8,8 @@ from hexbytes import HexBytes
 from gnosis.util.http import prepare_http_session
 
 from .exceptions import BundlerClientConnectionException, BundlerClientResponseException
-from .user_operation import UserOperation, UserOperationReceipt
+from .user_operation import UserOperation
+from .user_operation_receipt import UserOperationReceipt
 
 logger = logging.getLogger(__name__)
 
