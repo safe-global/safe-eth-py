@@ -3,6 +3,7 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from eth_typing import ChecksumAddress, HexStr
+from hexbytes import HexBytes
 
 from gnosis.util.http import prepare_http_session
 
@@ -71,9 +72,18 @@ class BundlerClient:
     def _parse_user_operation_receipt(
         user_operation_receipt: Dict[str, Any]
     ) -> UserOperationReceipt:
-        for field in ["nonce", "actualGasCost", "actualGasUsed"]:
-            user_operation_receipt[field] = int(user_operation_receipt[field], 16)
-        return user_operation_receipt
+        return UserOperationReceipt(
+            HexBytes(user_operation_receipt["userOpHash"]),
+            user_operation_receipt["entryPoint"],
+            user_operation_receipt["sender"],
+            int(user_operation_receipt["nonce"], 16),
+            user_operation_receipt["paymaster"],
+            int(user_operation_receipt["actualGasCost"], 16),
+            int(user_operation_receipt["actualGasUsed"], 16),
+            user_operation_receipt["success"],
+            user_operation_receipt["reason"],
+            user_operation_receipt["logs"],
+        )
 
     @staticmethod
     def _get_user_operation_by_hash_payload(
@@ -105,7 +115,9 @@ class BundlerClient:
         https://docs.alchemy.com/reference/eth-getuseroperationbyhash
 
         :param user_operation_hash:
-        :return:
+        :return: ``UserOperation`` or ``None`` if not found
+        :raises BundlerClientConnectionException:
+        :raises BundlerClientResponseException:
         """
         payload = self._get_user_operation_by_hash_payload(user_operation_hash)
         result = self._do_request(payload)
@@ -123,11 +135,13 @@ class BundlerClient:
         https://docs.alchemy.com/reference/eth-getuseroperationreceipt
 
         :param user_operation_hash:
-        :return:
+        :return: ``UserOperationReceipt`` or ``None`` if not found
+        :raises BundlerClientConnectionException:
+        :raises BundlerClientResponseException:
         """
         payload = self._get_user_operation_receipt_payload(user_operation_hash)
         result = self._do_request(payload)
-        return self._parse_user_operation_receipt(result) if result else None
+        return UserOperationReceipt.from_bundler_response(result) if result else None
 
     @lru_cache(maxsize=1024)
     def get_user_operation_and_receipt(
@@ -138,7 +152,9 @@ class BundlerClient:
         NOTE: Batch requests are not supported by Pimlico
 
         :param user_operation_hash:
-        :return: Tuple with UserOperation and UserOperationReceipt, or None if not found
+        :return: Tuple with ``UserOperation`` and ``UserOperationReceipt``, or ``None`` if not found
+        :raises BundlerClientConnectionException:
+        :raises BundlerClientResponseException:
         """
         payload = [
             self._get_user_operation_by_hash_payload(user_operation_hash, request_id=1),
@@ -158,6 +174,8 @@ class BundlerClient:
         https://docs.alchemy.com/reference/eth-supportedentrypoints
 
         :return: List of supported entrypoints
+        :raises BundlerClientConnectionException:
+        :raises BundlerClientResponseException:
         """
         payload = {
             "jsonrpc": "2.0",
