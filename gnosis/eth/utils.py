@@ -21,9 +21,7 @@ def get_empty_tx_params() -> TxParams:
     }
 
 
-lru_cache(maxsize=8192)
-
-
+@lru_cache(maxsize=8192)
 def fast_keccak(value: bytes) -> Hash32:
     """
     Calculates ethereum keccak256 using fast library `pysha3`
@@ -84,9 +82,7 @@ def _build_checksum_address(
     )
 
 
-lru_cache(maxsize=8192)
-
-
+@lru_cache(maxsize=8192)
 def _fast_to_checksum_address(address: HexAddress):
     address_hash = fast_keccak_hex(address.encode())
     return _build_checksum_address(address, address_hash)
