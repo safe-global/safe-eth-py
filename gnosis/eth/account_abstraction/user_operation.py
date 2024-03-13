@@ -5,9 +5,8 @@ from typing import Any, Dict, List, Optional, TypedDict, Union
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
-from web3 import Web3
 
-from gnosis.eth.utils import fast_keccak
+from gnosis.eth.utils import fast_keccak, fast_to_checksum_address
 
 
 @dataclasses.dataclass
@@ -73,7 +72,7 @@ class UserOperation:
     @cached_property
     def paymaster(self) -> Optional[ChecksumAddress]:
         if self.paymaster_and_data and len(self.paymaster_and_data) >= 20:
-            return Web3.to_checksum_address(self.paymaster_and_data[:20])
+            return fast_to_checksum_address(self.paymaster_and_data[:20])
         return None
 
     @cached_property

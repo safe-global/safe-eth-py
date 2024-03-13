@@ -4,7 +4,6 @@ import secrets
 from django.test import TestCase
 
 from eth_account import Account
-from web3 import Web3
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.contracts import (
@@ -14,7 +13,7 @@ from gnosis.eth.contracts import (
 )
 from gnosis.eth.exceptions import ContractAlreadyDeployed
 from gnosis.eth.tests.utils import just_test_if_mainnet_node
-from gnosis.eth.utils import compare_byte_code
+from gnosis.eth.utils import compare_byte_code, fast_is_checksum_address
 from gnosis.safe import Safe
 from gnosis.safe.proxy_factory import (
     ProxyFactory,
@@ -113,7 +112,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         address = self.proxy_factory.calculate_proxy_address(
             self.safe_contract_V1_4_1.address, b"", salt_nonce
         )
-        self.assertTrue(Web3.is_checksum_address(address))
+        self.assertTrue(fast_is_checksum_address(address))
         # Same call with same parameters should return the same address
         same_address = self.proxy_factory.calculate_proxy_address(
             self.safe_contract_V1_4_1.address, b"", salt_nonce
@@ -136,7 +135,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         chain_specific_address = self.proxy_factory.calculate_proxy_address(
             self.safe_contract_V1_4_1.address, b"", salt_nonce, chain_specific=True
         )
-        self.assertTrue(Web3.is_checksum_address(chain_specific_address))
+        self.assertTrue(fast_is_checksum_address(chain_specific_address))
         self.assertNotEqual(address, chain_specific_address)
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account,
