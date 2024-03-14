@@ -1,6 +1,6 @@
 import dataclasses
 from functools import cached_property
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from typing import Any, Dict, Optional, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
@@ -10,14 +10,14 @@ from web3 import Web3
 from gnosis.eth.utils import fast_keccak
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(eq=True, frozen=True)
 class UserOperationMetadata:
     transaction_hash: bytes
     block_hash: bytes
     block_number: int
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(eq=True, frozen=True)
 class UserOperation:
     """
     EIP4337 UserOperation for Entrypoint v0.6
@@ -117,16 +117,3 @@ class UserOperation:
                 [fast_keccak(user_operation_encoded), self.entry_point, chain_id],
             )
         )
-
-
-class UserOperationReceipt(TypedDict):
-    userOpHash: HexStr
-    entryPoint: HexStr
-    sender: ChecksumAddress
-    nonce: int
-    paymaster: ChecksumAddress
-    actualGasCost: int
-    actualGasUsed: int
-    success: bool
-    reason: str
-    logs: List[Dict[str, Any]]
