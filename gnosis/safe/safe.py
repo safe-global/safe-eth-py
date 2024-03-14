@@ -522,12 +522,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             message = message.encode()
         message_hash = fast_keccak(message)
 
-        safe_message_hash = Web3.keccak(
+        safe_message_hash = fast_keccak(
             eth_abi.encode(
                 ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
             )
         )
-        return Web3.keccak(
+        return fast_keccak(
             encode_packed(
                 ["bytes1", "bytes1", "bytes32", "bytes32"],
                 [

@@ -4,11 +4,10 @@ from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
-from web3 import Web3
 
 from gnosis.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from gnosis.eth.contracts import get_safe_contract, get_sign_message_lib_contract
-from gnosis.eth.utils import get_empty_tx_params
+from gnosis.eth.utils import fast_keccak_text, get_empty_tx_params
 
 from ..enums import SafeOperationEnum
 from ..exceptions import (
@@ -673,8 +672,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
     def test_retrieve_is_hash_approved(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
         safe_contract = safe.contract
-        fake_tx_hash = Web3.keccak(text="Knopfler")
-        another_tx_hash = Web3.keccak(text="Marc")
+        fake_tx_hash = fast_keccak_text("Knopfler")
+        another_tx_hash = fast_keccak_text("Marc")
         tx = safe_contract.functions.approveHash(fake_tx_hash).build_transaction(
             {"from": self.ethereum_test_account.address}
         )

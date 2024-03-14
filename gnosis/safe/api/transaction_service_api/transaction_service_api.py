@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
-from web3 import Web3
 
 from gnosis.eth import EthereumNetwork
+from gnosis.eth.utils import fast_keccak_text
 from gnosis.safe import SafeTx
 
 from ..base_api import SafeAPIException, SafeBaseAPI
@@ -37,7 +37,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     @classmethod
     def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
-        return Web3.keccak(text=get_delegate_message(delegate_address))
+        return fast_keccak_text(get_delegate_message(delegate_address))
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:

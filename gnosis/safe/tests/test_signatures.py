@@ -1,10 +1,10 @@
 from django.test import TestCase
 
 from eth_account import Account
-from web3 import Web3
 
 from gnosis.eth.constants import NULL_ADDRESS
 from gnosis.eth.contracts import get_compatibility_fallback_handler_contract
+from gnosis.eth.utils import fast_keccak_text
 
 from ..signatures import get_signing_address
 from .safe_test_case import SafeTestCaseMixin
@@ -17,7 +17,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
     def test_get_signing_address(self):
         account = Account.create()
         # Random hash
-        random_hash = Web3.keccak(text="tanxugueiras")
+        random_hash = fast_keccak_text("tanxugueiras")
         signature = account.signHash(random_hash)
         self.assertEqual(
             get_signing_address(random_hash, signature.v, signature.r, signature.s),
@@ -60,7 +60,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
 
         # Use new isValidSignature method (receives bytes32 == hash of the message)
         # Message needs to be hashed first
-        message_hash = Web3.keccak(text=message)
+        message_hash = fast_keccak_text(message)
         safe_message_hash = safe.get_message_hash(message_hash)
         self.assertEqual(
             compatibility_contract.functions.getMessageHash(message_hash).call(),
