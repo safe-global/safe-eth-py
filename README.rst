@@ -116,18 +116,17 @@ Contributors
 ------------
 `See contributors <https://github.com/safe-global/safe-eth-py/graphs/contributors>`_
 
-.. |ci| image:: https://github.com/safe-global/safe-eth-py/workflows/Python%20CI/badge.svg?branch=main
+.. |ci| image:: https://github.com/safe-global/safe-eth-py/actions/workflows/python.yml/badge.svg
     :alt: Github Actions CI build
 
-.. |coveralls| image:: https://coveralls.io/repos/github/safe-global/safe-eth-py/badge.svg?branch=main
-    :target: https://coveralls.io/github/safe-global/safe-eth-py?branch=main
-    :alt: Coveralls
+.. |coveralls| image:: https://coveralls.io/repos/github/safe-global/safe-eth-py/badge.svg
+    :target: https://coveralls.io/github/safe-global/safe-eth-py
 
 .. |python| image:: https://img.shields.io/badge/Python-3.12-blue.svg
     :alt: Python 3.12
 
-.. |django| image:: https://img.shields.io/badge/Django-4-blue.svg
-    :alt: Django 4
+.. |django| image:: https://img.shields.io/badge/Django-5-blue.svg
+    :alt: Django 5
 
 .. |pipy| image:: https://badge.fury.io/py/safe-eth-py.svg
     :target: https://badge.fury.io/py/safe-eth-py
