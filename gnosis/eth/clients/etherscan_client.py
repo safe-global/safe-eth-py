@@ -58,6 +58,8 @@ class EtherscanClient:
         EthereumNetwork.SCROLL: "https://scrollscan.com",
         EthereumNetwork.KROMA: "https://kromascan.com",
         EthereumNetwork.KROMA_SEPOLIA: "https://sepolia.kromascan.com",
+        EthereumNetwork.MERLIN_MAINNET: "https://scan.merlinchain.io",
+        EthereumNetwork.MERLIN_TESTNET: "https://testnet-scan.merlinchain.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -98,6 +100,8 @@ class EtherscanClient:
         EthereumNetwork.SCROLL: "https://api.scrollscan.com",
         EthereumNetwork.KROMA: "https://api.kromascan.com",
         EthereumNetwork.KROMA_SEPOLIA: "https://api-sepolia.kromascan.com",
+        EthereumNetwork.MERLIN_MAINNET: "https://scan.merlinchain.io/api",
+        EthereumNetwork.MERLIN_TESTNET: "https://testnet-scan.merlinchain.io/api",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
