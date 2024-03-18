@@ -7,7 +7,6 @@ import pytest
 from ...account_abstraction import BundlerClient, UserOperation, UserOperationReceipt
 from ..mocks.mock_bundler import (
     safe_4337_user_operation_hash_mock,
-    supported_entrypoint_mock,
     user_operation_mock,
     user_operation_receipt_mock,
 )
@@ -68,6 +67,8 @@ class TestE2EBundlerClient(TestCase):
         )
 
     def test_supported_entry_points(self):
-        self.assertEqual(
-            self.bundler.supported_entry_points(), supported_entrypoint_mock["result"]
+        supported_entry_points = self.bundler.supported_entry_points()
+        self.assertIn(len(supported_entry_points), (1, 2))
+        self.assertIn(
+            "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", supported_entry_points
         )
