@@ -14,7 +14,7 @@ from ..mocks.mock_bundler import (
 
 class TestE2EBundlerClient(TestCase):
     def setUp(self):
-        bundler_client_variable_name = "BUNDLER_CLIENT_URL"
+        bundler_client_variable_name = "ETHEREUM_4337_BUNDLER_URL"
         bundler_client_url = os.environ.get(bundler_client_variable_name)
         if not bundler_client_url:
             pytest.skip(f"{bundler_client_variable_name} needs to be defined")
