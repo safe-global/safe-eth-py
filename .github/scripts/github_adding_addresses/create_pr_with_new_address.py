@@ -12,7 +12,6 @@ import requests
 from github import Github
 from github.GithubException import GithubException
 from github.Repository import Repository
-from hexbytes import HexBytes
 
 from gnosis.eth import EthereumClient
 
@@ -32,7 +31,7 @@ def get_chain_enum_name(chain_id: int) -> Optional[str]:
 
 def get_contract_block_from_tx_hash(rpc_url: str, tx_hash: str) -> Optional[int]:
     ethereum_client = EthereumClient(rpc_url)
-    tx = ethereum_client.get_transaction(HexBytes(tx_hash))
+    tx = ethereum_client.get_transaction(tx_hash)
     if not tx:
         print(f"Transaction not found: {tx_hash}")
         return
