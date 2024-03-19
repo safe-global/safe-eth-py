@@ -1,3 +1,8 @@
+"""
+Creates a PR with the necessary changes to add the new addresses.
+Verify and apply the necessary changes.
+"""
+
 import json
 import os
 import re
@@ -8,10 +13,11 @@ from github import Github
 from github.GithubException import GithubException
 from github.Repository import Repository
 from hexbytes import HexBytes
-from web3 import Web3
+
+from gnosis.eth import EthereumClient
 
 
-def get_chain_enum_name(chain_id: str) -> Optional[str]:
+def get_chain_enum_name(chain_id: int) -> Optional[str]:
     try:
         url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
         response = requests.get(url)
@@ -19,29 +25,28 @@ def get_chain_enum_name(chain_id: str) -> Optional[str]:
         if response.status_code == 200:
             return response.json().get("name").upper().replace(" ", "_")
         return None
-    except Exception as e:
+    except IOError as e:
         print(f"Error getting chain name: {e}")
         return None
 
 
-def get_contract_block_from_tx_hash(rpc_url: str, tx_hash: str) -> Optional[str]:
-    try:
-        w3 = Web3(Web3.HTTPProvider(rpc_url))
-        tx = w3.eth.get_transaction(HexBytes(tx_hash))
-        return str(tx.blockNumber)
-    except Exception as e:
-        print(f"Error getting transaction: {e}")
-        return None
+def get_contract_block_from_tx_hash(rpc_url: str, tx_hash: str) -> Optional[int]:
+    ethereum_client = EthereumClient(rpc_url)
+    tx = ethereum_client.get_transaction(HexBytes(tx_hash))
+    if not tx:
+        print(f"Transaction not found: {tx_hash}")
+        return
+    return tx.get("blockNumber")
 
 
-def get_github_repository(github_token: str, repository_name) -> Repository:
+def get_github_repository(github_token: str, repository_name: str) -> Repository:
     print(f"Getting repository {repository_name}")
     github = Github(github_token)
     return github.get_repo(repository_name)
 
 
-def create_issue_branch(repo: Repository, chain_id: str, version: str) -> str:
-    branch_name = "add-new-chain-" + chain_id + "-" + version + "-addresses"
+def create_issue_branch(repo: Repository, chain_id: int, version: str) -> str:
+    branch_name = f"add-new-chain-{chain_id}-{version}-addresses"
     print(f"Creating branch {branch_name}")
     try:
         repo.create_git_ref(
@@ -53,7 +58,7 @@ def create_issue_branch(repo: Repository, chain_id: str, version: str) -> str:
 
 
 def create_pr(
-    repo: Repository, branch_name: str, chain_id: str, chain_enum_name: str
+    repo: Repository, branch_name: str, chain_id: int, chain_enum_name: str
 ) -> None:
     try:
         repo.create_pull(
@@ -67,7 +72,7 @@ def create_pr(
 
 
 def upsert_chain_id(
-    repo: Repository, branch_name: str, chain_id: str, chain_enum_name: str
+    repo: Repository, branch_name: str, chain_id: int, chain_enum_name: str
 ) -> None:
     file_path = "gnosis/eth/ethereum_network.py"
     file = repo.get_contents(file_path, ref=branch_name)
@@ -175,7 +180,7 @@ def upsert_contract_address_master_copy(
     branch_name: str,
     chain_enum_name: str,
     address: str,
-    block_number: str,
+    block_number: int,
     version: str,
 ) -> None:
     file_path = "gnosis/safe/addresses.py"
@@ -199,7 +204,7 @@ def upsert_contract_address_master_copy(
             r"(\(\n?\s*\""
             + re.escape(address)
             + r"\",\n?\s*"
-            + re.escape(block_number)
+            + re.escape(str(block_number))
             + r",\n?\s*\""
             + re.escape(version)
             + r"\",?\n?\s*\))",
@@ -214,7 +219,7 @@ def upsert_contract_address_master_copy(
             )
         else:
             new_entry = (
-                f'    ("{address}", {block_number}, "{version}"), #{version}\n    '
+                f'    ("{address}", {block_number}, "{version}"), # v{version}\n    '
             )
             updated_content = (
                 content[: match_network.start()]
@@ -240,7 +245,7 @@ def upsert_contract_address_master_copy(
         if match:
             new_entry = (
                 f'    EthereumNetwork.{chain_enum_name}: [\n        ("{address}", {block_number}, '
-                + f'"{version}")  #{version} \n    ],\n'
+                + f'"{version}"),  # v{version} \n    ],\n'
             )
             updated_content = (
                 content[: match.start()]
@@ -265,7 +270,7 @@ def upsert_contract_address_proxy_factory(
     branch_name: str,
     chain_enum_name: str,
     address: str,
-    block_number: str,
+    block_number: int,
     version: str,
 ) -> None:
     file_path = "gnosis/safe/addresses.py"
@@ -289,8 +294,8 @@ def upsert_contract_address_proxy_factory(
             r"(\(\n?\s*\""
             + re.escape(address)
             + r"\",\n?\s*"
-            + re.escape(block_number)
-            + r"\",?\n?\s*\))",
+            + re.escape(str(block_number))
+            + r",?\n?\s*\))",
             match_network.group(2),
             re.MULTILINE | re.DOTALL,
         )
@@ -301,7 +306,7 @@ def upsert_contract_address_proxy_factory(
                 + " already exists."
             )
         else:
-            new_entry = f'    ("{address}", {block_number}"), #{version}\n    '
+            new_entry = f'    ("{address}", {block_number}), # v{version}\n    '
             updated_content = (
                 content[: match_network.start()]
                 + match_network.group(1)
@@ -326,7 +331,7 @@ def upsert_contract_address_proxy_factory(
         if match:
             new_entry = (
                 f'    EthereumNetwork.{chain_enum_name}: [\n        ("{address}", {block_number}'
-                + f")  #{version} \n    ],\n"
+                + f"),  # v{version} \n    ],\n"
             )
             updated_content = (
                 content[: match.start()]
@@ -350,7 +355,7 @@ def execute_issue_changes() -> None:
     github_token = os.environ.get("GITHUB_TOKEN")
     repository_name = os.environ.get("GITHUB_REPOSITORY_NAME")
     issue_body_info = json.loads(os.environ.get("ISSUE_BODY_INFO"))
-    chain_id = issue_body_info.get("chainId")
+    chain_id = int(issue_body_info.get("chainId"))
     version = issue_body_info.get("version")
     blockscout_client_url = issue_body_info.get("blockscoutClientUrl")
     etherscan_client_url = issue_body_info.get("etherscanClientUrl")
@@ -384,7 +389,7 @@ def execute_issue_changes() -> None:
         )
 
     if etherscan_client_url:
-        print("Updating Ether Scan client")
+        print("Updating Etherscan client")
         file_path = "gnosis/eth/clients/etherscan_client.py"
         upsert_explorer_client_url(
             repo,
@@ -395,7 +400,7 @@ def execute_issue_changes() -> None:
             "NETWORK_WITH_URL",
         )
     if etherscan_client_api_url:
-        print("Updating Ether Scan API client")
+        print("Updating Etherscan API client")
         file_path = "gnosis/eth/clients/etherscan_client.py"
         upsert_explorer_client_url(
             repo,
@@ -408,15 +413,22 @@ def execute_issue_changes() -> None:
 
     if rpc_url and address_master_copy and tx_hash_master_copy:
         tx_block = get_contract_block_from_tx_hash(rpc_url, tx_hash_master_copy)
-        upsert_contract_address_master_copy(
-            repo, branch_name, chain_enum_name, address_master_copy, tx_block, version
-        )
+        if tx_block:
+            upsert_contract_address_master_copy(
+                repo,
+                branch_name,
+                chain_enum_name,
+                address_master_copy,
+                tx_block,
+                version,
+            )
 
     if rpc_url and address_proxy and tx_hash_proxy:
         tx_block = get_contract_block_from_tx_hash(rpc_url, tx_hash_proxy)
-        upsert_contract_address_proxy_factory(
-            repo, branch_name, chain_enum_name, address_proxy, tx_block, version
-        )
+        if tx_block:
+            upsert_contract_address_proxy_factory(
+                repo, branch_name, chain_enum_name, address_proxy, tx_block, version
+            )
 
     create_pr(repo, branch_name, chain_id, chain_enum_name)
 

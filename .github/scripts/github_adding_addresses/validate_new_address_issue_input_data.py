@@ -1,3 +1,9 @@
+"""
+Validates the issue inputs to add new Safe contract addresses.
+Composes message for a comment in the ticket with the result of the validation. If the result is negative,
+composes a list of errors.
+"""
+
 import json
 import os
 import uuid
@@ -5,15 +11,14 @@ from typing import Any, Dict, Optional
 
 import requests
 import validators
-from hexbytes import HexBytes
-from web3 import Web3
 
+from gnosis.eth import EthereumClient
 from gnosis.eth.utils import mk_contract_address_2
 
 ERRORS = []
 
 
-def get_chain_name(chain_id: str) -> Optional[str]:
+def get_chain_name(chain_id: int) -> Optional[str]:
     try:
         url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
         response = requests.get(url)
@@ -21,7 +26,7 @@ def get_chain_name(chain_id: str) -> Optional[str]:
         if response.status_code == 200:
             return response.json().get("name")
         return None
-    except Exception as e:
+    except IOError as e:
         print(f"Error getting chain name: {e}")
         return None
 
@@ -36,7 +41,7 @@ def get_chain_id_from_rpc_url(rpc_url: str) -> Optional[int]:
         if response.status_code == 200:
             return int(response.json().get("result"), 16)
         return None
-    except Exception as e:
+    except IOError as e:
         print(f"Error validating RPC url: {e}")
         return None
 
@@ -44,33 +49,39 @@ def get_chain_id_from_rpc_url(rpc_url: str) -> Optional[int]:
 def get_contract_address_and_block_from_tx_hash(
     rpc_url: str, tx_hash: str
 ) -> Optional[Dict[str, Any]]:
-    try:
-        w3 = Web3(Web3.HTTPProvider(rpc_url))
-        tx = w3.eth.get_transaction(HexBytes(tx_hash))
-        return {
-            "block": tx.blockNumber,
-            "address": mk_contract_address_2(tx.to, tx.input[:32], tx.input[32:]),
-        }
-    except Exception as e:
-        print(f"Error getting transaction: {e}")
-        return None
+    ethereum_client = EthereumClient(rpc_url)
+    tx = ethereum_client.get_transaction(tx_hash)
+    if not tx:
+        print(f"Transaction not found: {tx_hash}")
+        return
+    return {
+        "block": tx.get("blockNumber"),
+        "address": mk_contract_address_2(
+            tx.get("to"), tx.get("input")[:32], tx.get("input")[32:]
+        ),
+    }
 
 
-def validate_chain(chain_id: str) -> Optional[str]:
-    if not chain_id:
+def validate_chain(chain_id_input: str) -> Optional[Dict[str, Any]]:
+    if not chain_id_input.isdigit():
         ERRORS.append("Chain ID is required.")
         return
 
-    chain_name = get_chain_name(chain_id)
+    if not chain_id_input:
+        ERRORS.append("Chain ID is required.")
+        return
+
+    chain_id = int(chain_id_input)
+    chain_name = (get_chain_name(chain_id), chain_id)
     if not chain_name:
         ERRORS.append(f"Chain with chain ID: {chain_id} not found.")
         return
 
     print(f"Chain name: {chain_name}")
-    return chain_name
+    return {"chain_id": chain_id, "chain_name": chain_name}
 
 
-def validate_rpc(rpc_url: str, chain_id: str) -> None:
+def validate_rpc(rpc_url: str, chain_id: int) -> None:
     if not rpc_url:
         ERRORS.append("RPC URL is required.")
         return
@@ -100,6 +111,7 @@ def validate_not_required_url(field_name: str, url: str) -> None:
             return
 
         print(f"Validating {field_name} URL -> {url}")
+        return
 
     print(f"Skipping {field_name} URL validation!")
 
@@ -156,7 +168,7 @@ def add_message_to_env(message: str) -> None:
 
 def validate_issue_inputs() -> None:
     issue_body_info = json.loads(os.environ.get("ISSUE_BODY_INFO"))
-    chain_id = issue_body_info.get("chainId")
+    chain_id_input = issue_body_info.get("chainId")
     rpc_url = issue_body_info.get("rpcUrl")
     blockscout_client_url = issue_body_info.get("blockscoutClientUrl")
     etherscan_client_url = issue_body_info.get("etherscanClientUrl")
@@ -168,7 +180,7 @@ def validate_issue_inputs() -> None:
     tx_hash_proxy = issue_body_info.get("txHashProxy")
 
     print("Inputs to validate:")
-    print(f"Chain ID: {chain_id}")
+    print(f"Chain ID: {chain_id_input}")
     print(f"RPC URL: {rpc_url}")
     print(f"Blockscout Client URL: {blockscout_client_url}")
     print(f"Etherscan Client URL: {etherscan_client_url}")
@@ -180,7 +192,9 @@ def validate_issue_inputs() -> None:
     print(f"Deployment Tx hash (Proxy factory): {tx_hash_proxy}")
 
     print("Start validation:")
-    chain_name = validate_chain(chain_id)
+    chain_info = validate_chain(chain_id_input)
+    chain_id = chain_info.get("chain_id") if chain_info else None
+    chain_name = chain_info.get("chain_name") if chain_info else None
     validate_rpc(rpc_url, chain_id)
     validate_not_required_url("BlockscoutClientUrl", blockscout_client_url)
     validate_not_required_url("EtherscanClientUrl", etherscan_client_url)

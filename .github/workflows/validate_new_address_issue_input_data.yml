@@ -61,17 +61,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install web3==6.15.1
         pip install safe-eth-py==6.0.0b18
         pip install validators==0.22.0
-        pip install hexbytes==0.3.1
 
     - name: Validate input data
       id: validate-input-data
       env:
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
       run: |
-        python .github/scripts/validate_address_issue.py
+        python .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
 
     - name: Add comment to issue
       uses: actions/github-script@v5

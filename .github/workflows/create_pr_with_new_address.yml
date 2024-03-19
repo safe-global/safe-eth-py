@@ -108,8 +108,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install PyGithub
-        pip install web3==6.15.1
-        pip install hexbytes==0.3.1
+        pip install safe-eth-py==6.0.0b18
 
     - name: Process Issue and Create PR
       env:
@@ -117,7 +116,7 @@ jobs:
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
         GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
       run: |
-        python .github/scripts/execute_address_issue.py
+        python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
 
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'
