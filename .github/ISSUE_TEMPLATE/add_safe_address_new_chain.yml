@@ -1,0 +1,121 @@
+name: Add safe addresses for a new chain
+description: Add addresses for Safe Contracts in a new chain
+title: "[New chain]: {chain name}"
+labels: ["add-new-address"] # Important: this label must be created in the repository.
+projects: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this issue! In this way you can add support to a new chain.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A brief summary.
+      placeholder: I would like to add {chain name} chain...
+    validations:
+      required: true
+  - type: input
+    id: chain_id
+    attributes:
+      label: Chain ID
+      description: Id of the chain to be supported.
+      placeholder: ex. 1
+    validations:
+      required: true
+  - type: input
+    id: chain_ir_url
+    attributes:
+      label: Chain detail URL
+      description: chainlist.org url with chain id detail.
+      placeholder: ex. https://chainlist.org/chain/1
+    validations:
+      required: true
+  - type: input
+    id: rpc_url
+    attributes:
+      label: RPC URL
+      description: RPC URL
+      placeholder: ex. https://eth.drpc.org
+    validations:
+      required: true
+  - type: input
+    id: blockscout_client_url
+    attributes:
+      label: Blockscout Client URL
+      description: Blockscout URL.
+      placeholder: ex. https://gnosis.blockscout.com/api/v1/graphql
+  - type: input
+    id: etherscan_client_url
+    attributes:
+      label: Etherscan Client URL
+      description: Etherscan URL.
+      placeholder: ex. https://etherscan.io
+  - type: input
+    id: etherscan_client_api_url
+    attributes:
+      label: Etherscan Client API URL
+      description: Etherscan URL.
+      placeholder: ex. https://api.etherscan.io
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: Safe contract version
+      multiple: false
+      options:
+        - "1.3.0"
+        - "1.3.0 L2"
+        - "1.4.1"
+        - "1.4.1 L2"
+      default: 0
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        # Master copies
+  - type: input
+    id: address_master_copy
+    attributes:
+      label: Address (Master copy)
+      description: Address safe contract
+      placeholder: ex. "0x69f4D1788e39c87893C980c06EdF4b7f686e2938"
+  - type: input
+    id: tx_hash_master_copy
+    attributes:
+      label: Deployment Tx hash (Master copy)
+      description: Contract deployment Tx hash.
+      placeholder: ex. 0x25b182f34baa23c122b081b249fb9da27f032e663e0a0ab3833be1c1c9266c3e
+  - type: input
+    id: block_explorer_url_master_copy
+    attributes:
+      label: Block explorer URL (Master copy)
+      description: Detail of contract address in the chain block explorer or deployment log.
+      placeholder: ex. https://etherscan.io/address/0x69f4d1788e39c87893c980c06edf4b7f686e2938
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        # Proxy factories
+  - type: input
+    id: address_proxy
+    attributes:
+      label: Address (Proxy factory)
+      description: Address safe contract
+      placeholder: ex. "0x69f4D1788e39c87893C980c06EdF4b7f686e2938"
+  - type: input
+    id: tx_hash_proxy
+    attributes:
+      label: Deployment Tx hash (Proxy factory)
+      description: Contract deployment Tx hash.
+      placeholder: ex. 0x25b182f34baa23c122b081b249fb9da27f032e663e0a0ab3833be1c1c9266c3e
+  - type: textarea
+    id: block_explorer_url_proxy
+    attributes:
+      label: Block explorer URL (Proxy factory)
+      description: Detail of contract address in the chain block explorer or deployment log.
+      placeholder: ex. https://etherscan.io/address/0x69f4d1788e39c87893c980c06edf4b7f686e2938
