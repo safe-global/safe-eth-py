@@ -16,13 +16,22 @@ from github.Repository import Repository
 from gnosis.eth import EthereumClient
 
 
+def convert_chain_name(name: str) -> str:
+    # Change every symbol that is not a word or digit for underscore
+    name_converted = re.sub(r"[^\w\d]+", r"_", name.upper().replace(")", ""))
+    # Add underscore at the beggining if start by digit
+    if name_converted[0].isdigit():
+        name_converted = "_" + name_converted
+    return name_converted
+
+
 def get_chain_enum_name(chain_id: int) -> Optional[str]:
     try:
         url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
         response = requests.get(url)
 
         if response.status_code == 200:
-            return response.json().get("name").upper().replace(" ", "_")
+            return convert_chain_name(response.json().get("name"))
         return None
     except IOError as e:
         print(f"Error getting chain name: {e}")
@@ -34,7 +43,7 @@ def get_contract_block_from_tx_hash(rpc_url: str, tx_hash: str) -> Optional[int]
     tx = ethereum_client.get_transaction(tx_hash)
     if not tx:
         print(f"Transaction not found: {tx_hash}")
-        return
+        return None
     return tx.get("blockNumber")
 
 
@@ -113,7 +122,7 @@ def upsert_chain_id(
                 branch_name,
             )
 
-            print(f"Entry  '{chain_enum_name} = {chain_id}' added successfully.")
+            print(f"Entry '{chain_enum_name} = {chain_id}' added successfully.")
     else:
         print("Error: EthereumNetwork class definition not found in the file.")
 
@@ -369,7 +378,7 @@ def execute_issue_changes() -> None:
 
     chain_enum_name = get_chain_enum_name(chain_id)
     if not chain_enum_name:
-        return
+        return None
 
     branch_name = create_issue_branch(repo, chain_id, version)
 
