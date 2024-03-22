@@ -1,5 +1,9 @@
 import dataclasses
+import datetime
+import logging
+from functools import cache, cached_property
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from eth_abi import encode as abi_encode
 from eth_abi.packed import encode_packed
@@ -9,10 +13,12 @@ from hexbytes import HexBytes
 from gnosis.eth.account_abstraction import UserOperation
 from gnosis.eth.utils import fast_keccak
 
+logger = logging.getLogger(__name__)
+
 _domain_separator_cache = {}
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(eq=True, frozen=True)
 class SafeOperation:
     """
     Safe EIP4337 operation
@@ -54,7 +60,6 @@ class SafeOperation:
         "0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
     )  # bytes32
     safe_operation_hash: Optional[bytes] = None
-    safe_operation_hash_preimage: Optional[bytes] = None
 
     @classmethod
     def from_user_operation(cls, user_operation: UserOperation):
@@ -75,6 +80,63 @@ class SafeOperation:
             user_operation.signature[12:],
         )
 
+    @staticmethod
+    def _parse_epoch(epoch: int) -> Optional[datetime.datetime]:
+        if not epoch:
+            return None
+
+        try:
+            return datetime.datetime.fromtimestamp(epoch, ZoneInfo("UTC"))
+        except (OverflowError, ValueError) as exc:
+            logger.warning("Invalid epoch %d: %s", epoch, exc)
+            return None
+
+    @cached_property
+    def valid_after_as_datetime(self) -> Optional[datetime.datetime]:
+        return self._parse_epoch(self.valid_after)
+
+    @cached_property
+    def valid_until_as_datetime(self) -> Optional[datetime.datetime]:
+        return self._parse_epoch(self.valid_until)
+
+    @cached_property
+    def safe_operation_hash_preimage(self) -> bytes:
+        encoded_safe_op_struct = abi_encode(
+            [
+                "bytes32",
+                "address",
+                "uint256",
+                "bytes32",
+                "bytes32",
+                "uint256",
+                "uint256",
+                "uint256",
+                "uint256",
+                "uint256",
+                "bytes32",
+                "uint48",
+                "uint48",
+                "address",
+            ],
+            [
+                self.TYPE_HASH,
+                self.safe,
+                self.nonce,
+                self.init_code_hash,
+                self.call_data_hash,
+                self.call_gas_limit,
+                self.verification_gas_limit,
+                self.pre_verification_gas,
+                self.max_fee_per_gas,
+                self.max_priority_fee_per_gas,
+                self.paymaster_and_data_hash,
+                self.valid_after,
+                self.valid_until,
+                self.entry_point,
+            ],
+        )
+        return fast_keccak(encoded_safe_op_struct)
+
     def get_domain_separator(
         self, chain_id: int, module_address: ChecksumAddress
     ) -> bytes:
@@ -88,64 +150,18 @@ class SafeOperation:
             )
         return _domain_separator_cache[key]
 
-    def get_safe_operation_hash_preimage(
-        self, chain_id: int, module_address: ChecksumAddress
-    ) -> bytes:
-        # Cache safe_operation_hash
-        if not self.safe_operation_hash_preimage:
-            encoded_safe_op_struct = abi_encode(
-                [
-                    "bytes32",
-                    "address",
-                    "uint256",
-                    "bytes32",
-                    "bytes32",
-                    "uint256",
-                    "uint256",
-                    "uint256",
-                    "uint256",
-                    "uint256",
-                    "bytes32",
-                    "uint48",
-                    "uint48",
-                    "address",
-                ],
-                [
-                    self.TYPE_HASH,
-                    self.safe,
-                    self.nonce,
-                    self.init_code_hash,
-                    self.call_data_hash,
-                    self.call_gas_limit,
-                    self.verification_gas_limit,
-                    self.pre_verification_gas,
-                    self.max_fee_per_gas,
-                    self.max_priority_fee_per_gas,
-                    self.paymaster_and_data_hash,
-                    self.valid_after,
-                    self.valid_until,
-                    self.entry_point,
-                ],
-            )
-            self.safe_operation_hash_preimage = fast_keccak(encoded_safe_op_struct)
-        return self.safe_operation_hash_preimage
-
+    @cache
     def get_safe_operation_hash(
         self, chain_id: int, module_address: ChecksumAddress
     ) -> bytes:
-        # Cache safe_operation_hash
-        if not self.safe_operation_hash:
-            safe_op_struct_hash = self.get_safe_operation_hash_preimage(
-                chain_id, module_address
-            )
-            operation_data = encode_packed(
-                ["bytes1", "bytes1", "bytes32", "bytes32"],
-                [
-                    bytes.fromhex("19"),
-                    bytes.fromhex("01"),
-                    self.get_domain_separator(chain_id, module_address),
-                    safe_op_struct_hash,
-                ],
-            )
-            self.safe_operation_hash = fast_keccak(operation_data)
-        return self.safe_operation_hash
+        safe_op_struct_hash = self.safe_operation_hash_preimage
+        operation_data = encode_packed(
+            ["bytes1", "bytes1", "bytes32", "bytes32"],
+            [
+                bytes.fromhex("19"),
+                bytes.fromhex("01"),
+                self.get_domain_separator(chain_id, module_address),
+                safe_op_struct_hash,
+            ],
+        )
+        return fast_keccak(operation_data)
