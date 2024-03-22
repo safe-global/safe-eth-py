@@ -1,0 +1,86 @@
+name: "Validate the add address issue inputs"
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  validate-issue-inputs:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'add-new-address')
+    steps:
+    - name: Get issue inputs
+      id: get-issue-inputs
+      uses: actions/github-script@v5
+      with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueBody = context.payload.issue.body.replaceAll("_No response_", "");
+
+            const titles = {
+              summary: 'Summary',
+              chainId: 'Chain ID',
+              chainDetailUrl: 'Chain detail URL',
+              rpcUrl: 'RPC URL',
+              blockscoutClientUrl: 'Blockscout Client URL',
+              etherscanClientUrl: 'Etherscan Client URL',
+              etherscanClientApiUrl: 'Etherscan Client API URL',
+              version: 'Version',
+              addressMasterCopy: 'Address \\(Master copy\\)',
+              txHashMasterCopy: 'Deployment Tx hash \\(Master copy\\)',
+              blockExplorerUrlMasterCopy: 'Block explorer URL \\(Master copy\\)',
+              addressProxy: 'Address \\(Proxy factory\\)',
+              txHashProxy: 'Deployment Tx hash \\(Proxy factory\\)',
+              blockExplorerUrlProxy: 'Block explorer URL \\(Proxy factory\\)',
+            };
+
+            const buildPattern = title => new RegExp(`### ${title}(?:\\r\\n\\r\\n|\\n\\n|\\n|\\r\\n)(.+?)(?:\\r\\n\\r\\n|\\n\\n|\\n|\\r\\n)`);
+
+            const extractInfo = (pattern, text) => {
+              const match = text.match(pattern);
+              return match ? match[1].trim() : null;
+            };
+
+            const extractedInfo = {};
+            Object.keys(titles).forEach(key => {
+              const pattern = buildPattern(titles[key]);
+              extractedInfo[key] = extractInfo(pattern, issueBody);
+            });
+
+            console.log('Extracted Info:', extractedInfo);
+
+            return extractedInfo;
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        pip install safe-eth-py==6.0.0b18
+        pip install validators==0.22.0
+
+    - name: Validate input data
+      id: validate-input-data
+      env:
+        ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
+      run: |
+        python .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
+
+    - name: Add comment to issue
+      uses: actions/github-script@v5
+      env:
+        COMMENT_OUTPUT: ${{ steps.validate-input-data.outputs.comment_message }}
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.COMMENT_OUTPUT
+            })
