@@ -15,7 +15,7 @@ jobs:
       id: check-comment
       uses: actions/github-script@v5
       with:
-        github-token: ${{ secrets.ORG_SECRET_NAME }} # Important: This secret with read permissions on the teams information must be configured in repository settings -> secrets -> actions
+        github-token: ${{ secrets.TOKEN_GITHUB_READ_ORG_TEAMS }} # Important: This secret with read permissions on the teams information must be configured in repository settings -> secrets -> actions
         script: |
           const comment = context.payload.comment.body;
           const teamMembers = await github.rest.teams.listMembersInOrg({
