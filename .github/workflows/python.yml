@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", 3.11, 3.12]
+        python-version: [3.9, "3.10", 3.11, 3.12]
     services:
       postgres:
         image: postgres:13
@@ -73,6 +73,7 @@ jobs:
         DJANGO_SETTINGS_MODULE: config.settings.test
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
         ETHEREUM_POLYGON_NODE: ${{ secrets.ETHEREUM_POLYGON_NODE }}
+        ETHEREUM_4337_BUNDLER_URL: ${{ secrets.ETHEREUM_4337_BUNDLER_URL }}
     - name: Test packaging
       run: pip install -e .
     - name: Send results to coveralls

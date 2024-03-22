@@ -1,3 +1,5 @@
+import os
+from functools import lru_cache
 from typing import Union
 
 import eth_abi
@@ -20,13 +22,29 @@ def get_empty_tx_params() -> TxParams:
     }
 
 
+@lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 512)))
+def _keccak_256(value: bytes) -> bytes:
+    return keccak_256(value)
+
+
 def fast_keccak(value: bytes) -> Hash32:
     """
     Calculates ethereum keccak256 using fast library `pysha3`
+
     :param value:
-    :return: Keccak256 used by ethereum as `bytes`
+    :return: Keccak256 used by ethereum as `HexBytes`
     """
-    return keccak_256(value).digest()
+    return HexBytes(_keccak_256(value).digest())
+
+
+def fast_keccak_text(value: str) -> Hash32:
+    """
+    Calculates ethereum keccak256 using fast library `pysha3`
+
+    :param value:
+    :return: Keccak256 used by ethereum as `HexBytes`
+    """
+    return fast_keccak(value.encode())
 
 
 def fast_keccak_hex(value: bytes) -> HexStr:
@@ -37,7 +55,7 @@ def fast_keccak_hex(value: bytes) -> HexStr:
     :param value:
     :return: Keccak256 used by ethereum as a hex string (not 0x prefixed)
     """
-    return HexStr(keccak_256(value).hexdigest())
+    return HexStr(_keccak_256(value).hexdigest())
 
 
 def _build_checksum_address(
@@ -69,6 +87,12 @@ def _build_checksum_address(
     )
 
 
+@lru_cache(maxsize=int(os.getenv("CACHE_CHECKSUM_ADDRESS", 1_000_000_000)))
+def _fast_to_checksum_address(address: HexAddress):
+    address_hash = fast_keccak_hex(address.encode())
+    return _build_checksum_address(address, address_hash)
+
+
 def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAddress:
     """
     Converts to checksum_address. Uses more optimal `pysha3` instead of `eth_utils` for keccak256 calculation
@@ -76,9 +100,14 @@ def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAd
     :param value:
     :return:
     """
+    if isinstance(value, bytes):
+        if len(value) != 20:
+            raise ValueError(
+                "Cannot convert %s to a checksum address, 20 bytes were expected"
+            )
+
     norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
-    address_hash = fast_keccak_hex(norm_address.encode())
-    return _build_checksum_address(norm_address, address_hash)
+    return _fast_to_checksum_address(norm_address)
 
 
 def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
@@ -94,8 +123,7 @@ def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
             "Cannot convert %s to a checksum address, 20 bytes were expected"
         )
     norm_address = HexAddress(HexStr(bytes(value).hex()))
-    address_hash = fast_keccak_hex(norm_address.encode())
-    return _build_checksum_address(norm_address, address_hash)
+    return _fast_to_checksum_address(norm_address)
 
 
 def fast_is_checksum_address(value: Union[AnyAddress, str, bytes]) -> bool:

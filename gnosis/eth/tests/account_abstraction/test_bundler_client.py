@@ -11,13 +11,13 @@ from ...account_abstraction import (
     BundlerClientConnectionException,
     BundlerClientResponseException,
     UserOperation,
+    UserOperationReceipt,
 )
 from ..mocks.mock_bundler import (
     safe_4337_user_operation_hash_mock,
     supported_entrypoint_mock,
     user_operation_mock,
     user_operation_receipt_mock,
-    user_operation_receipt_parsed_mock,
 )
 
 
@@ -77,9 +77,13 @@ class TestBundlerClient(TestCase):
             return_value=copy.deepcopy(user_operation_receipt_mock)
         )
         self.bundler.get_user_operation_receipt.cache_clear()
+
+        expected_user_operation_receipt = UserOperationReceipt.from_bundler_response(
+            user_operation_receipt_mock["result"]
+        )
         self.assertEqual(
             self.bundler.get_user_operation_receipt(user_operation_hash),
-            user_operation_receipt_parsed_mock["result"],
+            expected_user_operation_receipt,
         )
         mock_session.return_value.json = MagicMock(
             return_value={
@@ -125,6 +129,9 @@ class TestBundlerClient(TestCase):
         expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
         )
+        expected_user_operation_receipt = UserOperationReceipt.from_bundler_response(
+            user_operation_receipt_mock["result"]
+        )
         (
             user_operation,
             user_operation_receipt,
@@ -134,10 +141,7 @@ class TestBundlerClient(TestCase):
             user_operation,
             expected_user_operation,
         )
-        self.assertDictEqual(
-            user_operation_receipt,
-            user_operation_receipt_parsed_mock["result"],
-        )
+        self.assertEqual(user_operation_receipt, expected_user_operation_receipt)
         mock_session.return_value.json = MagicMock(
             return_value={
                 "jsonrpc": "2.0",

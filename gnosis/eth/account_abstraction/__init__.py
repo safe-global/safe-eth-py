@@ -8,4 +8,5 @@ from .exceptions import (
     BundlerClientException,
     BundlerClientResponseException,
 )
-from .user_operation import UserOperation, UserOperationMetadata, UserOperationReceipt
+from .user_operation import UserOperation, UserOperationMetadata
+from .user_operation_receipt import UserOperationReceipt

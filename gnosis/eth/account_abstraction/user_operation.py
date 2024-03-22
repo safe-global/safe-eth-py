@@ -1,21 +1,22 @@
 import dataclasses
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from functools import cached_property
+from typing import Any, Dict, Optional, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
 
-from gnosis.eth.utils import fast_keccak
+from gnosis.eth.utils import fast_keccak, fast_to_checksum_address
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(eq=True, frozen=True)
 class UserOperationMetadata:
     transaction_hash: bytes
     block_hash: bytes
     block_number: int
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(eq=True, frozen=True)
 class UserOperation:
     """
     EIP4337 UserOperation for Entrypoint v0.6
@@ -68,6 +69,17 @@ class UserOperation:
     def __str__(self):
         return f"User Operation sender={self.sender} nonce={self.nonce} hash={self.user_operation_hash.hex()}"
 
+    @cached_property
+    def paymaster(self) -> Optional[ChecksumAddress]:
+        if self.paymaster_and_data and len(self.paymaster_and_data) >= 20:
+            return fast_to_checksum_address(self.paymaster_and_data[:20])
+        return None
+
+    @cached_property
+    def paymaster_data(self) -> Optional[bytes]:
+        result = self.paymaster_and_data[:20]
+        return result if result else None
+
     def calculate_user_operation_hash(self, chain_id: int) -> bytes:
         hash_init_code = fast_keccak(self.init_code)
         hash_call_data = fast_keccak(self.call_data)
@@ -104,16 +116,3 @@ class UserOperation:
                 [fast_keccak(user_operation_encoded), self.entry_point, chain_id],
             )
         )
-
-
-class UserOperationReceipt(TypedDict):
-    userOpHash: HexStr
-    entryPoint: HexStr
-    sender: ChecksumAddress
-    nonce: int
-    paymaster: ChecksumAddress
-    actualGasCost: int
-    actualGasUsed: int
-    success: bool
-    reason: str
-    logs: List[Dict[str, Any]]

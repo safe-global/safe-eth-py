@@ -20,7 +20,7 @@ from web3.exceptions import ContractLogicError
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from .contracts import ContractBase, get_multicall_v3_contract
 from .ethereum_client import EthereumTxSent
-from .exceptions import BatchCallFunctionFailed
+from .exceptions import BatchCallFunctionFailed, ContractAlreadyDeployed
 from .utils import get_empty_tx_params
 
 logger = logging.getLogger(__name__)
@@ -92,13 +92,13 @@ class Multicall(ContractBase):
     @classmethod
     def deploy_contract(
         cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
+    ) -> Optional[EthereumTxSent]:
         """
         Deploy contract
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
-        :return: ``EthereumTxSent`` with the deployed contract address
+        :return: ``EthereumTxSent`` with the deployed contract address, ``None`` if already deployed
         """
         contract_fn = cls.get_contract_fn(cls)
         contract = contract_fn(ethereum_client.w3)
@@ -106,19 +106,23 @@ class Multicall(ContractBase):
             get_empty_tx_params()
         )["data"]
 
-        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
-            deployer_account, constructor_data
-        )
+        try:
+            ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
+                deployer_account, constructor_data
+            )
 
-        contract_address = ethereum_tx_sent.contract_address
-        logger.info(
-            "Deployed Multicall V2 Contract %s by %s",
-            contract_address,
-            deployer_account.address,
-        )
-        # Add address to addresses dictionary
-        cls.ADDRESSES[ethereum_client.get_network()] = contract_address
-        return ethereum_tx_sent
+            contract_address = ethereum_tx_sent.contract_address
+            logger.info(
+                "Deployed Multicall V2 Contract %s by %s",
+                contract_address,
+                deployer_account.address,
+            )
+            # Add address to addresses dictionary
+            cls.ADDRESSES[ethereum_client.get_network()] = contract_address
+            return ethereum_tx_sent
+        except ContractAlreadyDeployed as e:
+            cls.ADDRESSES[ethereum_client.get_network()] = e.address
+            return None
 
     @staticmethod
     def _build_payload(

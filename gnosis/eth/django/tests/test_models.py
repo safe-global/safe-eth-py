@@ -5,15 +5,15 @@ from django.test import TestCase
 
 from eth_account import Account
 from faker import Faker
-from web3 import Web3
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
-from ...utils import fast_is_checksum_address
+from ...utils import fast_is_checksum_address, fast_keccak_text
 from .models import (
     EthereumAddress,
     EthereumAddressV2,
     Keccak256Hash,
     Sha3Hash,
+    Uint32,
     Uint96,
     Uint256,
 )
@@ -90,14 +90,33 @@ class TestModels(TestCase):
         # Overflow
         with self.assertRaises(Exception):
             value = 2**97
-            uint96.objects.create(value=value)
+            Uint96.objects.create(value=value)
 
         # Signed
         with self.assertRaises(ValidationError):
             Uint96.objects.create(value=-2)
 
+    def test_uint32_field(self):
+        for value in [
+            2,
+            2**32,
+            4294967296,
+            None,
+        ]:
+            uint32 = Uint32.objects.create(value=value)
+            uint32.refresh_from_db()
+            self.assertEqual(uint32.value, value)
+        # Overflow
+        with self.assertRaises(Exception):
+            value = 2**34
+            Uint32.objects.create(value=value)
+
+        # Signed
+        with self.assertRaises(ValidationError):
+            Uint32.objects.create(value=-2)
+
     def test_sha3_hash_field(self):
-        value_hexbytes = Web3.keccak(text=faker.name())
+        value_hexbytes = fast_keccak_text(faker.name())
         value_hex_with_0x: str = value_hexbytes.hex()
         value_hex_without_0x: str = value_hex_with_0x[2:]
         value: bytes = bytes(value_hexbytes)
@@ -126,7 +145,7 @@ class TestModels(TestCase):
                 Sha3Hash.objects.create(value=value_hex_invalid)
 
     def test_keccak256_field(self):
-        value_hexbytes = Web3.keccak(text=faker.name())
+        value_hexbytes = fast_keccak_text(faker.name())
         value_hex_with_0x: str = value_hexbytes.hex()
         value_hex_without_0x: str = value_hex_with_0x[2:]
         value: bytes = bytes(value_hexbytes)
@@ -208,7 +227,7 @@ class TestModels(TestCase):
         self.assertIn(str(value), serialized)
 
     def test_serialize_sha3_hash_to_json(self):
-        hash = Web3.keccak(text="testSerializer")
+        hash = fast_keccak_text("testSerializer")
         Sha3Hash.objects.create(value=hash)
         serialized = serialize("json", Sha3Hash.objects.all())
         # hash should be in serialized data

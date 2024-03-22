@@ -30,7 +30,7 @@ class EthereumTestCaseMixin:
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.ethereum_test_account = cls.get_ethereum_test_account(cls)
+        cls.ethereum_test_account = cls.get_ethereum_test_account()
         # Caching ethereum_client to prevent initializing again
         cls.ethereum_client = _cached_data["ethereum_client"]
 
@@ -45,7 +45,8 @@ class EthereumTestCaseMixin:
         cls.multicall = cls.ethereum_client.multicall
         assert cls.multicall, "Multicall must be defined"
 
-    def get_ethereum_test_account(self) -> LocalAccount:
+    @classmethod
+    def get_ethereum_test_account(cls):
         try:
             from django.conf import settings
 

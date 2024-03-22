@@ -2,8 +2,8 @@ from django.forms import forms
 from django.test import TestCase
 
 from hexbytes import HexBytes
-from web3 import Web3
 
+from ...utils import fast_keccak_text
 from ..forms import EthereumAddressFieldForm, HexFieldForm, Keccak256FieldForm
 
 
@@ -77,7 +77,7 @@ class TestForms(TestCase):
             form.errors["value"], ['"0x1234" keccak256 hash should be 32 bytes.']
         )
 
-        form = Keccak256Form(data={"value": Web3.keccak(text="testing").hex()})
+        form = Keccak256Form(data={"value": fast_keccak_text("testing").hex()})
         self.assertTrue(form.is_valid())
 
         form = Keccak256Form(data={"value": ""})
