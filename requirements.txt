@@ -1,7 +1,7 @@
 django==4.2.10
 django-filter==24.1
 djangorestframework==3.15.1
-hexbytes==0.3.1
+hexbytes==1.2.0
 packaging
 psycopg2-binary==2.9.9
 py-evm==0.10.0b2
