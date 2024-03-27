@@ -99,20 +99,6 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
         return data
 
 
-class SafeMultisigTxSerializer(SafeMultisigEstimateTxSerializer):
-    """
-    DEPRECATED, use `SafeMultisigTxSerializerV1` instead
-    """
-
-    safe_tx_gas = serializers.IntegerField(min_value=0)
-    data_gas = serializers.IntegerField(min_value=0)
-    gas_price = serializers.IntegerField(min_value=0)
-    refund_receiver = EthereumAddressField(
-        default=None, allow_null=True, allow_zero_address=True
-    )
-    nonce = serializers.IntegerField(min_value=0)
-
-
 class SafeMultisigTxSerializerV1(SafeMultisigEstimateTxSerializer):
     """
     Version 1.0.0 of the Safe changes `data_gas` to `base_gas`
