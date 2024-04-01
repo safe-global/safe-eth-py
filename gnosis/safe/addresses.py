@@ -899,6 +899,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0",
         ),  # safe singleton address
     ],
+    EthereumNetwork.AURORIA_TESTNET: [
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 186765, "1.4.1+L2"),  # v1.4.1+L2 
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
