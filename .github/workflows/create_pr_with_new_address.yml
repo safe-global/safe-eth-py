@@ -113,6 +113,7 @@ jobs:
     - name: Process Issue and Create PR
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
         GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
       run: |

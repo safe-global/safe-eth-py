@@ -66,12 +66,16 @@ def create_issue_branch(repo: Repository, chain_id: int, version: str) -> str:
 
 
 def create_pr(
-    repo: Repository, branch_name: str, chain_id: int, chain_enum_name: str
+    repo: Repository,
+    branch_name: str,
+    chain_id: int,
+    chain_enum_name: str,
+    issue_number: int,
 ) -> None:
     try:
         repo.create_pull(
             title=f"Add new chain {chain_enum_name} {chain_id} addresses",
-            body=f"Automatic PR to add new address to {chain_enum_name} {chain_id} chain",
+            body=f"Automatic PR to add new address to {chain_enum_name} {chain_id} chain\n Closes #{issue_number}",
             head=branch_name,
             base="main",
         )
@@ -157,7 +161,7 @@ def upsert_explorer_client_url(
         if existing_entry:
             print(f"Entry with URL '{client_url}' already exists.")
         else:
-            new_entry = f'        EthereumNetwork.{chain_enum_name}: "{client_url}"'
+            new_entry = f'        EthereumNetwork.{chain_enum_name}: "{client_url}",'
             url_lines.append(new_entry)
 
             updated_content = (
@@ -284,6 +288,7 @@ def upsert_contract_address_proxy_factory(
     file_path = "gnosis/safe/addresses.py"
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
+    version = version.replace("+L2", "")
 
     print(
         f"Updating Proxy Factory address chain {chain_enum_name} address '{address}' and block_number {block_number}"
@@ -362,6 +367,7 @@ def upsert_contract_address_proxy_factory(
 def execute_issue_changes() -> None:
     github_token = os.environ.get("GITHUB_TOKEN")
     repository_name = os.environ.get("GITHUB_REPOSITORY_NAME")
+    issue_number = int(os.environ.get("ISSUE_NUMBER"))
     issue_body_info = json.loads(os.environ.get("ISSUE_BODY_INFO"))
     chain_id = int(issue_body_info.get("chainId"))
     version = issue_body_info.get("version")
@@ -438,7 +444,7 @@ def execute_issue_changes() -> None:
                 repo, branch_name, chain_enum_name, address_proxy, tx_block, version
             )
 
-    create_pr(repo, branch_name, chain_id, chain_enum_name)
+    create_pr(repo, branch_name, chain_id, chain_enum_name, issue_number)
 
 
 if __name__ == "__main__":
