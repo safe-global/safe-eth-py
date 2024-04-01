@@ -1461,4 +1461,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             1675084,
         ),  # v1.3.0 default singleton address
     ],
+    EthereumNetwork.AURORIA_TESTNET: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 186758),  # v1.4.1 
+    ],
 }
