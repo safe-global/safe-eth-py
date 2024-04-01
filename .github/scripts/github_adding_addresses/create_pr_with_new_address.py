@@ -257,7 +257,7 @@ def upsert_contract_address_master_copy(
         if match:
             new_entry = (
                 f'    EthereumNetwork.{chain_enum_name}: [\n        ("{address}", {block_number}, '
-                + f'"{version}"),  # v{version} \n    ],\n'
+                + f'"{version}"),  # v{version}\n    ],\n'
             )
             updated_content = (
                 content[: match.start()]
@@ -289,7 +289,6 @@ def upsert_contract_address_proxy_factory(
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
     version = version.replace("+L2", "")
-
     print(
         f"Updating Proxy Factory address chain {chain_enum_name} address '{address}' and block_number {block_number}"
     )
@@ -344,7 +343,7 @@ def upsert_contract_address_proxy_factory(
         if match:
             new_entry = (
                 f'    EthereumNetwork.{chain_enum_name}: [\n        ("{address}", {block_number}'
-                + f"),  # v{version} \n    ],\n"
+                + f"),  # v{version}\n    ],\n"
             )
             updated_content = (
                 content[: match.start()]
