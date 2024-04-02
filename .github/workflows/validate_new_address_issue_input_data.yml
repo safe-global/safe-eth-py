@@ -61,8 +61,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install safe-eth-py==6.0.0b18
-        pip install validators==0.22.0
+        pip install safe-eth-py
+        pip install validators
 
     - name: Validate input data
       id: validate-input-data

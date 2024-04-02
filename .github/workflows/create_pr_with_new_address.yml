@@ -106,11 +106,13 @@ jobs:
         python-version: '3.12'
 
     - name: Install dependencies
+      if: steps.check-comment.outputs.result == 'true'
       run: |
         pip install PyGithub
-        pip install safe-eth-py==6.0.0b18
+        pip install safe-eth-py
 
     - name: Process Issue and Create PR
+      if: steps.check-comment.outputs.result == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         ISSUE_NUMBER: ${{ github.event.issue.number }}
