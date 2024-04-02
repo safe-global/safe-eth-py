@@ -109,7 +109,7 @@ jobs:
       if: steps.check-comment.outputs.result == 'true'
       run: |
         pip install PyGithub
-        pip install safe-eth-py==6.0.0b18
+        pip install safe-eth-py
 
     - name: Process Issue and Create PR
       if: steps.check-comment.outputs.result == 'true'
