@@ -97,6 +97,7 @@ class BlockscoutClient:
         EthereumNetwork.REYA_NETWORK: "https://explorer.reya.network/graphiql",
         EthereumNetwork.AURORIA_TESTNET: "https://auroria.explorer.stratisevm.com/graphiql",
         EthereumNetwork.STRATIS_MAINNET: "https://explorer.stratisevm.com/graphiql",
+        EthereumNetwork.SHIMMEREVM: "https://explorer.evm.shimmer.network/",
     }
 
     def __init__(self, network: EthereumNetwork):
