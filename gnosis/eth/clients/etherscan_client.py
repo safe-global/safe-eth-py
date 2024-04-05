@@ -102,6 +102,7 @@ class EtherscanClient:
         EthereumNetwork.KROMA_SEPOLIA: "https://api-sepolia.kromascan.com",
         EthereumNetwork.BLAST_SEPOLIA_TESTNET: "https://api-sepolia.blastscan.io",
         EthereumNetwork.FRAXTAL_MAINNET: "https://api.fraxscan.com",
+        EthereumNetwork.Bitlayer_Testnet: "https://testnet-scan.bitlayer.org/en-us",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
