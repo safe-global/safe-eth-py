@@ -215,6 +215,7 @@ class TransactionServiceApi(SafeBaseAPI):
         self,
         safe_address: ChecksumAddress,
         delegate_address: ChecksumAddress,
+        delegator_address: ChecksumAddress,
         label: str,
         signer_account: LocalAccount,
     ) -> bool:
@@ -223,12 +224,11 @@ class TransactionServiceApi(SafeBaseAPI):
         add_payload = {
             "safe": safe_address,
             "delegate": delegate_address,
+            "delegator": delegator_address,
             "signature": signature.signature.hex(),
             "label": label,
         }
-        response = self._post_request(
-            f"/api/v1/safes/{safe_address}/delegates/", add_payload
-        )
+        response = self._post_request("/api/v1/delegates/", add_payload)
         if not response.ok:
             raise SafeAPIException(f"Cannot add delegate: {response.content}")
         return True
