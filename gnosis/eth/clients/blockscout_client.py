@@ -95,6 +95,11 @@ class BlockscoutClient:
         EthereumNetwork.SEI_DEVNET: "https://seitrace.com/graphiql",
         EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/graphiql",
         EthereumNetwork.BOTANIX_TESTNET: "https://blockscout.botanixlabs.dev/graphiql",
+        EthereumNetwork.REYA_NETWORK: "https://explorer.reya.network/graphiql",
+        EthereumNetwork.AURORIA_TESTNET: "https://auroria.explorer.stratisevm.com/graphiql",
+        EthereumNetwork.STRATIS_MAINNET: "https://explorer.stratisevm.com/graphiql",
+        EthereumNetwork.SHIMMEREVM: "https://explorer.evm.shimmer.network/graphiql",
+        EthereumNetwork.IOTA_EVM: "https://iota-evm.blockscout.com/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):

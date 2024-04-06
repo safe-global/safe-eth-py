@@ -12,11 +12,10 @@ def get_totp() -> int:
     return int(time.time()) // 3600
 
 
-def get_delegate_message(cls, delegate_address: ChecksumAddress) -> str:
+def get_delegate_message(delegate_address: ChecksumAddress) -> str:
     """
     Retrieves the required message for creating or removing a delegate on Safe Transaction Service.
 
-    :param cls:
     :param delegate_address:
     :return: generated str message
     """
