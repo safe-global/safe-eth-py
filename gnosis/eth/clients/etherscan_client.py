@@ -60,6 +60,7 @@ class EtherscanClient:
         EthereumNetwork.KROMA_SEPOLIA: "https://sepolia.kromascan.com",
         EthereumNetwork.BLAST_SEPOLIA_TESTNET: "https://sepolia.blastscan.io",
         EthereumNetwork.FRAXTAL_MAINNET: "https://fraxscan.com",
+        EthereumNetwork.BASE: "https://api.basescan.org/",
     }
 
     NETWORK_WITH_API_URL = {
