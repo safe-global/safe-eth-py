@@ -31,7 +31,7 @@ class RelayServiceApi(SafeBaseAPI):
     def send_transaction(
         self, safe_address: str, safe_tx: SafeTx
     ) -> RelaySentTransaction:
-        url = urljoin(self.base_url, f"/api/v1/safes/{safe_address}/transactions/")
+        url = urljoin(self.base_url, f"api/v1/safes/{safe_address}/transactions/")
         signatures = []
         for i in range(len(safe_tx.signatures) // 65):
             v, r, s = signature_split(safe_tx.signatures, i)
@@ -69,7 +69,7 @@ class RelayServiceApi(SafeBaseAPI):
         :return: RelayEstimation
         """
         url = urljoin(
-            self.base_url, f"/api/v2/safes/{safe_address}/transactions/estimate/"
+            self.base_url, f"api/v2/safes/{safe_address}/transactions/estimate/"
         )
         data = {
             "to": safe_tx.to,

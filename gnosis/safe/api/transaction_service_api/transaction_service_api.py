@@ -108,7 +108,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_address:
         :return: a list of balances for provided Safe
         """
-        response = self._get_request(f"/api/v1/safes/{safe_address}/balances/")
+        response = self._get_request(f"api/v1/safes/{safe_address}/balances/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get balances: {response.content}")
         return response.json()
@@ -121,7 +121,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :return: SafeTx and `tx-hash` if transaction was executed
         """
         safe_tx_hash = HexBytes(safe_tx_hash).hex()
-        response = self._get_request(f"/api/v1/multisig-transactions/{safe_tx_hash}/")
+        response = self._get_request(f"api/v1/multisig-transactions/{safe_tx_hash}/")
         if not response.ok:
             raise SafeAPIException(
                 f"Cannot get transaction with safe-tx-hash={safe_tx_hash}: {response.content}"
@@ -164,7 +164,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :return: a list of transactions for provided Safe
         """
         response = self._get_request(
-            f"/api/v1/safes/{safe_address}/multisig-transactions/"
+            f"api/v1/safes/{safe_address}/multisig-transactions/"
         )
         if not response.ok:
             raise SafeAPIException(f"Cannot get transactions: {response.content}")
@@ -176,7 +176,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_address:
         :return: a list of delegates for provided Safe
         """
-        response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
+        response = self._get_request(f"api/v1/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
@@ -189,7 +189,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param owner_address:
         :return: a List of Safe addresses which the owner_address is an owner
         """
-        response = self._get_request(f"/api/v1/owners/{owner_address}/safes/")
+        response = self._get_request(f"api/v1/owners/{owner_address}/safes/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("safes", [])
@@ -203,7 +203,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         safe_tx_hash = HexBytes(safe_tx_hash).hex()
         response = self._post_request(
-            f"/api/v1/multisig-transactions/{safe_tx_hash}/confirmations/",
+            f"api/v1/multisig-transactions/{safe_tx_hash}/confirmations/",
             payload={"signature": HexBytes(signatures).hex()},
         )
         if not response.ok:
@@ -229,7 +229,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "signature": signature.signature.hex(),
             "label": label,
         }
-        response = self._post_request("/api/v1/delegates/", add_payload)
+        response = self._post_request("api/v1/delegates/", add_payload)
         if not response.ok:
             raise SafeAPIException(f"Cannot add delegate: {response.content}")
         return True
@@ -244,7 +244,7 @@ class TransactionServiceApi(SafeBaseAPI):
         signature = signer_account.signHash(hash_to_sign)
         remove_payload = {"signature": signature.signature.hex()}
         response = self._delete_request(
-            f"/api/v1/safes/{safe_address}/delegates/{delegate_address}/",
+            f"api/v1/safes/{safe_address}/delegates/{delegate_address}/",
             remove_payload,
         )
         if not response.ok:
@@ -271,7 +271,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "origin": "Safe-CLI",
         }
         response = self._post_request(
-            f"/api/v1/safes/{safe_tx.safe_address}/multisig-transactions/", data
+            f"api/v1/safes/{safe_tx.safe_address}/multisig-transactions/", data
         )
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content}")
@@ -286,7 +286,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         payload = {"safeTxHash": safe_tx_hash, "signature": signature}
         response = self._delete_request(
-            f"/api/v1/multisig-transactions/{safe_tx_hash}/", payload
+            f"api/v1/multisig-transactions/{safe_tx_hash}/", payload
         )
         if not response.ok:
             raise SafeAPIException(f"Error deleting transaction: {response.content}")
@@ -313,7 +313,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "signature": HexBytes(signature).hex(),
         }
         response = self._post_request(
-            f"/api/v1/safes/{safe_address}/messages/", payload
+            f"api/v1/safes/{safe_address}/messages/", payload
         )
         if not response.ok:
             raise SafeAPIException(f"Error posting message: {response.content}")
@@ -326,7 +326,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :return: Safe message for provided Safe message hash
         """
         response = self._get_request(
-            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
+            f"api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
         )
         if not response.ok:
             raise SafeAPIException(f"Cannot get messages: {response.content}")
@@ -338,7 +338,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_address:
         :return: list of messages for provided Safe address
         """
-        response = self._get_request(f"/api/v1/safes/{safe_address}/messages/")
+        response = self._get_request(f"api/v1/safes/{safe_address}/messages/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get messages: {response.content}")
         return response.json().get("results", [])
@@ -355,7 +355,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         payload = {"signature": HexBytes(signature).hex()}
         response = self._post_request(
-            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/signatures/", payload
+            f"api/v1/messages/{HexBytes(safe_message_hash).hex()}/signatures/", payload
         )
         if not response.ok:
             raise SafeAPIException(
