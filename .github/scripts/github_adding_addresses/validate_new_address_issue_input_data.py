@@ -9,6 +9,7 @@ import os
 import re
 import uuid
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 import requests
 import validators
@@ -126,12 +127,119 @@ def validate_not_required_url(field_name: str, url: str) -> None:
     print(f"Skipping {field_name} URL validation!")
 
 
+def validate_etherscan_client_required_urls(base_url: str, api_url: str) -> None:
+    if (not base_url and api_url) or (base_url and not api_url):
+        ERRORS.append(
+            "Both Etherscan client urls must be provided if one of them is not None."
+        )
+        return None
+
+
+def get_chain_explorers_urls(chain_id: int) -> [str]:
+    try:
+        url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            explorers = response.json().get("explorers")
+            return [explorer.get("url") for explorer in explorers]
+    except IOError as e:
+        print(f"Error getting chain explorers urls: {e}")
+    return []
+
+
+def validate_blockscout_client_url(
+    url: str, chain_explorers_urls: [str], tx_hash: str
+) -> None:
+    if url:
+        parsed_url = urlparse(url)
+        if parsed_url.netloc not in [
+            urlparse(explorer_url).netloc for explorer_url in chain_explorers_urls
+        ]:
+            ERRORS.append(
+                f"Blockscout Client URL ({url}) not contained in the list of explorers urls in the chain."
+            )
+            return None
+        try:
+            body = {"query": '{transaction(hash: "%s") {status}}' % tx_hash}
+            response = requests.post(url, json=body, verify=False)
+            if response.status_code == 200:
+                tx_status = (
+                    response.json()
+                    .get("data", {})
+                    .get("transaction", {})
+                    .get("status", {})
+                )
+                if tx_status.lower() == "ok":
+                    return None
+        except IOError as e:
+            print(f"Error validating Blockscout Client URL: {e}")
+
+        ERRORS.append(f"Blockscout Client URL ({url}) not valid.")
+
+
+def validate_etherscan_client_urls(
+    base_url: str, api_url: str, chain_explorers_urls: [str], tx_hash: str
+) -> None:
+    if base_url:
+        parsed_base_url = urlparse(base_url)
+        if parsed_base_url.path != "":
+            ERRORS.append(
+                f"Etherscan Client URL ({base_url}) provided is not valid. The url path should be empty."
+            )
+            return None
+
+        if parsed_base_url.netloc not in [
+            urlparse(explorer_url).netloc for explorer_url in chain_explorers_urls
+        ]:
+            ERRORS.append(
+                f"Etherscan Client URL ({base_url}) not contained in the list of explorers urls in the chain"
+            )
+            return None
+
+    if api_url:
+        parsed_api_url = urlparse(api_url)
+        if parsed_api_url.path != "":
+            ERRORS.append(
+                f"Etherscan Client URL ({api_url}) provided is not valid. The url path should be empty."
+            )
+            return None
+
+        if not any(
+            parsed_api_url.netloc.endswith(urlparse(explorer_url).netloc)
+            for explorer_url in chain_explorers_urls
+        ):
+            ERRORS.append(
+                f"Etherscan Client URL ({api_url}) not contained in the list of explorers urls in the chain"
+            )
+            return None
+
+        try:
+            url = f"{api_url}/api?module=transaction&action=gettxreceiptstatus&txhash={tx_hash}"
+            response = requests.get(url, verify=False)
+
+            if response.status_code == 200:
+                tx_status = response.json().get("result", {}).get("status", "")
+                if tx_status == "1":
+                    return None
+        except IOError as e:
+            print(f"Error validating Blockscout Client URL: {e}")
+
+        ERRORS.append(f"Etherscan Client URL ({api_url}) not valid.")
+
+
 def validate_version(version: str) -> None:
     if version not in ["1.3.0", "1.3.0+L2", "1.4.1", "1.4.1+L2"]:
         ERRORS.append(f"Version {version} is not valid.")
         return None
 
     print(f"Validating version: {version}!")
+
+
+def validate_master_copy_required_address(address: str, address_l2: str) -> None:
+    if not address and not address_l2:
+        ERRORS.append("Master copy address or Master copy address L2 is required")
+        return None
 
 
 def validate_master_copy_address_by_version(address: str, version: str) -> None:
@@ -238,6 +346,8 @@ def validate_issue_inputs() -> None:
     version = issue_body_info.get("version")
     address_master_copy = issue_body_info.get("addressMasterCopy")
     tx_hash_master_copy = issue_body_info.get("txHashMasterCopy")
+    address_master_copy_l2 = issue_body_info.get("addressMasterCopyL2")
+    tx_hash_master_copy_l2 = issue_body_info.get("txHashMasterCopyL2")
     address_proxy = issue_body_info.get("addressProxy")
     tx_hash_proxy = issue_body_info.get("txHashProxy")
 
@@ -250,6 +360,8 @@ def validate_issue_inputs() -> None:
     print(f"Version: {version}")
     print(f"Address (Master copy): {address_master_copy}")
     print(f"Deployment Tx hash (Master copy): {tx_hash_master_copy}")
+    print(f"Address (Master copy L2): {address_master_copy_l2}")
+    print(f"Deployment Tx hash (Master copy L2): {tx_hash_master_copy_l2}")
     print(f"Address (Proxy factory): {address_proxy}")
     print(f"Deployment Tx hash (Proxy factory): {tx_hash_proxy}")
 
@@ -257,15 +369,47 @@ def validate_issue_inputs() -> None:
     chain_info = validate_chain(chain_id_input)
     chain_id = chain_info.get("chain_id") if chain_info else None
     chain_name = chain_info.get("chain_name") if chain_info else None
+
     validate_rpc(rpc_url, chain_id)
+
     validate_not_required_url("BlockscoutClientUrl", blockscout_client_url)
     validate_not_required_url("EtherscanClientUrl", etherscan_client_url)
     validate_not_required_url("EtherscanClientApiUrl", etherscan_client_api_url)
+    validate_etherscan_client_required_urls(
+        etherscan_client_url, etherscan_client_api_url
+    )
+    chain_explorers_urls = get_chain_explorers_urls(chain_id)
+    validate_blockscout_client_url(
+        blockscout_client_url, chain_explorers_urls, tx_hash_proxy
+    )
+    validate_etherscan_client_urls(
+        etherscan_client_url,
+        etherscan_client_api_url,
+        chain_explorers_urls,
+        tx_hash_proxy,
+    )
+
     validate_version(version)
-    validate_master_copy_address_by_version(address_master_copy, version)
+    validate_master_copy_required_address(address_master_copy, address_master_copy_l2)
+    if address_master_copy:
+        validate_master_copy_address_by_version(address_master_copy, version)
+    if address_master_copy_l2:
+        version_l2 = version if version.endswith("+L2") else f"{version}+L2"
+        validate_master_copy_address_by_version(address_master_copy_l2, version_l2)
     validate_proxy_address_by_version(address_proxy, version)
-    tx_master_info = validate_address_and_transactions(
-        "Master copy", address_master_copy, tx_hash_master_copy, rpc_url
+    tx_master_info = (
+        validate_address_and_transactions(
+            "Master copy", address_master_copy, tx_hash_master_copy, rpc_url
+        )
+        if address_master_copy
+        else None
+    )
+    tx_master_l2_info = (
+        validate_address_and_transactions(
+            "Master copy L2", address_master_copy_l2, tx_hash_master_copy_l2, rpc_url
+        )
+        if address_master_copy_l2
+        else None
     )
     tx_proxy_info = validate_address_and_transactions(
         "Proxy factory", address_proxy, tx_hash_proxy, rpc_url
@@ -281,6 +425,9 @@ def validate_issue_inputs() -> None:
         return None
     chain_name_comment = chain_name if chain_name else "N/A"
     tx_master_block_comment = tx_master_info.get("block") if tx_master_info else "N/A"
+    tx_master_l2_block_comment = (
+        tx_master_l2_info.get("block") if tx_master_l2_info else "N/A"
+    )
     tx_proxy_block_comment = tx_proxy_info.get("block") if tx_proxy_info else "N/A"
     add_message_to_env(
         "All elements have been validated and are correct:"
@@ -294,6 +441,9 @@ def validate_issue_inputs() -> None:
         + f"\n- Address Master Copy: {address_master_copy}"
         + f"\n- Tx Hash Master Copy: {tx_hash_master_copy}"
         + f"\n- Tx Block Master Copy: {tx_master_block_comment}"
+        + f"\n- Address Master Copy L2: {address_master_copy_l2}"
+        + f"\n- Tx Hash Master Copy L2: {tx_hash_master_copy_l2}"
+        + f"\n- Tx Block Master Copy L2: {tx_master_l2_block_comment}"
         + f"\n- Address Proxy: {address_proxy}"
         + f"\n- Tx Hash Proxy: {tx_hash_proxy}"
         + f"\n- Tx Block Proxy: {tx_proxy_block_comment}"
