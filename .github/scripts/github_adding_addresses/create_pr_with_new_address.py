@@ -74,7 +74,7 @@ def create_pr(
 ) -> None:
     try:
         repo.create_pull(
-            title=f"Add new chain {chain_enum_name} {chain_id} addresses",
+            title=f"Add new chain {chain_enum_name}",
             body=f"Automatic PR to add new address to {chain_enum_name} {chain_id} chain\n Closes #{issue_number}",
             head=branch_name,
             base="main",
@@ -376,6 +376,8 @@ def execute_issue_changes() -> None:
     rpc_url = issue_body_info.get("rpcUrl")
     address_master_copy = issue_body_info.get("addressMasterCopy")
     tx_hash_master_copy = issue_body_info.get("txHashMasterCopy")
+    address_master_copy_l2 = issue_body_info.get("addressMasterCopyL2")
+    tx_hash_master_copy_l2 = issue_body_info.get("txHashMasterCopyL2")
     address_proxy = issue_body_info.get("addressProxy")
     tx_hash_proxy = issue_body_info.get("txHashProxy")
 
@@ -434,6 +436,18 @@ def execute_issue_changes() -> None:
                 address_master_copy,
                 tx_block,
                 version,
+            )
+
+    if rpc_url and address_master_copy_l2 and tx_hash_master_copy_l2:
+        tx_block = get_contract_block_from_tx_hash(rpc_url, tx_hash_master_copy_l2)
+        if tx_block:
+            upsert_contract_address_master_copy(
+                repo,
+                branch_name,
+                chain_enum_name,
+                address_master_copy_l2,
+                tx_block,
+                version + "+L2",
             )
 
     if rpc_url and address_proxy and tx_hash_proxy:
