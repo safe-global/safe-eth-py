@@ -68,14 +68,14 @@ def create_issue_branch(repo: Repository, chain_id: int, version: str) -> str:
 def create_pr(
     repo: Repository,
     branch_name: str,
-    chain_id: int,
     chain_enum_name: str,
+    version: str,
     issue_number: int,
 ) -> None:
     try:
         repo.create_pull(
-            title=f"Add new chain {chain_enum_name}",
-            body=f"Automatic PR to add new address to {chain_enum_name} {chain_id} chain\n Closes #{issue_number}",
+            title=f"Add addresses {version} for chain {chain_enum_name}",
+            body=f"Automatic PR to add new address {version} to {chain_enum_name} chain\n Closes #{issue_number}",
             head=branch_name,
             base="main",
         )
@@ -457,7 +457,7 @@ def execute_issue_changes() -> None:
                 repo, branch_name, chain_enum_name, address_proxy, tx_block, version
             )
 
-    create_pr(repo, branch_name, chain_id, chain_enum_name, issue_number)
+    create_pr(repo, branch_name, chain_enum_name, version, issue_number)
 
 
 if __name__ == "__main__":

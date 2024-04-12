@@ -8,7 +8,7 @@ import json
 import os
 import re
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -37,7 +37,7 @@ def get_chain_enum_name(chain_id: int) -> Optional[str]:
         if response.status_code == 200:
             return convert_chain_name(response.json().get("name"))
         return None
-    except IOError as e:
+    except (IOError, ConnectionError) as e:
         print(f"Error getting chain name: {e}")
         return None
 
@@ -52,7 +52,7 @@ def get_chain_id_from_rpc_url(rpc_url: str) -> Optional[int]:
         if response.status_code == 200:
             return int(response.json().get("result"), 16)
         return None
-    except IOError as e:
+    except (IOError, ConnectionError) as e:
         print(f"Error validating RPC url: {e}")
         return None
 
@@ -60,17 +60,21 @@ def get_chain_id_from_rpc_url(rpc_url: str) -> Optional[int]:
 def get_contract_address_and_block_from_tx_hash(
     rpc_url: str, tx_hash: str
 ) -> Optional[Dict[str, Any]]:
-    ethereum_client = EthereumClient(rpc_url)
-    tx = ethereum_client.get_transaction(tx_hash)
-    if not tx:
-        print(f"Transaction not found: {tx_hash}")
+    try:
+        ethereum_client = EthereumClient(rpc_url)
+        tx = ethereum_client.get_transaction(tx_hash)
+        if not tx:
+            print(f"Transaction not found: {tx_hash}")
+            return None
+        return {
+            "block": tx.get("blockNumber"),
+            "address": mk_contract_address_2(
+                tx.get("to"), tx.get("input")[:32], tx.get("input")[32:]
+            ),
+        }
+    except (IOError, ConnectionError) as e:
+        print(f"Error info from tx hash: {e}")
         return None
-    return {
-        "block": tx.get("blockNumber"),
-        "address": mk_contract_address_2(
-            tx.get("to"), tx.get("input")[:32], tx.get("input")[32:]
-        ),
-    }
 
 
 def validate_chain(chain_id_input: str) -> Optional[Dict[str, Any]]:
@@ -135,7 +139,7 @@ def validate_etherscan_client_required_urls(base_url: str, api_url: str) -> None
         return None
 
 
-def get_chain_explorers_urls(chain_id: int) -> [str]:
+def get_chain_explorers_urls(chain_id: int) -> List[str]:
     try:
         url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
         response = requests.get(url)
@@ -143,19 +147,20 @@ def get_chain_explorers_urls(chain_id: int) -> [str]:
         if response.status_code == 200:
             explorers = response.json().get("explorers")
             return [explorer.get("url") for explorer in explorers]
-    except IOError as e:
+    except (IOError, ConnectionError) as e:
         print(f"Error getting chain explorers urls: {e}")
     return []
 
 
 def validate_blockscout_client_url(
-    url: str, chain_explorers_urls: [str], tx_hash: str
+    url: str, chain_explorers_urls: List[str], tx_hash: str
 ) -> None:
     if url:
         parsed_url = urlparse(url)
-        if parsed_url.netloc not in [
+        chain_explorers_urls_netloc = [
             urlparse(explorer_url).netloc for explorer_url in chain_explorers_urls
-        ]:
+        ]
+        if parsed_url.netloc not in chain_explorers_urls_netloc:
             ERRORS.append(
                 f"Blockscout Client URL ({url}) not contained in the list of explorers urls in the chain."
             )
@@ -172,14 +177,14 @@ def validate_blockscout_client_url(
                 )
                 if tx_status.lower() == "ok":
                     return None
-        except IOError as e:
+        except (IOError, ConnectionError) as e:
             print(f"Error validating Blockscout Client URL: {e}")
 
         ERRORS.append(f"Blockscout Client URL ({url}) not valid.")
 
 
 def validate_etherscan_client_urls(
-    base_url: str, api_url: str, chain_explorers_urls: [str], tx_hash: str
+    base_url: str, api_url: str, chain_explorers_urls: List[str], tx_hash: str
 ) -> None:
     if base_url:
         parsed_base_url = urlparse(base_url)
@@ -188,10 +193,10 @@ def validate_etherscan_client_urls(
                 f"Etherscan Client URL ({base_url}) provided is not valid. The url path should be empty."
             )
             return None
-
-        if parsed_base_url.netloc not in [
+        chain_explorers_urls_netloc = [
             urlparse(explorer_url).netloc for explorer_url in chain_explorers_urls
-        ]:
+        ]
+        if parsed_base_url.netloc not in chain_explorers_urls_netloc:
             ERRORS.append(
                 f"Etherscan Client URL ({base_url}) not contained in the list of explorers urls in the chain"
             )
@@ -201,16 +206,16 @@ def validate_etherscan_client_urls(
         parsed_api_url = urlparse(api_url)
         if parsed_api_url.path != "":
             ERRORS.append(
-                f"Etherscan Client URL ({api_url}) provided is not valid. The url path should be empty."
+                f"Etherscan Client API URL ({api_url}) provided is not valid. The url path should be empty."
             )
             return None
-
-        if not any(
+        api_url_ends_by_any_chain_explorer_netloc = any(
             parsed_api_url.netloc.endswith(urlparse(explorer_url).netloc)
             for explorer_url in chain_explorers_urls
-        ):
+        )
+        if not api_url_ends_by_any_chain_explorer_netloc:
             ERRORS.append(
-                f"Etherscan Client URL ({api_url}) not contained in the list of explorers urls in the chain"
+                f"Etherscan Client URL API ({api_url}) not contained in the list of explorers urls in the chain"
             )
             return None
 
@@ -222,10 +227,10 @@ def validate_etherscan_client_urls(
                 tx_status = response.json().get("result", {}).get("status", "")
                 if tx_status == "1":
                     return None
-        except IOError as e:
-            print(f"Error validating Blockscout Client URL: {e}")
+        except (IOError, ConnectionError) as e:
+            print(f"Error validating Etherscan Client API URL: {e}")
 
-        ERRORS.append(f"Etherscan Client URL ({api_url}) not valid.")
+        ERRORS.append(f"Etherscan Client API URL ({api_url}) not valid.")
 
 
 def validate_version(version: str) -> None:
