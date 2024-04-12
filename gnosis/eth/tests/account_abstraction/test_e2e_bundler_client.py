@@ -21,6 +21,9 @@ class TestE2EBundlerClient(TestCase):
 
         self.bundler = BundlerClient(bundler_client_url)
 
+    def test_get_chain_id(self):
+        self.assertGreater(self.bundler.get_chain_id(), 0)
+
     def test_get_user_operation_by_hash(self):
         user_operation_hash = safe_4337_user_operation_hash_mock.hex()
 
