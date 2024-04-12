@@ -32,7 +32,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
         EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
         EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
-        EthereumNetwork.SHYFT_MAINNET: "https://safe.shyft.network/txs",
+        EthereumNetwork.SHYFT_MAINNET: "https://safe.shyft.network/txs/",
         EthereumNetwork.ZKSYNC_MAINNET: "https://safe-transaction-zksync.safe.global",
     }
 
