@@ -1,5 +1,5 @@
 import logging
-from functools import lru_cache
+from functools import cache, lru_cache
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from eth_typing import ChecksumAddress, HexStr
@@ -108,6 +108,7 @@ class BundlerClient:
             "id": request_id,
         }
 
+    @cache
     def get_chain_id(self):
         payload = {
             "jsonrpc": "2.0",
