@@ -108,6 +108,16 @@ class BundlerClient:
             "id": request_id,
         }
 
+    def get_chain_id(self):
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "eth_chainId",
+            "params": [],
+            "id": 1,
+        }
+        result = self._do_request(payload)
+        return int(result, 16)
+
     @lru_cache(maxsize=1024)
     def get_user_operation_by_hash(
         self, user_operation_hash: HexStr
