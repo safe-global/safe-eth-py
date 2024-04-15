@@ -929,6 +929,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.IOTA_EVM: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 13225, "1.3.0"),  # v1.3.0
     ],
+    EthereumNetwork.BITROCK_MAINNET: [
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 12949190, "1.4.1+L2"),  # v1.4.1+L2
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
