@@ -231,7 +231,7 @@ def upsert_contract_address_master_copy(
             )
         else:
             new_entry = (
-                f'    ("{address}", {block_number}, "{version}"), # v{version}\n    '
+                f'    ("{address}", {block_number}, "{version}"),  # v{version}\n    '
             )
             updated_content = (
                 content[: match_network.start()]
