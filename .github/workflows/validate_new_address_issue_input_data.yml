@@ -66,6 +66,7 @@ jobs:
       run: |
         pip install safe-eth-py
         pip install validators
+        pip install tldextract
 
     - name: Validate input data
       id: validate-input-data

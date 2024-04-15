@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 import requests
 import validators
+from tldextract import extract
 
 from gnosis.eth import EthereumClient
 from gnosis.eth.utils import mk_contract_address_2
@@ -156,11 +157,13 @@ def validate_blockscout_client_url(
     url: str, chain_explorers_urls: List[str], tx_hash: str
 ) -> None:
     if url:
-        parsed_url = urlparse(url)
-        chain_explorers_urls_netloc = [
-            urlparse(explorer_url).netloc for explorer_url in chain_explorers_urls
+        client_url_domain = f"{extract(url).domain}.{extract(url).suffix}"
+        chain_explorers_urls_domains = [
+            f"{extract(explorer_url).domain}.{extract(explorer_url).suffix}"
+            for explorer_url in chain_explorers_urls
         ]
-        if parsed_url.netloc not in chain_explorers_urls_netloc:
+
+        if client_url_domain not in chain_explorers_urls_domains:
             ERRORS.append(
                 f"Blockscout Client URL ({url}) not contained in the list of explorers urls in the chain."
             )
@@ -186,6 +189,10 @@ def validate_blockscout_client_url(
 def validate_etherscan_client_urls(
     base_url: str, api_url: str, chain_explorers_urls: List[str], tx_hash: str
 ) -> None:
+    chain_explorers_urls_domains = [
+        f"{extract(explorer_url).domain}.{extract(explorer_url).suffix}"
+        for explorer_url in chain_explorers_urls
+    ]
     if base_url:
         parsed_base_url = urlparse(base_url)
         if parsed_base_url.path != "":
@@ -193,10 +200,10 @@ def validate_etherscan_client_urls(
                 f"Etherscan Client URL ({base_url}) provided is not valid. The url path should be empty."
             )
             return None
-        chain_explorers_urls_netloc = [
-            urlparse(explorer_url).netloc for explorer_url in chain_explorers_urls
-        ]
-        if parsed_base_url.netloc not in chain_explorers_urls_netloc:
+        client_base_url_domain = (
+            f"{extract(base_url).domain}.{extract(base_url).suffix}"
+        )
+        if client_base_url_domain not in chain_explorers_urls_domains:
             ERRORS.append(
                 f"Etherscan Client URL ({base_url}) not contained in the list of explorers urls in the chain"
             )
@@ -209,11 +216,8 @@ def validate_etherscan_client_urls(
                 f"Etherscan Client API URL ({api_url}) provided is not valid. The url path should be empty."
             )
             return None
-        api_url_ends_by_any_chain_explorer_netloc = any(
-            parsed_api_url.netloc.endswith(urlparse(explorer_url).netloc)
-            for explorer_url in chain_explorers_urls
-        )
-        if not api_url_ends_by_any_chain_explorer_netloc:
+        client_api_url_domain = f"{extract(api_url).domain}.{extract(api_url).suffix}"
+        if client_api_url_domain not in chain_explorers_urls_domains:
             ERRORS.append(
                 f"Etherscan Client URL API ({api_url}) not contained in the list of explorers urls in the chain"
             )
