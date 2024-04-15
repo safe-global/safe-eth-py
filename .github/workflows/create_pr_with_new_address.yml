@@ -114,6 +114,8 @@ jobs:
       run: |
         pip install PyGithub
         pip install safe-eth-py
+        pip install pre-commit
+        pre-commit install
 
     - name: Process Issue and Create PR
       if: steps.check-comment.outputs.result == 'true'
@@ -124,6 +126,29 @@ jobs:
         GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
       run: |
         python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
+
+    - uses: fregante/setup-git-user@v2
+
+    - name: Run pre-commit
+      if: steps.check-comment.outputs.result == 'true'
+      run: |
+        issue_inputs='${{ steps.get-issue-inputs.outputs.result }}'
+        chain_id=$(echo "$issue_inputs" | jq -r '.chainId')
+        version=$(echo "$issue_inputs" | jq -r '.version')
+        branch_name="add-new-chain-${chain_id}-${version}-addresses"
+        git pull origin main
+        git fetch
+        git checkout -b $branch_name origin/$branch_name
+
+        pre-commit run --all-files || true
+
+        if [[ $(git status --porcelain) ]]; then
+          git add .
+          git commit -m "Apply linter fixes"
+          git pull & git push
+        else
+          echo "No changes to commit."
+        fi
 
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'
