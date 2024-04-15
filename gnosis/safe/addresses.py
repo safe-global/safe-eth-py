@@ -932,6 +932,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.BITROCK_MAINNET: [
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 12949190, "1.4.1+L2"),  # v1.4.1+L2
     ],
+    EthereumNetwork.BITROCK_TESTNET: [
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 13177774, "1.4.1+L2"),  # v1.4.1+L2
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
