@@ -1,6 +1,6 @@
 -r requirements.txt
 coverage==7.4.4
-faker==24.7.1
+faker==24.9.0
 pytest==8.1.1
 pytest-django==4.8.0
 pytest-env==1.1.3
