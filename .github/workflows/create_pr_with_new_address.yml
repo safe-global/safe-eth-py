@@ -112,9 +112,7 @@ jobs:
     - name: Install dependencies
       if: steps.check-comment.outputs.result == 'true'
       run: |
-        pip install PyGithub
-        pip install safe-eth-py
-        pip install pre-commit
+        pip install PyGithub safe-eth-py pre-commit
         pre-commit install
 
     - name: Process Issue and Create PR
