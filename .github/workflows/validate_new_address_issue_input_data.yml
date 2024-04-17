@@ -64,8 +64,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install safe-eth-py
-        pip install validators
+        pip install safe-eth-py validators tldextract
 
     - name: Validate input data
       id: validate-input-data
