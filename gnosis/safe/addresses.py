@@ -951,6 +951,22 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         ),  # v1.3.0+L2
     ],
+    EthereumNetwork.OP_CELESTIA_RASPBERRY: [
+        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 1028180, "1.3.0"),  # v1.3.0
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            1028176,
+            "1.3.0+L2",
+        ),  # v1.3.0+L2
+    ],
+    EthereumNetwork.POLYGON_BLACKBERRY: [
+        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 765162, "1.3.0"),  # v1.3.0
+        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 765158, "1.3.0+L2"),  # v1.3.0+L2
+    ],
+    EthereumNetwork.ARBITRUM_BLUEBERRY: [
+        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 19373, "1.3.0"),  # v1.3.0
+        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 19372, "1.3.0+L2"),  # v1.3.0+L2
+    ],
     EthereumNetwork.PULSECHAIN: [
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 18804223, "1.4.1+L2"),
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 18804226, "1.4.1"),
@@ -1551,6 +1567,15 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.XDC_NETWORK: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 53901564),  # v1.3.0
+    ],
+    EthereumNetwork.OP_CELESTIA_RASPBERRY: [
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 1028156),  # v1.3.0
+    ],
+    EthereumNetwork.POLYGON_BLACKBERRY: [
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 765141),  # v1.3.0
+    ],
+    EthereumNetwork.ARBITRUM_BLUEBERRY: [
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 19364),  # v1.3.0
     ],
     EthereumNetwork.PULSECHAIN: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 18804210),  # v1.4.1
