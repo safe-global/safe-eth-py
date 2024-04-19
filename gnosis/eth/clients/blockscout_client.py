@@ -102,6 +102,7 @@ class BlockscoutClient:
         EthereumNetwork.IOTA_EVM: "https://iota-evm.blockscout.com/graphiql",
         EthereumNetwork.BITROCK_MAINNET: "https://explorer.bit-rock.io/api/v1/graphql",
         EthereumNetwork.BITROCK_TESTNET: "https://testnetscan.bit-rock.io/api/v1/graphql",
+        EthereumNetwork.OP_CELESTIA_RASPBERRY: "https://opcelestia-raspberry.gelatoscout.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
