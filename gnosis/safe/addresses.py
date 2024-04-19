@@ -1564,4 +1564,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.POLYGON_BLACKBERRY: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 765141),  # v1.3.0
     ],
+    EthereumNetwork.ARBITRUM_BLUEBERRY: [
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 19364),  # v1.3.0
+    ],
 }
