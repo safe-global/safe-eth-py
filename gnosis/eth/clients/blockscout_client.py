@@ -105,6 +105,7 @@ class BlockscoutClient:
         EthereumNetwork.OP_CELESTIA_RASPBERRY: "https://opcelestia-raspberry.gelatoscout.com/api/v1/graphql",
         EthereumNetwork.POLYGON_BLACKBERRY: "https://polygon-blackberry.gelatoscout.com/api/v1/graphql",
         EthereumNetwork.ARBITRUM_BLUEBERRY: "https://arb-blueberry.gelatoscout.com/api/v1/graphql",
+        EthereumNetwork.CROSSFI_TESTNET: "https://scan.testnet.ms/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
