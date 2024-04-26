@@ -107,6 +107,7 @@ class BlockscoutClient:
         EthereumNetwork.ARBITRUM_BLUEBERRY: "https://arb-blueberry.gelatoscout.com/api/v1/graphql",
         EthereumNetwork.RSS3_VSL_SEPOLIA_TESTNET: "https://scan.testnet.rss3.io/api/v1/graphql",
         EthereumNetwork.RSS3_VSL_MAINNET: "https://scan.rss3.io/api/v1/graphql",
+        EthereumNetwork.CROSSFI_TESTNET: "https://scan.testnet.ms/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
