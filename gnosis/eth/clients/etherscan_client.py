@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from typing import Any, Dict, Optional
 from urllib.parse import urljoin
@@ -115,7 +116,9 @@ class EtherscanClient:
         self,
         network: EthereumNetwork,
         api_key: Optional[str] = None,
-        request_timeout: int = 10,
+        request_timeout: int = int(
+            os.environ.get("ETHERSCAN_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
     ):
         self.network = network
         self.api_key = api_key
