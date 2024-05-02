@@ -6,6 +6,7 @@ import pytest
 
 from ...account_abstraction import BundlerClient, UserOperation, UserOperationReceipt
 from ..mocks.mock_bundler import (
+    safe_4337_chain_id_mock,
     safe_4337_user_operation_hash_mock,
     user_operation_mock,
     user_operation_receipt_mock,
@@ -30,9 +31,29 @@ class TestE2EBundlerClient(TestCase):
         expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
         )
+        user_operation = self.bundler.get_user_operation_by_hash(user_operation_hash)
         self.assertEqual(
-            self.bundler.get_user_operation_by_hash(user_operation_hash),
+            user_operation,
             expected_user_operation,
+        )
+        self.assertEqual(
+            user_operation.calculate_user_operation_hash(safe_4337_chain_id_mock).hex(),
+            user_operation_hash,
+        )
+
+    def test_get_user_operation_070_by_hash(self):
+        """
+        Test UserOperation v0.7.0
+
+        :return:
+        """
+        user_operation_hash = (
+            "0xc8e745161cb3523539bae0e5ed7fa7812dd812bf39030bb73378e792c1ee6576"
+        )
+        user_operation = self.bundler.get_user_operation_by_hash(user_operation_hash)
+        self.assertEqual(
+            user_operation.calculate_user_operation_hash(safe_4337_chain_id_mock).hex(),
+            user_operation_hash,
         )
 
     def test_get_user_operation_receipt(self):
