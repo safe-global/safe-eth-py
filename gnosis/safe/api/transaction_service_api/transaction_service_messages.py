@@ -1,3 +1,6 @@
+"""
+Utilities to build EIP712 messages for Safe
+"""
 import time
 from typing import Dict
 
