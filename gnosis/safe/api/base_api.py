@@ -1,4 +1,3 @@
-import os
 from abc import ABC
 from typing import Dict, Optional
 from urllib.parse import urljoin
@@ -25,7 +24,7 @@ class SafeBaseAPI(ABC):
         network: EthereumNetwork,
         ethereum_client: Optional[EthereumClient] = None,
         base_url: Optional[str] = None,
-        request_timeout: int = int(os.environ.get("SAFE_BASE_API_REQUEST_TIMEOUT", 10)),
+        request_timeout: int = 10,
     ):
         """
         :param network: Network for the transaction service

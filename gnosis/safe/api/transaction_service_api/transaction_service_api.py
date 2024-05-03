@@ -1,11 +1,12 @@
 import logging
+import os
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexStr
 from hexbytes import HexBytes
 
-from gnosis.eth import EthereumNetwork
+from gnosis.eth import EthereumClient, EthereumNetwork
 from gnosis.eth.utils import fast_keccak_text
 from gnosis.safe import SafeTx
 
@@ -34,6 +35,17 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
         EthereumNetwork.ZKSYNC_MAINNET: "https://safe-transaction-zksync.safe.global",
     }
+
+    def __init__(
+        self,
+        network: EthereumNetwork,
+        ethereum_client: Optional[EthereumClient] = None,
+        base_url: Optional[str] = None,
+        request_timeout: int = int(
+            os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
+        ),
+    ):
+        super().__init__(network, ethereum_client, base_url, request_timeout)
 
     @classmethod
     def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
