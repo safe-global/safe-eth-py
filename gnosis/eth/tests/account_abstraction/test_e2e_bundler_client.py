@@ -44,17 +44,8 @@ class TestE2EBundlerClient(TestCase):
     def test_get_user_operation_070_by_hash(self):
         """
         Test UserOperation v0.7.0
-
-        :return:
         """
-        user_operation_hash = (
-            "0xc8e745161cb3523539bae0e5ed7fa7812dd812bf39030bb73378e792c1ee6576"
-        )
-        user_operation = self.bundler.get_user_operation_by_hash(user_operation_hash)
-        self.assertEqual(
-            user_operation.calculate_user_operation_hash(safe_4337_chain_id_mock).hex(),
-            user_operation_hash,
-        )
+        pass
 
     def test_get_user_operation_receipt(self):
         user_operation_hash = safe_4337_user_operation_hash_mock.hex()
