@@ -1,5 +1,5 @@
 import logging
-from functools import lru_cache
+from functools import cache, lru_cache
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from eth_typing import ChecksumAddress, HexStr
@@ -107,6 +107,17 @@ class BundlerClient:
             "params": [user_operation_hash],
             "id": request_id,
         }
+
+    @cache
+    def get_chain_id(self):
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "eth_chainId",
+            "params": [],
+            "id": 1,
+        }
+        result = self._do_request(payload)
+        return int(result, 16)
 
     @lru_cache(maxsize=1024)
     def get_user_operation_by_hash(

@@ -32,26 +32,30 @@ class TestSourcifyClient(TestCase):
 
     @mock.patch.object(SourcifyClient, "is_chain_supported", return_value=True)
     def test_get_contract_metadata(self, is_chain_supported_mock: MagicMock):
-        sourcify = SourcifyClient()
-        safe_contract_address = "0x6851D6fDFAfD08c0295C392436245E5bc78B0185"
+        sourcify_client_mainnet = SourcifyClient()
+        safe_contract_address = "0x41675C099F32341bf84BFc5382aF534df5C7461a"
         try:
-            contract_metadata = sourcify.get_contract_metadata(safe_contract_address)
+            safe_contract_metadata_mainnet = (
+                sourcify_client_mainnet.get_contract_metadata(safe_contract_address)
+            )
         except IOError:
             self.skipTest("Cannot connect to Sourcify")
-        self.assertEqual(contract_metadata.name, "GnosisSafe")
-        self.assertIsInstance(contract_metadata.abi, List)
-        self.assertTrue(contract_metadata.abi)
-        self.assertFalse(contract_metadata.partial_match)
-        contract_metadata_rinkeby = SourcifyClient(
-            EthereumNetwork.RINKEBY
-        ).get_contract_metadata(safe_contract_address)
-        self.assertEqual(contract_metadata, contract_metadata_rinkeby)
+        self.assertEqual(safe_contract_metadata_mainnet.name, "Safe")
+        self.assertIsInstance(safe_contract_metadata_mainnet.abi, List)
+        self.assertTrue(safe_contract_metadata_mainnet.abi)
+        self.assertFalse(safe_contract_metadata_mainnet.partial_match)
+        sourcify_client_sepolia = SourcifyClient(EthereumNetwork.SEPOLIA)
+        contract_metadata_sepolia = sourcify_client_sepolia.get_contract_metadata(
+            safe_contract_address
+        )
+        self.assertEqual(safe_contract_metadata_mainnet, contract_metadata_sepolia)
 
+        # Testing sourcify partial match token
         partial_match_contract_address = "0x000000000000C1CB11D5c062901F32D06248CE48"
-        contract_metadata = sourcify.get_contract_metadata(
+        token_contract_metadata_mainnet = sourcify_client_mainnet.get_contract_metadata(
             partial_match_contract_address
         )
-        self.assertEqual(contract_metadata.name, "LiquidGasToken")
-        self.assertIsInstance(contract_metadata.abi, List)
-        self.assertTrue(contract_metadata.abi)
-        self.assertTrue(contract_metadata.partial_match)
+        self.assertEqual(token_contract_metadata_mainnet.name, "LiquidGasToken")
+        self.assertIsInstance(token_contract_metadata_mainnet.abi, List)
+        self.assertTrue(token_contract_metadata_mainnet.abi)
+        self.assertTrue(token_contract_metadata_mainnet.partial_match)

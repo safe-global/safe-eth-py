@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from typing import Any, Dict, Optional
 from urllib.parse import urljoin
@@ -59,6 +60,9 @@ class EtherscanClient:
         EthereumNetwork.KROMA: "https://kromascan.com",
         EthereumNetwork.KROMA_SEPOLIA: "https://sepolia.kromascan.com",
         EthereumNetwork.BLAST_SEPOLIA_TESTNET: "https://sepolia.blastscan.io",
+        EthereumNetwork.FRAXTAL_MAINNET: "https://fraxscan.com",
+        EthereumNetwork.BASE: "https://api.basescan.org/",
+        EthereumNetwork.BLAST: "https://blastscan.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -100,6 +104,9 @@ class EtherscanClient:
         EthereumNetwork.KROMA: "https://api.kromascan.com",
         EthereumNetwork.KROMA_SEPOLIA: "https://api-sepolia.kromascan.com",
         EthereumNetwork.BLAST_SEPOLIA_TESTNET: "https://api-sepolia.blastscan.io",
+        EthereumNetwork.FRAXTAL_MAINNET: "https://api.fraxscan.com",
+        EthereumNetwork.BASE: "https://api.basescan.org",
+        EthereumNetwork.BLAST: "https://api.blastscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
@@ -109,7 +116,9 @@ class EtherscanClient:
         self,
         network: EthereumNetwork,
         api_key: Optional[str] = None,
-        request_timeout: int = 10,
+        request_timeout: int = int(
+            os.environ.get("ETHERSCAN_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
     ):
         self.network = network
         self.api_key = api_key

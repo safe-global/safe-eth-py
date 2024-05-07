@@ -7,13 +7,14 @@ on:
 jobs:
   process-issue:
     runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'add-new-address') && startsWith(github.event.comment.body, '/')
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Check if comment is "/execute" by repo owner
       id: check-comment
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.TOKEN_GITHUB_READ_ORG_TEAMS }} # Important: This secret with read permissions on the teams information must be configured in repository settings -> secrets -> actions
         script: |
@@ -32,7 +33,7 @@ jobs:
 
     - name: Add comment to issue with starting message
       if: steps.check-comment.outputs.result == 'true'
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -45,7 +46,7 @@ jobs:
 
     - name: Add comment to issue with command failure
       if: steps.check-comment.outputs.result == 'false'
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -59,7 +60,7 @@ jobs:
     - name: Get issue inputs
       if: steps.check-comment.outputs.result == 'true'
       id: get-issue-inputs
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -77,6 +78,9 @@ jobs:
               addressMasterCopy: 'Address \\(Master copy\\)',
               txHashMasterCopy: 'Deployment Tx hash \\(Master copy\\)',
               blockExplorerUrlMasterCopy: 'Block explorer URL \\(Master copy\\)',
+              addressMasterCopyL2: 'Address \\(Master copy L2\\)',
+              txHashMasterCopyL2: 'Deployment Tx hash \\(Master copy L2\\)',
+              blockExplorerUrlMasterCopyL2: 'Block explorer URL \\(Master copy L2\\)',
               addressProxy: 'Address \\(Proxy factory\\)',
               txHashProxy: 'Deployment Tx hash \\(Proxy factory\\)',
               blockExplorerUrlProxy: 'Block explorer URL \\(Proxy factory\\)',
@@ -101,26 +105,52 @@ jobs:
 
     - name: Setup Python
       if: steps.check-comment.outputs.result == 'true'
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
     - name: Install dependencies
+      if: steps.check-comment.outputs.result == 'true'
       run: |
-        pip install PyGithub
-        pip install safe-eth-py==6.0.0b18
+        pip install PyGithub safe-eth-py pre-commit
+        pre-commit install
 
     - name: Process Issue and Create PR
+      if: steps.check-comment.outputs.result == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
         GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
       run: |
         python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
 
+    - uses: fregante/setup-git-user@v2
+
+    - name: Run pre-commit
+      if: steps.check-comment.outputs.result == 'true'
+      run: |
+        issue_inputs='${{ steps.get-issue-inputs.outputs.result }}'
+        chain_id=$(echo "$issue_inputs" | jq -r '.chainId')
+        version=$(echo "$issue_inputs" | jq -r '.version')
+        branch_name="add-new-chain-${chain_id}-${version}-addresses"
+        git pull origin main
+        git fetch
+        git checkout -b $branch_name origin/$branch_name
+
+        pre-commit run --all-files || true
+
+        if [[ $(git status --porcelain) ]]; then
+          git add .
+          git commit -m "Apply linter fixes"
+          git pull & git push
+        else
+          echo "No changes to commit."
+        fi
+
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |

@@ -67,9 +67,7 @@ body:
       multiple: false
       options:
         - "1.3.0"
-        - "1.3.0+L2"
         - "1.4.1"
-        - "1.4.1+L2"
       default: 0
     validations:
       required: true
@@ -90,11 +88,29 @@ body:
       label: Deployment Tx hash (Master copy)
       description: Contract deployment Tx hash.
       placeholder: ex. 0x25b182f34baa23c122b081b249fb9da27f032e663e0a0ab3833be1c1c9266c3e
-  - type: input
+  - type: textarea
     id: block_explorer_url_master_copy
     attributes:
       label: Block explorer URL (Master copy)
-      description: Detail of contract address in the chain block explorer or deployment log.
+      description: Detail of contract address in the chain block explorer or deployment log. (Optional)
+      placeholder: ex. https://etherscan.io/address/0x69f4d1788e39c87893c980c06edf4b7f686e2938
+  - type: input
+    id: address_master_copy_l2
+    attributes:
+      label: Address (Master copy L2)
+      description: Address safe contract L2
+      placeholder: ex. "0x69f4D1788e39c87893C980c06EdF4b7f686e2938"
+  - type: input
+    id: tx_hash_master_copy_l2
+    attributes:
+      label: Deployment Tx hash (Master copy L2)
+      description: Contract L2 deployment Tx hash.
+      placeholder: ex. 0x25b182f34baa23c122b081b249fb9da27f032e663e0a0ab3833be1c1c9266c3e
+  - type: textarea
+    id: block_explorer_url_master_copy_l2
+    attributes:
+      label: Block explorer URL (Master copy L2)
+      description: Detail of contract address L2 in the chain block explorer or deployment log. (Optional)
       placeholder: ex. https://etherscan.io/address/0x69f4d1788e39c87893c980c06edf4b7f686e2938
   - type: markdown
     attributes:
@@ -117,5 +133,5 @@ body:
     id: block_explorer_url_proxy
     attributes:
       label: Block explorer URL (Proxy factory)
-      description: Detail of contract address in the chain block explorer or deployment log.
+      description: Detail of contract address in the chain block explorer or deployment log. (Optional)
       placeholder: ex. https://etherscan.io/address/0x69f4d1788e39c87893c980c06edf4b7f686e2938

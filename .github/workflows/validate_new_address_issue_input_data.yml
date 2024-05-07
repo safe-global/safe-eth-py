@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Get issue inputs
       id: get-issue-inputs
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -29,6 +29,9 @@ jobs:
               addressMasterCopy: 'Address \\(Master copy\\)',
               txHashMasterCopy: 'Deployment Tx hash \\(Master copy\\)',
               blockExplorerUrlMasterCopy: 'Block explorer URL \\(Master copy\\)',
+              addressMasterCopyL2: 'Address \\(Master copy L2\\)',
+              txHashMasterCopyL2: 'Deployment Tx hash \\(Master copy L2\\)',
+              blockExplorerUrlMasterCopyL2: 'Block explorer URL \\(Master copy L2\\)',
               addressProxy: 'Address \\(Proxy factory\\)',
               txHashProxy: 'Deployment Tx hash \\(Proxy factory\\)',
               blockExplorerUrlProxy: 'Block explorer URL \\(Proxy factory\\)',
@@ -52,17 +55,16 @@ jobs:
             return extractedInfo;
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
     - name: Install dependencies
       run: |
-        pip install safe-eth-py==6.0.0b18
-        pip install validators==0.22.0
+        pip install safe-eth-py validators tldextract
 
     - name: Validate input data
       id: validate-input-data
@@ -72,7 +74,7 @@ jobs:
         python .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
 
     - name: Add comment to issue
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7
       env:
         COMMENT_OUTPUT: ${{ steps.validate-input-data.outputs.comment_message }}
       with:

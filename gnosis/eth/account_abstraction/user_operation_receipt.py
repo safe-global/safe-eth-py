@@ -6,6 +6,7 @@ from hexbytes import HexBytes
 from web3.types import LogReceipt
 
 from gnosis.eth.account_abstraction.constants import (
+    ACCOUNT_DEPLOYED_TOPIC,
     DEPOSIT_EVENT_TOPIC,
     EXECUTION_FROM_MODULE_FAILURE_TOPIC,
     EXECUTION_FROM_MODULE_SUCCESS_TOPIC,
@@ -43,6 +44,19 @@ class UserOperationReceipt:
             user_operation_receipt_response["reason"],
             user_operation_receipt_response["logs"],
         )
+
+    def get_deployed_account(self) -> Optional[ChecksumAddress]:
+        """
+        :return: Deployed account in case a new account was deployed
+        """
+        for log in self.logs:
+            if (
+                len(log["topics"]) == 3
+                and HexBytes(log["topics"][0]) == ACCOUNT_DEPLOYED_TOPIC
+            ):
+                # Address is stored at the 40 last chars of the 3rd topic
+                return fast_to_checksum_address(log["topics"][2][-40:])
+        return None
 
     def get_deposit(self) -> int:
         """

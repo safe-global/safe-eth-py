@@ -11,7 +11,13 @@ class TestUserOperation(TestCase):
             user_operation_receipt_mock["result"]
         )
 
-    def test_calculate_deposit(self):
+    def test_get_deployed_account(self):
+        self.assertEqual(
+            self.user_operation_receipt.get_deployed_account(),
+            self.user_operation_receipt.sender,
+        )
+
+    def test_get_deposit(self):
         expected_value = 759_940_285_250_436
         self.assertEqual(self.user_operation_receipt.get_deposit(), expected_value)
 

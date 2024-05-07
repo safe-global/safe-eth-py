@@ -35,6 +35,12 @@ Clone the repo, then to set it up:
     pip install -r requirements-dev.txt
     pre-commit install -f
 
+Add new address for new chains
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you want to add Safe Smart Account support for a new chain you must `open a new issue <https://github.com/safe-global/safe-eth-py/issues/new?assignees=&labels=add-new-address&projects=&template=add_safe_address_new_chain.yml&title=%5BNew+chain%5D%3A+%7Bchain+name%7D>`_.
+
+Once the issue is created or edited, an automatic validation will be executed and a **Pull Request** will be created if everything is ok. Finally, the Safe team will review and merge the automatic **Pull Request** generated from the issue.
+
 Ethereum utils
 --------------
 gnosis.eth

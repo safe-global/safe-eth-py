@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List, Optional, Union
 
 import requests
@@ -22,7 +23,9 @@ class EnsClient:
         else:  # Fallback to mainnet
             url = "https://api.thegraph.com/subgraphs/name/ensdomains/ens/"
         self.url = url
-        self.request_timeout = 5  # Seconds
+        self.request_timeout = int(
+            os.environ.get("ENS_CLIENT_REQUEST_TIMEOUT", 5)
+        )  # Seconds
         self.request_session = requests.Session()
 
     def is_available(self) -> bool:
