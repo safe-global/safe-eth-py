@@ -44,27 +44,65 @@ class UserOperation:
         cls,
         user_operation_hash: Union[HexStr, bytes],
         user_operation_response: Dict[str, Any],
-    ) -> "UserOperation":
-        return cls(
-            HexBytes(user_operation_hash),
-            ChecksumAddress(user_operation_response["userOperation"]["sender"]),
-            int(user_operation_response["userOperation"]["nonce"], 16),
-            HexBytes(user_operation_response["userOperation"]["initCode"]),
-            HexBytes(user_operation_response["userOperation"]["callData"]),
-            int(user_operation_response["userOperation"]["callGasLimit"], 16),
-            int(user_operation_response["userOperation"]["verificationGasLimit"], 16),
-            int(user_operation_response["userOperation"]["preVerificationGas"], 16),
-            int(user_operation_response["userOperation"]["maxFeePerGas"], 16),
-            int(user_operation_response["userOperation"]["maxPriorityFeePerGas"], 16),
-            HexBytes(user_operation_response["userOperation"]["paymasterAndData"]),
-            HexBytes(user_operation_response["userOperation"]["signature"]),
-            ChecksumAddress(user_operation_response["entryPoint"]),
-            metadata=UserOperationMetadata(
-                HexBytes(user_operation_response["transactionHash"]),
-                HexBytes(user_operation_response["blockHash"]),
-                int(user_operation_response["blockNumber"], 16),
-            ),
+    ) -> Union["UserOperation", "UserOperationV07"]:
+        user_operation = user_operation_response["userOperation"]
+        metadata = UserOperationMetadata(
+            HexBytes(user_operation_response["transactionHash"]),
+            HexBytes(user_operation_response["blockHash"]),
+            int(user_operation_response["blockNumber"], 16),
         )
+        if "initCode" in user_operation:
+            return cls(
+                HexBytes(user_operation_hash),
+                ChecksumAddress(user_operation["sender"]),
+                int(user_operation["nonce"], 16),
+                HexBytes(user_operation["initCode"]),
+                HexBytes(user_operation["callData"]),
+                int(user_operation["callGasLimit"], 16),
+                int(user_operation["verificationGasLimit"], 16),
+                int(user_operation["preVerificationGas"], 16),
+                int(user_operation["maxFeePerGas"], 16),
+                int(user_operation["maxPriorityFeePerGas"], 16),
+                HexBytes(user_operation["paymasterAndData"]),
+                HexBytes(user_operation["signature"]),
+                ChecksumAddress(user_operation_response["entryPoint"]),
+                metadata=metadata,
+            )
+        else:
+            if paymaster := user_operation.get("paymaster"):
+                # Paymaster parameters are optional
+                paymaster_verification_gas_limit = int(
+                    user_operation["paymasterVerificationGasLimit"], 16
+                )
+                paymaster_post_op_gas_limit = int(
+                    user_operation["paymasterPostOpGasLimit"], 16
+                )
+                paymaster_data = HexBytes(user_operation["paymasterData"])
+            else:
+                paymaster_verification_gas_limit = None
+                paymaster_post_op_gas_limit = None
+                paymaster_data = None
+
+            return UserOperationV07(
+                HexBytes(user_operation_hash),
+                ChecksumAddress(user_operation["sender"]),
+                int(user_operation["nonce"], 16),
+                ChecksumAddress(user_operation["factory"]),
+                HexBytes(user_operation["factoryData"]),
+                HexBytes(user_operation["callData"]),
+                int(user_operation["callGasLimit"], 16),
+                int(user_operation["verificationGasLimit"], 16),
+                int(user_operation["preVerificationGas"], 16),
+                int(user_operation["maxPriorityFeePerGas"], 16),
+                int(user_operation["maxFeePerGas"], 16),
+                HexBytes(user_operation["signature"]),
+                ChecksumAddress(user_operation_response["entryPoint"]),
+                paymaster_verification_gas_limit,
+                paymaster_post_op_gas_limit,
+                paymaster,
+                paymaster_data,
+                metadata=metadata,
+            )
 
     def __str__(self):
         return f"User Operation sender={self.sender} nonce={self.nonce} hash={self.user_operation_hash.hex()}"

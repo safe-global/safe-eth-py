@@ -5,11 +5,14 @@ from django.test import TestCase
 import pytest
 
 from ...account_abstraction import BundlerClient, UserOperation, UserOperationReceipt
+from ...account_abstraction.user_operation import UserOperationV07
 from ..mocks.mock_bundler import (
     safe_4337_chain_id_mock,
     safe_4337_user_operation_hash_mock,
     user_operation_mock,
     user_operation_receipt_mock,
+    user_operation_v07_chain_id,
+    user_operation_v07_hash,
 )
 
 
@@ -41,11 +44,19 @@ class TestE2EBundlerClient(TestCase):
             user_operation_hash,
         )
 
-    def test_get_user_operation_070_by_hash(self):
+    def test_get_user_operation_V07_by_hash(self):
         """
-        Test UserOperation v0.7.0
+        Test UserOperation v0.7
         """
-        pass
+        user_operation_hash = user_operation_v07_hash.hex()
+        user_operation = self.bundler.get_user_operation_by_hash(user_operation_hash)
+        self.assertIsInstance(user_operation, UserOperationV07)
+        self.assertEqual(
+            user_operation.calculate_user_operation_hash(
+                user_operation_v07_chain_id
+            ).hex(),
+            user_operation_hash,
+        )
 
     def test_get_user_operation_receipt(self):
         user_operation_hash = safe_4337_user_operation_hash_mock.hex()
