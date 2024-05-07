@@ -70,6 +70,15 @@ You can modify timeouts (in seconds) for the RPC endpoints by setting
 By default every RPC request will be retried `3` times. You can modify that by setting `ETHEREUM_RPC_RETRY_COUNT`.
 
 
+gnosis.eth.clients
+~~~~~~~~~~
+
+You can modify timeouts (in seconds) for the gnosis.eth.clients by setting the following environment variables:
+
+- ``class EnsClient``:  `ENS_CLIENT_REQUEST_TIMEOUT`.
+- ``class EtherscanClient``:  `ETHERSCAN_CLIENT_REQUEST_TIMEOUT`.
+- ``class SourcifyClient``:  `SOURCIFY_CLIENT_REQUEST_TIMEOUT`.
+
 gnosis.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
@@ -160,7 +169,7 @@ Gnosis Products
 ---------------
 Safe
 ~~~~
-On ``gnosis.safe`` there're classes to work with `Gnosis Safe <https://safe.global/>`_
+On ``gnosis.safe`` there're classes to work with `Safe <https://safe.global/>`_
 
 .. code-block:: python
 
@@ -181,6 +190,21 @@ To work with Multisig Transactions:
   safe_tx.sign(owner_2_private_key)
   safe_tx.call()  # Check it works
   safe_tx.execute(tx_sender_private_key)
+
+To interact with the Transaction Service API:
+
+.. code-block:: python
+
+  from gnosis.eth import EthereumClient
+  from gnosis.safe import Safe
+  ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
+  transaction_service_api = TransactionServiceApi(
+    network=EthereumNetwork.SEPOLIA,
+    ethereum_client=ethereum_client
+  )
+  delegates_for_safe = transaction_service_api.get_delegates(SAFE_ADDRESS)
+
+You can modify the request timeout (in seconds) by setting `SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT` as environment variable.
 
 CowSwap
 ~~~~~~~~

@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
@@ -34,7 +35,9 @@ class SourcifyClient:
         network: EthereumNetwork = EthereumNetwork.MAINNET,
         base_url_api: str = "https://sourcify.dev",
         base_url_repo: str = "https://repo.sourcify.dev/",
-        request_timeout: int = 10,
+        request_timeout: int = int(
+            os.environ.get("SOURCIFY_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
     ):
         self.network = network
         self.base_url_api = base_url_api
