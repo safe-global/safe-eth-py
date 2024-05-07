@@ -110,6 +110,7 @@ class BlockscoutClient:
         EthereumNetwork.CROSSFI_TESTNET: "https://scan.testnet.ms/graphiql",
         EthereumNetwork.ASTAR_ZKYOTO: "https://astar-zkyoto.blockscout.com/api/v1/graphql",
         EthereumNetwork.SAAKURU_MAINNET: "https://explorer.saakuru.network/graphiql",
+        EthereumNetwork.REDSTONE: "https://explorer.redstone.xyz/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
