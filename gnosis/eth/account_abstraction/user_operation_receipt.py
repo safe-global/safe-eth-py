@@ -24,7 +24,7 @@ class UserOperationReceipt:
     actual_gas_cost: int
     actual_gas_used: int
     success: bool
-    reason: str
+    reason: Optional[str]
     logs: List[LogReceipt]
 
     @classmethod
@@ -41,7 +41,7 @@ class UserOperationReceipt:
             int(user_operation_receipt_response["actualGasCost"], 16),
             int(user_operation_receipt_response["actualGasUsed"], 16),
             user_operation_receipt_response["success"],
-            user_operation_receipt_response["reason"],
+            user_operation_receipt_response.get("reason"),
             user_operation_receipt_response["logs"],
         )
 
