@@ -1742,4 +1742,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.GARNET_HOLESKY: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 937080),  # v1.3.0
     ],
+    EthereumNetwork.ENDURANCE_SMART_CHAIN_MAINNET: [
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 462212),  # v1.3.0
+    ],
 }
