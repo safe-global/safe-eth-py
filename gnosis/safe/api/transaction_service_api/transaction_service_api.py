@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.parse import urlencode
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexStr
@@ -168,15 +169,23 @@ class TransactionServiceApi(SafeBaseAPI):
             safe_tx.tx_hash = tx_hash
         return safe_tx, tx_hash
 
-    def get_transactions(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+    def get_transactions(
+        self, safe_address: ChecksumAddress, **kwargs: Union[str, int, bool]
+    ) -> List[Dict[str, Any]]:
         """
 
         :param safe_address:
         :return: a list of transactions for provided Safe
         """
-        response = self._get_request(
-            f"/api/v1/safes/{safe_address}/multisig-transactions/"
-        )
+        url = f"/api/v1/safes/{safe_address}/multisig-transactions/"
+
+        if kwargs:
+            query_string = urlencode(
+                {key: f"{value}" for key, value in kwargs.items() if value is not None}
+            )
+            url += "?" + query_string
+
+        response = self._get_request(url)
         if not response.ok:
             raise SafeAPIException(f"Cannot get transactions: {response.content}")
         return response.json().get("results", [])
