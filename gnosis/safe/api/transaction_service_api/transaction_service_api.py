@@ -170,7 +170,7 @@ class TransactionServiceApi(SafeBaseAPI):
         return safe_tx, tx_hash
 
     def get_transactions(
-        self, safe_address: ChecksumAddress, **kwargs: Union[str, int, bool]
+        self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
     ) -> List[Dict[str, Any]]:
         """
 
