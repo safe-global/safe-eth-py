@@ -181,7 +181,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         if kwargs:
             query_string = urlencode(
-                {key: f"{value}" for key, value in kwargs.items() if value is not None}
+                {key: str(value) for key, value in kwargs.items() if value is not None}
             )
             url += "?" + query_string
 
