@@ -1,4 +1,5 @@
 from unittest import mock
+from unittest.mock import patch
 
 from django.test import TestCase
 
@@ -103,6 +104,14 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
         transactions = self.transaction_service_api.get_transactions(self.safe_address)
         self.assertIsInstance(transactions, list)
         self.assertEqual(len(transactions), 6)
+
+        with patch.object(TransactionServiceApi, "_get_request") as mock_get_request:
+            self.transaction_service_api.get_transactions(
+                self.safe_address, limit=2, nonce__lt=30, failed=False
+            )
+
+        expected_url = f"/api/v1/safes/{self.safe_address}/multisig-transactions/?limit=2&nonce__lt=30&failed=False"
+        mock_get_request.assert_called_once_with(expected_url)
 
     def test_get_safes_for_owner(self):
         owner_address = "0x3066786706Ff0B6e71044e55074dBAE7D01573cB"
