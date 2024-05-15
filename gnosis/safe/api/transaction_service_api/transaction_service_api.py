@@ -135,11 +135,9 @@ class TransactionServiceApi(SafeBaseAPI):
             safe_nonce=int(tx_raw["nonce"]),
             chain_id=self.network.value,
         )
-        tx_hash = (
+        safe_tx.tx_hash = (
             HexBytes(tx_raw["transactionHash"]) if tx_raw["transactionHash"] else None
         )
-        if tx_hash:
-            safe_tx.tx_hash = tx_hash
         return safe_tx
 
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
