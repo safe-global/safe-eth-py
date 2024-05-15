@@ -1,11 +1,17 @@
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 from django.test import TestCase
 
+from hexbytes import HexBytes
+
 from gnosis.eth import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
+from gnosis.safe import SafeTx
 from gnosis.safe.api.transaction_service_api import TransactionServiceApi
+
+from ...api import SafeAPIException
+from ..mocks.mock_transactions import transaction_data_mock, transaction_mock
 
 
 class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
@@ -41,51 +47,9 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             self.assertEqual(transaction_service_api.network, EthereumNetwork.GOERLI)
 
     def test_data_decoded_to_text(self):
-        test_data = {
-            "method": "multiSend",
-            "parameters": [
-                {
-                    "name": "transactions",
-                    "type": "bytes",
-                    "value": "0x00c68877b75c3f9b950a798f9c9df4cde121c432ed000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000247de7edef00000000000000000000000034cfac646f301356faa8b21e94227e3583fe3f5f00c68877b75c3f9b950a798f9c9df4cde121c432ed00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000024f08a0323000000000000000000000000d5d82b6addc9027b22dca772aa68d5d74cdbdf44",
-                    "decodedValue": [
-                        {
-                            "operation": "CALL",
-                            "to": "0xc68877B75c3f9b950a798f9C9dF4cDE121C432eD",
-                            "value": 0,
-                            "data": "0x7de7edef00000000000000000000000034cfac646f301356faa8b21e94227e3583fe3f5f",
-                            "decodedData": {
-                                "method": "changeMasterCopy",
-                                "parameters": [
-                                    {
-                                        "name": "_masterCopy",
-                                        "type": "address",
-                                        "value": "0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F",
-                                    }
-                                ],
-                            },
-                        },
-                        {
-                            "operation": "CALL",
-                            "to": "0xc68877B75c3f9b950a798f9C9dF4cDE121C432eD",
-                            "value": 0,
-                            "data": "0xf08a0323000000000000000000000000d5d82b6addc9027b22dca772aa68d5d74cdbdf44",
-                            "decodedData": {
-                                "method": "setFallbackHandler",
-                                "parameters": [
-                                    {
-                                        "name": "handler",
-                                        "type": "address",
-                                        "value": "0xd5D82B6aDDc9027B22dCA772Aa68D5d74cdBdF44",
-                                    }
-                                ],
-                            },
-                        },
-                    ],
-                }
-            ],
-        }
-        decoded_data_text = self.transaction_service_api.data_decoded_to_text(test_data)
+        decoded_data_text = self.transaction_service_api.data_decoded_to_text(
+            transaction_data_mock
+        )
         self.assertIn(
             "- changeMasterCopy: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F",
             decoded_data_text,
@@ -117,3 +81,47 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
         owner_address = "0x3066786706Ff0B6e71044e55074dBAE7D01573cB"
         safes = self.transaction_service_api.get_safes_for_owner(owner_address)
         self.assertListEqual(safes, [self.safe_address])
+
+    def test_get_safe_transaction(self):
+        safe_tx_hash = HexBytes(
+            "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f91783"
+        )
+        with patch.object(
+            TransactionServiceApi, "_get_request"
+        ) as mock_get_request, patch.object(
+            SafeTx, "safe_version", new_callable=PropertyMock
+        ) as mock_safe_version:
+            mock_safe_version.return_value = "1.4.1"
+            mock_get_request.return_value.ok = True
+            mock_get_request.return_value.json = MagicMock(
+                return_value=transaction_mock
+            )
+
+            safe_tx, tx_hash = self.transaction_service_api.get_safe_transaction(
+                safe_tx_hash
+            )
+            self.assertEqual(safe_tx.tx_hash, tx_hash)
+            self.assertEqual(safe_tx.safe_version, "1.4.1")
+            self.assertEqual(safe_tx.safe_tx_hash, safe_tx_hash)
+
+            # Test invalid hash
+            safe_tx_invalid_hash = HexBytes(
+                "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f90000"
+            )
+            with self.assertRaises(SafeAPIException) as context:
+                self.transaction_service_api.get_safe_transaction(safe_tx_invalid_hash)
+
+            safe_tx_hash_expected = transaction_mock.get("safeTxHash")
+            self.assertIn(
+                f"The provided safe_tx_hash: {safe_tx_invalid_hash.hex()} doesn't match the safe_tx_hash: {safe_tx_hash_expected} of the response transaction.",
+                str(context.exception),
+            )
+
+            # Test response not ok
+            mock_get_request.return_value.ok = False
+            with self.assertRaises(SafeAPIException) as context:
+                self.transaction_service_api.get_safe_transaction(safe_tx_hash)
+            self.assertIn(
+                f"Cannot get transaction with safe-tx-hash={safe_tx_hash.hex()}:",
+                str(context.exception),
+            )

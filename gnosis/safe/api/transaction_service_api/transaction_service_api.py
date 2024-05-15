@@ -167,6 +167,12 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if tx_hash:
             safe_tx.tx_hash = tx_hash
+
+        if safe_tx.safe_tx_hash != HexBytes(safe_tx_hash):
+            raise SafeAPIException(
+                f"The provided safe_tx_hash: {safe_tx_hash} doesn't match the safe_tx_hash: {safe_tx.safe_tx_hash.hex()} of the response transaction."
+            )
+
         return safe_tx, tx_hash
 
     def get_transactions(
