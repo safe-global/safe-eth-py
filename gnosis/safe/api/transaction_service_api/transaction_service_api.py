@@ -18,6 +18,10 @@ from .transaction_service_tx import TransactionServiceTx
 logger = logging.getLogger(__name__)
 
 
+class ApiSafeTxHashNotMatchingException(SafeAPIException):
+    pass
+
+
 class TransactionServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
         EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
@@ -114,6 +118,38 @@ class TransactionServiceApi(SafeBaseAPI):
                 ]
             )
 
+    def _build_transaction_service_tx(
+        self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Dict[str, Any]
+    ) -> TransactionServiceTx:
+        signatures = self.parse_signatures(tx_raw)
+        safe_tx = TransactionServiceTx(
+            tx_raw["proposer"],
+            self.ethereum_client,
+            tx_raw["safe"],
+            tx_raw["to"],
+            int(tx_raw["value"]),
+            HexBytes(tx_raw["data"]) if tx_raw["data"] else b"",
+            int(tx_raw["operation"]),
+            int(tx_raw["safeTxGas"]),
+            int(tx_raw["baseGas"]),
+            int(tx_raw["gasPrice"]),
+            tx_raw["gasToken"],
+            tx_raw["refundReceiver"],
+            signatures=signatures if signatures else b"",
+            safe_nonce=int(tx_raw["nonce"]),
+            chain_id=self.network.value,
+        )
+        safe_tx.tx_hash = (
+            HexBytes(tx_raw["transactionHash"]) if tx_raw["transactionHash"] else None
+        )
+
+        if safe_tx.safe_tx_hash != safe_tx_hash:
+            raise ApiSafeTxHashNotMatchingException(
+                f"API safe-tx-hash: {safe_tx_hash.hex()} doesn't match the calculated safe-tx-hash: {safe_tx.safe_tx_hash.hex()}"
+            )
+
+        return safe_tx
+
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
         """
 
@@ -132,42 +168,24 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
         """
-        safe_tx_hash = HexBytes(safe_tx_hash).hex()
-        response = self._get_request(f"/api/v1/multisig-transactions/{safe_tx_hash}/")
+        safe_tx_hash_str = HexBytes(safe_tx_hash).hex()
+        response = self._get_request(
+            f"/api/v1/multisig-transactions/{safe_tx_hash_str}/"
+        )
         if not response.ok:
             raise SafeAPIException(
-                f"Cannot get transaction with safe-tx-hash={safe_tx_hash}: {response.content}"
+                f"Cannot get transaction with safe-tx-hash={safe_tx_hash_str}: {response.content}"
             )
 
-        result = response.json()
-        signatures = self.parse_signatures(result)
         if not self.ethereum_client:
             logger.warning(
                 "EthereumClient should be defined to get a executable SafeTx"
             )
-        safe_tx = TransactionServiceTx(
-            result["proposer"],
-            self.ethereum_client,
-            result["safe"],
-            result["to"],
-            int(result["value"]),
-            HexBytes(result["data"]) if result["data"] else b"",
-            int(result["operation"]),
-            int(result["safeTxGas"]),
-            int(result["baseGas"]),
-            int(result["gasPrice"]),
-            result["gasToken"],
-            result["refundReceiver"],
-            signatures=signatures if signatures else b"",
-            safe_nonce=int(result["nonce"]),
-            chain_id=self.network.value,
-        )
-        tx_hash = (
-            HexBytes(result["transactionHash"]) if result["transactionHash"] else None
-        )
-        if tx_hash:
-            safe_tx.tx_hash = tx_hash
-        return safe_tx, tx_hash
+
+        result = response.json()
+        safe_tx = self._build_transaction_service_tx(safe_tx_hash, result)
+
+        return safe_tx, safe_tx.tx_hash
 
     def get_transactions(
         self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
@@ -188,7 +206,18 @@ class TransactionServiceApi(SafeBaseAPI):
         response = self._get_request(url)
         if not response.ok:
             raise SafeAPIException(f"Cannot get transactions: {response.content}")
-        return response.json().get("results", [])
+
+        transactions = response.json().get("results", [])
+
+        if safe_tx_hash_arg := kwargs.get("safe_tx_hash", None):
+            # Validation that the calculated safe_tx_hash is the same as the safe_tx_hash provided for filter.
+            safe_tx_hash = HexBytes(safe_tx_hash_arg)
+            [
+                self._build_transaction_service_tx(safe_tx_hash, tx)
+                for tx in transactions
+            ]
+
+        return transactions
 
     def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
         """
