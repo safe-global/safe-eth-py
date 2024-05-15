@@ -18,6 +18,10 @@ from .transaction_service_tx import TransactionServiceTx
 logger = logging.getLogger(__name__)
 
 
+class ApiSafeTxHashNotMatchingException(SafeAPIException):
+    pass
+
+
 class TransactionServiceApi(SafeBaseAPI):
     URL_BY_NETWORK = {
         EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
@@ -115,7 +119,7 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
     def _build_transaction_service_tx(
-        self, tx_raw: Dict[str, Any]
+        self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Dict[str, Any]
     ) -> TransactionServiceTx:
         signatures = self.parse_signatures(tx_raw)
         safe_tx = TransactionServiceTx(
@@ -138,6 +142,12 @@ class TransactionServiceApi(SafeBaseAPI):
         safe_tx.tx_hash = (
             HexBytes(tx_raw["transactionHash"]) if tx_raw["transactionHash"] else None
         )
+
+        if safe_tx.safe_tx_hash != safe_tx_hash:
+            raise ApiSafeTxHashNotMatchingException(
+                f"The provided safe_tx_hash: {safe_tx_hash.hex()} doesn't match the safe_tx_hash: {safe_tx.safe_tx_hash.hex()} of the response transaction."
+            )
+
         return safe_tx
 
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
@@ -158,11 +168,13 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
         """
-        safe_tx_hash = HexBytes(safe_tx_hash).hex()
-        response = self._get_request(f"/api/v1/multisig-transactions/{safe_tx_hash}/")
+        safe_tx_hash_str = HexBytes(safe_tx_hash).hex()
+        response = self._get_request(
+            f"/api/v1/multisig-transactions/{safe_tx_hash_str}/"
+        )
         if not response.ok:
             raise SafeAPIException(
-                f"Cannot get transaction with safe-tx-hash={safe_tx_hash}: {response.content}"
+                f"Cannot get transaction with safe-tx-hash={safe_tx_hash_str}: {response.content}"
             )
 
         if not self.ethereum_client:
@@ -171,12 +183,7 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
         result = response.json()
-        safe_tx = self._build_transaction_service_tx(result)
-
-        if safe_tx.safe_tx_hash != HexBytes(safe_tx_hash):
-            raise SafeAPIException(
-                f"The provided safe_tx_hash: {safe_tx_hash} doesn't match the safe_tx_hash: {safe_tx.safe_tx_hash.hex()} of the response transaction."
-            )
+        safe_tx = self._build_transaction_service_tx(safe_tx_hash, result)
 
         return safe_tx, safe_tx.tx_hash
 
@@ -204,13 +211,10 @@ class TransactionServiceApi(SafeBaseAPI):
 
         if safe_tx_hash_arg := kwargs.get("safe_tx_hash", None):
             safe_tx_hash = HexBytes(safe_tx_hash_arg)
-            if any(
-                self._build_transaction_service_tx(tx).safe_tx_hash != safe_tx_hash
+            [
+                self._build_transaction_service_tx(safe_tx_hash, tx)
                 for tx in transactions
-            ):
-                raise SafeAPIException(
-                    f"The provided safe_tx_hash: {safe_tx_hash_arg} doesn't match the safe_tx_hash of one or more response transactions."
-                )
+            ]
 
         return transactions
 

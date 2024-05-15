@@ -9,7 +9,10 @@ from hexbytes import HexBytes
 from gnosis.eth import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from gnosis.eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from gnosis.safe import SafeTx
-from gnosis.safe.api.transaction_service_api import TransactionServiceApi
+from gnosis.safe.api.transaction_service_api import (
+    ApiSafeTxHashNotMatchingException,
+    TransactionServiceApi,
+)
 
 from ...api import SafeAPIException
 from ..mocks.mock_transactions import transaction_data_mock, transaction_mock
@@ -109,13 +112,13 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             safe_tx_invalid_hash = (
                 "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f90000"
             )
-            with self.assertRaises(SafeAPIException) as context:
+            with self.assertRaises(ApiSafeTxHashNotMatchingException) as context:
                 self.transaction_service_api.get_transactions(
                     self.safe_address, safe_tx_hash=safe_tx_invalid_hash
                 )
-
+            safe_tx_hash_expected = transaction_mock.get("safeTxHash")
             self.assertIn(
-                f"The provided safe_tx_hash: {safe_tx_invalid_hash} doesn't match the safe_tx_hash of one or more response transactions.",
+                f"The provided safe_tx_hash: {safe_tx_invalid_hash} doesn't match the safe_tx_hash: {safe_tx_hash_expected} of the response transaction.",
                 str(context.exception),
             )
 
@@ -163,7 +166,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             safe_tx_invalid_hash = HexBytes(
                 "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f90000"
             )
-            with self.assertRaises(SafeAPIException) as context:
+            with self.assertRaises(ApiSafeTxHashNotMatchingException) as context:
                 self.transaction_service_api.get_safe_transaction(safe_tx_invalid_hash)
 
             safe_tx_hash_expected = transaction_mock.get("safeTxHash")
