@@ -118,7 +118,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 )
             safe_tx_hash_expected = transaction_mock.get("safeTxHash")
             self.assertIn(
-                f"The provided safe_tx_hash: {safe_tx_invalid_hash} doesn't match the safe_tx_hash: {safe_tx_hash_expected} of the response transaction.",
+                f"API safe-tx-hash: {safe_tx_invalid_hash} doesn't match the calculated safe-tx-hash: {safe_tx_hash_expected}",
                 str(context.exception),
             )
 
@@ -171,7 +171,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
 
             safe_tx_hash_expected = transaction_mock.get("safeTxHash")
             self.assertIn(
-                f"The provided safe_tx_hash: {safe_tx_invalid_hash.hex()} doesn't match the safe_tx_hash: {safe_tx_hash_expected} of the response transaction.",
+                f"API safe-tx-hash: {safe_tx_invalid_hash.hex()} doesn't match the calculated safe-tx-hash: {safe_tx_hash_expected}",
                 str(context.exception),
             )
 

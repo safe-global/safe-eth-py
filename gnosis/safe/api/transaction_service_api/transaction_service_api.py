@@ -145,7 +145,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         if safe_tx.safe_tx_hash != safe_tx_hash:
             raise ApiSafeTxHashNotMatchingException(
-                f"The provided safe_tx_hash: {safe_tx_hash.hex()} doesn't match the safe_tx_hash: {safe_tx.safe_tx_hash.hex()} of the response transaction."
+                f"API safe-tx-hash: {safe_tx_hash.hex()} doesn't match the calculated safe-tx-hash: {safe_tx.safe_tx_hash.hex()}"
             )
 
         return safe_tx
@@ -210,6 +210,7 @@ class TransactionServiceApi(SafeBaseAPI):
         transactions = response.json().get("results", [])
 
         if safe_tx_hash_arg := kwargs.get("safe_tx_hash", None):
+            # Validation that the calculated safe_tx_hash is the same as the safe_tx_hash provided for filter.
             safe_tx_hash = HexBytes(safe_tx_hash_arg)
             [
                 self._build_transaction_service_tx(safe_tx_hash, tx)
