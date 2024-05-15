@@ -1,3 +1,4 @@
+import copy
 from unittest import mock
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -69,6 +70,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
         self.assertIsInstance(transactions, list)
         self.assertEqual(len(transactions), 6)
 
+        # Test arguments
         with patch.object(TransactionServiceApi, "_get_request") as mock_get_request:
             self.transaction_service_api.get_transactions(
                 self.safe_address, limit=2, nonce__lt=30, failed=False
@@ -76,6 +78,46 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
 
         expected_url = f"/api/v1/safes/{self.safe_address}/multisig-transactions/?limit=2&nonce__lt=30&failed=False"
         mock_get_request.assert_called_once_with(expected_url)
+
+        # Test valid safe tx has
+        with patch.object(
+            SafeTx, "safe_version", new_callable=PropertyMock
+        ) as mock_safe_version:
+            mock_safe_version.return_value = "1.4.1"
+            safe_tx_hash = (
+                "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f91783"
+            )
+            transactions = self.transaction_service_api.get_transactions(
+                self.safe_address, safe_tx_hash=safe_tx_hash
+            )
+            self.assertIsInstance(transactions, list)
+            self.assertEqual(len(transactions), 1)
+
+        # Test invalid safe tx hash
+        with (
+            patch.object(TransactionServiceApi, "_get_request") as mock_get_request,
+            patch.object(
+                SafeTx, "safe_version", new_callable=PropertyMock
+            ) as mock_safe_version,
+        ):
+            mock_safe_version.return_value = "1.4.1"
+            mock_get_request.return_value.ok = True
+            mock_get_request.return_value.json = MagicMock(
+                return_value={"results": [transaction_mock]}
+            )
+
+            safe_tx_invalid_hash = (
+                "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f90000"
+            )
+            with self.assertRaises(SafeAPIException) as context:
+                self.transaction_service_api.get_transactions(
+                    self.safe_address, safe_tx_hash=safe_tx_invalid_hash
+                )
+
+            self.assertIn(
+                f"The provided safe_tx_hash: {safe_tx_invalid_hash} doesn't match the safe_tx_hash of one or more response transactions.",
+                str(context.exception),
+            )
 
     def test_get_safes_for_owner(self):
         owner_address = "0x3066786706Ff0B6e71044e55074dBAE7D01573cB"
@@ -86,11 +128,12 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
         safe_tx_hash = HexBytes(
             "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f91783"
         )
-        with patch.object(
-            TransactionServiceApi, "_get_request"
-        ) as mock_get_request, patch.object(
-            SafeTx, "safe_version", new_callable=PropertyMock
-        ) as mock_safe_version:
+        with (
+            patch.object(TransactionServiceApi, "_get_request") as mock_get_request,
+            patch.object(
+                SafeTx, "safe_version", new_callable=PropertyMock
+            ) as mock_safe_version,
+        ):
             mock_safe_version.return_value = "1.4.1"
             mock_get_request.return_value.ok = True
             mock_get_request.return_value.json = MagicMock(
@@ -104,7 +147,19 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             self.assertEqual(safe_tx.safe_version, "1.4.1")
             self.assertEqual(safe_tx.safe_tx_hash, safe_tx_hash)
 
-            # Test invalid hash
+            # Test not executed tx
+            not_executed_transaction_mock = copy.deepcopy(transaction_mock)
+            not_executed_transaction_mock["transactionHash"] = None
+            mock_get_request.return_value.json = MagicMock(
+                return_value=not_executed_transaction_mock
+            )
+            safe_tx, tx_hash = self.transaction_service_api.get_safe_transaction(
+                safe_tx_hash
+            )
+            self.assertIsNone(tx_hash)
+            self.assertIsNone(safe_tx.tx_hash)
+
+            # Test invalid safe tx hash
             safe_tx_invalid_hash = HexBytes(
                 "0x06c88df42a8ab64b2b2c5e2b5c8c4df384c267b39929a8416d1518db23f90000"
             )

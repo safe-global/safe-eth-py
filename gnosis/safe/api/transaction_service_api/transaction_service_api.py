@@ -114,6 +114,34 @@ class TransactionServiceApi(SafeBaseAPI):
                 ]
             )
 
+    def _build_transaction_service_tx(
+        self, tx_raw: Dict[str, Any]
+    ) -> TransactionServiceTx:
+        signatures = self.parse_signatures(tx_raw)
+        safe_tx = TransactionServiceTx(
+            tx_raw["proposer"],
+            self.ethereum_client,
+            tx_raw["safe"],
+            tx_raw["to"],
+            int(tx_raw["value"]),
+            HexBytes(tx_raw["data"]) if tx_raw["data"] else b"",
+            int(tx_raw["operation"]),
+            int(tx_raw["safeTxGas"]),
+            int(tx_raw["baseGas"]),
+            int(tx_raw["gasPrice"]),
+            tx_raw["gasToken"],
+            tx_raw["refundReceiver"],
+            signatures=signatures if signatures else b"",
+            safe_nonce=int(tx_raw["nonce"]),
+            chain_id=self.network.value,
+        )
+        tx_hash = (
+            HexBytes(tx_raw["transactionHash"]) if tx_raw["transactionHash"] else None
+        )
+        if tx_hash:
+            safe_tx.tx_hash = tx_hash
+        return safe_tx
+
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
         """
 
@@ -139,41 +167,20 @@ class TransactionServiceApi(SafeBaseAPI):
                 f"Cannot get transaction with safe-tx-hash={safe_tx_hash}: {response.content}"
             )
 
-        result = response.json()
-        signatures = self.parse_signatures(result)
         if not self.ethereum_client:
             logger.warning(
                 "EthereumClient should be defined to get a executable SafeTx"
             )
-        safe_tx = TransactionServiceTx(
-            result["proposer"],
-            self.ethereum_client,
-            result["safe"],
-            result["to"],
-            int(result["value"]),
-            HexBytes(result["data"]) if result["data"] else b"",
-            int(result["operation"]),
-            int(result["safeTxGas"]),
-            int(result["baseGas"]),
-            int(result["gasPrice"]),
-            result["gasToken"],
-            result["refundReceiver"],
-            signatures=signatures if signatures else b"",
-            safe_nonce=int(result["nonce"]),
-            chain_id=self.network.value,
-        )
-        tx_hash = (
-            HexBytes(result["transactionHash"]) if result["transactionHash"] else None
-        )
-        if tx_hash:
-            safe_tx.tx_hash = tx_hash
+
+        result = response.json()
+        safe_tx = self._build_transaction_service_tx(result)
 
         if safe_tx.safe_tx_hash != HexBytes(safe_tx_hash):
             raise SafeAPIException(
                 f"The provided safe_tx_hash: {safe_tx_hash} doesn't match the safe_tx_hash: {safe_tx.safe_tx_hash.hex()} of the response transaction."
             )
 
-        return safe_tx, tx_hash
+        return safe_tx, safe_tx.tx_hash
 
     def get_transactions(
         self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
@@ -194,7 +201,20 @@ class TransactionServiceApi(SafeBaseAPI):
         response = self._get_request(url)
         if not response.ok:
             raise SafeAPIException(f"Cannot get transactions: {response.content}")
-        return response.json().get("results", [])
+
+        transactions = response.json().get("results", [])
+
+        if safe_tx_hash_arg := kwargs.get("safe_tx_hash", None):
+            safe_tx_hash = HexBytes(safe_tx_hash_arg)
+            if any(
+                self._build_transaction_service_tx(tx).safe_tx_hash != safe_tx_hash
+                for tx in transactions
+            ):
+                raise SafeAPIException(
+                    f"The provided safe_tx_hash: {safe_tx_hash_arg} doesn't match the safe_tx_hash of one or more response transactions."
+                )
+
+        return transactions
 
     def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
         """
