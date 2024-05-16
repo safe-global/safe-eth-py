@@ -318,7 +318,8 @@ class TransactionServiceApi(SafeBaseAPI):
         :param delegator_address:
         :param delegate_address:
         :param signature: Signature of a hash of an eip712 message.
-        :param safe_address: Optional. You can delete a delegate for a delegator and a safe or a global delegate.
+        :param safe_address: If specified, a delegate is removed for a delegator for the specific safe.
+            Otherwise, the delegate is deleted in a global form.
         :return:
         """
         remove_payload = {
