@@ -7,7 +7,6 @@ from ...oracles import CannotGetPriceFromOracle, KyberOracle
 from ..ethereum_test_case import EthereumTestCaseMixin
 from ..test_oracles import (
     dai_token_mainnet_address,
-    gno_token_mainnet_address,
     usdt_token_mainnet_address,
     weth_token_mainnet_address,
 )
@@ -22,7 +21,7 @@ class TestKyberOracle(EthereumTestCaseMixin, TestCase):
         self.assertTrue(KyberOracle.is_available(ethereum_client))
         kyber_oracle = KyberOracle(ethereum_client)
         price = kyber_oracle.get_price(
-            gno_token_mainnet_address, weth_token_mainnet_address
+            dai_token_mainnet_address, weth_token_mainnet_address
         )
         self.assertLess(price, 1)
         self.assertGreater(price, 0)
