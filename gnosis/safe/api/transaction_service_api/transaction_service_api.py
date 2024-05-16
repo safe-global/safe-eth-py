@@ -4,11 +4,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlencode
 
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress, HexStr
+from eth_typing import ChecksumAddress, Hash32, HexStr
 from hexbytes import HexBytes
 
 from gnosis.eth import EthereumClient, EthereumNetwork
-from gnosis.eth.utils import fast_keccak_text
+from gnosis.eth.eip712 import eip712_encode_hash
 from gnosis.safe import SafeTx
 
 from ..base_api import SafeAPIException, SafeBaseAPI
@@ -51,10 +51,6 @@ class TransactionServiceApi(SafeBaseAPI):
         ),
     ):
         super().__init__(network, ethereum_client, base_url, request_timeout)
-
-    @classmethod
-    def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
-        return fast_keccak_text(get_delegate_message(delegate_address))
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:
@@ -117,6 +113,11 @@ class TransactionServiceApi(SafeBaseAPI):
                     if confirmation["signatureType"] == "EOA"
                 ]
             )
+
+    def create_delegate_message_hash(self, delegate_address: ChecksumAddress) -> Hash32:
+        return eip712_encode_hash(
+            get_delegate_message(delegate_address, self.network.value)
+        )
 
     def _build_transaction_service_tx(
         self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Dict[str, Any]
@@ -225,7 +226,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_address:
         :return: a list of delegates for provided Safe
         """
-        response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
+        response = self._get_request(f"/api/v2/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
@@ -278,7 +279,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "signature": signature.signature.hex(),
             "label": label,
         }
-        response = self._post_request("/api/v1/delegates/", add_payload)
+        response = self._post_request("/api/v2/delegates/", add_payload)
         if not response.ok:
             raise SafeAPIException(f"Cannot add delegate: {response.content}")
         return True
@@ -291,9 +292,13 @@ class TransactionServiceApi(SafeBaseAPI):
     ) -> bool:
         hash_to_sign = self.create_delegate_message_hash(delegate_address)
         signature = signer_account.signHash(hash_to_sign)
-        remove_payload = {"signature": signature.signature.hex()}
+        remove_payload = {
+            "safe": safe_address,
+            "delegator": signer_account.address,
+            "signature": signature.signature.hex(),
+        }
         response = self._delete_request(
-            f"/api/v1/safes/{safe_address}/delegates/{delegate_address}/",
+            f"/api/v2/delegates/{delegate_address}/",
             remove_payload,
         )
         if not response.ok:
