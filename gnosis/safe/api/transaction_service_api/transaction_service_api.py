@@ -305,6 +305,36 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Cannot remove delegate: {response.content}")
         return True
 
+    def remove_delegate_signed(
+        self,
+        delegator_address: ChecksumAddress,
+        delegate_address: ChecksumAddress,
+        signature: bytes,
+        safe_address: Optional[ChecksumAddress] = None,
+    ) -> bool:
+        """
+        Deletes a delegated user
+
+        :param delegator_address:
+        :param delegate_address:
+        :param signature: Signature of a hash of an eip712 message.
+        :param safe_address: Optional. You can delete a delegate for a delegator and a safe or a global delegate.
+        :return:
+        """
+        remove_payload = {
+            "delegator": delegator_address,
+            "signature": HexBytes(signature).hex(),
+        }
+        if safe_address:
+            remove_payload["safe"] = safe_address
+        response = self._delete_request(
+            f"/api/v2/delegates/{delegate_address}/",
+            remove_payload,
+        )
+        if not response.ok:
+            raise SafeAPIException(f"Cannot remove delegate: {response.content}")
+        return True
+
     def post_transaction(self, safe_tx: SafeTx) -> bool:
         random_sender = "0x0000000000000000000000000000000000000002"
         sender = safe_tx.sorted_signers[0] if safe_tx.sorted_signers else random_sender
