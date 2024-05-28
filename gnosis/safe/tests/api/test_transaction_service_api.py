@@ -185,27 +185,6 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 str(context.exception),
             )
 
-    def test_remove_delegate(self):
-        with patch.object(
-            TransactionServiceApi, "_delete_request"
-        ) as mock_delete_request:
-            delegate_address = Account().create().address
-            delegator_account = Account().create()
-            self.transaction_service_api.remove_delegate(
-                self.safe_address, delegate_address, delegator_account
-            )
-            expected_hash = self.transaction_service_api.create_delegate_message_hash(
-                delegate_address
-            )
-            expected_sign = delegator_account.signHash(expected_hash)
-            expected_url = f"/api/v2/delegates/{delegate_address}/"
-            expected_payload = {
-                "safe": self.safe_address,
-                "delegator": delegator_account.address,
-                "signature": expected_sign.signature.hex(),
-            }
-            mock_delete_request.assert_called_once_with(expected_url, expected_payload)
-
     def test_remove_delegate_signed(self):
         with patch.object(
             TransactionServiceApi, "_delete_request"
@@ -216,7 +195,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 delegate_address
             )
             signature = delegator_account.signHash(message_hash).signature.hex()
-            self.transaction_service_api.remove_delegate_signed(
+            self.transaction_service_api.remove_delegate(
                 delegator_account.address, delegate_address, signature
             )
 
@@ -227,7 +206,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             }
             mock_delete_request.assert_called_once_with(expected_url, expected_payload)
 
-            self.transaction_service_api.remove_delegate_signed(
+            self.transaction_service_api.remove_delegate(
                 delegator_account.address,
                 delegate_address,
                 signature,

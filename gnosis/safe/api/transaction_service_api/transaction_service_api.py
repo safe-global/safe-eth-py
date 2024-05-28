@@ -286,27 +286,6 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def remove_delegate(
         self,
-        safe_address: ChecksumAddress,
-        delegate_address: ChecksumAddress,
-        signer_account: LocalAccount,
-    ) -> bool:
-        hash_to_sign = self.create_delegate_message_hash(delegate_address)
-        signature = signer_account.signHash(hash_to_sign)
-        remove_payload = {
-            "safe": safe_address,
-            "delegator": signer_account.address,
-            "signature": signature.signature.hex(),
-        }
-        response = self._delete_request(
-            f"/api/v2/delegates/{delegate_address}/",
-            remove_payload,
-        )
-        if not response.ok:
-            raise SafeAPIException(f"Cannot remove delegate: {response.content}")
-        return True
-
-    def remove_delegate_signed(
-        self,
         delegator_address: ChecksumAddress,
         delegate_address: ChecksumAddress,
         signature: bytes,
