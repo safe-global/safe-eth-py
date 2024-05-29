@@ -92,7 +92,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         """
         assert fast_is_checksum_address(address), "%s is not a valid address" % address
         if cls is not Safe:
-            return super().__new__(cls, address, ethereum_client, *args, **kwargs)
+            return super().__new__(cls, *args, **kwargs)
 
         versions: Dict[str, Safe] = {
             "0.0.1": SafeV001,
