@@ -75,10 +75,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             def get_version(self):
                 return "1.4.1-custom"
 
-        inherit_safe = CustomSafeV141(address, self.ethereum_client)
-        self.assertEqual(inherit_safe.address, address)
-        self.assertEqual(inherit_safe.get_version(), "1.4.1-custom")
-        self.assertEqual(inherit_safe.chain_id, 1337)
+        inherited_safe = CustomSafeV141(address, self.ethereum_client)
+        self.assertEqual(inherited_safe.address, address)
+        self.assertEqual(inherited_safe.get_version(), "1.4.1-custom")
+        self.assertEqual(inherited_safe.chain_id, 1337)
 
     def test_check_funds_for_tx_gas(self):
         safe = self.deploy_test_safe()
