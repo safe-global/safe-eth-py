@@ -64,6 +64,13 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         not_a_safe = Account.create().address
         self.assertIsNone(Safe(not_a_safe, self.ethereum_client).domain_separator)
 
+    def test_inherit_safe(self):
+        address = Account.create().address
+        safe = SafeV141(address, self.ethereum_client)
+        self.assertEqual(safe.address, address)
+        self.assertEqual(safe.get_version(), "1.4.1")
+        self.assertEqual(safe.chain_id, 1337)
+
     def test_check_funds_for_tx_gas(self):
         safe = self.deploy_test_safe()
         safe_tx_gas = 2
