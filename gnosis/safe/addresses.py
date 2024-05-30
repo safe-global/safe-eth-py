@@ -1805,6 +1805,6 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.TAIKO_HEKLA_L2: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 158794),  # v1.3.0
-        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 253167), # v1.3.0
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 253167),  # v1.3.0
     ],
 }
