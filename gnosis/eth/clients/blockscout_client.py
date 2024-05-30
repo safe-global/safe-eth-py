@@ -105,6 +105,14 @@ class BlockscoutClient:
         EthereumNetwork.OP_CELESTIA_RASPBERRY: "https://opcelestia-raspberry.gelatoscout.com/api/v1/graphql",
         EthereumNetwork.POLYGON_BLACKBERRY: "https://polygon-blackberry.gelatoscout.com/api/v1/graphql",
         EthereumNetwork.ARBITRUM_BLUEBERRY: "https://arb-blueberry.gelatoscout.com/api/v1/graphql",
+        EthereumNetwork.RSS3_VSL_SEPOLIA_TESTNET: "https://scan.testnet.rss3.io/api/v1/graphql",
+        EthereumNetwork.RSS3_VSL_MAINNET: "https://scan.rss3.io/api/v1/graphql",
+        EthereumNetwork.CROSSFI_TESTNET: "https://scan.testnet.ms/graphiql",
+        EthereumNetwork.ASTAR_ZKYOTO: "https://astar-zkyoto.blockscout.com/api/v1/graphql",
+        EthereumNetwork.SAAKURU_MAINNET: "https://explorer.saakuru.network/graphiql",
+        EthereumNetwork.REDSTONE: "https://explorer.redstone.xyz/api/v1/graphql",
+        EthereumNetwork.GARNET_HOLESKY: "https://api.explorer.garnet.qry.live/api/v1/graphql",
+        EthereumNetwork.TAIKO_HEKLA_L2: "https://blockscoutapi.hekla.taiko.xyz/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):

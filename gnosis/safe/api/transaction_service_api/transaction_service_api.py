@@ -1,12 +1,14 @@
 import logging
+import os
 from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.parse import urlencode
 
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress, HexStr
+from eth_typing import ChecksumAddress, Hash32, HexStr
 from hexbytes import HexBytes
 
-from gnosis.eth import EthereumNetwork
-from gnosis.eth.utils import fast_keccak_text
+from gnosis.eth import EthereumClient, EthereumNetwork
+from gnosis.eth.eip712 import eip712_encode_hash
 from gnosis.safe import SafeTx
 
 from ..base_api import SafeAPIException, SafeBaseAPI
@@ -14,6 +16,10 @@ from .transaction_service_messages import get_delegate_message
 from .transaction_service_tx import TransactionServiceTx
 
 logger = logging.getLogger(__name__)
+
+
+class ApiSafeTxHashNotMatchingException(SafeAPIException):
+    pass
 
 
 class TransactionServiceApi(SafeBaseAPI):
@@ -35,9 +41,16 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.ZKSYNC_MAINNET: "https://safe-transaction-zksync.safe.global",
     }
 
-    @classmethod
-    def create_delegate_message_hash(cls, delegate_address: ChecksumAddress) -> str:
-        return fast_keccak_text(get_delegate_message(delegate_address))
+    def __init__(
+        self,
+        network: EthereumNetwork,
+        ethereum_client: Optional[EthereumClient] = None,
+        base_url: Optional[str] = None,
+        request_timeout: int = int(
+            os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
+        ),
+    ):
+        super().__init__(network, ethereum_client, base_url, request_timeout)
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:
@@ -101,6 +114,43 @@ class TransactionServiceApi(SafeBaseAPI):
                 ]
             )
 
+    def create_delegate_message_hash(self, delegate_address: ChecksumAddress) -> Hash32:
+        return eip712_encode_hash(
+            get_delegate_message(delegate_address, self.network.value)
+        )
+
+    def _build_transaction_service_tx(
+        self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Dict[str, Any]
+    ) -> TransactionServiceTx:
+        signatures = self.parse_signatures(tx_raw)
+        safe_tx = TransactionServiceTx(
+            tx_raw["proposer"],
+            self.ethereum_client,
+            tx_raw["safe"],
+            tx_raw["to"],
+            int(tx_raw["value"]),
+            HexBytes(tx_raw["data"]) if tx_raw["data"] else b"",
+            int(tx_raw["operation"]),
+            int(tx_raw["safeTxGas"]),
+            int(tx_raw["baseGas"]),
+            int(tx_raw["gasPrice"]),
+            tx_raw["gasToken"],
+            tx_raw["refundReceiver"],
+            signatures=signatures if signatures else b"",
+            safe_nonce=int(tx_raw["nonce"]),
+            chain_id=self.network.value,
+        )
+        safe_tx.tx_hash = (
+            HexBytes(tx_raw["transactionHash"]) if tx_raw["transactionHash"] else None
+        )
+
+        if safe_tx.safe_tx_hash != safe_tx_hash:
+            raise ApiSafeTxHashNotMatchingException(
+                f"API safe-tx-hash: {safe_tx_hash.hex()} doesn't match the calculated safe-tx-hash: {safe_tx.safe_tx_hash.hex()}"
+            )
+
+        return safe_tx
+
     def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
         """
 
@@ -119,55 +169,56 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
         """
-        safe_tx_hash = HexBytes(safe_tx_hash).hex()
-        response = self._get_request(f"/api/v1/multisig-transactions/{safe_tx_hash}/")
+        safe_tx_hash_str = HexBytes(safe_tx_hash).hex()
+        response = self._get_request(
+            f"/api/v1/multisig-transactions/{safe_tx_hash_str}/"
+        )
         if not response.ok:
             raise SafeAPIException(
-                f"Cannot get transaction with safe-tx-hash={safe_tx_hash}: {response.content}"
+                f"Cannot get transaction with safe-tx-hash={safe_tx_hash_str}: {response.content}"
             )
 
-        result = response.json()
-        signatures = self.parse_signatures(result)
         if not self.ethereum_client:
             logger.warning(
                 "EthereumClient should be defined to get a executable SafeTx"
             )
-        safe_tx = TransactionServiceTx(
-            result["proposer"],
-            self.ethereum_client,
-            result["safe"],
-            result["to"],
-            int(result["value"]),
-            HexBytes(result["data"]) if result["data"] else b"",
-            int(result["operation"]),
-            int(result["safeTxGas"]),
-            int(result["baseGas"]),
-            int(result["gasPrice"]),
-            result["gasToken"],
-            result["refundReceiver"],
-            signatures=signatures if signatures else b"",
-            safe_nonce=int(result["nonce"]),
-            chain_id=self.network.value,
-        )
-        tx_hash = (
-            HexBytes(result["transactionHash"]) if result["transactionHash"] else None
-        )
-        if tx_hash:
-            safe_tx.tx_hash = tx_hash
-        return safe_tx, tx_hash
 
-    def get_transactions(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+        result = response.json()
+        safe_tx = self._build_transaction_service_tx(safe_tx_hash, result)
+
+        return safe_tx, safe_tx.tx_hash
+
+    def get_transactions(
+        self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
+    ) -> List[Dict[str, Any]]:
         """
 
         :param safe_address:
         :return: a list of transactions for provided Safe
         """
-        response = self._get_request(
-            f"/api/v1/safes/{safe_address}/multisig-transactions/"
-        )
+        url = f"/api/v1/safes/{safe_address}/multisig-transactions/"
+
+        if kwargs:
+            query_string = urlencode(
+                {key: str(value) for key, value in kwargs.items() if value is not None}
+            )
+            url += "?" + query_string
+
+        response = self._get_request(url)
         if not response.ok:
             raise SafeAPIException(f"Cannot get transactions: {response.content}")
-        return response.json().get("results", [])
+
+        transactions = response.json().get("results", [])
+
+        if safe_tx_hash_arg := kwargs.get("safe_tx_hash", None):
+            # Validation that the calculated safe_tx_hash is the same as the safe_tx_hash provided for filter.
+            safe_tx_hash = HexBytes(safe_tx_hash_arg)
+            [
+                self._build_transaction_service_tx(safe_tx_hash, tx)
+                for tx in transactions
+            ]
+
+        return transactions
 
     def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
         """
@@ -175,7 +226,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_address:
         :return: a list of delegates for provided Safe
         """
-        response = self._get_request(f"/api/v1/delegates/?safe={safe_address}")
+        response = self._get_request(f"/api/v2/delegates/?safe={safe_address}")
         if not response.ok:
             raise SafeAPIException(f"Cannot get delegates: {response.content}")
         return response.json().get("results", [])
@@ -228,7 +279,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "signature": signature.signature.hex(),
             "label": label,
         }
-        response = self._post_request("/api/v1/delegates/", add_payload)
+        response = self._post_request("/api/v2/delegates/", add_payload)
         if not response.ok:
             raise SafeAPIException(f"Cannot add delegate: {response.content}")
         return True
@@ -241,9 +292,13 @@ class TransactionServiceApi(SafeBaseAPI):
     ) -> bool:
         hash_to_sign = self.create_delegate_message_hash(delegate_address)
         signature = signer_account.signHash(hash_to_sign)
-        remove_payload = {"signature": signature.signature.hex()}
+        remove_payload = {
+            "safe": safe_address,
+            "delegator": signer_account.address,
+            "signature": signature.signature.hex(),
+        }
         response = self._delete_request(
-            f"/api/v1/safes/{safe_address}/delegates/{delegate_address}/",
+            f"/api/v2/delegates/{delegate_address}/",
             remove_payload,
         )
         if not response.ok:

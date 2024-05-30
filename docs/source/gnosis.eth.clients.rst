@@ -20,6 +20,14 @@ gnosis.eth.clients.contract\_metadata module
    :undoc-members:
    :show-inheritance:
 
+gnosis.eth.clients.ens\_client module
+-------------------------------------------
+
+.. automodule:: gnosis.eth.clients.ens_client
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 gnosis.eth.clients.etherscan\_client module
 -------------------------------------------
 
