@@ -416,3 +416,21 @@ class TransactionServiceApi(SafeBaseAPI):
                 f"Error posting message signature: {response.content}"
             )
         return True
+
+    def decode_data(
+        self, data: Union[bytes, HexStr], to_address: Optional[ChecksumAddress] = None
+    ) -> Dict[str, Any]:
+        """
+        Retrieve decoded information using tx service internal ABI information given the tx data.
+
+        :param data: tx data as a 0x prefixed hexadecimal string.
+        :param to_address: address of the receiving contract
+        :return:
+        """
+        payload = {"data": HexBytes(data).hex()}
+        if to_address:
+            payload["to"] = to_address
+        response = self._post_request("/api/v1/data-decoder/", payload)
+        if not response.ok:
+            raise SafeAPIException(f"Cannot decode tx data: {response.content}")
+        return response.json()

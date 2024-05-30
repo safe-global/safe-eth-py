@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 from django.test import TestCase
 
+from eth_typing import HexStr
 from hexbytes import HexBytes
 
 from gnosis.eth import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
@@ -183,3 +184,15 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 f"Cannot get transaction with safe-tx-hash={safe_tx_hash.hex()}:",
                 str(context.exception),
             )
+
+    def test_decode_data(self):
+        with patch.object(TransactionServiceApi, "_post_request") as mock_post_request:
+            data = HexStr(
+                "0x095ea7b3000000000000000000000000e6fc577e87f7c977c4393300417dcc592d90acf8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            )
+            to_address = "0x4127839cdf4F73d9fC9a2C2861d8d1799e9DF40C"
+            self.transaction_service_api.decode_data(data, to_address)
+
+            expected_url = "/api/v1/data-decoder/"
+            expected_payload = {"data": HexBytes(data).hex(), "to": to_address}
+            mock_post_request.assert_called_once_with(expected_url, expected_payload)
