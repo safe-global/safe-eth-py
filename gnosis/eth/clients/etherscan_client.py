@@ -63,6 +63,7 @@ class EtherscanClient:
         EthereumNetwork.FRAXTAL_MAINNET: "https://fraxscan.com",
         EthereumNetwork.BASE: "https://api.basescan.org/",
         EthereumNetwork.BLAST: "https://blastscan.io",
+        EthereumNetwork.TAIKO_MAINNET: "https://taikoscan.io",
     }
 
     NETWORK_WITH_API_URL = {
