@@ -108,6 +108,7 @@ class EtherscanClient:
         EthereumNetwork.FRAXTAL_MAINNET: "https://api.fraxscan.com",
         EthereumNetwork.BASE: "https://api.basescan.org",
         EthereumNetwork.BLAST: "https://api.blastscan.io",
+        EthereumNetwork.TAIKO_MAINNET: "https://api.taikoscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
