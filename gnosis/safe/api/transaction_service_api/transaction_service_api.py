@@ -12,7 +12,7 @@ from gnosis.eth.eip712 import eip712_encode_hash
 from gnosis.safe import SafeTx
 
 from ..base_api import SafeAPIException, SafeBaseAPI
-from .entities import DataDecoded
+from .entities import Balance, DataDecoded, DelegateUser, Message, Transaction
 from .transaction_service_messages import get_delegate_message
 from .transaction_service_tx import TransactionServiceTx
 
@@ -93,7 +93,7 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
     @classmethod
-    def parse_signatures(cls, raw_tx: Dict[str, Any]) -> Optional[bytes]:
+    def parse_signatures(cls, raw_tx: Transaction) -> Optional[bytes]:
         """
         Parse signatures in `confirmations` list to build a valid signature (owners must be sorted lexicographically)
 
@@ -121,7 +121,7 @@ class TransactionServiceApi(SafeBaseAPI):
         )
 
     def _build_transaction_service_tx(
-        self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Dict[str, Any]
+        self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Transaction
     ) -> TransactionServiceTx:
         signatures = self.parse_signatures(tx_raw)
         safe_tx = TransactionServiceTx(
@@ -152,7 +152,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         return safe_tx
 
-    def get_balances(self, safe_address: str) -> List[Dict[str, Any]]:
+    def get_balances(self, safe_address: str) -> List[Balance]:
         """
 
         :param safe_address:
@@ -191,7 +191,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def get_transactions(
         self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
-    ) -> List[Dict[str, Any]]:
+    ) -> List[Transaction]:
         """
 
         :param safe_address:
@@ -221,7 +221,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         return transactions
 
-    def get_delegates(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+    def get_delegates(self, safe_address: ChecksumAddress) -> List[DelegateUser]:
         """
 
         :param safe_address:
@@ -374,7 +374,7 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Error posting message: {response.content}")
         return True
 
-    def get_message(self, safe_message_hash: bytes) -> Dict[str, Any]:
+    def get_message(self, safe_message_hash: bytes) -> Message:
         """
 
         :param safe_message_hash:
@@ -387,7 +387,7 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Cannot get messages: {response.content}")
         return response.json()
 
-    def get_messages(self, safe_address: ChecksumAddress) -> List[Dict[str, Any]]:
+    def get_messages(self, safe_address: ChecksumAddress) -> List[Message]:
         """
 
         :param safe_address:
