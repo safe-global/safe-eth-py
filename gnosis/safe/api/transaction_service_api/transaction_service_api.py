@@ -12,6 +12,7 @@ from gnosis.eth.eip712 import eip712_encode_hash
 from gnosis.safe import SafeTx
 
 from ..base_api import SafeAPIException, SafeBaseAPI
+from .entities import DataDecoded
 from .transaction_service_messages import get_delegate_message
 from .transaction_service_tx import TransactionServiceTx
 
@@ -419,7 +420,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def decode_data(
         self, data: Union[bytes, HexStr], to_address: Optional[ChecksumAddress] = None
-    ) -> Dict[str, Any]:
+    ) -> DataDecoded:
         """
         Retrieve decoded information using tx service internal ABI information given the tx data.
 

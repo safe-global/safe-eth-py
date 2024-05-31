@@ -104,3 +104,19 @@ transaction_mock = {
     "trusted": True,
     "signatures": "0x000000000000000000000000c6b82ba149cfa113f8f48d5e3b1f78e933e16dfd000000000000000000000000000000000000000000000000000000000000000001",
 }
+
+transaction_data_decoded_mock = {
+    "method": "approve",
+    "parameters": [
+        {
+            "name": "spender",
+            "type": "address",
+            "value": "0xe6fC577E87F7c977c4393300417dCC592D90acF8",
+        },
+        {
+            "name": "value",
+            "type": "uint256",
+            "value": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        },
+    ],
+}

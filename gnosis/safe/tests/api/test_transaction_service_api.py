@@ -16,7 +16,11 @@ from gnosis.safe.api.transaction_service_api import (
 )
 
 from ...api import SafeAPIException
-from ..mocks.mock_transactions import transaction_data_mock, transaction_mock
+from ..mocks.mock_transactions import (
+    transaction_data_decoded_mock,
+    transaction_data_mock,
+    transaction_mock,
+)
 
 
 class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
@@ -187,12 +191,27 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
 
     def test_decode_data(self):
         with patch.object(TransactionServiceApi, "_post_request") as mock_post_request:
+            mock_post_request.return_value.ok = True
+            mock_post_request.return_value.json = MagicMock(
+                return_value=transaction_data_decoded_mock
+            )
             data = HexStr(
                 "0x095ea7b3000000000000000000000000e6fc577e87f7c977c4393300417dcc592d90acf8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
             )
             to_address = "0x4127839cdf4F73d9fC9a2C2861d8d1799e9DF40C"
-            self.transaction_service_api.decode_data(data, to_address)
-
+            decoded_data = self.transaction_service_api.decode_data(data, to_address)
             expected_url = "/api/v1/data-decoder/"
             expected_payload = {"data": HexBytes(data).hex(), "to": to_address}
             mock_post_request.assert_called_once_with(expected_url, expected_payload)
+            self.assertEqual(decoded_data.get("method"), "approve")
+            self.assertEqual(decoded_data.get("parameters")[0].get("name"), "spender")
+            self.assertEqual(decoded_data.get("parameters")[1].get("name"), "value")
+
+            # Test response not ok
+            mock_post_request.return_value.ok = False
+            with self.assertRaises(SafeAPIException) as context:
+                self.transaction_service_api.decode_data(data, to_address)
+            self.assertIn(
+                "Cannot decode tx data:",
+                str(context.exception),
+            )
