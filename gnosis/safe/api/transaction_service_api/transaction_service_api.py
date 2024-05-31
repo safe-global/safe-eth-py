@@ -424,7 +424,7 @@ class TransactionServiceApi(SafeBaseAPI):
         Retrieve decoded information using tx service internal ABI information given the tx data.
 
         :param data: tx data as a 0x prefixed hexadecimal string.
-        :param to_address: address of the receiving contract
+        :param to_address: address of the contract. This will be used in case of more than one function identifiers matching.
         :return:
         """
         payload = {"data": HexBytes(data).hex()}
