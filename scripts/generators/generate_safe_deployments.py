@@ -5,17 +5,22 @@ from contextlib import contextmanager
 
 from git import Repo
 
-GIT_URL = "https://github.com/safe-global/safe-deployments.git"
-SAFE_DEPLOYMENTS_VERSION = "v1.35.0"  # safe-deployments tag version
-REPO_DIR = "safe-deployments"  # temporary folder to clone the repo
-DEPLOYMENTS_FOLDER = REPO_DIR + "/src/assets"  # folder where the deployments are
-SAFE_ETH_PY_DEPLOYMENTS_PATH = "../../gnosis/safe/safe_deployments.py"  # Full path where the deployment dictionary will be stored
+SAFE_DEPLOYMENTS_URL = "https://github.com/safe-global/safe-deployments.git"
+SAFE_DEPLOYMENTS_VERSION = "main"  # safe-deployments tag/branch
+SAFE_DEPLOYMENTS_REPO_DIR = "safe-deployments"  # temporary folder to clone the repo
+SAFE_DEPLOYMENTS_FOLDER = (
+    SAFE_DEPLOYMENTS_REPO_DIR + "/src/assets"
+)  # folder where the deployments are
+CURRENT_DIRECTORY = os.path.dirname(__file__)
+SAFE_ETH_PY_DEPLOYMENTS_FILE = os.path.join(
+    CURRENT_DIRECTORY, "../../gnosis/safe/safe_deployments.py"
+)  # deployment dictionary to be stored
 
 
 def clean_resources():
     """Removes the intermediate resources used (source repository)"""
     try:
-        shutil.rmtree(REPO_DIR)
+        shutil.rmtree(SAFE_DEPLOYMENTS_REPO_DIR)
     except OSError:
         pass
 
@@ -23,7 +28,7 @@ def clean_resources():
 @contextmanager
 def get_safe_deployments(*args, **kwds):
     # Code to acquire resource, e.g.:
-    repo = Repo.clone_from(GIT_URL, REPO_DIR)
+    repo = Repo.clone_from(SAFE_DEPLOYMENTS_URL, SAFE_DEPLOYMENTS_REPO_DIR)
     try:
         yield repo
     finally:
@@ -39,7 +44,7 @@ def generate_safe_deployments_py():
     # Clone repo
     with get_safe_deployments() as repo:
         repo.git.checkout(SAFE_DEPLOYMENTS_VERSION)
-        for root, _, files in sorted(os.walk(DEPLOYMENTS_FOLDER, topdown=False)):
+        for root, _, files in sorted(os.walk(SAFE_DEPLOYMENTS_FOLDER, topdown=False)):
             for filename in sorted(files):
                 repo_safe_deployment = json.load(open(os.path.join(root, filename)))
                 safe_deployments.setdefault(repo_safe_deployment["version"], {})[
@@ -47,8 +52,8 @@ def generate_safe_deployments_py():
                 ] = repo_safe_deployment["networkAddresses"]
 
         # Write file
-        with open(SAFE_ETH_PY_DEPLOYMENTS_PATH, "w") as file:
-            file.write("safe_deployments = " + json.dumps(safe_deployments, indent=2))
+        with open(SAFE_ETH_PY_DEPLOYMENTS_FILE, "w") as file:
+            file.write("safe_deployments = " + json.dumps(safe_deployments, indent=4))
 
 
 if __name__ == "__main__":
