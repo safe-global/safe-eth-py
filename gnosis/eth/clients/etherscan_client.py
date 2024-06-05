@@ -110,6 +110,7 @@ class EtherscanClient:
         EthereumNetwork.BASE: "https://api.basescan.org",
         EthereumNetwork.BLAST: "https://api.blastscan.io",
         EthereumNetwork.TAIKO_MAINNET: "https://api.taikoscan.io",
+        EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://api-sepolia.basescan.org/api",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
