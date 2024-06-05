@@ -415,22 +415,19 @@ class SafeTx:
 
         # Insert signature sorted
         if account.address not in self.signers:
-            new_owners = self.signers + [account.address]
-            new_owner_pos = sorted(new_owners, key=lambda x: int(x, 16)).index(
-                account.address
+            new_tx_signatures = SafeSignature.parse_signature(
+                self.signatures + signature, self.safe_tx_hash
             )
-            self.signatures = (
-                self.signatures[: 65 * new_owner_pos]
-                + signature
-                + self.signatures[65 * new_owner_pos :]
-            )
+            self.signatures = SafeSignature.export_signatures(new_tx_signatures)
+
         return signature
 
     def unsign(self, address: str) -> bool:
-        for pos, signer in enumerate(self.signers):
-            if signer == address:
-                self.signatures = self.signatures.replace(
-                    self.signatures[pos * 65 : pos * 65 + 65], b""
-                )
-                return True
+        tx_signatures = SafeSignature.parse_signature(
+            self.signatures, self.safe_tx_hash
+        )
+        new_tx_signatures = list(filter(lambda x: x.owner != address, tx_signatures))
+        if tx_signatures != new_tx_signatures:
+            self.signatures = SafeSignature.export_signatures(new_tx_signatures)
+            return True
         return False
