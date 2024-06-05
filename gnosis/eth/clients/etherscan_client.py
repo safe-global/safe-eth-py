@@ -64,6 +64,7 @@ class EtherscanClient:
         EthereumNetwork.BASE: "https://api.basescan.org/",
         EthereumNetwork.BLAST: "https://blastscan.io",
         EthereumNetwork.TAIKO_MAINNET: "https://taikoscan.io",
+        EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://sepolia.basescan.org",
     }
 
     NETWORK_WITH_API_URL = {
