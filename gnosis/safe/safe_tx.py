@@ -415,10 +415,10 @@ class SafeTx:
 
         # Insert signature sorted
         if account.address not in self.signers:
-            new_tx_signatures = SafeSignature.parse_signature(
+            unsorted_signatures = SafeSignature.parse_signature(
                 self.signatures + signature, self.safe_tx_hash
             )
-            self.signatures = SafeSignature.export_signatures(new_tx_signatures)
+            self.signatures = SafeSignature.export_signatures(unsorted_signatures)
 
         return signature
 
