@@ -189,6 +189,72 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         self.assertEqual(set(signers), set(safe_tx.signers))
         self.assertEqual(len(safe_tx.signers), 2)
 
+    def test_unsign_safe_tx(self):
+        owners = [Account.create() for _ in range(3)]
+        owners_unsorted = sorted(owners, key=lambda x: int(x.address, 16), reverse=True)
+        owner_addresses = [owner.address for owner in owners_unsorted]
+        threshold = 1
+        safe = self.deploy_test_safe(
+            owners=owner_addresses,
+            threshold=threshold,
+            initial_funding_wei=self.w3.to_wei(0.1, "ether"),
+        )
+        to = Account().create().address
+        value = self.w3.to_wei(0.01, "ether")
+
+        safe_tx = SafeTx(
+            self.ethereum_client,
+            safe.address,
+            to,
+            value,
+            b"",
+            0,
+            200000,
+            100000,
+            self.gas_price,
+            None,
+            None,
+            safe_nonce=0,
+        )
+
+        safe_tx.sign(owners_unsorted[0].key)
+        safe_tx.sign(owners_unsorted[1].key)
+        safe_tx.sign(owners_unsorted[2].key)
+        signers = [owner_addresses[0], owner_addresses[1], owner_addresses[2]]
+
+        self.assertEqual(safe_tx.signers, safe_tx.sorted_signers)
+        self.assertEqual(set(signers), set(safe_tx.signers))
+        self.assertEqual(len(safe_tx.signers), 3)
+
+        # test unsign
+        signature_1_removed = safe_tx.unsign(owners_unsorted[1].address)
+        self.assertTrue(signature_1_removed)
+        signers = [owner_addresses[0], owner_addresses[2]]
+        self.assertEqual(set(signers), set(safe_tx.signers))
+        self.assertEqual(len(safe_tx.signers), 2)
+
+        signature_2_removed = safe_tx.unsign(owners_unsorted[2].address)
+        self.assertTrue(signature_2_removed)
+        signers = [owner_addresses[0]]
+        self.assertEqual(set(signers), set(safe_tx.signers))
+        self.assertEqual(len(safe_tx.signers), 1)
+
+        signature_0_removed = safe_tx.unsign(owners_unsorted[0].address)
+        self.assertTrue(signature_0_removed)
+        self.assertEqual(set([]), set(safe_tx.signers))
+        self.assertEqual(len(safe_tx.signers), 0)
+
+        # test unsign with invalid address
+        safe_tx.sign(owners_unsorted[0].key)
+        signers = [owner_addresses[0]]
+        self.assertEqual(set(signers), set(safe_tx.signers))
+        self.assertEqual(len(safe_tx.signers), 1)
+
+        signature_removed = safe_tx.unsign(Account.create().address)
+        self.assertFalse(signature_removed)
+        self.assertEqual(set(signers), set(safe_tx.signers))
+        self.assertEqual(len(safe_tx.signers), 1)
+
     def test_hash_safe_multisig_tx(self):
         # -------- Old version of the contract --------------------------
         expected_hash = HexBytes(
