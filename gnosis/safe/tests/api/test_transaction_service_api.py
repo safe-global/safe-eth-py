@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 from django.test import TestCase
 
+from eth_account import Account
 from eth_typing import HexStr
 from hexbytes import HexBytes
 
@@ -188,6 +189,80 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 f"Cannot get transaction with safe-tx-hash={safe_tx_hash.hex()}:",
                 str(context.exception),
             )
+
+    def test_remove_delegate(self):
+        with patch.object(
+            TransactionServiceApi, "_delete_request"
+        ) as mock_delete_request:
+            delegate_address = Account().create().address
+            delegator_account = Account().create()
+            message_hash = self.transaction_service_api.create_delegate_message_hash(
+                delegate_address
+            )
+            signature = delegator_account.signHash(message_hash).signature.hex()
+            self.transaction_service_api.remove_delegate(
+                delegate_address, delegator_account.address, signature
+            )
+
+            expected_url = f"/api/v2/delegates/{delegate_address}/"
+            expected_payload = {
+                "delegator": delegator_account.address,
+                "signature": signature,
+            }
+            mock_delete_request.assert_called_once_with(expected_url, expected_payload)
+
+            self.transaction_service_api.remove_delegate(
+                delegate_address,
+                delegator_account.address,
+                signature,
+                self.safe_address,
+            )
+
+            expected_payload = {
+                "safe": self.safe_address,
+                "delegator": delegator_account.address,
+                "signature": signature,
+            }
+            mock_delete_request.assert_called_with(expected_url, expected_payload)
+
+    def test_add_delegate(self):
+        with patch.object(TransactionServiceApi, "_post_request") as mock_post_request:
+            delegate_address = Account().create().address
+            delegator_account = Account().create()
+            message_hash = self.transaction_service_api.create_delegate_message_hash(
+                delegate_address
+            )
+            signature = delegator_account.signHash(message_hash).signature.hex()
+            label = "test label"
+            self.transaction_service_api.add_delegate(
+                delegate_address, delegator_account.address, label, signature
+            )
+
+            expected_url = "/api/v2/delegates/"
+            expected_payload = {
+                "delegate": delegate_address,
+                "delegator": delegator_account.address,
+                "signature": signature,
+                "label": label,
+            }
+            mock_post_request.assert_called_once_with(expected_url, expected_payload)
+
+            self.transaction_service_api.add_delegate(
+                delegate_address,
+                delegator_account.address,
+                label,
+                signature,
+                self.safe_address,
+            )
+
+            expected_payload = {
+                "safe": self.safe_address,
+                "delegate": delegate_address,
+                "delegator": delegator_account.address,
+                "signature": signature,
+                "label": label,
+            }
+            mock_post_request.assert_called_with(expected_url, expected_payload)
 
     def test_decode_data(self):
         with patch.object(TransactionServiceApi, "_post_request") as mock_post_request:

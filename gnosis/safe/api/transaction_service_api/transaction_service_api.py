@@ -3,7 +3,6 @@ import os
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlencode
 
-from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, Hash32, HexStr
 from hexbytes import HexBytes
 
@@ -265,21 +264,20 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def add_delegate(
         self,
-        safe_address: ChecksumAddress,
         delegate_address: ChecksumAddress,
         delegator_address: ChecksumAddress,
         label: str,
-        signer_account: LocalAccount,
+        signature: bytes,
+        safe_address: Optional[ChecksumAddress] = None,
     ) -> bool:
-        hash_to_sign = self.create_delegate_message_hash(delegate_address)
-        signature = signer_account.signHash(hash_to_sign)
         add_payload = {
-            "safe": safe_address,
             "delegate": delegate_address,
             "delegator": delegator_address,
-            "signature": signature.signature.hex(),
+            "signature": HexBytes(signature).hex(),
             "label": label,
         }
+        if safe_address:
+            add_payload["safe"] = safe_address
         response = self._post_request("/api/v2/delegates/", add_payload)
         if not response.ok:
             raise SafeAPIException(f"Cannot add delegate: {response.content}")
@@ -287,17 +285,27 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def remove_delegate(
         self,
-        safe_address: ChecksumAddress,
         delegate_address: ChecksumAddress,
-        signer_account: LocalAccount,
+        delegator_address: ChecksumAddress,
+        signature: bytes,
+        safe_address: Optional[ChecksumAddress] = None,
     ) -> bool:
-        hash_to_sign = self.create_delegate_message_hash(delegate_address)
-        signature = signer_account.signHash(hash_to_sign)
+        """
+        Deletes a delegated user
+
+        :param delegator_address:
+        :param delegate_address:
+        :param signature: Signature of a hash of an eip712 message.
+        :param safe_address: If specified, a delegate is removed for a delegator for the specific safe.
+            Otherwise, the delegate is deleted in a global form.
+        :return:
+        """
         remove_payload = {
-            "safe": safe_address,
-            "delegator": signer_account.address,
-            "signature": signature.signature.hex(),
+            "delegator": delegator_address,
+            "signature": HexBytes(signature).hex(),
         }
+        if safe_address:
+            remove_payload["safe"] = safe_address
         response = self._delete_request(
             f"/api/v2/delegates/{delegate_address}/",
             remove_payload,
