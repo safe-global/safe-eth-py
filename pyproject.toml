@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "safe-eth-py"
+dynamic = ["version"]
+description = "Safe Ecosystem Foundation utilities for Ethereum projects"
+readme = "README.rst"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Uxío", email = "uxio@safe.global" },
+]
+keywords = [
+    "cowswap",
+    "django",
+    "ethereum",
+    "gnosis",
+    "safe",
+    "web3",
+]
+classifiers = [
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 2.0",
+    "Framework :: Django :: 3.0",
+    "Framework :: Django :: 4.0",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+dependencies = [
+    "packaging",
+    "py-evm>=0.7.0a1",
+    "requests>=2",
+    "safe-pysha3>=1.0.0",
+    "web3>=6.2.0",
+]
+
+[project.optional-dependencies]
+django = [
+    "django-filter>=2",
+    "django>=2",
+    "djangorestframework>=2",
+]
+
+[project.urls]
+Documentation = "https://safe-eth-py.readthedocs.io/en/latest/"
+Homepage = "https://github.com/safe-global/safe-eth-py"
+Source = "https://github.com/safe-global/safe-eth-py"
+Tracker = "https://github.com/safe-global/safe-eth-py/issues"
+
+[tool.hatch.version]
+path = "gnosis/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/gnosis",
+]
+[tool.hatch.build.targets.wheel]
+packages = [
+    "/gnosis",
+]
