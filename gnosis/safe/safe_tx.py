@@ -423,11 +423,13 @@ class SafeTx:
         return signature
 
     def unsign(self, address: str) -> bool:
-        tx_signatures = SafeSignature.parse_signature(
+        current_tx_signatures = SafeSignature.parse_signature(
             self.signatures, self.safe_tx_hash
         )
-        new_tx_signatures = list(filter(lambda x: x.owner != address, tx_signatures))
-        if tx_signatures != new_tx_signatures:
-            self.signatures = SafeSignature.export_signatures(new_tx_signatures)
+        filtered_tx_signatures = list(
+            filter(lambda x: x.owner != address, current_tx_signatures)
+        )
+        if current_tx_signatures != filtered_tx_signatures:
+            self.signatures = SafeSignature.export_signatures(filtered_tx_signatures)
             return True
         return False
