@@ -65,6 +65,7 @@ class EtherscanClient:
         EthereumNetwork.BLAST: "https://blastscan.io",
         EthereumNetwork.TAIKO_MAINNET: "https://taikoscan.io",
         EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://sepolia.basescan.org",
+        EthereumNetwork.HOLESKY: "https://holesky.etherscan.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -111,6 +112,7 @@ class EtherscanClient:
         EthereumNetwork.BLAST: "https://api.blastscan.io",
         EthereumNetwork.TAIKO_MAINNET: "https://api.taikoscan.io",
         EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://api-sepolia.basescan.org/api",
+        EthereumNetwork.HOLESKY: "https://api-holesky.etherscan.io",
     }
     HTTP_HEADERS = {
         "User-Agent": "curl/7.77.0",
