@@ -113,6 +113,7 @@ class BlockscoutClient:
         EthereumNetwork.REDSTONE: "https://explorer.redstone.xyz/api/v1/graphql",
         EthereumNetwork.GARNET_HOLESKY: "https://api.explorer.garnet.qry.live/api/v1/graphql",
         EthereumNetwork.TAIKO_HEKLA_L2: "https://blockscoutapi.hekla.taiko.xyz/graphiql",
+        EthereumNetwork.ASTAR_ZKEVM: "https://astar-zkevm.explorer.startale.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
