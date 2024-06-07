@@ -61,8 +61,7 @@ jobs:
         cache: 'pip'
         cache-dependency-path: 'requirements*.txt'
     - name: Install dependencies
-      run: |
-        pip install wheel setuptools
+      run:
         pip install -r requirements-test.txt coveralls
       env:
         PIP_USE_MIRRORS: true
