@@ -68,11 +68,11 @@ extra-dependencies = [
 ]
 
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:gnosis tests}"
+check = "mypy --install-types --non-interactive {args:gnosis}"
 
 [tool.coverage.run]
 include = ["gnosis/*"]
-# source_pkgs = ["prueba", "tests"]
+# source_pkgs = ["gnosis", "tests"]
 branch = true
 parallel = true
 omit = [
@@ -82,8 +82,8 @@ omit = [
 ]
 
 #[tool.coverage.paths]
-#prueba = ["src/prueba", "*/prueba/src/prueba"]
-#tests = ["tests", "*/prueba/tests"]
+#prueba = ["src/gnosis", "*/gnosis/src/gnosis"]
+#tests = ["tests", "*/gnosis/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
