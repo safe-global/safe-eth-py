@@ -16,7 +16,7 @@ class ContractBase(metaclass=ABCMeta):
         address: ChecksumAddress,
         ethereum_client: "EthereumClient",  # noqa F821
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.address = address
         self.ethereum_client = ethereum_client

@@ -32,7 +32,7 @@ class EthereumAddressField(serializers.Field):
         self,
         allow_zero_address: bool = False,
         allow_sentinel_address: bool = False,
-        **kwargs
+        **kwargs,
     ):
         self.allow_zero_address = allow_zero_address
         self.allow_sentinel_address = allow_sentinel_address

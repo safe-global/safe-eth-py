@@ -34,6 +34,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
@@ -60,6 +61,39 @@ Tracker = "https://github.com/safe-global/safe-eth-py/issues"
 
 [tool.hatch.version]
 path = "gnosis/__init__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:gnosis tests}"
+
+[tool.coverage.run]
+include = ["gnosis/*"]
+# source_pkgs = ["prueba", "tests"]
+branch = true
+parallel = true
+omit = [
+  "*__init__.py*",
+  "*tests*",
+  "*/migrations/*",
+]
+
+#[tool.coverage.paths]
+#prueba = ["src/prueba", "*/prueba/src/prueba"]
+#tests = ["tests", "*/prueba/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "if settings.DEBUG",
+  "raise NotImplementedError",
+  "pass",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [
