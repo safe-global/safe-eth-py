@@ -585,7 +585,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 727470, "1.3.0+L2"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 727472, "1.3.0"),
     ],
-    EthereumNetwork.LINEA_TESTNET: [
+    EthereumNetwork.LINEA_GOERLI: [
         (
             "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
             363132,
@@ -606,6 +606,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             3279611,
             "1.3.0",
         ),  # Safe singleton address
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 2807831, "1.4.1"),  # v1.4.1
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            2807830,
+            "1.4.1+L2",
+        ),
     ],
     EthereumNetwork.ASTAR: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 1106426, "1.3.0+L2"),
@@ -1287,14 +1293,6 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 61547, "1.4.1"),  # v1.4.1
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 61546, "1.4.1+L2"),  # v1.4.1+L2
     ],
-    EthereumNetwork.LINEA_GOERLI: [
-        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 2807831, "1.4.1"),  # v1.4.1
-        (
-            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
-            2807830,
-            "1.4.1+L2",
-        ),  # v1.4.1+L2
-    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -1642,7 +1640,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.TENET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 727457),  # v1.3.0
     ],
-    EthereumNetwork.LINEA_TESTNET: [
+    EthereumNetwork.LINEA_GOERLI: [
         (
             "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
             3279584,
@@ -1651,6 +1649,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
             363118,
         ),  # v1.3.0  Default singleton address
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2807823),  # v1.4.1
     ],
     EthereumNetwork.ASTAR: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 1106417),  # v1.3.0
@@ -2012,8 +2011,5 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.UNREAL: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 61539),  # v1.4.1
-    ],
-    EthereumNetwork.LINEA_GOERLI: [
-        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2807823),  # v1.4.1
     ],
 }
