@@ -87,7 +87,7 @@ class BlockscoutClient:
         EthereumNetwork.HAQQ_CHAIN_TESTNET: "https://explorer.testedge2.haqq.network/graphiql",
         EthereumNetwork.MODE: "https://explorer.mode.network/graphiql",
         EthereumNetwork.MODE_TESTNET: "https://sepolia.explorer.mode.network/graphiql",
-        EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/graphiql",
+        EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/api/v1/graphql",
         EthereumNetwork.OP_SEPOLIA_TESTNET: "https://optimism-sepolia.blockscout.com/graphiql",
         EthereumNetwork.UNREAL_TESTNET: "https://unreal.blockscout.com/graphiql",
         EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
