@@ -49,7 +49,7 @@ class EtherscanClient:
         EthereumNetwork.ZKSYNC_MAINNET: "https://explorer.zksync.io/",
         EthereumNetwork.FANTOM_OPERA: "https://ftmscan.com",
         EthereumNetwork.FANTOM_TESTNET: "https://testnet.ftmscan.com/",
-        EthereumNetwork.LINEA: "https://www.lineascan.build",
+        EthereumNetwork.LINEA: "https://lineascan.build",
         EthereumNetwork.LINEA_TESTNET: "https://goerli.lineascan.build",
         EthereumNetwork.MANTLE: "https://explorer.mantle.xyz",
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz",
