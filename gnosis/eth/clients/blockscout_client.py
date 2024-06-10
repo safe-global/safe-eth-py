@@ -115,6 +115,7 @@ class BlockscoutClient:
         EthereumNetwork.TAIKO_HEKLA_L2: "https://blockscoutapi.hekla.taiko.xyz/graphiql",
         EthereumNetwork.ASTAR_ZKEVM: "https://astar-zkevm.explorer.startale.com/api/v1/graphql",
         EthereumNetwork.RE_AL: "https://explorer.re.al/api/v1/graphql",
+        EthereumNetwork.UNREAL: "https://unreal.blockscout.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
