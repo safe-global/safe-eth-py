@@ -1974,4 +1974,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.HOLESKY: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 100413),  # v1.4.1
     ],
+    EthereumNetwork.RE_AL: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 81980),  # v1.4.1
+    ],
 }
