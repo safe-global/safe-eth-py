@@ -2072,4 +2072,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.UNREAL: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 61539),  # v1.4.1
     ],
+    EthereumNetwork.SEI_NETWORK: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 80546985),  # v1.4.1
+    ],
 }
