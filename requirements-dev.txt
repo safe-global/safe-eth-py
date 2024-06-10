@@ -2,6 +2,7 @@
 -r requirements-test.txt
 flake8
 gitpython
+hatch
 ipdb
 ipython
 isort
