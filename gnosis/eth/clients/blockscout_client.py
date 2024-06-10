@@ -115,6 +115,7 @@ class BlockscoutClient:
         EthereumNetwork.ASTAR_ZKEVM: "https://astar-zkevm.explorer.startale.com/api/v1/graphql",
         EthereumNetwork.RE_AL: "https://explorer.re.al/api/v1/graphql",
         EthereumNetwork.UNREAL: "https://unreal.blockscout.com/api/v1/graphql",
+        EthereumNetwork.MANTLE_SEPOLIA_TESTNET: "https://explorer.sepolia.mantle.xyz/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
