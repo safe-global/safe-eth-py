@@ -706,6 +706,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             1939927,
             "1.3.0",
         ),  # Safe singleton address
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 1583051, "1.4.1"),  # v1.4.1
     ],
     EthereumNetwork.NEON_EVM_DEVNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 205147021, "1.3.0+L2"),
