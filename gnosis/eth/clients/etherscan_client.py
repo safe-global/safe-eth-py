@@ -36,7 +36,7 @@ class EtherscanClient:
         EthereumNetwork.ARBITRUM_GOERLI: "https://goerli.arbiscan.io",
         EthereumNetwork.AVALANCHE_C_CHAIN: "https://snowtrace.io",
         EthereumNetwork.GNOSIS: "https://gnosisscan.io",
-        EthereumNetwork.MOONBEAM: "https://moonscan.io",
+        EthereumNetwork.MOONBEAM: "https://moonbeam.moonscan.io",
         EthereumNetwork.MOONRIVER: "https://moonriver.moonscan.io",
         EthereumNetwork.MOONBASE_ALPHA: "https://moonbase.moonscan.io",
         EthereumNetwork.CRONOS_MAINNET: "https://cronoscan.com",
@@ -66,7 +66,6 @@ class EtherscanClient:
         EthereumNetwork.TAIKO_MAINNET: "https://taikoscan.io",
         EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://sepolia.basescan.org",
         EthereumNetwork.HOLESKY: "https://holesky.etherscan.io",
-        EthereumNetwork.MOONBEAM: "https://moonbeam.moonscan.io",
     }
 
     NETWORK_WITH_API_URL = {
