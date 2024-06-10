@@ -66,6 +66,7 @@ class EtherscanClient:
         EthereumNetwork.TAIKO_MAINNET: "https://taikoscan.io",
         EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://sepolia.basescan.org",
         EthereumNetwork.HOLESKY: "https://holesky.etherscan.io",
+        EthereumNetwork.MOONBEAM: "https://moonbeam.moonscan.io",
     }
 
     NETWORK_WITH_API_URL = {
