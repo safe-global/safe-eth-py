@@ -62,7 +62,7 @@ class BlockscoutClient:
         EthereumNetwork.ROOTSTOCK_MAINNET: "https://rootstock.blockscout.com/graphiql",
         EthereumNetwork.ROOTSTOCK_TESTNET: "https://rootstock-testnet.blockscout.com/graphiql",
         EthereumNetwork.LINEA: "https://explorer.linea.build/graphiql",
-        EthereumNetwork.LINEA_TESTNET: "https://explorer.goerli.linea.build/graphiql",
+        EthereumNetwork.LINEA_GOERLI: "https://explorer.goerli.linea.build/graphiql",
         EthereumNetwork.NEON_EVM_MAINNET: "https://neon.blockscout.com/graphiql",
         EthereumNetwork.NEON_EVM_DEVNET: "https://neon-devnet.blockscout.com/graphiql",
         EthereumNetwork.OASIS_SAPPHIRE: "https://explorer.sapphire.oasis.io/graphiql",
