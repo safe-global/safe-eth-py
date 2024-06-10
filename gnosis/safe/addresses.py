@@ -1261,6 +1261,10 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 100429, "1.4.1"),  # v1.4.1
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 100427, "1.4.1+L2"),  # v1.4.1+L2
     ],
+    EthereumNetwork.RE_AL: [
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 81988, "1.4.1"),  # v1.4.1
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 81987, "1.4.1+L2"),  # v1.4.1+L2
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -1969,5 +1973,8 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.HOLESKY: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 100413),  # v1.4.1
+    ],
+    EthereumNetwork.RE_AL: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 81980),  # v1.4.1
     ],
 }
