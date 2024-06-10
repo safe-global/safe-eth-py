@@ -611,7 +611,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
             2807830,
             "1.4.1+L2",
-        ),
+        ),  # v1.4.1+L2
     ],
     EthereumNetwork.ASTAR: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 1106426, "1.3.0+L2"),
