@@ -92,7 +92,7 @@ class BlockscoutClient:
         EthereumNetwork.UNREAL_TESTNET: "https://unreal.blockscout.com/graphiql",
         EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
         EthereumNetwork.SEI_DEVNET: "https://seitrace.com/graphiql",
-        EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/graphiql",
+        EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/api/v1/graphql",
         EthereumNetwork.BOTANIX_TESTNET: "https://blockscout.botanixlabs.dev/graphiql",
         EthereumNetwork.REYA_NETWORK: "https://explorer.reya.network/graphiql",
         EthereumNetwork.AURORIA_TESTNET: "https://auroria.explorer.stratisevm.com/graphiql",
@@ -116,7 +116,6 @@ class BlockscoutClient:
         EthereumNetwork.RE_AL: "https://explorer.re.al/api/v1/graphql",
         EthereumNetwork.UNREAL: "https://unreal.blockscout.com/api/v1/graphql",
         EthereumNetwork.LISK: "https://blockscout.lisk.com/api/v1/graphql",
-        EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
