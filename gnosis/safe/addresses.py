@@ -951,6 +951,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             1948159,
             "1.3.0",
         ),  # default singleton address
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 12924063, "1.4.1"),  # v1.4.1
     ],
     EthereumNetwork.ZORA_SEPOLIA_TESTNET: [
         (
