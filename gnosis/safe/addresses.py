@@ -2157,4 +2157,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.LINEA_SEPOLIA: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 1305441),  # v1.4.1
     ],
+    EthereumNetwork.FRAXTAL: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 3452668),  # v1.4.1
+    ],
 }
