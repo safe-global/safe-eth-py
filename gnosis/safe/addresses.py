@@ -680,6 +680,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             11934,
             "1.3.0",
         ),  # default singleton address
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 13511109, "1.4.1"),  # v1.4.1
     ],
     EthereumNetwork.ZKSYNC_MAINNET: [
         ("0x1727c2c531cf966f902E5927b98490fDFb3b2b70", 7259224, "1.3.0+L2"),
