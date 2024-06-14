@@ -15,8 +15,7 @@ def prepare_http_session(
     session = requests.Session()
     retry_conf = (
         requests.adapters.Retry(
-            total=retry_count,
-            backoff_factor=0.3,
+            total=retry_count, backoff_factor=0.3, respect_retry_after_header=False
         )
         if retry_count
         else 0
