@@ -352,6 +352,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         ),  # default singleton address
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 52494556, "1.3.0"),
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 121013988, "1.4.1"),  # v1.4.1
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            121013976,
+            "1.4.1+L2",
+        ),  # v1.4.1+L2
     ],
     EthereumNetwork.METIS_STARDUST_TESTNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 56124, "1.3.0+L2"),
@@ -1711,6 +1717,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
             52494463,
         ),  # v1.3.0 default singleton address
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 121013905),  # v1.4.1
     ],
     EthereumNetwork.METIS_STARDUST_TESTNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 56117),  # v1.3.0
