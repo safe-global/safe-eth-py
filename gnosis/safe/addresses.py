@@ -897,6 +897,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             189,
             "1.3.0",
         ),  # default singleton address
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 5007158, "1.4.1"),  # v1.4.1
     ],
     EthereumNetwork.TELOS_EVM_MAINNET: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 237435759, "1.3.0+L2"),
