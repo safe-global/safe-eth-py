@@ -353,6 +353,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ),  # default singleton address
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 52494556, "1.3.0"),
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 121013988, "1.4.1"),  # v1.4.1
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 121013976, "1.4.1+L2"),  # v1.4.1+L2
     ],
     EthereumNetwork.METIS_STARDUST_TESTNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 56124, "1.3.0+L2"),
