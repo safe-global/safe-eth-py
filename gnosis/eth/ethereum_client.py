@@ -1027,7 +1027,7 @@ class TracingManager(EthereumClientManager):
 
     def trace_blocks(
         self, block_identifiers: Sequence[BlockIdentifier]
-    ) -> List[List[Dict[str, Any]]]:
+    ) -> List[List[BlockTrace]]:
         if not block_identifiers:
             return []
         payload = [
