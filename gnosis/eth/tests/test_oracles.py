@@ -481,10 +481,11 @@ class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
         mln_vault_underlying_token = "0xec67005c4E498Ec7f55E092bd1d35cbC47C91892"
         usf_fund_token_address = "0x86FB84E92c1EEDc245987D28a42E123202bd6701"
         usf_fund_underlying_tokens = [
-            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "0x182B723a58739a9c974cFDB385ceaDb237453c28",
             "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "0xD533a949740bb3306d119CC777fa900bA034cd52",
+            "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
         ]
 
         underlying_tokens = enzyme_oracle.get_underlying_tokens(mln_vault_token_address)
