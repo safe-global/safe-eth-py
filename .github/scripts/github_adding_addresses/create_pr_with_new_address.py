@@ -73,12 +73,13 @@ def create_pr(
     issue_number: int,
 ) -> None:
     try:
-        repo.create_pull(
+        created_pull_request = repo.create_pull(
             title=f"Add addresses {version} for chain {chain_enum_name}",
             body=f"Automatic PR to add new address {version} to {chain_enum_name} chain\n Closes #{issue_number}",
             head=branch_name,
             base="main",
         )
+        created_pull_request.add_to_labels("add-new-address")
     except GithubException as e:
         print(f"Unable to create pull request: {e}")
 
