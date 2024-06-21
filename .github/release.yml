@@ -7,9 +7,13 @@ changelog:
         labels:
           - dependencies
           - breaking_change
+          - add-new-address
     - title: 🛠 Breaking Changes
       labels:
         - breaking_change
     - title: 👒 Dependencies
       labels:
         - dependencies
+    - title: 🆕 New Chain Addresses
+      labels:
+        - add-new-address
