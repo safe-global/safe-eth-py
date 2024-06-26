@@ -2321,4 +2321,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.ZIRCUIT_TESTNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 9199668),  # v1.3.0
     ],
+    EthereumNetwork.OPEN_CAMPUS_CODEX: [
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 458),  # v1.3.0
+    ],
 }
