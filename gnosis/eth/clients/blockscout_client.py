@@ -116,6 +116,7 @@ class BlockscoutClient:
         EthereumNetwork.RE_AL: "https://explorer.re.al/api/v1/graphql",
         EthereumNetwork.UNREAL: "https://unreal.blockscout.com/api/v1/graphql",
         EthereumNetwork.LISK: "https://blockscout.lisk.com/api/v1/graphql",
+        EthereumNetwork.OPEN_CAMPUS_CODEX: "https://opencampus-codex.blockscout.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
