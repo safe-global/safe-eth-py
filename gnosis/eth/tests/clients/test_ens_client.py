@@ -11,6 +11,11 @@ from ...clients import EnsClient
 
 
 class TestEnsClient(TestCase):
+    config = EnsClient.Config(
+        network=EthereumNetwork.MAINNET,
+        base_url="https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    )
+
     def test_domain_hash_to_hex_str(self):
         domain_hash_bytes = keccak(text="gnosis")
         domain_hash_int = int.from_bytes(domain_hash_bytes, byteorder="big")
@@ -24,7 +29,7 @@ class TestEnsClient(TestCase):
         self.assertEqual(len(EnsClient.domain_hash_to_hex_str(2)), 66)
 
     def test_query_by_account(self):
-        ens_client = EnsClient(EthereumNetwork.MAINNET.value)
+        ens_client = EnsClient(config=self.config)
         if not ens_client.is_available():
             self.skipTest("ENS Mainnet Client is not available")
 
@@ -117,7 +122,7 @@ class TestEnsClient(TestCase):
         )
 
     def test_query_by_domain_hash(self):
-        ens_client = EnsClient(EthereumNetwork.MAINNET.value)  # Mainnet
+        ens_client = EnsClient(config=self.config)
         if not ens_client.is_available():
             self.skipTest("ENS Mainnet Client is not available")
 
@@ -131,12 +136,18 @@ class TestEnsClient(TestCase):
         self.assertIsNone(ens_client.query_by_domain_hash(domain_hash_2))
 
     def test_is_available(self):
-        for ethereum_network in (
-            EthereumNetwork.ROPSTEN,
-            EthereumNetwork.MAINNET,
+        for config in (
+            EnsClient.Config(
+                network=EthereumNetwork.SEPOLIA,
+                base_url="https://api.studio.thegraph.com/query/49574/enssepolia/version/latest",
+            ),
+            EnsClient.Config(
+                network=EthereumNetwork.MAINNET,
+                base_url="https://api.thegraph.com/subgraphs/name/ensdomains/ens/",
+            ),
         ):
-            with self.subTest(ethereum_network=ethereum_network):
-                ens_client = EnsClient(ethereum_network)
+            with self.subTest(config.network):
+                ens_client = EnsClient(config=config)
                 self.assertTrue(ens_client.is_available())
                 with mock.patch.object(Session, "get", side_effect=IOError()):
                     self.assertFalse(ens_client.is_available())
