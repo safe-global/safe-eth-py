@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 import requests
@@ -15,20 +14,29 @@ class EnsClient:
     Resolves Ethereum Name Service domains using ``thegraph`` API
     """
 
-    @dataclass
     class Config:
-        network: EthereumNetwork
-        base_url: str
+        def __init__(self, network: EthereumNetwork, base_url: str) -> None:
+            self.network = network
+            self.base_url = base_url
 
-        def get_url(self) -> str:
+        @property
+        def url(self) -> str:
             return self.base_url
 
-    @dataclass
     class SubgraphConfig(Config):
-        api_key: str
-        subgraph_id: str
+        def __init__(
+            self,
+            network: EthereumNetwork,
+            base_url: str,
+            api_key: str,
+            subgraph_id: str,
+        ) -> None:
+            super().__init__(network, base_url)
+            self.api_key = api_key
+            self.subgraph_id = subgraph_id
 
-        def get_url(self):
+        @property
+        def url(self):
             return f"{self.base_url}/api/subgraphs/id/{self.subgraph_id}"
 
     def __init__(self, config: Config):
@@ -44,7 +52,7 @@ class EnsClient:
         """
         try:
             return self.request_session.get(
-                self.config.get_url(), timeout=self.request_timeout
+                self.config.url, timeout=self.request_timeout
             ).ok
         except IOError:
             return False
@@ -72,7 +80,7 @@ class EnsClient:
         )
         try:
             response = self.request_session.post(
-                self.config.get_url(),
+                self.config.url,
                 json={"query": query},
                 timeout=self.request_timeout,
             )
@@ -154,7 +162,7 @@ class EnsClient:
         )
         try:
             response = self.request_session.post(
-                self.config.get_url(),
+                self.config.url,
                 json={"query": query},
                 timeout=self.request_timeout,
             )
