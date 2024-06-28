@@ -146,7 +146,7 @@ def get_chain_explorers_urls(chain_id: int) -> List[str]:
         response = requests.get(url)
 
         if response.status_code == 200:
-            explorers = response.json().get("explorers")
+            explorers = response.json().get("explorers", [])
             return [explorer.get("url") for explorer in explorers]
     except (IOError, ConnectionError) as e:
         print(f"Error getting chain explorers urls: {e}")
