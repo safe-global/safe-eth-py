@@ -37,7 +37,7 @@ class EnsClient:
 
         @property
         def url(self):
-            return f"{self.base_url}/api/subgraphs/id/{self.subgraph_id}"
+            return f"{self.base_url}/api/{self.api_key}/subgraphs/id/{self.subgraph_id}"
 
     def __init__(self, config: Config):
         self.config = config
