@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 import requests
@@ -14,26 +15,19 @@ class EnsClient:
     Resolves Ethereum Name Service domains using ``thegraph`` API
     """
 
+    @dataclass
     class Config:
-        def __init__(self, network: EthereumNetwork, base_url: str) -> None:
-            self.network = network
-            self.base_url = base_url
+        network: EthereumNetwork
+        base_url: str
 
         @property
         def url(self) -> str:
             return self.base_url
 
+    @dataclass
     class SubgraphConfig(Config):
-        def __init__(
-            self,
-            network: EthereumNetwork,
-            base_url: str,
-            api_key: str,
-            subgraph_id: str,
-        ) -> None:
-            super().__init__(network, base_url)
-            self.api_key = api_key
-            self.subgraph_id = subgraph_id
+        api_key: str
+        subgraph_id: str
 
         @property
         def url(self):
