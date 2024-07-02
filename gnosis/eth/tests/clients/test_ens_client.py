@@ -146,7 +146,7 @@ class TestEnsClient(TestCase):
                 base_url="https://api.thegraph.com/subgraphs/name/ensdomains/ens/",
             ),
         ):
-            with self.subTest(config.network):
+            with self.subTest(ethereum_network=config.network):
                 ens_client = EnsClient(config=config)
                 self.assertTrue(ens_client.is_available())
                 with mock.patch.object(Session, "get", side_effect=IOError()):
