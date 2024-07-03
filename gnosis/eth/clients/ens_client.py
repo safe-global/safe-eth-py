@@ -6,7 +6,6 @@ import requests
 from eth_typing import HexStr
 from hexbytes import HexBytes
 
-from gnosis.eth import EthereumNetwork
 from gnosis.util import cache
 
 
@@ -17,7 +16,6 @@ class EnsClient:
 
     @dataclass
     class Config:
-        network: EthereumNetwork
         base_url: str
 
         @property

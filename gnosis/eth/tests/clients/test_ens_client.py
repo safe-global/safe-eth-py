@@ -5,14 +5,11 @@ from django.test import TestCase
 from eth_utils import keccak
 from requests import Session
 
-from gnosis.eth.ethereum_client import EthereumNetwork
-
 from ...clients import EnsClient
 
 
 class TestEnsClient(TestCase):
     config = EnsClient.Config(
-        network=EthereumNetwork.MAINNET,
         base_url="https://api.thegraph.com/subgraphs/name/ensdomains/ens",
     )
 
@@ -138,15 +135,13 @@ class TestEnsClient(TestCase):
     def test_is_available(self):
         for config in (
             EnsClient.Config(
-                network=EthereumNetwork.SEPOLIA,
                 base_url="https://api.studio.thegraph.com/query/49574/enssepolia/version/latest",
             ),
             EnsClient.Config(
-                network=EthereumNetwork.MAINNET,
                 base_url="https://api.thegraph.com/subgraphs/name/ensdomains/ens/",
             ),
         ):
-            with self.subTest(ethereum_network=config.network):
+            with self.subTest(base_url=config.base_url):
                 ens_client = EnsClient(config=config)
                 self.assertTrue(ens_client.is_available())
                 with mock.patch.object(Session, "get", side_effect=IOError()):
