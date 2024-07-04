@@ -1,11 +1,11 @@
 import os
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 import requests
 from eth_typing import HexStr
 from hexbytes import HexBytes
 
-from gnosis.eth import EthereumNetwork
 from gnosis.util import cache
 
 
@@ -14,15 +14,25 @@ class EnsClient:
     Resolves Ethereum Name Service domains using ``thegraph`` API
     """
 
-    def __init__(self, network_id: int):
-        self.ethereum_network = EthereumNetwork(network_id)
-        if network_id == self.ethereum_network.SEPOLIA:
-            url = (
-                "https://api.studio.thegraph.com/proxy/49574/enssepolia/version/latest/"
-            )
-        else:  # Fallback to mainnet
-            url = "https://api.thegraph.com/subgraphs/name/ensdomains/ens/"
-        self.url = url
+    @dataclass
+    class Config:
+        base_url: str
+
+        @property
+        def url(self) -> str:
+            return self.base_url
+
+    @dataclass
+    class SubgraphConfig(Config):
+        api_key: str
+        subgraph_id: str
+
+        @property
+        def url(self):
+            return f"{self.base_url}/api/{self.api_key}/subgraphs/id/{self.subgraph_id}"
+
+    def __init__(self, config: Config):
+        self.config = config
         self.request_timeout = int(
             os.environ.get("ENS_CLIENT_REQUEST_TIMEOUT", 5)
         )  # Seconds
@@ -33,7 +43,9 @@ class EnsClient:
         :return: True if service is available, False if it's down
         """
         try:
-            return self.request_session.get(self.url, timeout=self.request_timeout).ok
+            return self.request_session.get(
+                self.config.url, timeout=self.request_timeout
+            ).ok
         except IOError:
             return False
 
@@ -60,7 +72,9 @@ class EnsClient:
         )
         try:
             response = self.request_session.post(
-                self.url, json={"query": query}, timeout=self.request_timeout
+                self.config.url,
+                json={"query": query},
+                timeout=self.request_timeout,
             )
         except IOError:
             return None
@@ -140,7 +154,9 @@ class EnsClient:
         )
         try:
             response = self.request_session.post(
-                self.url, json={"query": query}, timeout=self.request_timeout
+                self.config.url,
+                json={"query": query},
+                timeout=self.request_timeout,
             )
         except IOError:
             return None
