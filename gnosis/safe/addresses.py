@@ -723,6 +723,50 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.4.1+L2",
         ),  # v1.4.1+L2
     ],
+    EthereumNetwork.CONFLUX_ESPACE: [
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            38647055,
+            "1.3.0",
+        ),
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            38647045,
+            "1.3.0+L2",
+        ),  # default singleton address,
+        (
+            "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            86875322,
+            "1.4.1",
+        ),
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            86875310,
+            "1.4.1+L2",
+        ),
+    ],
+    EthereumNetwork.CONFLUX_ESPACE_TESTNET: [
+        (
+            "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            66095665,
+            "1.3.0",
+        ),
+        (
+            "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+            66095645,
+            "1.3.0+L2",
+        ),
+        (
+            "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            153642305,
+            "1.4.1",
+        ),
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            153642290,
+            "1.4.1+L2",
+        ),
+    ],
     EthereumNetwork.ZKSYNC_MAINNET: [
         ("0x1727c2c531cf966f902E5927b98490fDFb3b2b70", 7259224, "1.3.0+L2"),
         ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 7259230, "1.3.0"),
@@ -2359,5 +2403,13 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.DODOCHAIN_TESTNET: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 1641),  # v1.3.0
+    ],
+    EthereumNetwork.CONFLUX_ESPACE: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 86875215),  # v1.4.1
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 38646940),  # v1.3.0
+    ],
+    EthereumNetwork.CONFLUX_ESPACE_TESTNET: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 153642185),  # v1.4.1
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 66095530),  # v1.3.0
     ],
 }
