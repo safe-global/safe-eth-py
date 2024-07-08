@@ -68,6 +68,7 @@ class Multicall(ContractBase):
         EthereumNetwork.CELO_ALFAJORES_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.AURORA_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.BASE_GOERLI_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.CONFLUX_ESPACE: "0xcA11bde05977b3631167028862bE2a173976CA11",
     }
 
     def __init__(
