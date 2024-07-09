@@ -1,12 +1,11 @@
 import os
 from dataclasses import dataclass
+from functools import cache
 from typing import Any, Dict, List, Optional, Union
 
 import requests
 from eth_typing import HexStr
 from hexbytes import HexBytes
-
-from gnosis.util import cache
 
 
 class EnsClient:

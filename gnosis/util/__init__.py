@@ -1,4 +1,4 @@
 # flake8: noqa F401
-from .util import cache, chunks
+from .util import chunks
 
-__all__ = ["cache", "chunks"]
+__all__ = ["chunks"]

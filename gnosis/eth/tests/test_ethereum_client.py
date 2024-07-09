@@ -15,13 +15,13 @@ from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (
     EthereumClient,
-    EthereumClientProvider,
     EthereumNetwork,
     FromAddressNotFound,
     InsufficientFunds,
     InvalidNonce,
     SenderAccountNotFoundInNode,
     TracingManager,
+    get_auto_ethereum_client,
 )
 from ..exceptions import BatchCallException, ChainIdIsRequired, InvalidERC20Info
 from .ethereum_test_case import EthereumTestCaseMixin
@@ -922,8 +922,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         )
 
     def test_provider_singleton(self):
-        ethereum_client1 = EthereumClientProvider()
-        ethereum_client2 = EthereumClientProvider()
+        ethereum_client1 = get_auto_ethereum_client()
+        ethereum_client2 = get_auto_ethereum_client()
         self.assertEqual(ethereum_client1, ethereum_client2)
 
     def test_send_eth_to(self):

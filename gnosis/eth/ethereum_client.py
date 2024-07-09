@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from functools import cached_property, wraps
+from functools import cache, cached_property, wraps
 from logging import getLogger
 from typing import (
     Any,
@@ -59,7 +59,7 @@ from gnosis.eth.utils import (
     mk_contract_address,
     mk_contract_address_2,
 )
-from gnosis.util import cache, chunks
+from gnosis.util import chunks
 
 from ..util.http import prepare_http_session
 from .constants import (
@@ -177,28 +177,33 @@ class TxSpeed(Enum):
     FASTEST = 6
 
 
-class EthereumClientProvider:
-    def __new__(cls):
-        if not hasattr(cls, "instance"):
-            try:
-                from django.conf import settings
+@cache
+def get_auto_ethereum_client() -> "EthereumClient":
+    """
+    Use environment variables to configure `EthereumClient` and build a singleton:
+        - `ETHEREUM_NODE_URL`: No default.
+        - `ETHEREUM_RPC_TIMEOUT`: `10` by default.
+        - `ETHEREUM_RPC_SLOW_TIMEOUT`: `60` by default.
+        - `ETHEREUM_RPC_RETRY_COUNT`: `60` by default.
+        - `ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE`: `500` by default.
 
-                ethereum_node_url = settings.ETHEREUM_NODE_URL
-            except ModuleNotFoundError:
-                ethereum_node_url = os.environ.get("ETHEREUM_NODE_URL")
+    :return: A configured singleton of EthereumClient
+    """
+    try:
+        from django.conf import settings
 
-            cls.instance = EthereumClient(
-                ethereum_node_url,
-                provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
-                slow_provider_timeout=int(
-                    os.environ.get("ETHEREUM_RPC_SLOW_TIMEOUT", 60)
-                ),
-                retry_count=int(os.environ.get("ETHEREUM_RPC_RETRY_COUNT", 1)),
-                batch_request_max_size=int(
-                    os.environ.get("ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE", 500)
-                ),
-            )
-        return cls.instance
+        ethereum_node_url = settings.ETHEREUM_NODE_URL
+    except ModuleNotFoundError:
+        ethereum_node_url = os.environ.get("ETHEREUM_NODE_URL")
+    return EthereumClient(
+        ethereum_node_url,
+        provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
+        slow_provider_timeout=int(os.environ.get("ETHEREUM_RPC_SLOW_TIMEOUT", 60)),
+        retry_count=int(os.environ.get("ETHEREUM_RPC_RETRY_COUNT", 1)),
+        batch_request_max_size=int(
+            os.environ.get("ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE", 500)
+        ),
+    )
 
 
 class EthereumClientManager:

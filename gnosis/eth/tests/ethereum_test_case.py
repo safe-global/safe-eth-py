@@ -7,7 +7,7 @@ from web3 import Web3
 from web3.contract import Contract
 from web3.types import TxParams
 
-from ..ethereum_client import EthereumClient, EthereumClientProvider
+from ..ethereum_client import EthereumClient, get_auto_ethereum_client
 from ..multicall import Multicall
 from .utils import deploy_erc20, send_tx
 
@@ -35,7 +35,7 @@ class EthereumTestCaseMixin:
         cls.ethereum_client = _cached_data["ethereum_client"]
 
         if not cls.ethereum_client:
-            cls.ethereum_client = EthereumClientProvider()
+            cls.ethereum_client = get_auto_ethereum_client()
             Multicall.deploy_contract(cls.ethereum_client, cls.ethereum_test_account)
             _cached_data["ethereum_client"] = cls.ethereum_client
 

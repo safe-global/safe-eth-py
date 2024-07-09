@@ -30,14 +30,13 @@ SignMessageLib: 0xd53cd0aB83D845Ac265BE939c57F53AD838012c9
 import json
 import os
 import sys
+from functools import cache
 from typing import Any, Callable, Dict, Optional
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
-
-from gnosis.util import cache
 
 from .abis.multicall import multicall_v3_abi, multicall_v3_bytecode
 from .contract_base import ContractBase
