@@ -1,7 +1,6 @@
 # flake8: noqa F401
 from .ethereum_client import (
     EthereumClient,
-    EthereumClientProvider,
     EthereumTxSent,
     FromAddressNotFound,
     GasLimitExceeded,
@@ -15,13 +14,14 @@ from .ethereum_client import (
     TransactionQueueLimitReached,
     TxSpeed,
     UnknownAccount,
+    get_auto_ethereum_client,
 )
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .exceptions import InvalidERC20Info, InvalidERC721Info
 
 __all__ = [
     "EthereumClient",
-    "EthereumClientProvider",
+    "get_auto_ethereum_client",
     "EthereumTxSent",
     "FromAddressNotFound",
     "GasLimitExceeded",

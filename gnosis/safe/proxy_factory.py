@@ -1,5 +1,6 @@
 import secrets
 from abc import ABCMeta
+from functools import cache
 from typing import Callable, Optional
 
 from eth_abi.packed import encode_packed
@@ -28,7 +29,6 @@ from gnosis.eth.utils import (
     get_empty_tx_params,
     mk_contract_address_2,
 )
-from gnosis.util import cache
 
 
 class ProxyFactory(ContractBase, metaclass=ABCMeta):

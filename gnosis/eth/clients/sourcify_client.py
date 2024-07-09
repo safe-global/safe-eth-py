@@ -1,8 +1,7 @@
 import os
+from functools import cache
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
-
-from gnosis.util import cache
 
 from ...util.http import prepare_http_session
 from .. import EthereumNetwork
