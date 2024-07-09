@@ -115,8 +115,9 @@ class UserOperation:
 
     @cached_property
     def paymaster_data(self) -> Optional[bytes]:
-        result = self.paymaster_and_data[:20]
-        return result if result else None
+        if self.paymaster_and_data:
+            return self.paymaster_and_data[20:]
+        return None
 
     def calculate_user_operation_hash(self, chain_id: int) -> bytes:
         hash_init_code = fast_keccak(self.init_code)
