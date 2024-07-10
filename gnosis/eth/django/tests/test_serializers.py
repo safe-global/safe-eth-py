@@ -7,7 +7,7 @@ from rest_framework import serializers
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
 from ...utils import fast_keccak_text, get_eth_address_with_invalid_checksum
 from ..serializers import (
-    EthereumAddressField,
+    EthereumAddressCharField,
     HexadecimalField,
     Sha3HashField,
     Uint32Field,
@@ -16,15 +16,15 @@ from ..serializers import (
 
 
 class EthereumAddressSerializerTest(serializers.Serializer):
-    value = EthereumAddressField(allow_null=True)
+    value = EthereumAddressCharField(allow_null=True)
 
 
 class EthereumSentinelAddressSerializerTest(serializers.Serializer):
-    value = EthereumAddressField(allow_null=True, allow_sentinel_address=True)
+    value = EthereumAddressCharField(allow_null=True, allow_sentinel_address=True)
 
 
 class EthereumZeroAddressSerializerTest(serializers.Serializer):
-    value = EthereumAddressField(allow_null=True, allow_zero_address=True)
+    value = EthereumAddressCharField(allow_null=True, allow_zero_address=True)
 
 
 class HexadecimalSerializerTest(serializers.Serializer):

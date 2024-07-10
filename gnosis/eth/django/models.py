@@ -24,9 +24,58 @@ except ImportError:
     connection = connections["default"]
 
 
-class EthereumAddressV2Field(models.Field):
+class EthereumAddressCharField(models.CharField):
+    """
+    Stores Ethereum Addresses as Strings. Takes more space in database than `EthereumAddressBinaryField`,
+    but does not require the keccak256 calculation to calculate the EIP55 checksummed address.
+    """
+
     default_validators = [validate_checksumed_address]
-    description = "Ethereum address (EIP55)"
+    description = "Stores Ethereum Addresses (EIP55) as strings"
+    default_error_messages = {
+        "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["max_length"] = 42
+        super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs["max_length"]
+        return name, path, args, kwargs
+
+    def from_db_value(self, value, expression, connection):
+        return self.to_python(value)
+
+    def to_python(self, value):
+        value = super().to_python(value)
+        if value:
+            try:
+                return fast_to_checksum_address(value)
+            except ValueError:
+                raise exceptions.ValidationError(
+                    self.error_messages["invalid"],
+                    code="invalid",
+                    params={"value": value},
+                )
+        else:
+            return value
+
+    def get_prep_value(self, value):
+        value = super().get_prep_value(value)
+        return self.to_python(value)
+
+
+class EthereumAddressBinaryField(models.Field):
+    """
+    Stores Ethereum Addresses in binary. Takes less space in Database than `EthereumAddressCharField`,
+    but does require a keccak256 calculation to calculate the EIP55 checksummed address, that it can take
+    a high impact on the CPU for a lot of addresses.
+    """
+
+    default_validators = [validate_checksumed_address]
+    description = "Stores Ethereum Addresses (EIP55) in binary"
     default_error_messages = {
         "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
     }

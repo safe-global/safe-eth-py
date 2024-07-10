@@ -8,43 +8,52 @@ from faker import Faker
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
 from ...utils import fast_is_checksum_address, fast_keccak_text
-from .models import EthereumAddressV2, Keccak256Hash, Uint32, Uint96, Uint256
+from .models import (
+    EthereumAddress,
+    EthereumAddressV2,
+    Keccak256Hash,
+    Uint32,
+    Uint96,
+    Uint256,
+)
 
 faker = Faker()
 
 
 class TestModels(TestCase):
     def test_ethereum_address_field(self):
-        address = Account.create().address
-        self.assertTrue(fast_is_checksum_address(address))
-        ethereum_address = EthereumAddressV2.objects.create(value=address)
-        ethereum_address.refresh_from_db()
-        self.assertTrue(fast_is_checksum_address(ethereum_address.value))
-        self.assertEqual(address, ethereum_address.value)
+        for EthereumAddressModel in (EthereumAddress, EthereumAddressV2):
+            with self.subTest(EthereumAddressModel=EthereumAddressModel):
+                address = Account.create().address
+                self.assertTrue(fast_is_checksum_address(address))
+                ethereum_address = EthereumAddressModel.objects.create(value=address)
+                ethereum_address.refresh_from_db()
+                self.assertTrue(fast_is_checksum_address(ethereum_address.value))
+                self.assertEqual(address, ethereum_address.value)
 
-        # Test addresses
-        for addresss in (
-            None,
-            NULL_ADDRESS,
-            SENTINEL_ADDRESS,
-            Account.create().address,
-        ):
-            with self.subTest(special_address=addresss):
-                EthereumAddressV2.objects.create(value=addresss)
-                self.assertEqual(
-                    EthereumAddressV2.objects.get(value=addresss).value,
-                    addresss,
-                )
+                # Test addresses
+                for addresss in (
+                    None,
+                    NULL_ADDRESS,
+                    SENTINEL_ADDRESS,
+                    Account.create().address,
+                ):
+                    with self.subTest(special_address=addresss):
+                        EthereumAddressModel.objects.create(value=addresss)
+                        self.assertEqual(
+                            EthereumAddressModel.objects.get(value=addresss).value,
+                            addresss,
+                        )
 
-        with self.assertRaisesMessage(
-            ValidationError,
-            '"0x23" value must be an EIP55 checksummed address.',
-        ):
-            with transaction.atomic():
-                EthereumAddressV2.objects.create(value="0x23")
+                with self.assertRaisesMessage(
+                    ValidationError,
+                    '"0x23" value must be an EIP55 checksummed address.',
+                ):
+                    with transaction.atomic():
+                        EthereumAddressModel.objects.create(value="0x23")
 
-        ethereum_address = EthereumAddressV2(value=Account.create().address)
-        self.assertIsNone(ethereum_address.full_clean())
+                ethereum_address = EthereumAddressModel(value=Account.create().address)
+                self.assertIsNone(ethereum_address.full_clean())
 
     def test_uint256_field(self):
         for value in [
