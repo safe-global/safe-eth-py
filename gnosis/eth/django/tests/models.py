@@ -2,7 +2,7 @@ from django.db import models
 
 from ..models import (
     EthereumAddressBinaryField,
-    EthereumAddressCharField,
+    EthereumAddressFastBinaryField,
     Keccak256Field,
     Uint32Field,
     Uint96Field,
@@ -10,12 +10,12 @@ from ..models import (
 )
 
 
-class EthereumAddress(models.Model):
-    value = EthereumAddressCharField(null=True)
-
-
-class EthereumAddressV2(models.Model):
+class EthereumAddressBinary(models.Model):
     value = EthereumAddressBinaryField(null=True)
+
+
+class EthereumAddressFastBinary(models.Model):
+    value = EthereumAddressFastBinaryField(null=True)
 
 
 class Uint256(models.Model):
