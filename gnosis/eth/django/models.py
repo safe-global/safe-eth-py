@@ -252,3 +252,47 @@ class Keccak256Field(models.BinaryField):
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)
+
+
+# --------- DEPRECATED, only for old migrations ----------------------
+class EthereumAddressField(models.CharField):
+    system_check_removed_details = {
+        "msg": (
+            "EthereumAddressField has been removed except for support in "
+            "historical migrations."
+        ),
+        "hint": "Use EthereumAddressFastBinaryField instead.",
+        "id": "fields.E4815",  # pick a unique ID for your field.
+    }
+
+
+class EthereumAddressV2Field(EthereumAddressBinaryField):
+    system_check_removed_details = {
+        "msg": (
+            "EthereumAddressField has been removed except for support in "
+            "historical migrations."
+        ),
+        "hint": "Use EthereumAddressFastBinaryField instead.",
+        "id": "fields.E4815",  # pick a unique ID for your field.
+    }
+
+
+class Sha3HashField(models.CharField):
+    system_check_removed_details = {
+        "msg": (
+            "Sha3HashField has been removed except for support in "
+            "historical migrations."
+        ),
+        "hint": "Use Keccak256Field instead.",
+        "id": "fields.E4817",  # pick a unique ID for your field.
+    }
+
+
+class HexField(models.CharField):
+    system_check_removed_details = {
+        "msg": (
+            "HexField has been removed except for support in " "historical migrations."
+        ),
+        "hint": "Use HexV2Field instead.",
+        "id": "fields.E4818",  # pick a unique ID for your field.
+    }
