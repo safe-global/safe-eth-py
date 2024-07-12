@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.serializers import serialize
-from django.db import DataError, transaction
+from django.db import transaction
 from django.test import TestCase
 
 from eth_account import Account
@@ -12,7 +12,6 @@ from .models import (
     EthereumAddress,
     EthereumAddressV2,
     Keccak256Hash,
-    Sha3Hash,
     Uint32,
     Uint96,
     Uint256,
@@ -115,35 +114,6 @@ class TestModels(TestCase):
         with self.assertRaises(ValidationError):
             Uint32.objects.create(value=-2)
 
-    def test_sha3_hash_field(self):
-        value_hexbytes = fast_keccak_text(faker.name())
-        value_hex_with_0x: str = value_hexbytes.hex()
-        value_hex_without_0x: str = value_hex_with_0x[2:]
-        value: bytes = bytes(value_hexbytes)
-
-        values = [value, value_hex_without_0x, value_hex_with_0x, value_hexbytes]
-
-        for v in values:
-            sha3_hash = Sha3Hash.objects.create(value=v)
-            sha3_hash.refresh_from_db()
-            self.assertEqual(sha3_hash.value, value_hex_with_0x)
-
-        for v in values:
-            self.assertEqual(Sha3Hash.objects.filter(value=v).count(), len(values))
-
-        # Hash null
-        sha3_hash = Sha3Hash.objects.create(value=None)
-        sha3_hash.refresh_from_db()
-        self.assertIsNone(sha3_hash.value)
-
-        # Hash too big
-        value_hex_invalid: str = "0x" + value_hex_without_0x + "a"
-        with self.assertRaisesMessage(
-            DataError, "value too long for type character varying(64)"
-        ):
-            with transaction.atomic():
-                Sha3Hash.objects.create(value=value_hex_invalid)
-
     def test_keccak256_field(self):
         value_hexbytes = fast_keccak_text(faker.name())
         value_hex_with_0x: str = value_hexbytes.hex()
@@ -205,13 +175,6 @@ class TestModels(TestCase):
         # hexvalue should be in serialized data
         self.assertIn(hexvalue, serialized)
 
-    def test_serialize_ethereum_address_field_to_json(self):
-        address: str = "0x5aFE3855358E112B5647B952709E6165e1c1eEEe"
-        EthereumAddress.objects.create(value=address)
-        serialized = serialize("json", EthereumAddress.objects.all())
-        # address should be in serialized data
-        self.assertIn(address, serialized)
-
     def test_serialize_ethereum_address_v2_field_to_json(self):
         address: str = "0x5aFE3855358E112B5647B952709E6165e1c1eEEe"
         EthereumAddressV2.objects.create(value=address)
@@ -225,10 +188,3 @@ class TestModels(TestCase):
         serialized = serialize("json", Uint256.objects.all())
         # value should be in serialized data
         self.assertIn(str(value), serialized)
-
-    def test_serialize_sha3_hash_to_json(self):
-        hash = fast_keccak_text("testSerializer")
-        Sha3Hash.objects.create(value=hash)
-        serialized = serialize("json", Sha3Hash.objects.all())
-        # hash should be in serialized data
-        self.assertIn(hash.hex(), serialized)

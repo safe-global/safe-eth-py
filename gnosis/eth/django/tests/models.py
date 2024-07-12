@@ -1,10 +1,9 @@
 from django.db import models
 
 from ..models import (
-    EthereumAddressField,
-    EthereumAddressV2Field,
+    EthereumAddressBinaryField,
+    EthereumAddressCharField,
     Keccak256Field,
-    Sha3HashField,
     Uint32Field,
     Uint96Field,
     Uint256Field,
@@ -12,11 +11,11 @@ from ..models import (
 
 
 class EthereumAddress(models.Model):
-    value = EthereumAddressField(null=True)
+    value = EthereumAddressCharField(null=True)
 
 
 class EthereumAddressV2(models.Model):
-    value = EthereumAddressV2Field(null=True)
+    value = EthereumAddressBinaryField(null=True)
 
 
 class Uint256(models.Model):
@@ -29,10 +28,6 @@ class Uint96(models.Model):
 
 class Uint32(models.Model):
     value = Uint32Field(null=True)
-
-
-class Sha3Hash(models.Model):
-    value = Sha3HashField(null=True)
 
 
 class Keccak256Hash(models.Model):
