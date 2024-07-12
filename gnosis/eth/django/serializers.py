@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # ================================================ #
 #                Custom Fields
 # ================================================ #
-class EthereumAddressCharField(serializers.Field):
+class EthereumAddressField(serializers.Field):
     """
     Ethereum address checksumed
     https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md
@@ -160,7 +160,7 @@ class SignatureSerializer(serializers.Serializer):
 
 
 class TransactionSerializer(serializers.Serializer):
-    from_ = EthereumAddressCharField()
+    from_ = EthereumAddressField()
     value = serializers.IntegerField(min_value=0)
     data = HexadecimalField()
     gas = serializers.IntegerField(min_value=0)
@@ -180,7 +180,7 @@ class TransactionResponseSerializer(serializers.Serializer):
     Use chars to avoid problems with big ints (i.e. JavaScript)
     """
 
-    from_ = EthereumAddressCharField()
+    from_ = EthereumAddressField()
     value = serializers.IntegerField(min_value=0)
     data = serializers.CharField()
     gas = serializers.CharField()

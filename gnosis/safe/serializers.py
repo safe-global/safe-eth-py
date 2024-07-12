@@ -1,18 +1,18 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from gnosis.eth.django.serializers import EthereumAddressCharField, HexadecimalField
+from gnosis.eth.django.serializers import EthereumAddressField, HexadecimalField
 
 from .enums import SafeOperationEnum
 
 
 class SafeMultisigEstimateTxSerializer(serializers.Serializer):
-    safe = EthereumAddressCharField()
-    to = EthereumAddressCharField()
+    safe = EthereumAddressField()
+    to = EthereumAddressField()
     value = serializers.IntegerField(min_value=0)
     data = HexadecimalField(default=None, allow_null=True, allow_blank=True)
     operation = serializers.IntegerField(min_value=0)
-    gas_token = EthereumAddressCharField(
+    gas_token = EthereumAddressField(
         default=None, allow_null=True, allow_zero_address=True
     )
 
@@ -47,7 +47,7 @@ class SafeMultisigTxSerializer(SafeMultisigEstimateTxSerializer):
     safe_tx_gas = serializers.IntegerField(min_value=0)
     base_gas = serializers.IntegerField(min_value=0)
     gas_price = serializers.IntegerField(min_value=0)
-    refund_receiver = EthereumAddressCharField(
+    refund_receiver = EthereumAddressField(
         default=None, allow_null=True, allow_zero_address=True
     )
     nonce = serializers.IntegerField(min_value=0)
