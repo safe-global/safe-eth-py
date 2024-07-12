@@ -6,13 +6,13 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 
 from ..utils import fast_bytes_to_checksum_address, fast_to_checksum_address
 from .forms import EthereumAddressFieldForm, HexFieldForm, Keccak256FieldForm
-from .validators import validate_checksumed_address
+from .validators import validate_address, validate_checksumed_address
 
 try:
     from django.db import DefaultConnectionProxy
@@ -24,54 +24,11 @@ except ImportError:
     connection = connections["default"]
 
 
-class EthereumAddressCharField(models.CharField):
-    """
-    Stores Ethereum Addresses as Strings. Takes more space in database than `EthereumAddressBinaryField`,
-    but does not require the keccak256 calculation to calculate the EIP55 checksummed address.
-    """
-
-    default_validators = [validate_checksumed_address]
-    description = "Stores Ethereum Addresses (EIP55) as strings"
-    default_error_messages = {
-        "invalid": _('"%(value)s" value must be an EIP55 checksummed address.'),
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["max_length"] = 42
-        super().__init__(*args, **kwargs)
-
-    def deconstruct(self):
-        name, path, args, kwargs = super().deconstruct()
-        del kwargs["max_length"]
-        return name, path, args, kwargs
-
-    def from_db_value(self, value, expression, connection):
-        return self.to_python(value)
-
-    def to_python(self, value):
-        value = super().to_python(value)
-        if value:
-            try:
-                return fast_to_checksum_address(value)
-            except ValueError:
-                raise exceptions.ValidationError(
-                    self.error_messages["invalid"],
-                    code="invalid",
-                    params={"value": value},
-                )
-        else:
-            return value
-
-    def get_prep_value(self, value):
-        value = super().get_prep_value(value)
-        return self.to_python(value)
-
-
 class EthereumAddressBinaryField(models.Field):
     """
-    Stores Ethereum Addresses in binary. Takes less space in Database than `EthereumAddressCharField`,
-    but does require a keccak256 calculation to calculate the EIP55 checksummed address, that it can take
-    a high impact on the CPU for a lot of addresses.
+    Stores Ethereum Addresses in binary. Requires keccak256 hashing to
+    calculate the EIP55 checksummed address, and it can take a high impact
+    on the CPU for a lot of addresses.
     """
 
     default_validators = [validate_checksumed_address]
@@ -118,6 +75,41 @@ class EthereumAddressBinaryField(models.Field):
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)
+
+
+class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
+    """
+    Stores Ethereum Addresses in binary. It returns not EIP55 regular addresses,
+    which is faster as not EIP55 checksum is involved.
+    """
+
+    default_validators = [validate_address]
+    description = "Stores Ethereum Addresses in binary"
+    default_error_messages = {
+        "invalid": _('"%(value)s" value must be a valid address.'),
+    }
+
+    def from_db_value(
+        self, value: memoryview, expression, connection
+    ) -> Optional[HexAddress]:
+        if value:
+            return HexAddress(HexStr("0x" + bytes(value).hex()))
+
+    def to_python(self, value) -> Optional[ChecksumAddress]:
+        if value is not None:
+            try:
+                if isinstance(value, bytes):
+                    if len(value) != 20:
+                        raise ValueError(
+                            "Cannot convert %s to a checksum address, 20 bytes were expected"
+                        )
+                return HexAddress(HexStr(to_normalized_address(value)[2:]))
+            except ValueError:
+                raise exceptions.ValidationError(
+                    self.error_messages["invalid"],
+                    code="invalid",
+                    params={"value": value},
+                )
 
 
 class UnsignedDecimal(models.DecimalField):
