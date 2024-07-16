@@ -207,6 +207,18 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
             ],
         )
 
+        self.assertCountEqual(
+            self.ethereum_client.erc20.get_balances(
+                account_address,
+                [erc20.address, erc20_2.address],
+                include_native_balance=False,
+            ),
+            [
+                {"token_address": erc20.address, "balance": tokens_value},
+                {"token_address": erc20_2.address, "balance": tokens_value_2},
+            ],
+        )
+
         with mock.patch.object(
             EthereumClient,
             "batch_call_same_function",
