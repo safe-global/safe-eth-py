@@ -1,6 +1,6 @@
 import math
 from logging import getLogger
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple, Optional, Sequence
 
 from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress
@@ -23,15 +23,9 @@ from gnosis.eth.utils import (
     mk_contract_address_2,
 )
 
+from .constants import TOKEN_TRANSFER_GAS
+
 logger = getLogger(__name__)
-
-# Gas required to transfer a regular token. Assume the worst scenario with a regular token transfer without storage
-# initialized (payment_receiver no previous owner of token)
-TOKEN_TRANSFER_GAS = 60_000
-
-
-class InvalidERC20Token(Exception):
-    pass
 
 
 class SafeCreate2Tx(NamedTuple):
@@ -57,6 +51,17 @@ class SafeCreate2Tx(NamedTuple):
 
 
 class SafeCreate2TxBuilder:
+    """
+    Helper to create Safes using Safe's Proxy Factory with CREATE2
+    """
+
+    MASTER_COPY_VERSION_WITH_CONTRACT = {
+        "1.4.1": get_safe_V1_4_1_contract,
+        "1.3.0": get_safe_V1_3_0_contract,
+        "1.1.1": get_safe_V1_1_1_contract,
+        "1.0.0": get_safe_V1_0_0_contract,
+    }
+
     def __init__(
         self,
         w3: Web3,
@@ -64,8 +69,6 @@ class SafeCreate2TxBuilder:
         proxy_factory_address: ChecksumAddress,
     ):
         """
-        Init builder for safe creation using create2
-
         :param w3: Web3 instance
         :param master_copy_address: `Gnosis Safe` master copy address
         :param proxy_factory_address: `Gnosis Proxy Factory` address
@@ -76,46 +79,36 @@ class SafeCreate2TxBuilder:
         self.w3 = w3
         self.master_copy_address = master_copy_address
         self.proxy_factory_address = proxy_factory_address
+
+        # Check Safe master copy version
         self.safe_version = (
             get_safe_contract(w3, master_copy_address).functions.VERSION().call()
         )
-        if self.safe_version == "1.4.1":
-            self.master_copy_contract = get_safe_V1_4_1_contract(
-                w3, master_copy_address
-            )
-        elif self.safe_version == "1.3.0":
-            self.master_copy_contract = get_safe_V1_3_0_contract(
-                w3, master_copy_address
-            )
-        elif self.safe_version == "1.1.1":
-            self.master_copy_contract = get_safe_V1_1_1_contract(
-                w3, master_copy_address
-            )
-        elif self.safe_version == "1.0.0":
-            self.master_copy_contract = get_safe_V1_0_0_contract(
-                w3, master_copy_address
-            )
-        else:
+        master_copy_contract_fn = self.MASTER_COPY_VERSION_WITH_CONTRACT.get(
+            self.safe_version
+        )
+        if not master_copy_contract_fn:
             raise ValueError("Safe version must be 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
+
+        self.master_copy_contract = master_copy_contract_fn(w3, master_copy_address)
+
         self.proxy_factory_contract = get_proxy_factory_contract(
             w3, proxy_factory_address
         )
 
     def build(
         self,
-        owners: List[str],
+        owners: Sequence[ChecksumAddress],
         threshold: int,
         salt_nonce: int,
         gas_price: int,
-        fallback_handler: Optional[str] = None,
-        payment_receiver: Optional[str] = None,
-        payment_token: Optional[str] = None,
+        fallback_handler: Optional[ChecksumAddress] = None,
+        payment_receiver: Optional[ChecksumAddress] = None,
+        payment_token: Optional[ChecksumAddress] = None,
         payment_token_eth_value: float = 1.0,
         fixed_creation_cost: Optional[int] = None,
-    ):
+    ) -> SafeCreate2Tx:
         """
-        Prepare Safe creation
-
         :param owners: Owners of the Safe
         :param threshold: Minimum number of users required to operate the Safe
         :param fallback_handler: Handler for fallback calls to the Safe
@@ -125,6 +118,7 @@ class SafeCreate2TxBuilder:
         :param payment_token: Payment token instead of paying the funder with ether. If None Ether will be used
         :param payment_token_eth_value: Value of payment token per 1 Ether
         :param fixed_creation_cost: Fixed creation cost of Safe (Wei)
+        :return: SafeCreate2Tx with all the data for execution
         """
 
         assert 0 < threshold <= len(owners)
@@ -198,7 +192,7 @@ class SafeCreate2TxBuilder:
         owners: List[str], safe_setup_data: bytes, payment_token: str
     ) -> int:
         """
-        Calculate gas manually, based on tests of previously deployed safes
+        Calculate gas manually, based on tests of previously deployed Safes
 
         :param owners: Safe owners
         :param safe_setup_data: Data for proxy setup

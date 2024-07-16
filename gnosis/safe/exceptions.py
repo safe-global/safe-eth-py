@@ -88,3 +88,7 @@ class OwnerManagerException(InvalidMultisigTx):
 
 class ModuleManagerException(InvalidMultisigTx):
     pass
+
+
+class InvalidERC20Token(Exception):
+    pass

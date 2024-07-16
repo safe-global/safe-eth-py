@@ -16,9 +16,9 @@ from gnosis.eth.contracts import (
 )
 from gnosis.eth.utils import get_empty_tx_params
 
-from .exceptions import InvalidPaymentToken
+from .exceptions import InvalidERC20Token, InvalidPaymentToken
 from .proxy_factory import ProxyFactory
-from .safe_create2_tx import InvalidERC20Token, SafeCreate2Tx, SafeCreate2TxBuilder
+from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,10 @@ class SafeCreationEstimate(NamedTuple):
 
 
 class SafeCreator:
+    """
+    Deploy required Safe contracts and Safes
+    """
+
     @staticmethod
     def create(
         ethereum_client: EthereumClient,
