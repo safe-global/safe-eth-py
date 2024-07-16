@@ -517,13 +517,17 @@ class Erc20Manager(EthereumClientManager):
         )
 
     def get_balances(
-        self, address: ChecksumAddress, token_addresses: Sequence[ChecksumAddress]
+        self,
+        address: ChecksumAddress,
+        token_addresses: Sequence[ChecksumAddress],
+        include_native_balance: bool = True,
     ) -> List[BalanceDict]:
         """
         Get balances for Ether and tokens for an `address`
 
         :param address: Owner address checksummed
         :param token_addresses: token addresses to check
+        :param include_native_balance: if `True` returns also the native token balance
         :return: ``List[BalanceDict]``
         """
 
@@ -542,6 +546,9 @@ class Erc20Manager(EthereumClientManager):
             }
             for token_address, balance in zip(token_addresses, balances)
         ]
+
+        if not include_native_balance:
+            return return_balances
 
         # Add ether balance response
         return [
