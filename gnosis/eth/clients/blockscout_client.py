@@ -119,6 +119,7 @@ class BlockscoutClient:
         EthereumNetwork.OPEN_CAMPUS_CODEX: "https://opencampus-codex.blockscout.com/api/v1/graphql",
         EthereumNetwork.LORENZO: "https://scan.lorenzo-protocol.xyz/api/v1/graphql",
         EthereumNetwork.DODOCHAIN_TESTNET: "https://testnet-scan.dodochain.com/api/v1/graphql",
+        EthereumNetwork.ETHERLINK_MAINNET: "https://explorer.etherlink.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
