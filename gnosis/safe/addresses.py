@@ -518,7 +518,11 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 2116303, "1.3.0+L2"),
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 2116307, "1.3.0"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 10266347, "1.3.0"),  # v1.3.0
-        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 10266344, "1.3.0+L2"),  # v1.3.0+L2
+        (
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
+            10266344,
+            "1.3.0+L2",
+        ),  # v1.3.0+L2
     ],
     EthereumNetwork.CROSSBELL: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 28314790, "1.3.0+L2"),
@@ -1883,7 +1887,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.KAVA: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 2116356),  # v1.3.0
-        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 10266328), # v1.3.0
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 10266328),  # v1.3.0
     ],
     EthereumNetwork.CROSSBELL: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 28314747),  # v1.3.0
