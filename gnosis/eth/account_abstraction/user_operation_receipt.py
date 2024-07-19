@@ -20,7 +20,7 @@ class UserOperationReceipt:
     entry_point: ChecksumAddress
     sender: ChecksumAddress
     nonce: int
-    paymaster: ChecksumAddress
+    paymaster: Optional[ChecksumAddress]
     actual_gas_cost: int
     actual_gas_used: int
     success: bool
@@ -37,7 +37,7 @@ class UserOperationReceipt:
             user_operation_receipt_response["entryPoint"],
             user_operation_receipt_response["sender"],
             int(user_operation_receipt_response["nonce"], 16),
-            user_operation_receipt_response["paymaster"],
+            user_operation_receipt_response.get("paymaster"),
             int(user_operation_receipt_response["actualGasCost"], 16),
             int(user_operation_receipt_response["actualGasUsed"], 16),
             user_operation_receipt_response["success"],
