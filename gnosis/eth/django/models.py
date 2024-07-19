@@ -261,11 +261,11 @@ class EthereumAddressField(models.CharField):
 class EthereumAddressV2Field(EthereumAddressBinaryField):
     system_check_removed_details = {
         "msg": (
-            "EthereumAddressField has been removed except for support in "
+            "EthereumAddressV2Field has been removed except for support in "
             "historical migrations."
         ),
-        "hint": "Use EthereumAddressFastBinaryField instead.",
-        "id": "fields.E4815",  # pick a unique ID for your field.
+        "hint": "Use EthereumAddressBinaryField instead.",
+        "id": "fields.E4816",  # pick a unique ID for your field.
     }
 
 
