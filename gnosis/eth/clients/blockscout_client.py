@@ -121,6 +121,7 @@ class BlockscoutClient:
         EthereumNetwork.DODOCHAIN_TESTNET: "https://testnet-scan.dodochain.com/api/v1/graphql",
         EthereumNetwork.ETHERLINK_MAINNET: "https://explorer.etherlink.com/api/v1/graphql",
         EthereumNetwork.ETHERLINK_TESTNET: "https://testnet-explorer.etherlink.com/api/v1/graphql",
+        EthereumNetwork.FLARE_MAINNET: "https://flare-explorer.flare.network/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
