@@ -108,6 +108,7 @@ class TestCowSwapAPI(TestCase):
                     "buyToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "sellToken": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
                     "txHash": "0x691d1a8ba39c036e841b6e2ed970f9068ac4a27b61955afb852f11019f2ff4d8",
+                    "feePolicies": [],
                 }
             ],
         )
