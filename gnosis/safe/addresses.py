@@ -1636,6 +1636,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 117845, "1.3.0"),  # v1.3.0
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 117838, "1.3.0+L2"),  # v1.3.0+L2
     ],
+    EthereumNetwork.SONGBIRD_CANARY_NETWORK: [
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 36564936, "1.3.0"),  # v1.3.0
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -2453,6 +2456,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 1196789),  # v1.3.0
     ],
     EthereumNetwork.GNOSIS_CHIADO_TESTNET: [
-        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 117835, "1.3.0"),  # v1.3.0
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 117835),  # v1.3.0
+    ],
+    EthereumNetwork.SONGBIRD_CANARY_NETWORK: [
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 36564904),  # v1.3.0
     ],
 }
