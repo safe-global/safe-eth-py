@@ -123,6 +123,7 @@ class BlockscoutClient:
         EthereumNetwork.ETHERLINK_TESTNET: "https://testnet-explorer.etherlink.com/api/v1/graphql",
         EthereumNetwork.FLARE_MAINNET: "https://flare-explorer.flare.network/graphiql",
         EthereumNetwork.AUTONOMYS_TESTNET_NOVA_DOMAIN: "https://nova.subspace.network/api/v1/graphql",
+        EthereumNetwork.GNOSIS_CHIADO_TESTNET: "https://gnosis-chiado.blockscout.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
