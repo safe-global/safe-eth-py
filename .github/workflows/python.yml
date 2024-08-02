@@ -75,6 +75,7 @@ jobs:
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
         ETHEREUM_POLYGON_NODE: ${{ secrets.ETHEREUM_POLYGON_NODE }}
         ETHEREUM_4337_BUNDLER_URL: ${{ secrets.ETHEREUM_4337_BUNDLER_URL }}
+        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
     - name: Test packaging
       run: pip install -e .
     - name: Send results to coveralls
