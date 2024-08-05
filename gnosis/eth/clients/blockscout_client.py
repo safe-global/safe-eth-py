@@ -126,6 +126,7 @@ class BlockscoutClient:
         EthereumNetwork.GNOSIS_CHIADO_TESTNET: "https://gnosis-chiado.blockscout.com/api/v1/graphql",
         EthereumNetwork.SONGBIRD_CANARY_NETWORK: "https://songbird-explorer.flare.network/graphiql",
         EthereumNetwork.SONGBIRD_TESTNET_COSTON: "https://coston-explorer.flare.network/graphiql",
+        EthereumNetwork.FLARE_TESTNET_COSTON2: "https://coston2-explorer.flare.network/graphiql",
     }
 
     def __init__(self, network: EthereumNetwork):
