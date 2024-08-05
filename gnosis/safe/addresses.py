@@ -2477,6 +2477,6 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.FLARE_TESTNET_COSTON2: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 3526),  # v1.3.0
-        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 10423552), # v1.4.1
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 10423552),  # v1.4.1
     ],
 }
