@@ -1,4 +1,4 @@
-gnosis package
+safe_eth package
 ==============
 
 Subpackages
@@ -7,13 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   gnosis.eth
-   gnosis.safe
+   safe_eth.eth
+   safe_eth.safe
 
 Module contents
 ---------------
 
-.. automodule:: gnosis
+.. automodule:: safe_eth
    :members:
    :undoc-members:
    :show-inheritance:

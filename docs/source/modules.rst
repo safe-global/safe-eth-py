@@ -1,7 +1,7 @@
-gnosis
+safe_eth
 ======
 
 .. toctree::
    :maxdepth: 4
 
-   gnosis
+   safe_eth

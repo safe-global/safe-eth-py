@@ -13,7 +13,7 @@ SAFE_DEPLOYMENTS_FOLDER = (
 )  # folder where the deployments are
 CURRENT_DIRECTORY = os.path.dirname(__file__)
 SAFE_ETH_PY_DEPLOYMENTS_FILE = os.path.join(
-    CURRENT_DIRECTORY, "../../gnosis/safe/safe_deployments.py"
+    CURRENT_DIRECTORY, "../../safe_eth/safe/safe_deployments.py"
 )  # deployment dictionary to be stored
 
 

@@ -13,7 +13,7 @@ from github import Github
 from github.GithubException import GithubException
 from github.Repository import Repository
 
-from gnosis.eth import EthereumClient
+from safe_eth.eth import EthereumClient
 
 
 def convert_chain_name(name: str) -> str:

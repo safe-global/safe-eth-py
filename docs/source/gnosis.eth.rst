@@ -1,4 +1,4 @@
-gnosis.eth package
+safe_eth.eth package
 ==================
 
 Subpackages
@@ -7,43 +7,43 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   gnosis.eth.clients
-   gnosis.eth.contracts
-   gnosis.eth.django
-   gnosis.eth.oracles
-   gnosis.eth.tests
+   safe_eth.eth.clients
+   safe_eth.eth.contracts
+   safe_eth.eth.django
+   safe_eth.eth.oracles
+   safe_eth.eth.tests
 
 Submodules
 ----------
 
-gnosis.eth.constants module
+safe_eth.eth.constants module
 ---------------------------
 
-.. automodule:: gnosis.eth.constants
+.. automodule:: safe_eth.eth.constants
    :members:
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.ethereum\_client module
+safe_eth.eth.ethereum\_client module
 ----------------------------------
 
-.. automodule:: gnosis.eth.ethereum_client
+.. automodule:: safe_eth.eth.ethereum_client
    :members:
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.typing module
+safe_eth.eth.typing module
 ------------------------
 
-.. automodule:: gnosis.eth.typing
+.. automodule:: safe_eth.eth.typing
    :members:
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.utils module
+safe_eth.eth.utils module
 -----------------------
 
-.. automodule:: gnosis.eth.utils
+.. automodule:: safe_eth.eth.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -51,7 +51,7 @@ gnosis.eth.utils module
 Module contents
 ---------------
 
-.. automodule:: gnosis.eth
+.. automodule:: safe_eth.eth
    :members:
    :undoc-members:
    :show-inheritance:

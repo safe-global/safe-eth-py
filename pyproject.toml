@@ -19,6 +19,7 @@ keywords = [
     "gnosis",
     "safe",
     "web3",
+    "safe_eth",
 ]
 classifiers = [
     "Environment :: Web Environment",
@@ -60,7 +61,7 @@ Source = "https://github.com/safe-global/safe-eth-py"
 Tracker = "https://github.com/safe-global/safe-eth-py/issues"
 
 [tool.hatch.version]
-path = "gnosis/__init__.py"
+path = "safe_eth/__init__.py"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
@@ -68,11 +69,11 @@ extra-dependencies = [
 ]
 
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:gnosis}"
+check = "mypy --install-types --non-interactive {args:safe_eth}"
 
 [tool.coverage.run]
-include = ["gnosis/*"]
-# source_pkgs = ["gnosis", "tests"]
+include = ["safe_eth/*"]
+# source_pkgs = ["safe_eth", "tests"]
 branch = true
 parallel = true
 omit = [
@@ -82,8 +83,7 @@ omit = [
 ]
 
 #[tool.coverage.paths]
-#prueba = ["src/gnosis", "*/gnosis/src/gnosis"]
-#tests = ["tests", "*/gnosis/tests"]
+#tests = ["tests", "*/safe_eth/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -97,18 +97,18 @@ exclude_lines = [
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/gnosis",
+    "/safe_eth",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = [
-    "/gnosis",
+    "/safe_eth",
 ]
 
 [tool.isort]
 profile = "black"
 default_section = "THIRDPARTY"
-known_first_party = "gnosis"
+known_first_party = "safe_eth"
 known_safe_foundation = "py_eth_sig_utils"
 known_django = "django"
 sections = [

@@ -1,4 +1,4 @@
-gnosis.eth.django package
+safe_eth.eth.django package
 =========================
 
 Subpackages
@@ -7,39 +7,39 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   gnosis.eth.django.tests
+   safe_eth.eth.django.tests
 
 Submodules
 ----------
 
-gnosis.eth.django.filters module
+safe_eth.eth.django.filters module
 --------------------------------
 
-.. automodule:: gnosis.eth.django.filters
+.. automodule:: safe_eth.eth.django.filters
    :members:
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.django.models module
+safe_eth.eth.django.models module
 -------------------------------
 
-.. automodule:: gnosis.eth.django.models
+.. automodule:: safe_eth.eth.django.models
    :members:
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.django.serializers module
+safe_eth.eth.django.serializers module
 ------------------------------------
 
-.. automodule:: gnosis.eth.django.serializers
+.. automodule:: safe_eth.eth.django.serializers
    :members:
    :undoc-members:
    :show-inheritance:
 
-gnosis.eth.django.validators module
+safe_eth.eth.django.validators module
 -----------------------------------
 
-.. automodule:: gnosis.eth.django.validators
+.. automodule:: safe_eth.eth.django.validators
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,7 +47,7 @@ gnosis.eth.django.validators module
 Module contents
 ---------------
 
-.. automodule:: gnosis.eth.django
+.. automodule:: safe_eth.eth.django
    :members:
    :undoc-members:
    :show-inheritance:

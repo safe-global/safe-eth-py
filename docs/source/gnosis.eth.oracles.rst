@@ -1,4 +1,4 @@
-gnosis.eth.oracles package
+safe_eth.eth.oracles package
 ==========================
 
 Subpackages
@@ -7,15 +7,15 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   gnosis.eth.oracles.abis
+   safe_eth.eth.oracles.abis
 
 Submodules
 ----------
 
-gnosis.eth.oracles.oracles module
+safe_eth.eth.oracles.oracles module
 ---------------------------------
 
-.. automodule:: gnosis.eth.oracles.oracles
+.. automodule:: safe_eth.eth.oracles.oracles
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ gnosis.eth.oracles.oracles module
 Module contents
 ---------------
 
-.. automodule:: gnosis.eth.oracles
+.. automodule:: safe_eth.eth.oracles
    :members:
    :undoc-members:
    :show-inheritance:

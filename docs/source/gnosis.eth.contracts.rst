@@ -1,10 +1,10 @@
-gnosis.eth.contracts package
+safe_eth.eth.contracts package
 ============================
 
 Module contents
 ---------------
 
-.. automodule:: gnosis.eth.contracts
+.. automodule:: safe_eth.eth.contracts
    :members:
    :undoc-members:
    :show-inheritance:
