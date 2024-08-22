@@ -2520,4 +2520,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.IRISHUB: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 25909136),  # v1.4.1
     ],
+    EthereumNetwork.NAL_MAINNET: [
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 1777652),  # v1.3.0
+    ],
 }
