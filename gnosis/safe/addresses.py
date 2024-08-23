@@ -1681,6 +1681,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         ),  # v1.3.0+L2
     ],
+    EthereumNetwork.CRONOS_ZKEVM_TESTNET: [
+        ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 163814, "1.3.0"),  # v1.3.0
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
