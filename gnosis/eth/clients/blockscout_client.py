@@ -129,6 +129,7 @@ class BlockscoutClient:
         EthereumNetwork.FLARE_TESTNET_COSTON2: "https://coston2-explorer.flare.network/graphiql",
         EthereumNetwork.NAL_SEPOLIA_TESTNET: "https://testnet-scan.nal.network/api/v1/graphql",
         EthereumNetwork.ALEPH_ZERO_EVM: "https://evm-explorer.alephzero.org/api/v1/graphql",
+        EthereumNetwork.SKOPJE_TESTNET: "https://skopje-explorer.gptprotocol.io/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):

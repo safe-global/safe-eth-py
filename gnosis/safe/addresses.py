@@ -1689,6 +1689,14 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 6105, "1.3.0"),  # v1.3.0
         ("0x1727c2c531cf966f902E5927b98490fDFb3b2b70", 6104, "1.3.0+L2"),  # v1.3.0+L2
     ],
+    EthereumNetwork.SKOPJE_TESTNET: [
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 2845182, "1.4.1"),  # v1.4.1
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            2845179,
+            "1.4.1+L2",
+        ),  # v1.4.1+L2
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -2540,5 +2548,8 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.CRONOS_ZKEVM_MAINNET: [
         ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 6097),  # v1.3.0
+    ],
+    EthereumNetwork.SKOPJE_TESTNET: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2845163),  # v1.4.1
     ],
 }
