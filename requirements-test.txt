@@ -1,5 +1,5 @@
 -r requirements.txt
-coverage==7.6.0
+coverage==7.6.1
 faker==27.4.0
 pytest==8.3.2
 pytest-django==4.8.0
