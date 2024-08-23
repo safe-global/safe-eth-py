@@ -2531,4 +2531,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.NAL_MAINNET: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 1777652),  # v1.3.0
     ],
+    EthereumNetwork.CRONOS_ZKEVM_TESTNET: [
+        ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 163805),  # v1.3.0
+    ],
 }
