@@ -130,6 +130,7 @@ class BlockscoutClient:
         EthereumNetwork.NAL_SEPOLIA_TESTNET: "https://testnet-scan.nal.network/api/v1/graphql",
         EthereumNetwork.ALEPH_ZERO_EVM: "https://evm-explorer.alephzero.org/api/v1/graphql",
         EthereumNetwork.SKOPJE_TESTNET: "https://skopje-explorer.gptprotocol.io/api/v1/graphql",
+        EthereumNetwork.GPT_MAINNET: "https://explorer.gptprotocol.io/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
