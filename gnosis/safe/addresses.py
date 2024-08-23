@@ -2538,4 +2538,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.CRONOS_ZKEVM_TESTNET: [
         ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 163805),  # v1.3.0
     ],
+    EthereumNetwork.CRONOS_ZKEVM_MAINNET: [
+        ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 6097),  # v1.3.0
+    ],
 }
