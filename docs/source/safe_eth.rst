@@ -1,5 +1,5 @@
-safe_eth package
-==============
+safe\_eth package
+=================
 
 Subpackages
 -----------
@@ -7,8 +7,10 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   safe_eth.cowsap
    safe_eth.eth
    safe_eth.safe
+   safe_eth.util
 
 Module contents
 ---------------

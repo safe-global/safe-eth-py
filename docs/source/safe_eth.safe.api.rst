@@ -1,4 +1,4 @@
-safe_eth.eth.oracles package
+safe\_eth.safe.api package
 ==========================
 
 Subpackages
@@ -7,15 +7,15 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   safe_eth.eth.oracles.abis
+   safe_eth.safe.api.transaction_service_api
 
 Submodules
 ----------
 
-safe_eth.eth.oracles.oracles module
----------------------------------
+safe\_eth.safe.api.base\_api module
+-----------------------------------
 
-.. automodule:: safe_eth.eth.oracles.oracles
+.. automodule:: safe_eth.safe.api.base_api
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ safe_eth.eth.oracles.oracles module
 Module contents
 ---------------
 
-.. automodule:: safe_eth.eth.oracles
+.. automodule:: safe_eth.safe.api
    :members:
    :undoc-members:
    :show-inheritance:
