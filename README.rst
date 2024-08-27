@@ -8,7 +8,7 @@ Safe-eth-py (previously known as Gnosis-py)
 Safe-eth-py includes a set of libraries to work with Ethereum and relevant Ethereum projects:
   - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
     tokens and tracing.
-  - `Gnosis Safe <https://github.com/safe-global/safe-contracts>`_ classes and utilities.
+  - `Safe <https://github.com/safe-global/safe-contracts>`_ classes and utilities.
   - Price oracles for `Uniswap`, `Kyber`...
   - Django serializers, models and utils.
 
@@ -43,7 +43,7 @@ Once the issue is created or edited, an automatic validation will be executed an
 
 Ethereum utils
 --------------
-gnosis.eth
+safe_eth.eth
 ~~~~~~~~~~~~~~~~~~~~
 - ``class EthereumClient (ethereum_node_url: str)``: Class to connect and do operations
   with an ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
@@ -54,8 +54,8 @@ the possibility of doing ``batch_calls`` (a single request making read-only call
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.eth.contracts import get_erc721_contract
+  from safe_eth.eth import EthereumClient
+  from safe_eth.eth.contracts import get_erc721_contract
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   erc721_contract = get_erc721_contract(self.w3, token_address)
   name, symbol = ethereum_client.batch_call([
@@ -67,18 +67,18 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
+  from safe_eth.eth import EthereumClient
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   ethereum_client.w3.eth.get_block(57)
 
 
-gnosis.eth.constants
+safe_eth.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
-- ``SENTINEL_ADDRESS (0x000...1)``: Used for Gnosis Safe's linked lists (modules, owners...).
+- ``SENTINEL_ADDRESS (0x000...1)``: Used for Safe's linked lists (modules, owners...).
 - Maximum and minimum values for `R`, `S` and `V` in ethereum signatures.
 
-gnosis.eth.oracles
+safe_eth.eth.oracles
 ~~~~~~~~~~~~~~~~~~
 
 Price oracles for Uniswap, UniswapV2, Kyber, SushiSwap, Aave, Balancer, Curve, Mooniswap, Yearn...
@@ -86,8 +86,8 @@ Example:
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.eth.oracles import UniswapV2Oracle
+  from safe_eth.eth import EthereumClient
+  from safe_eth.eth.oracles import UniswapV2Oracle
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   uniswap_oracle = UniswapV2Oracle(ethereum_client)
   gno_token_mainnet_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
@@ -96,7 +96,7 @@ Example:
 
 
 
-gnosis.eth.utils
+safe_eth.eth.utils
 ~~~~~~~~~~~~~~~~
 
 Contains utils for ethereum operations:
@@ -106,16 +106,16 @@ Contains utils for ethereum operations:
 
 Ethereum django (REST) utils
 ----------------------------
-Django utils are available under ``gnosis.eth.django``.
+Django utils are available under ``safe_eth.eth.django``.
 You can find a set of helpers for working with Ethereum using Django and Django Rest framework.
 
 It includes:
 
-- **gnosis.eth.django.filters**: EthereumAddressFilter.
-- **gnosis.eth.django.models**: Model fields (Ethereum address, Ethereum big integer field).
-- **gnosis.eth.django.serializers**: Serializer fields (Ethereum address field, hexadecimal field).
-- **gnosis.eth.django.validators**: Ethereum related validators.
-- **gnosis.safe.serializers**: Serializers for Gnosis Safe (signature, transaction...).
+- **safe_eth.eth.django.filters**: EthereumAddressFilter.
+- **safe_eth.eth.django.models**: Model fields (Ethereum address, Ethereum big integer field).
+- **safe_eth.eth.django.serializers**: Serializer fields (Ethereum address field, hexadecimal field).
+- **safe_eth.eth.django.validators**: Ethereum related validators.
+- **safe_eth.safe.serializers**: Serializers for Safe (signature, transaction...).
 - All the tests are written using Django Test suite.
 
 Contributors

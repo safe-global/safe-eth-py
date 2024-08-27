@@ -15,8 +15,8 @@ import requests
 import validators
 from tldextract import extract
 
-from gnosis.eth import EthereumClient
-from gnosis.eth.utils import mk_contract_address_2
+from safe_eth.eth import EthereumClient
+from safe_eth.eth.utils import mk_contract_address_2
 
 ERRORS = []
 

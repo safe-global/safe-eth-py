@@ -11,7 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. from gnosis import '...'
+1. from safe_eth import '...'
 2. '....'
 
 **Expected behavior**

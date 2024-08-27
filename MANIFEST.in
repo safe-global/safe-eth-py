@@ -1,2 +1,2 @@
 recursive-include docs *
-recursive-include gnosis/eth/contracts *.json
+recursive-include safe_eth/eth/contracts *.json

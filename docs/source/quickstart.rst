@@ -11,7 +11,7 @@ If you have issues building **coincurve** maybe
 
 Ethereum utils
 --------------
-gnosis.eth
+safe_eth.eth
 ~~~~~~~~~~
 - ``class EthereumClient (ethereum_node_url: str)``: Class to connect and do operations
   with an ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
@@ -22,8 +22,8 @@ the possibility of doing ``batch_calls`` (a single request making read-only call
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.eth.contracts import get_erc721_contract
+  from safe_eth.eth import EthereumClient
+  from safe_eth.eth.contracts import get_erc721_contract
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   erc721_contract = get_erc721_contract(ethereum_client.w3, token_address)
   name, symbol = ethereum_client.batch_call([
@@ -35,8 +35,8 @@ More optimal in case you want to call the same function in multiple contracts
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.eth.contracts import get_erc20_contract
+  from safe_eth.eth import EthereumClient
+  from safe_eth.eth.contracts import get_erc20_contract
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   erc20_contract = get_erc20_contract(ethereum_client.w3, token_address)
   my_account = '0xD0E03B027A367fED4fd0E7834a82CD8A73E76B45'
@@ -49,7 +49,7 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
+  from safe_eth.eth import EthereumClient
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   ethereum_client.w3.eth.get_block(57)
 
@@ -58,7 +58,7 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
 
 .. code-block:: python
 
-  from gnosis.eth import TxSpeed
+  from safe_eth.eth import TxSpeed
   base_fee, priority_fee = ethereum_client.estimate_fee_eip1559(tx_speed=TxSpeed.NORMAL)
   # If you want to convert a legacy tx to a EIP1559 one
   eip1559_tx = ethereum_client.set_eip1559_fees(legacy_tx, tx_speed=TxSpeed.NORMAL)
@@ -70,26 +70,26 @@ You can modify timeouts (in seconds) for the RPC endpoints by setting
 By default every RPC request will be retried `3` times. You can modify that by setting `ETHEREUM_RPC_RETRY_COUNT`.
 
 
-gnosis.eth.clients
+safe_eth.eth.clients
 ~~~~~~~~~~
 
-You can modify timeouts (in seconds) for the gnosis.eth.clients by setting the following environment variables:
+You can modify timeouts (in seconds) for the safe_eth.eth.clients by setting the following environment variables:
 
 - ``class EnsClient``:  `ENS_CLIENT_REQUEST_TIMEOUT`.
 - ``class EtherscanClient``:  `ETHERSCAN_CLIENT_REQUEST_TIMEOUT`.
 - ``class SourcifyClient``:  `SOURCIFY_CLIENT_REQUEST_TIMEOUT`.
 
-gnosis.eth.constants
+safe_eth.eth.constants
 ~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
-- ``SENTINEL_ADDRESS (0x000...1)``: Used for Gnosis Safe's linked lists (modules, owners...).
+- ``SENTINEL_ADDRESS (0x000...1)``: Used for Safe's linked lists (modules, owners...).
 - Maximum and minimum values for `R`, `S` and `V` in ethereum signatures.
 
-gnosis.eth.eip712
+safe_eth.eth.eip712
 ~~~~~~~~~~~~~~~~~~~~
 .. code-block:: python
 
-    from gnosis.eth.eip712 import eip712_encode_hash
+    from safe_eth.eth.eip712 import eip712_encode_hash
 
     types = {'EIP712Domain': [{'name': 'name', 'type': 'string'},
                               {'name': 'version', 'type': 'string'},
@@ -126,15 +126,15 @@ gnosis.eth.eip712
 
 
 
-gnosis.eth.oracles
+safe_eth.eth.oracles
 ~~~~~~~~~~~~~~~~~~
 Price oracles for Uniswap, UniswapV2, Kyber, SushiSwap, Aave, Balancer, Curve, Mooniswap, Yearn...
 Example:
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.eth.oracles import UniswapV2Oracle
+  from safe_eth.eth import EthereumClient
+  from safe_eth.eth.oracles import UniswapV2Oracle
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   uniswap_oracle = UniswapV2Oracle(ethereum_client)
   gno_token_mainnet_address = '0x6810e776880C02933D47DB1b9fc05908e5386b96'
@@ -143,7 +143,7 @@ Example:
 
 
 
-gnosis.eth.utils
+safe_eth.eth.utils
 ~~~~~~~~~~~~~~~~
 
 Contains utils for ethereum operations:
@@ -153,28 +153,28 @@ Contains utils for ethereum operations:
 
 Ethereum django (REST) utils
 ----------------------------
-Django utils are available under ``gnosis.eth.django``.
+Django utils are available under ``safe_eth.eth.django``.
 You can find a set of helpers for working with Ethereum using Django and Django Rest framework.
 
 It includes:
 
-- **gnosis.eth.django.filters**: EthereumAddressFilter.
-- **gnosis.eth.django.models**: Model fields (Ethereum address, Ethereum big integer field).
-- **gnosis.eth.django.serializers**: Serializer fields (Ethereum address field, hexadecimal field).
-- **gnosis.eth.django.validators**: Ethereum related validators.
-- **gnosis.safe.serializers**: Serializers for Gnosis Safe (signature, transaction...).
+- **safe_eth.eth.django.filters**: EthereumAddressFilter.
+- **safe_eth.eth.django.models**: Model fields (Ethereum address, Ethereum big integer field).
+- **safe_eth.eth.django.serializers**: Serializer fields (Ethereum address field, hexadecimal field).
+- **safe_eth.eth.django.validators**: Ethereum related validators.
+- **safe_eth.safe.serializers**: Serializers for Safe (signature, transaction...).
 - All the tests are written using Django Test suite.
 
-Gnosis Products
+Safe Products
 ---------------
 Safe
 ~~~~
-On ``gnosis.safe`` there're classes to work with `Safe <https://safe.global/>`_
+On ``safe_eth.safe`` there're classes to work with `Safe <https://safe.global/>`_
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.safe import Safe
+  from safe_eth.eth import EthereumClient
+  from safe_eth.safe import Safe
   safe_address = ''  # Fill with checksummed version of a Safe address
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   safe = Safe(safe_address, ethereum_client)
@@ -195,8 +195,8 @@ To interact with the Transaction Service API:
 
 .. code-block:: python
 
-  from gnosis.eth import EthereumClient
-  from gnosis.safe import Safe
+  from safe_eth.eth import EthereumClient
+  from safe_eth.safe import Safe
   ethereum_client = EthereumClient(ETHEREUM_NODE_URL)
   transaction_service_api = TransactionServiceApi(
     network=EthereumNetwork.SEPOLIA,
@@ -208,13 +208,13 @@ You can modify the request timeout (in seconds) by setting `SAFE_TRANSACTION_SER
 
 CowSwap
 ~~~~~~~~
-On ``gnosis.cowswap`` there're classes to work with `CowSwap <https://docs.cowswap.app>`_
+On ``safe_eth.cowswap`` there're classes to work with `CowSwap <https://docs.cowswap.app>`_
 
 .. code-block:: python
 
   import time
-  from gnosis.eth import EthereumNetwork
-  from gnosis.cowswap import Order, OrderKind, CowSwapAPI
+  from safe_eth.eth import EthereumNetwork
+  from safe_eth.cowswap import Order, OrderKind, CowSwapAPI
 
   account_address = ''  # Fill with checksummed version of a CowSwap user address
   account_private_key = ''  # Fill with private key of a user address

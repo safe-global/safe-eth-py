@@ -1,6 +1,6 @@
 from .base import *  # noqa
 
-INSTALLED_APPS += ("gnosis.eth.django.tests",)  # noqa
+INSTALLED_APPS += ("safe_eth.eth.django.tests",)  # noqa
 
 SECRET_KEY = "testtest"
 DEBUG = True

@@ -11,9 +11,9 @@ if __name__ == "__main__":
     import sys
     import time
 
-    from gnosis.cowsap import CowSwapAPI, Order, OrderKind
-    from gnosis.eth import EthereumNetwork
-    from gnosis.eth.constants import NULL_ADDRESS
+    from safe_eth.cowsap import CowSwapAPI, Order, OrderKind
+    from safe_eth.eth import EthereumNetwork
+    from safe_eth.eth.constants import NULL_ADDRESS
 
     PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
     if not PRIVATE_KEY:

@@ -70,7 +70,7 @@ jobs:
     - name: Run tests and coverage
       run: coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3
       env:
-        SOURCE_FOLDER: gnosis
+        SOURCE_FOLDER: safe_eth
         DJANGO_SETTINGS_MODULE: config.settings.test
         ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
         ETHEREUM_POLYGON_NODE: ${{ secrets.ETHEREUM_POLYGON_NODE }}
