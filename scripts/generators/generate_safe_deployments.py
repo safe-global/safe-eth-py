@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 from contextlib import contextmanager
+from typing import Dict, List
 
 from git import Repo
 
@@ -36,6 +37,28 @@ def get_safe_deployments(*args, **kwds):
         clean_resources()
 
 
+def get_network_addresses(safe_deployment: Dict) -> Dict[str, List[str]]:
+    """
+    Convert canonical and non-canonical from safe-deplyments json to the corresponding addresses.
+
+    :param safe_deployment:
+    :return:
+    """
+    network_addresses = {}
+
+    # Applying list because networkAddresses is not list for all networks
+    for chain_id, address_type in safe_deployment["networkAddresses"].items():
+        addresses = []
+        if not isinstance(address_type, list):
+            address_type = [address_type]
+        for address_value in address_type:
+            addresses.append(safe_deployment["deployments"][address_value]["address"])
+
+        network_addresses[chain_id] = addresses
+
+    return network_addresses
+
+
 def generate_safe_deployments_py():
     """
     Get safe deployments addresses from https://github.com/safe-global/safe-deployments/ and generate python dictionary file
@@ -49,7 +72,7 @@ def generate_safe_deployments_py():
                 repo_safe_deployment = json.load(open(os.path.join(root, filename)))
                 safe_deployments.setdefault(repo_safe_deployment["version"], {})[
                     repo_safe_deployment["contractName"]
-                ] = repo_safe_deployment["networkAddresses"]
+                ] = get_network_addresses(repo_safe_deployment)
 
         # Write file
         with open(SAFE_ETH_PY_DEPLOYMENTS_FILE, "w") as file:
