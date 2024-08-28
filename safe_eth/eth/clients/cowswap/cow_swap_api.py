@@ -7,10 +7,10 @@ from eth_account.messages import encode_defunct
 from eth_typing import AnyAddress, ChecksumAddress, HexStr
 
 from safe_eth.eth import EthereumNetwork, EthereumNetworkNotSupported
+from safe_eth.eth.constants import NULL_ADDRESS
 from safe_eth.eth.eip712 import eip712_encode_hash
+from safe_eth.util.http import prepare_http_session
 
-from ..eth.constants import NULL_ADDRESS
-from ..util.http import prepare_http_session
 from .order import Order, OrderKind
 
 
