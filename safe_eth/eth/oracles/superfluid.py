@@ -1,4 +1,5 @@
 from eth_abi.exceptions import DecodingError
+from eth_utils import to_checksum_address
 from web3.exceptions import Web3Exception
 
 from .. import EthereumClient, EthereumNetwork
@@ -35,8 +36,11 @@ class SuperfluidOracle(PriceOracle):
 
     def get_price(self, token_address: str) -> float:
         try:
+            token_address_checksum = to_checksum_address(token_address)
             underlying_token = (
-                self.w3.eth.contract(token_address, abi=super_token_abi)
+                self.w3.eth.contract(
+                    address=token_address_checksum, abi=super_token_abi
+                )
                 .functions.getUnderlyingToken()
                 .call()
             )

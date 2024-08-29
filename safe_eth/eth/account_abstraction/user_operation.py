@@ -204,7 +204,12 @@ class UserOperationV07:
 
     @property
     def paymaster_and_data(self) -> bytes:
-        if not self.paymaster:
+        if (
+            not self.paymaster
+            or not self.paymaster_verification_gas_limit
+            or not self.paymaster_post_op_gas_limit
+            or not self.paymaster_data
+        ):
             return b""
         return (
             HexBytes(self.paymaster).rjust(20, b"\x00")

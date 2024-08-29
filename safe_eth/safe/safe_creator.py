@@ -90,7 +90,7 @@ class SafeCreator:
         )
 
         if proxy_factory_address:
-            proxy_factory = ProxyFactory(proxy_factory_address, ethereum_client)
+            proxy_factory = ProxyFactory(proxy_factory_address, ethereum_client)  # type: ignore[abstract]
             return proxy_factory.deploy_proxy_contract_with_nonce(
                 deployer_account, master_copy_address, initializer=HexBytes(initializer)
             )

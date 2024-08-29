@@ -1,3 +1,5 @@
+from typing import Union
+
 import requests
 
 
@@ -13,7 +15,7 @@ def prepare_http_session(
     https://docs.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
     """
     session = requests.Session()
-    retry_conf = (
+    retry_conf: Union[requests.adapters.Retry, int] = (
         requests.adapters.Retry(
             total=retry_count, backoff_factor=0.3, respect_retry_after_header=False
         )

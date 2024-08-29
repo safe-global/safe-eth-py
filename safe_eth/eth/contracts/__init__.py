@@ -31,7 +31,7 @@ import json
 import os
 import sys
 from functools import cache
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Type, Union
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
@@ -101,7 +101,7 @@ def _load_json_file(path) -> Dict[str, Any]:
 
 def generate_contract_fn(
     contract: Dict[str, Any]
-) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+) -> Callable[[Web3, Optional[ChecksumAddress]], Union[Type[Contract], Contract]]:
     """
     Dynamically generate a function to build a Web3 Contract for the provided contract ABI
 
@@ -109,10 +109,13 @@ def generate_contract_fn(
     :return: function that will return a Web3 Contract from an ABI
     """
 
-    def fn(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
-        return w3.eth.contract(
+    def fn(
+        w3: Web3, address: Optional[ChecksumAddress] = None
+    ) -> Union[Type[Contract], Contract]:
+        eth_contract = w3.eth.contract(
             address=address, abi=contract["abi"], bytecode=contract.get("bytecode")
         )
+        return eth_contract
 
     return fn
 
@@ -130,27 +133,27 @@ def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Co
 def get_safe_V0_0_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_safe_V1_0_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_safe_V1_1_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_safe_V1_3_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_safe_V1_4_1_contract(w3: Web3, address: Optional[str] = None) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_compatibility_fallback_handler_contract(
@@ -167,59 +170,59 @@ def get_compatibility_fallback_handler_contract(
 def get_compatibility_fallback_handler_V1_3_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_compatibility_fallback_handler_V1_4_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_sign_message_lib_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_erc20_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_erc721_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_erc1155_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_example_erc20_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_delegate_constructor_proxy_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_multi_send_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_paying_proxy_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
@@ -234,77 +237,77 @@ def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contr
 def get_proxy_factory_V1_0_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_proxy_factory_V1_1_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_proxy_factory_V1_3_0_contract(
     w3: Web3, address: Optional[str] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_proxy_factory_V1_4_1_contract(
     w3: Web3, address: Optional[str] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_proxy_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_simulate_tx_accessor_V1_4_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_uniswap_exchange_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_uniswap_factory_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_uniswap_v2_factory_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_uniswap_v2_pair_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_uniswap_v2_router_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_kyber_network_proxy_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_cpk_factory_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
-    pass
+    raise NotImplementedError
 
 
 def get_multicall_v3_contract(w3: Web3, address: Optional[ChecksumAddress] = None):

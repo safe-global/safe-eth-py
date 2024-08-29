@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Optional, Sequence, Tuple
 import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.signers.local import LocalAccount
-from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress
+from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3._utils.abi import map_abi_data
@@ -77,14 +77,19 @@ class Multicall(ContractBase):
     ):
         ethereum_network = ethereum_client.get_network()
         address = multicall_contract_address or self.ADDRESSES.get(ethereum_network)
-        if not address:
+        mainnet_address = self.ADDRESSES.get(EthereumNetwork.MAINNET)
+        if not address and mainnet_address:
             # Try with Multicall V3 deterministic address
-            address = self.ADDRESSES.get(EthereumNetwork.MAINNET)
+            address = ChecksumAddress(HexAddress(HexStr(mainnet_address)))
             if not ethereum_client.is_contract(address):
                 raise EthereumNetworkNotSupported(
                     "Multicall contract not available for %s", ethereum_network.name
                 )
-        super().__init__(address, ethereum_client)
+
+        if not address:
+            raise ValueError("Contract address cannot be none")
+
+        super().__init__(ChecksumAddress(HexAddress(HexStr(address))), ethereum_client)
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_multicall_v3_contract
@@ -100,8 +105,8 @@ class Multicall(ContractBase):
         :param deployer_account: Ethereum Account
         :return: ``EthereumTxSent`` with the deployed contract address, ``None`` if already deployed
         """
-        contract_fn = cls.get_contract_fn(cls)
-        contract = contract_fn(ethereum_client.w3)
+        contract_fn = cls.get_contract_fn(cls)  # type: ignore[arg-type]
+        contract = contract_fn(ethereum_client.w3, None)
         constructor_data = contract.constructor().build_transaction(
             get_empty_tx_params()
         )["data"]
@@ -111,6 +116,7 @@ class Multicall(ContractBase):
                 deployer_account, constructor_data
             )
 
+            assert ethereum_tx_sent.contract_address is not None
             contract_address = ethereum_tx_sent.contract_address
             logger.info(
                 "Deployed Multicall V2 Contract %s by %s",
@@ -127,7 +133,7 @@ class Multicall(ContractBase):
     @staticmethod
     def _build_payload(
         contract_functions: Sequence[ContractFunction],
-    ) -> Tuple[List[Tuple[ChecksumAddress, bytes]], List[List[Any]]]:
+    ) -> Tuple[List[Tuple[ChecksumAddress, HexBytes]], List[List[Any]]]:
         targets_with_data = []
         output_types = []
         for contract_function in contract_functions:
@@ -147,7 +153,7 @@ class Multicall(ContractBase):
         self,
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-    ) -> Tuple[List[Tuple[ChecksumAddress, bytes]], List[List[Any]]]:
+    ) -> Tuple[List[Tuple[ChecksumAddress, HexBytes]], List[List[Any]]]:
         targets_with_data = []
         output_types = []
         tx_data = HexBytes(contract_function._encode_transaction_data())
@@ -182,6 +188,7 @@ class Multicall(ContractBase):
                     "Cannot decode %s using output-type %s", data, output_type
                 )
                 return data
+        return None
 
     def _aggregate(
         self,
@@ -200,7 +207,7 @@ class Multicall(ContractBase):
         ]
         try:
             return self.contract.functions.aggregate(aggregate_parameter).call(
-                block_identifier=block_identifier
+                block_identifier=block_identifier or "latest"
             )
         except (ContractLogicError, OverflowError):
             raise BatchCallFunctionFailed
@@ -223,7 +230,7 @@ class Multicall(ContractBase):
             targets_with_data, block_identifier=block_identifier
         )
         decoded_results = [
-            self._decode_data(output_type, data)
+            self._decode_data(output_type, data) if data is not None else None
             for output_type, data in zip(output_types, results)
         ]
         return block_number, decoded_results
@@ -250,7 +257,7 @@ class Multicall(ContractBase):
         try:
             result = self.contract.functions.tryAggregate(
                 require_success, aggregate_parameter
-            ).call(block_identifier=block_identifier)
+            ).call(block_identifier=block_identifier or "latest")
 
             if require_success and b"" in (data for _, data in result):
                 # `b''` values are decoding errors/missing contracts/missing functions
@@ -287,7 +294,7 @@ class Multicall(ContractBase):
             MulticallDecodedResult(
                 multicall_result.success,
                 self._decode_data(output_type, multicall_result.return_data)
-                if multicall_result.success
+                if multicall_result.success and multicall_result.return_data is not None
                 else multicall_result.return_data,
             )
             for output_type, multicall_result in zip(output_types, results)
@@ -323,7 +330,7 @@ class Multicall(ContractBase):
             MulticallDecodedResult(
                 multicall_result.success,
                 self._decode_data(output_type, multicall_result.return_data)
-                if multicall_result.success
+                if multicall_result.success and multicall_result.return_data is not None
                 else multicall_result.return_data,
             )
             for output_type, multicall_result in zip(output_types, results)

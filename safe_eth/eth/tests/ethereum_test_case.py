@@ -3,9 +3,10 @@ import os
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from web3 import Web3
 from web3.contract import Contract
-from web3.types import TxParams
+from web3.types import TxParams, Wei
 
 from ..ethereum_client import EthereumClient, get_auto_ethereum_client
 from ..multicall import Multicall
@@ -66,7 +67,9 @@ class EthereumTestCaseMixin:
         return send_tx(self.w3, tx, account)
 
     def send_ether(self, to: str, value: int) -> bytes:
-        return send_tx(self.w3, {"to": to, "value": value}, self.ethereum_test_account)
+        return send_tx(
+            self.w3, {"to": to, "value": Wei(value)}, self.ethereum_test_account
+        )
 
     def create_and_fund_account(
         self, initial_ether: float = 0, initial_wei: int = 0
@@ -76,7 +79,9 @@ class EthereumTestCaseMixin:
             self.send_tx(
                 {
                     "to": account.address,
-                    "value": self.w3.to_wei(initial_ether, "ether") + initial_wei,
+                    "value": Wei(
+                        self.w3.to_wei(initial_ether, "ether") + Wei(initial_wei)
+                    ),
                 },
                 self.ethereum_test_account,
             )
@@ -95,12 +100,17 @@ class EthereumTestCaseMixin:
             self.ethereum_test_account,
             name,
             symbol,
-            owner,
+            ChecksumAddress(HexAddress(HexStr(owner))),
             amount,
             decimals=decimals,
         )
 
     def deploy_example_erc20(self, amount: int, owner: str) -> Contract:
         return deploy_erc20(
-            self.w3, self.ethereum_test_account, "Uxio", "UXI", owner, amount
+            self.w3,
+            self.ethereum_test_account,
+            "Uxio",
+            "UXI",
+            ChecksumAddress(HexAddress(HexStr(owner))),
+            amount,
         )

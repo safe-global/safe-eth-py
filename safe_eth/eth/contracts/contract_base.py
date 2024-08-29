@@ -14,7 +14,7 @@ class ContractBase(metaclass=ABCMeta):
     def __init__(
         self,
         address: ChecksumAddress,
-        ethereum_client: "EthereumClient",  # noqa F821
+        ethereum_client: "EthereumClient",  # type: ignore # noqa F821
         *args,
         **kwargs,
     ):

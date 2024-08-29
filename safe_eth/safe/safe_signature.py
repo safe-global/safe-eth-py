@@ -7,7 +7,7 @@ from eth_abi import decode as decode_abi
 from eth_abi import encode as encode_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
-from eth_typing import ChecksumAddress
+from eth_typing import BlockIdentifier, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3.exceptions import Web3Exception
 
@@ -177,7 +177,7 @@ class SafeSignature(ABC):
                 dynamic_offset += len(contract_signature)
             else:
                 signature += safe_signature.export_signature()
-        return signature + dynamic_part
+        return HexBytes(signature + dynamic_part)
 
     def export_signature(self) -> HexBytes:
         """
@@ -318,9 +318,13 @@ class SafeSignatureApprovedHash(SafeSignature):
         return cls(HexBytes(r + s + v), safe_hash)
 
     def is_valid(self, ethereum_client: EthereumClient, safe_address: str) -> bool:
-        safe_contract = get_safe_contract(ethereum_client.w3, safe_address)
+        safe_contract = get_safe_contract(
+            ethereum_client.w3, ChecksumAddress(HexAddress(HexStr(safe_address)))
+        )
         exception: Exception
-        for block_identifier in ("pending", "latest"):
+
+        block_identifiers: List[BlockIdentifier] = ["pending", "latest"]
+        for block_identifier in block_identifiers:
             try:
                 return (
                     safe_contract.functions.approvedHashes(

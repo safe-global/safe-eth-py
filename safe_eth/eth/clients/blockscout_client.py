@@ -135,8 +135,8 @@ class BlockscoutClient:
 
     def __init__(self, network: EthereumNetwork):
         self.network = network
-        self.grahpql_url = self.NETWORK_WITH_URL.get(network)
-        if self.grahpql_url is None:
+        self.grahpql_url = self.NETWORK_WITH_URL.get(network) or ""
+        if not self.grahpql_url:
             raise BlockScoutConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
             )
@@ -167,3 +167,4 @@ class BlockscoutClient:
             return ContractMetadata(
                 smart_contract["name"], json.loads(smart_contract["abi"]), False
             )
+        return None

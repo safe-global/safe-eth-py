@@ -34,7 +34,7 @@ class SafeBaseAPI(ABC):
         """
         self.network = network
         self.ethereum_client = ethereum_client
-        self.base_url = base_url or self.URL_BY_NETWORK.get(network)
+        self.base_url = base_url or self.URL_BY_NETWORK.get(network) or ""
         if not self.base_url:
             raise EthereumNetworkNotSupported(network)
         self.http_session = prepare_http_session(10, 100)

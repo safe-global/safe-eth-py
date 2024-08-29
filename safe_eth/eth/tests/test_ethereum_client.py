@@ -7,6 +7,7 @@ from django.test import TestCase
 import pytest
 import requests
 from eth_account import Account
+from eth_typing import URI, HexStr
 from hexbytes import HexBytes
 from web3.eth import Eth
 from web3.types import TxParams
@@ -575,35 +576,40 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
         TracingManager, "trace_transaction", return_value=internal_txs_errored
     )
     def test_get_previous_trace(self, trace_transaction_mock: MagicMock):
-        self.assertEqual(
-            self.ethereum_client.tracing.get_previous_trace("0x12", [0, 0])[
-                "traceAddress"
-            ],
-            [0],
+        trace_result = self.ethereum_client.tracing.get_previous_trace(
+            HexStr("0x12"), [0, 0]
         )
-        self.assertEqual(
-            self.ethereum_client.tracing.get_previous_trace(
-                "0x12", [0, 0], number_traces=2
-            )["traceAddress"],
-            [],
+        assert trace_result is not None
+        assert trace_result.get("traceAddress") is not None
+        self.assertEqual(trace_result.get("traceAddress"), [0])
+
+        trace_result_2_traces = self.ethereum_client.tracing.get_previous_trace(
+            HexStr("0x12"), [0, 0], number_traces=2
         )
-        self.assertEqual(
+        assert trace_result_2_traces is not None
+        assert trace_result_2_traces.get("traceAddress") is not None
+        self.assertEqual(trace_result_2_traces.get("traceAddress"), [])
+
+        trace_result_skip_delegate_calls = (
             self.ethereum_client.tracing.get_previous_trace(
-                "0x12", [0, 0], skip_delegate_calls=True
-            )["traceAddress"],
-            [],
-        )
-        self.assertIsNone(
-            self.ethereum_client.tracing.get_previous_trace(
-                "0x12", [0, 0], number_traces=3
+                HexStr("0x12"), [0, 0], skip_delegate_calls=True
             )
         )
-        self.assertEqual(
-            self.ethereum_client.tracing.get_previous_trace(
-                "0x12", [0, 0, 0], skip_delegate_calls=True
-            )["traceAddress"],
-            [0, 0],
+        assert trace_result_skip_delegate_calls is not None
+        assert trace_result_skip_delegate_calls.get("traceAddress") is not None
+        self.assertEqual(trace_result_skip_delegate_calls.get("traceAddress"), [])
+
+        trace_result_3_traces = self.ethereum_client.tracing.get_previous_trace(
+            HexStr("0x12"), [0, 0], number_traces=3
         )
+        self.assertIsNone(trace_result_3_traces)
+
+        trace_result_00_trace_address = self.ethereum_client.tracing.get_previous_trace(
+            HexStr("0x12"), [0, 0, 0], skip_delegate_calls=True
+        )
+        assert trace_result_00_trace_address is not None
+        assert trace_result_00_trace_address.get("traceAddress") is not None
+        self.assertEqual(trace_result_00_trace_address.get("traceAddress"), [0, 0])
 
     @mock.patch.object(
         TracingManager, "trace_transaction", return_value=creation_internal_txs
@@ -613,13 +619,15 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
             return [trace["traceAddress"] for trace in traces]
 
         self.assertEqual(
-            trace_addresses(self.ethereum_client.tracing.get_next_traces("0x12", [])),
+            trace_addresses(
+                self.ethereum_client.tracing.get_next_traces(HexStr("0x12"), [])
+            ),
             [[0], [1]],
         )
         self.assertEqual(
             trace_addresses(
                 self.ethereum_client.tracing.get_next_traces(
-                    "0x12", [], remove_delegate_calls=True
+                    HexStr("0x12"), [], remove_delegate_calls=True
                 )
             ),
             [[1]],
@@ -627,7 +635,7 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
         self.assertEqual(
             trace_addresses(
                 self.ethereum_client.tracing.get_next_traces(
-                    "0x12", [], remove_calls=True
+                    HexStr("0x12"), [], remove_calls=True
                 )
             ),
             [[0]],
@@ -635,14 +643,18 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
         self.assertEqual(
             trace_addresses(
                 self.ethereum_client.tracing.get_next_traces(
-                    "0x12", [], remove_delegate_calls=True, remove_calls=True
+                    HexStr("0x12"), [], remove_delegate_calls=True, remove_calls=True
                 )
             ),
             [],
         )
-        self.assertEqual(self.ethereum_client.tracing.get_next_traces("0x12", [0]), [])
         self.assertEqual(
-            trace_addresses(self.ethereum_client.tracing.get_next_traces("0x12", [1])),
+            self.ethereum_client.tracing.get_next_traces(HexStr("0x12"), [0]), []
+        )
+        self.assertEqual(
+            trace_addresses(
+                self.ethereum_client.tracing.get_next_traces(HexStr("0x12"), [1])
+            ),
             [[1, 0]],
         )
 
@@ -1213,7 +1225,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
     def setUpClass(cls) -> None:
         super().setUpClass()
         mainnet_node = just_test_if_mainnet_node()
-        cls.ethereum_client = EthereumClient(mainnet_node)
+        cls.ethereum_client = EthereumClient(URI(mainnet_node))
 
     def test_is_eip1559_supported(self):
         self.assertTrue(self.ethereum_client.is_eip1559_supported())

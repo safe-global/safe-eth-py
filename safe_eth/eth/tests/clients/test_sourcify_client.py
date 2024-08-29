@@ -40,6 +40,7 @@ class TestSourcifyClient(TestCase):
             )
         except IOError:
             self.skipTest("Cannot connect to Sourcify")
+        assert safe_contract_metadata_mainnet is not None
         self.assertEqual(safe_contract_metadata_mainnet.name, "Safe")
         self.assertIsInstance(safe_contract_metadata_mainnet.abi, List)
         self.assertTrue(safe_contract_metadata_mainnet.abi)
@@ -55,6 +56,7 @@ class TestSourcifyClient(TestCase):
         token_contract_metadata_mainnet = sourcify_client_mainnet.get_contract_metadata(
             partial_match_contract_address
         )
+        assert token_contract_metadata_mainnet is not None
         self.assertEqual(token_contract_metadata_mainnet.name, "LiquidGasToken")
         self.assertIsInstance(token_contract_metadata_mainnet.abi, List)
         self.assertTrue(token_contract_metadata_mainnet.abi)

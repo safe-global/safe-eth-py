@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 
 from eth_account import Account
 from eth_account.messages import encode_defunct
-from eth_typing import AnyAddress, ChecksumAddress, HexStr
+from eth_typing import Address, ChecksumAddress, HexAddress, HexStr
 
 from safe_eth.eth import EthereumNetwork, EthereumNetworkNotSupported
 from safe_eth.eth.constants import NULL_ADDRESS
@@ -12,6 +12,8 @@ from safe_eth.eth.eip712 import eip712_encode_hash
 from safe_eth.util.http import prepare_http_session
 
 from .order import Order, OrderKind
+
+AnyAddressType = Union[Address, HexAddress, ChecksumAddress]
 
 
 class TradeResponse(TypedDict):
@@ -21,9 +23,9 @@ class TradeResponse(TypedDict):
     buyAmount: str  # Stringified int
     sellAmount: str  # Stringified int
     sellAmountBeforeFees: str  # Stringified int
-    owner: AnyAddress  # Not checksummed
-    buyToken: AnyAddress
-    sellToken: AnyAddress
+    owner: AnyAddressType  # Not checksummed
+    buyToken: AnyAddressType
+    sellToken: AnyAddressType
     txHash: HexStr
 
 
@@ -73,10 +75,14 @@ class CowSwapAPI:
         :return: Wrapped ether checksummed address
         """
         if self.network == EthereumNetwork.GNOSIS:  # WXDAI
-            return ChecksumAddress("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d")
+            return ChecksumAddress(
+                HexAddress(HexStr("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"))
+            )
 
         # Mainnet WETH9
-        return ChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
+        return ChecksumAddress(
+            HexAddress(HexStr("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"))
+        )
 
     def get_quote(
         self, order: Order, from_address: ChecksumAddress
@@ -99,7 +105,11 @@ class CowSwapAPI:
         if r.ok:
             return r.json()
         else:
-            return ErrorResponse(r.json())
+            response_dict = r.json()
+            return ErrorResponse(
+                errorType=response_dict.get("errorType", "Error getting quote"),
+                description=response_dict.get("description", ""),
+            )
 
     def get_fee(
         self, order: Order, from_address: ChecksumAddress
@@ -107,9 +117,11 @@ class CowSwapAPI:
         quote = self.get_quote(order, from_address)
 
         if "quote" in quote:
-            return int(quote["quote"]["feeAmount"])
+            result = cast(Dict[str, Any], quote)
+            return int(result["quote"]["feeAmount"])
         else:
-            return quote
+            error = cast(ErrorResponse, quote)
+            return error
 
     def place_order(
         self, order: Order, private_key: HexStr
@@ -134,7 +146,8 @@ class CowSwapAPI:
 
         signable_hash = eip712_encode_hash(
             order.get_eip712_structured_data(
-                self.network.value, self.settlement_contract_address
+                self.network.value,
+                ChecksumAddress(HexAddress(HexStr(self.settlement_contract_address))),
             )
         )
         message = encode_defunct(primitive=signable_hash)
@@ -158,11 +171,15 @@ class CowSwapAPI:
         if r.ok:
             return HexStr(r.json())
         else:
-            return ErrorResponse(r.json())
+            response_dict = r.json()
+            return ErrorResponse(
+                errorType=response_dict.get("errorType", "Error placing order"),
+                description=response_dict.get("description", ""),
+            )
 
     def get_orders(
         self, owner: ChecksumAddress, offset: int = 0, limit=10
-    ) -> List[Dict[str, Any]]:
+    ) -> Union[List[Dict[str, Any]], ErrorResponse]:
         """
         :param owner:
         :param offset: Defaults to 0
@@ -178,11 +195,15 @@ class CowSwapAPI:
         if r.ok:
             return cast(List[Dict[str, Any]], r.json())
         else:
-            return ErrorResponse(r.json())
+            response_dict = r.json()
+            return ErrorResponse(
+                errorType=response_dict.get("errorType", "Error getting orders"),
+                description=response_dict.get("description", ""),
+            )
 
     def get_trades(
         self, order_ui: Optional[HexStr] = None, owner: Optional[ChecksumAddress] = None
-    ) -> List[TradeResponse]:
+    ) -> Union[List[TradeResponse], ErrorResponse]:
         assert bool(order_ui) ^ bool(
             owner
         ), "order_ui or owner must be provided, but not both"
@@ -196,7 +217,11 @@ class CowSwapAPI:
         if r.ok:
             return cast(List[TradeResponse], r.json())
         else:
-            return ErrorResponse(r.json())
+            response_dict = r.json()
+            return ErrorResponse(
+                errorType=response_dict.get("errorType", "Error getting trades"),
+                description=response_dict.get("description", ""),
+            )
 
     def get_estimated_amount(
         self,
@@ -222,7 +247,7 @@ class CowSwapAPI:
             validTo=0,  # Valid for 1 hour
             appData={},
             feeAmount=0,
-            kind=kind.name.lower(),  # `sell` or `buy`
+            kind="sell" if kind == OrderKind.SELL else "buy",  # `sell` or `buy`
             partiallyFillable=False,
             sellTokenBalance="erc20",  # `erc20`, `external` or `internal`
             buyTokenBalance="erc20",  # `erc20` or `internal`
@@ -230,9 +255,11 @@ class CowSwapAPI:
 
         quote = self.get_quote(order, NULL_ADDRESS)
         if "quote" in quote:
+            result = cast(Dict[str, Any], quote)
             return {
-                "buyAmount": int(quote["quote"]["buyAmount"]),
-                "sellAmount": int(quote["quote"]["sellAmount"]),
+                "buyAmount": int(result["quote"]["buyAmount"]),
+                "sellAmount": int(result["quote"]["sellAmount"]),
             }
         else:
-            return quote
+            error = cast(ErrorResponse, quote)
+            return error

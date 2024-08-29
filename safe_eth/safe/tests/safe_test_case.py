@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Dict, List, Optional
+from unittest import TestCase
 
 from eth_account import Account
 from eth_typing import ChecksumAddress
@@ -33,7 +34,7 @@ from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
 logger = logging.getLogger(__name__)
 
 
-class SafeTestCaseMixin(EthereumTestCaseMixin):
+class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     compatibility_fallback_handler: Contract
     multi_send: MultiSend
     multi_send_contract: Contract
@@ -202,11 +203,15 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
         send_tx(
             cls.w3,
-            {"to": SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS, "value": 10000000000000000},
+            {
+                "to": SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS,
+                "value": Wei(10000000000000000),
+            },
             cls.ethereum_test_account,
         )
         tx_hash = cls.ethereum_client.send_raw_transaction(raw_tx)
         tx_receipt = cls.ethereum_client.get_transaction_receipt(tx_hash, timeout=30)
+        assert tx_receipt is not None
         assert tx_receipt["status"] == 1
 
         # Clear cached empty singleton factory
@@ -241,7 +246,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
             master_copy_address,
             initializer=initializer,
         )
-        safe = Safe(
+        assert ethereum_tx_sent.contract_address is not None
+        safe = Safe(  # type: ignore[abstract]
             ethereum_tx_sent.contract_address,
             self.ethereum_client,
             simulate_tx_accessor_address=self.simulate_tx_accessor_V1_4_1.address,
@@ -304,7 +310,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         )
 
         safe = self._deploy_test_safe(
-            initializer, master_copy_address, initial_funding_wei=initial_funding_wei
+            initializer,
+            master_copy_address,
+            initial_funding_wei=Wei(initial_funding_wei),
         )
 
         self.assertEqual(safe.retrieve_version(), master_copy_version)
@@ -414,7 +422,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         safe = self._deploy_test_safe(
             initializer,
             self.safe_contract_V1_0_0.address,
-            initial_funding_wei=initial_funding_wei,
+            initial_funding_wei=Wei(initial_funding_wei),
         )
 
         self.assertEqual(safe.retrieve_version(), "1.0.0")
@@ -423,7 +431,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
 
         return safe
 
-    def deploy_example_guard(self) -> ChecksumAddress:
+    def deploy_example_guard(self) -> Optional[ChecksumAddress]:
         """
         :return: An example DebugTransactionGuard (from safe contracts v1.4.1) supporting IERC165
         """
@@ -437,7 +445,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin):
         assert tx_receipt["status"] == 1, "Problem deploying example guard"
         return tx_receipt["contractAddress"]
 
-    def deploy_sign_message_lib(self) -> ChecksumAddress:
+    def deploy_sign_message_lib(self) -> Optional[ChecksumAddress]:
         """
         Deploy sign message lib
 

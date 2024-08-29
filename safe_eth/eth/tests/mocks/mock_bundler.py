@@ -1,9 +1,11 @@
+from typing import Any, Dict
+
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 
 # Module address and chainId used for the following mocks
 safe_4337_address = ChecksumAddress(
-    HexStr(HexAddress("0xB0B5c0578Aa134b0496a6C0e51A7aae47C522861"))
+    HexAddress(HexStr("0xB0B5c0578Aa134b0496a6C0e51A7aae47C522861"))
 )
 safe_4337_user_operation_hash_mock = HexBytes(
     "0x39b3e2171c04539d9b3f848d04364dfaa42cc0b412ff65ce2a85c566cf8bf281"
@@ -17,7 +19,7 @@ safe_4337_safe_operation_hash_mock = HexBytes(
 )
 safe_4337_chain_id_mock = 11155111
 
-user_operation_mock = {
+user_operation_mock: Dict[str, Any] = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
@@ -41,7 +43,7 @@ user_operation_mock = {
     },
 }
 
-user_operation_receipt_mock = {
+user_operation_receipt_mock: Dict[str, Any] = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
@@ -384,7 +386,7 @@ user_operation_receipt_mock = {
     },
 }
 
-supported_entrypoint_mock = {
+supported_entrypoint_mock: Dict[str, Any] = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": [

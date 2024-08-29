@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlencode
 
 from eth_typing import ChecksumAddress, Hash32, HexStr
+from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 
 from safe_eth.eth import EthereumClient, EthereumNetwork
@@ -74,10 +75,14 @@ class TransactionServiceApi(SafeBaseAPI):
                     + ":\n - "
                     + "\n - ".join(
                         [
-                            cls.data_decoded_to_text(
-                                decoded_value.get("decodedData", {})
-                            )
+                            decoded_text
                             for decoded_value in parameter.get("decodedValue", {})
+                            if (
+                                decoded_text := cls.data_decoded_to_text(
+                                    decoded_value.get("decodedData", {})
+                                )
+                            )
+                            is not None
                         ]
                     )
                     + "\n"
@@ -101,7 +106,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         if raw_tx["signatures"]:
             # Tx was executed and signatures field is populated
-            return raw_tx["signatures"]
+            return HexBytes(raw_tx["signatures"])
         elif raw_tx["confirmations"]:
             # Parse offchain transactions
             return b"".join(
@@ -113,6 +118,7 @@ class TransactionServiceApi(SafeBaseAPI):
                     if confirmation["signatureType"] == "EOA"
                 ]
             )
+        return None
 
     def create_delegate_message_hash(self, delegate_address: ChecksumAddress) -> Hash32:
         return eip712_encode_hash(
@@ -124,7 +130,7 @@ class TransactionServiceApi(SafeBaseAPI):
     ) -> TransactionServiceTx:
         signatures = self.parse_signatures(tx_raw)
         safe_tx = TransactionServiceTx(
-            tx_raw["proposer"],
+            to_checksum_address(tx_raw["proposer"]),
             self.ethereum_client,
             tx_raw["safe"],
             tx_raw["to"],
@@ -146,7 +152,8 @@ class TransactionServiceApi(SafeBaseAPI):
 
         if safe_tx.safe_tx_hash != safe_tx_hash:
             raise ApiSafeTxHashNotMatchingException(
-                f"API safe-tx-hash: {safe_tx_hash.hex()} doesn't match the calculated safe-tx-hash: {safe_tx.safe_tx_hash.hex()}"
+                f"API safe-tx-hash: {safe_tx_hash.hex() if isinstance(safe_tx_hash, bytes) else safe_tx_hash} "
+                f"doesn't match the calculated safe-tx-hash: {safe_tx.safe_tx_hash.hex()}"
             )
 
         return safe_tx
@@ -159,7 +166,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         response = self._get_request(f"/api/v1/safes/{safe_address}/balances/")
         if not response.ok:
-            raise SafeAPIException(f"Cannot get balances: {response.content}")
+            raise SafeAPIException(f"Cannot get balances: {response.content!r}")
         return response.json()
 
     def get_safe_transaction(
@@ -175,7 +182,7 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(
-                f"Cannot get transaction with safe-tx-hash={safe_tx_hash_str}: {response.content}"
+                f"Cannot get transaction with safe-tx-hash={safe_tx_hash_str}: {response.content!r}"
             )
 
         if not self.ethereum_client:
@@ -186,7 +193,7 @@ class TransactionServiceApi(SafeBaseAPI):
         result = response.json()
         safe_tx = self._build_transaction_service_tx(safe_tx_hash, result)
 
-        return safe_tx, safe_tx.tx_hash
+        return safe_tx, HexBytes(safe_tx.tx_hash) if safe_tx.tx_hash else None
 
     def get_transactions(
         self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
@@ -206,13 +213,13 @@ class TransactionServiceApi(SafeBaseAPI):
 
         response = self._get_request(url)
         if not response.ok:
-            raise SafeAPIException(f"Cannot get transactions: {response.content}")
+            raise SafeAPIException(f"Cannot get transactions: {response.content!r}")
 
         transactions = response.json().get("results", [])
 
         if safe_tx_hash_arg := kwargs.get("safe_tx_hash", None):
             # Validation that the calculated safe_tx_hash is the same as the safe_tx_hash provided for filter.
-            safe_tx_hash = HexBytes(safe_tx_hash_arg)
+            safe_tx_hash = HexBytes(str(safe_tx_hash_arg))
             [
                 self._build_transaction_service_tx(safe_tx_hash, tx)
                 for tx in transactions
@@ -228,7 +235,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         response = self._get_request(f"/api/v2/delegates/?safe={safe_address}")
         if not response.ok:
-            raise SafeAPIException(f"Cannot get delegates: {response.content}")
+            raise SafeAPIException(f"Cannot get delegates: {response.content!r}")
         return response.json().get("results", [])
 
     def get_safes_for_owner(
@@ -241,7 +248,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         response = self._get_request(f"/api/v1/owners/{owner_address}/safes/")
         if not response.ok:
-            raise SafeAPIException(f"Cannot get delegates: {response.content}")
+            raise SafeAPIException(f"Cannot get delegates: {response.content!r}")
         return response.json().get("safes", [])
 
     def post_signatures(self, safe_tx_hash: bytes, signatures: bytes) -> bool:
@@ -251,14 +258,14 @@ class TransactionServiceApi(SafeBaseAPI):
         :param signatures:
         :return: True if new confirmation was created
         """
-        safe_tx_hash = HexBytes(safe_tx_hash).hex()
+        safe_tx_hash_str = HexBytes(safe_tx_hash).hex()
         response = self._post_request(
-            f"/api/v1/multisig-transactions/{safe_tx_hash}/confirmations/",
+            f"/api/v1/multisig-transactions/{safe_tx_hash_str}/confirmations/",
             payload={"signature": HexBytes(signatures).hex()},
         )
         if not response.ok:
             raise SafeAPIException(
-                f"Cannot post signatures for tx with safe-tx-hash={safe_tx_hash}: {response.content}"
+                f"Cannot post signatures for tx with safe-tx-hash={safe_tx_hash_str}: {response.content!r}"
             )
         return True
 
@@ -280,7 +287,7 @@ class TransactionServiceApi(SafeBaseAPI):
             add_payload["safe"] = safe_address
         response = self._post_request("/api/v2/delegates/", add_payload)
         if not response.ok:
-            raise SafeAPIException(f"Cannot add delegate: {response.content}")
+            raise SafeAPIException(f"Cannot add delegate: {response.content!r}")
         return True
 
     def remove_delegate(
@@ -311,7 +318,7 @@ class TransactionServiceApi(SafeBaseAPI):
             remove_payload,
         )
         if not response.ok:
-            raise SafeAPIException(f"Cannot remove delegate: {response.content}")
+            raise SafeAPIException(f"Cannot remove delegate: {response.content!r}")
         return True
 
     def post_transaction(self, safe_tx: SafeTx) -> bool:
@@ -337,7 +344,7 @@ class TransactionServiceApi(SafeBaseAPI):
             f"/api/v1/safes/{safe_tx.safe_address}/multisig-transactions/", data
         )
         if not response.ok:
-            raise SafeAPIException(f"Error posting transaction: {response.content}")
+            raise SafeAPIException(f"Error posting transaction: {response.content!r}")
         return True
 
     def delete_transaction(self, safe_tx_hash: str, signature: str) -> bool:
@@ -352,7 +359,7 @@ class TransactionServiceApi(SafeBaseAPI):
             f"/api/v1/multisig-transactions/{safe_tx_hash}/", payload
         )
         if not response.ok:
-            raise SafeAPIException(f"Error deleting transaction: {response.content}")
+            raise SafeAPIException(f"Error deleting transaction: {response.content!r}")
         return True
 
     def post_message(
@@ -379,7 +386,7 @@ class TransactionServiceApi(SafeBaseAPI):
             f"/api/v1/safes/{safe_address}/messages/", payload
         )
         if not response.ok:
-            raise SafeAPIException(f"Error posting message: {response.content}")
+            raise SafeAPIException(f"Error posting message: {response.content!r}")
         return True
 
     def get_message(self, safe_message_hash: bytes) -> Message:
@@ -392,7 +399,7 @@ class TransactionServiceApi(SafeBaseAPI):
             f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
         )
         if not response.ok:
-            raise SafeAPIException(f"Cannot get messages: {response.content}")
+            raise SafeAPIException(f"Cannot get messages: {response.content!r}")
         return response.json()
 
     def get_messages(self, safe_address: ChecksumAddress) -> List[Message]:
@@ -403,7 +410,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         response = self._get_request(f"/api/v1/safes/{safe_address}/messages/")
         if not response.ok:
-            raise SafeAPIException(f"Cannot get messages: {response.content}")
+            raise SafeAPIException(f"Cannot get messages: {response.content!r}")
         return response.json().get("results", [])
 
     def post_message_signature(
@@ -422,7 +429,7 @@ class TransactionServiceApi(SafeBaseAPI):
         )
         if not response.ok:
             raise SafeAPIException(
-                f"Error posting message signature: {response.content}"
+                f"Error posting message signature: {response.content!r}"
             )
         return True
 
@@ -441,5 +448,5 @@ class TransactionServiceApi(SafeBaseAPI):
             payload["to"] = to_address
         response = self._post_request("/api/v1/data-decoder/", payload)
         if not response.ok:
-            raise SafeAPIException(f"Cannot decode tx data: {response.content}")
+            raise SafeAPIException(f"Cannot decode tx data: {response.content!r}")
         return response.json()

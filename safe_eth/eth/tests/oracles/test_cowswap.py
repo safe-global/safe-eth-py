@@ -18,7 +18,7 @@ from ..test_oracles import (
 from ..utils import just_test_if_mainnet_node
 
 
-@pytest.skip("Having issues often", allow_module_level=True)
+@pytest.mark.skip("Having issues often")
 class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()

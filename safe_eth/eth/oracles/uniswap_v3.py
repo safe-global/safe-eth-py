@@ -4,7 +4,7 @@ from functools import cached_property
 from typing import Optional
 
 from eth_abi.exceptions import DecodingError
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from web3.contract import Contract
 from web3.exceptions import Web3Exception
 
@@ -63,8 +63,15 @@ class UniswapV3Oracle(PriceOracle):
         :param uniswap_v3_router_address: Provide a custom `SwapRouter02` address
         :return: `True` if Uniswap V3 is available for the EthereumClient provided, `False` otherwise
         """
-        router_address = uniswap_v3_router_address or cls.ROUTER_ADDRESSES.get(
-            ethereum_client.get_network(), cls.DEFAULT_ROUTER_ADDRESS
+        router_address = ChecksumAddress(
+            HexAddress(
+                HexStr(
+                    uniswap_v3_router_address
+                    or cls.ROUTER_ADDRESSES.get(
+                        ethereum_client.get_network(), cls.DEFAULT_ROUTER_ADDRESS
+                    )
+                )
+            )
         )
         return ethereum_client.is_contract(router_address)
 
@@ -89,7 +96,8 @@ class UniswapV3Oracle(PriceOracle):
 
         :return: Uniswap V3 Router Contract
         """
-        return self.w3.eth.contract(self.router_address, abi=uniswap_v3_router_abi)
+        router_address = ChecksumAddress(HexAddress(HexStr(self.router_address)))
+        return self.w3.eth.contract(address=router_address, abi=uniswap_v3_router_abi)
 
     @cached_property
     def weth_address(self) -> ChecksumAddress:
@@ -151,23 +159,35 @@ class UniswapV3Oracle(PriceOracle):
         token_decimals = get_decimals(token_address, self.ethereum_client)
         token_2_decimals = get_decimals(token_address_2, self.ethereum_client)
 
+        token_address_checksum = ChecksumAddress(HexAddress(HexStr(token_address)))
+        token_address2_checksum = (
+            ChecksumAddress(HexAddress(HexStr(token_address_2)))
+            if token_address_2
+            else None
+        )
+
         pool_contract = self.w3.eth.contract(pool_address, abi=uniswap_v3_pool_abi)
         try:
             (
                 token_balance,
                 token_2_balance,
-                (sqrt_price_x96, _, _, _, _, _, _),
+                pool_contract_balance,
             ) = self.ethereum_client.batch_call(
                 [
                     get_erc20_contract(
-                        self.ethereum_client.w3, token_address
+                        self.ethereum_client.w3, token_address_checksum
                     ).functions.balanceOf(pool_address),
                     get_erc20_contract(
-                        self.ethereum_client.w3, token_address_2
+                        self.ethereum_client.w3, token_address2_checksum
                     ).functions.balanceOf(pool_address),
                     pool_contract.functions.slot0(),
                 ]
             )
+            if pool_contract_balance is not None:
+                (sqrt_price_x96, _, _, _, _, _, _) = pool_contract_balance
+            else:
+                sqrt_price_x96 = 0
+
             if (token_balance / 10**token_decimals) < 2 or (
                 token_2_balance / 10**token_2_decimals
             ) < 2:

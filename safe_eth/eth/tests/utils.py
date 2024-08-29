@@ -48,7 +48,7 @@ def just_test_if_node_available(node_url_variable_name: str) -> str:
             )
             if not response.ok:
                 pytest.fail(
-                    f"Problem connecting to node {node_url}: {response.status_code} - {response.content}"
+                    f"Problem connecting to node {node_url}: {response.status_code} - {response.content!r}"
                 )
         except IOError:
             pytest.fail(f"Problem connecting to {node_url}")
@@ -150,10 +150,12 @@ def bytes_to_str(o: Any) -> Any:
         o = dict(o)  # Remove AttributeDict
         for k in o.keys():
             o[k] = bytes_to_str(o[k])
-    elif isinstance(o, (list, tuple)):
+    elif isinstance(o, list):
         o = deepcopy(o)
         for i, v in enumerate(o):
             o[i] = bytes_to_str(o[i])
+    elif isinstance(o, tuple):
+        o = tuple(bytes_to_str(v) for v in o)
     elif isinstance(o, set):
         o = {bytes_to_str(element) for element in o}
     return o
