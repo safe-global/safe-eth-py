@@ -67,6 +67,8 @@ jobs:
         pip install -r requirements-test.txt coveralls
       env:
         PIP_USE_MIRRORS: true
+    - name: Run mypy
+      run: mypy .
     - name: Run tests and coverage
       run: coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3
       env:
