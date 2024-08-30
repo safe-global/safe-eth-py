@@ -87,7 +87,7 @@ def create_pr(
 def upsert_chain_id(
     repo: Repository, branch_name: str, chain_id: int, chain_enum_name: str
 ) -> None:
-    file_path = "gnosis/eth/ethereum_network.py"
+    file_path = "safe_eth/eth/ethereum_network.py"
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
 
@@ -196,7 +196,7 @@ def upsert_contract_address_master_copy(
     block_number: int,
     version: str,
 ) -> None:
-    file_path = "gnosis/safe/addresses.py"
+    file_path = "safe_eth/safe/addresses.py"
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
 
@@ -286,7 +286,7 @@ def upsert_contract_address_proxy_factory(
     block_number: int,
     version: str,
 ) -> None:
-    file_path = "gnosis/safe/addresses.py"
+    file_path = "safe_eth/safe/addresses.py"
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
     version = version.replace("+L2", "")
@@ -394,7 +394,7 @@ def execute_issue_changes() -> None:
 
     if blockscout_client_url:
         print("Updating Blockscout client")
-        file_path = "gnosis/eth/clients/blockscout_client.py"
+        file_path = "safe_eth/eth/clients/blockscout_client.py"
         upsert_explorer_client_url(
             repo,
             branch_name,
@@ -406,7 +406,7 @@ def execute_issue_changes() -> None:
 
     if etherscan_client_url:
         print("Updating Etherscan client")
-        file_path = "gnosis/eth/clients/etherscan_client.py"
+        file_path = "safe_eth/eth/clients/etherscan_client.py"
         upsert_explorer_client_url(
             repo,
             branch_name,
@@ -417,7 +417,7 @@ def execute_issue_changes() -> None:
         )
     if etherscan_client_api_url:
         print("Updating Etherscan API client")
-        file_path = "gnosis/eth/clients/etherscan_client.py"
+        file_path = "safe_eth/eth/clients/etherscan_client.py"
         upsert_explorer_client_url(
             repo,
             branch_name,
