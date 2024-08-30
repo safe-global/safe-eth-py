@@ -64,7 +64,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        grep -E "web3" requirements.txt | xargs pip install safe-eth-py validators tldextract
+        grep -E "web3" requirements.txt | xargs pip install safe-eth-py@git+https://github.com/safe-global/safe-eth-py@main validators tldextract
 
     - name: Validate input data
       id: validate-input-data
