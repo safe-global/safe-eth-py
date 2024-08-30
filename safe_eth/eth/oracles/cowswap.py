@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from safe_eth.cowsap import CowSwapAPI, OrderKind
+from safe_eth.eth.clients.cowswap import CowSwapAPI, OrderKind
 
 from .. import EthereumClient, EthereumNetworkNotSupported
 from .exceptions import CannotGetPriceFromOracle

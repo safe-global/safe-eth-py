@@ -5,8 +5,9 @@ from django.test import TestCase
 import pytest
 from eth_account import Account
 
-from ...eth import EthereumNetwork
-from ...eth.constants import NULL_ADDRESS
+from safe_eth.eth import EthereumNetwork
+from safe_eth.eth.constants import NULL_ADDRESS
+
 from .. import CowSwapAPI, Order, OrderKind
 
 
