@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Llama a mypy y detiene el script si falla
+# Execute mypy and stop script if it fails
 mypy . || exit 1
 
 # Postgresql and ganache-cli must be running for the tests
