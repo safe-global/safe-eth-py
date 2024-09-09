@@ -130,8 +130,8 @@ class EtherscanClient:
     ):
         self.network = network
         self.api_key = api_key
-        self.base_url = self.NETWORK_WITH_URL.get(network) or ""
-        self.base_api_url = self.NETWORK_WITH_API_URL.get(network) or ""
+        self.base_url = self.NETWORK_WITH_URL.get(network, "")
+        self.base_api_url = self.NETWORK_WITH_API_URL.get(network, "")
         if not self.base_api_url:
             raise EtherscanClientConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"

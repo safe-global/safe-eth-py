@@ -182,16 +182,15 @@ class BundlerClient:
         if (
             results
             and isinstance(results, list)
-            and results[0] is not None
+            and len(results) >= 2
             and isinstance(results[0], dict)
-            and results[1] is not None
             and isinstance(results[1], dict)
         ):
             return UserOperation.from_bundler_response(
                 user_operation_hash, results[0]
             ), self._parse_user_operation_receipt(results[1])
-        else:
-            return None
+
+        return None
 
     @lru_cache(maxsize=None)
     def supported_entry_points(self) -> List[ChecksumAddress]:
