@@ -210,9 +210,9 @@ class BundlerClient:
         result = self._do_request(payload)
         if result and isinstance(result, list):
             return [
-                ChecksumAddress(HexAddress(HexStr(x)))
-                for x in result
-                if isinstance(x, str)
+                ChecksumAddress(HexAddress(HexStr(address)))
+                for address in result
+                if isinstance(address, str)
             ]
-        else:
-            return []
+
+        return []
