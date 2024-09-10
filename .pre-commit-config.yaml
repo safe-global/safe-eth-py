@@ -19,11 +19,7 @@ repos:
       - id: mypy
         exclude: env|docs|config|.github
         args: [--ignore-missing-imports, --warn-unused-ignores, --warn-redundant-casts, --warn-unused-configs]
-        additional_dependencies:
-          - types-requests==2.32.0.20240712
-          - hexbytes==0.3.1
-          - web3==6.20.2
-          - pytest==8.3.2
+        language: system
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
