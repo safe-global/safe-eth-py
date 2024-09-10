@@ -3,6 +3,8 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
+from eth_typing import URI, ChecksumAddress, HexAddress, HexStr
+
 from .. import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from ..constants import NULL_ADDRESS
 from ..contracts import get_erc20_contract
@@ -79,9 +81,12 @@ class TestMulticallNode(EthereumTestCaseMixin, TestCase):
     def setUpClass(cls) -> None:
         super().setUpClass()
         mainnet_node = just_test_if_mainnet_node()
-        cls.ethereum_client = EthereumClient(mainnet_node)
+        cls.ethereum_client = EthereumClient(URI(mainnet_node))
         cls.gno_contract = get_erc20_contract(
-            cls.ethereum_client.w3, "0x6810e776880C02933D47DB1b9fc05908e5386b96"
+            cls.ethereum_client.w3,
+            ChecksumAddress(
+                HexAddress(HexStr("0x6810e776880C02933D47DB1b9fc05908e5386b96"))
+            ),
         )
         cls.not_existing_contract = get_erc20_contract(
             cls.ethereum_client.w3, NULL_ADDRESS

@@ -51,7 +51,7 @@ def signatures_to_bytes(signatures: List[Tuple[int, int, int]]) -> bytes:
     return b"".join([signature_to_bytes(v, r, s) for v, r, s in signatures])
 
 
-def get_signing_address(signed_hash: Union[bytes, str], v: int, r: int, s: int) -> str:
+def get_signing_address(signed_hash: bytes, v: int, r: int, s: int) -> str:
     """
     :return: checksummed ethereum address, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
     :rtype: str or `NULL_ADDRESS` if signature is not valid

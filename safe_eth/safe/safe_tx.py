@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 from packaging.version import Version
 from web3.contract.contract import ContractFunction
 from web3.exceptions import Web3Exception
-from web3.types import BlockIdentifier, TxParams, Wei
+from web3.types import BlockIdentifier, Nonce, TxParams, Wei
 
 from safe_eth.eth import EthereumClient
 from safe_eth.eth.constants import NULL_ADDRESS
@@ -171,7 +171,7 @@ class SafeTx:
             "nonce": self.safe_nonce,
         }
 
-        payload = {
+        payload: Dict[str, Any] = {
             "types": types,
             "primaryType": "SafeTx",
             "domain": {"verifyingContract": self.safe_address},
@@ -301,14 +301,19 @@ class SafeTx:
         :param block_identifier:
         :return: `1` if everything ok
         """
-        parameters: Dict[str, Any] = {
+        parameters: TxParams = {
             "from": tx_sender_address if tx_sender_address else self.safe_address
         }
 
         if tx_gas:
             parameters["gas"] = tx_gas
         try:
-            success = self.w3_tx.call(parameters, block_identifier=block_identifier)
+            success = self.w3_tx.call(
+                parameters,
+                block_identifier=block_identifier
+                if block_identifier is not None
+                else "latest",
+            )
 
             if not success:
                 raise InvalidInternalTx(
@@ -376,15 +381,17 @@ class SafeTx:
         else:
             tx_parameters = {
                 "from": sender_account.address,
-                "gasPrice": tx_gas_price or self.w3.eth.gas_price,
+                "gasPrice": Wei(tx_gas_price)
+                if tx_gas_price
+                else self.w3.eth.gas_price,
             }
 
         if tx_gas:
             tx_parameters["gas"] = tx_gas
         if tx_nonce is not None:
-            tx_parameters["nonce"] = tx_nonce
+            tx_parameters["nonce"] = Nonce(tx_nonce)
 
-        self.tx: TxParams = self.w3_tx.build_transaction(tx_parameters)
+        self.tx = self.w3_tx.build_transaction(tx_parameters)
         self.tx["gas"] = Wei(
             tx_gas or (max(self.tx["gas"] + 75000, self.recommended_gas()))
         )

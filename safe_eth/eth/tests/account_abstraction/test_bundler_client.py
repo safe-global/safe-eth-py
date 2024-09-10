@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from django.test import TestCase
 
 import requests
+from eth_typing import HexStr
 
 from ...account_abstraction import (
     BundlerClient,
@@ -37,7 +38,7 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(return_value=user_operation_mock)
         self.bundler.get_user_operation_by_hash.cache_clear()
         expected_user_operation = UserOperation.from_bundler_response(
-            user_operation_hash, user_operation_mock["result"]
+            HexStr(user_operation_hash), user_operation_mock["result"]
         )
         self.assertEqual(
             self.bundler.get_user_operation_by_hash(user_operation_hash),
@@ -127,7 +128,7 @@ class TestBundlerClient(TestCase):
         )
         self.bundler.get_user_operation_and_receipt.cache_clear()
         expected_user_operation = UserOperation.from_bundler_response(
-            user_operation_hash, user_operation_mock["result"]
+            HexStr(user_operation_hash), user_operation_mock["result"]
         )
         expected_user_operation_receipt = UserOperationReceipt.from_bundler_response(
             user_operation_receipt_mock["result"]

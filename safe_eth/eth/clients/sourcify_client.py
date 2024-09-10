@@ -56,6 +56,7 @@ class SourcifyClient:
         values = list(metadata["settings"].get("compilationTarget", {}).values())
         if values:
             return values[0]
+        return None
 
     def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
         response = self.http_session.get(url, timeout=self.request_timeout)
@@ -68,12 +69,24 @@ class SourcifyClient:
         chains = self.get_chains()
         if not chains:
             raise IOError("Cannot get chains for SourcifyClient")
-        return chain_id in (int(chain["chainId"]) for chain in self.get_chains())
+        for chain in chains:
+            if not isinstance(chain, dict):
+                continue
+            chain_id_str = chain.get("chainId")
+            if chain_id_str is None:
+                continue
+            try:
+                if chain_id == int(chain_id_str):
+                    return True
+            except ValueError:
+                continue
+        return False
 
     @cache
     def get_chains(self) -> Dict[str, Any]:
         url = urljoin(self.base_url_api, "/server/chains")
-        return self._do_request(url)
+        result = self._do_request(url)
+        return result or {}
 
     def get_contract_metadata(
         self, contract_address: str

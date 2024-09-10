@@ -127,13 +127,14 @@ class SafeCreate2TxBuilder:
         payment_token = payment_token or NULL_ADDRESS
         assert fast_is_checksum_address(payment_receiver)
         assert fast_is_checksum_address(payment_token)
+        owners_list = list(map(str, owners))
 
         # Get bytes for `setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data,
         # address paymentToken, uint256 payment, address payable paymentReceiver)`
         # This initializer will be passed to the ProxyFactory to be called right after proxy is deployed
         # We use `payment=0` as safe has no ether yet and estimation will fail
         safe_setup_data: bytes = self._get_initial_setup_safe_data(
-            owners,
+            owners_list,
             threshold,
             fallback_handler=fallback_handler,
             payment_token=payment_token,
@@ -141,7 +142,7 @@ class SafeCreate2TxBuilder:
         )
 
         calculated_gas: int = self._calculate_gas(
-            owners, safe_setup_data, payment_token
+            owners_list, safe_setup_data, payment_token
         )
         estimated_gas: int = self._estimate_gas(
             safe_setup_data, salt_nonce, payment_token, payment_receiver
@@ -156,7 +157,7 @@ class SafeCreate2TxBuilder:
 
         # Now we have a estimate for `payment` so we get initialization data again
         final_safe_setup_data: bytes = self._get_initial_setup_safe_data(
-            owners,
+            owners_list,
             threshold,
             fallback_handler=fallback_handler,
             payment_token=payment_token,
@@ -171,7 +172,7 @@ class SafeCreate2TxBuilder:
 
         return SafeCreate2Tx(
             salt_nonce,
-            owners,
+            owners_list,
             threshold,
             fallback_handler,
             self.master_copy_address,

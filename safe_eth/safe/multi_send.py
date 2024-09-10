@@ -3,7 +3,7 @@ from logging import getLogger
 from typing import List, Optional, Union
 
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -193,7 +193,7 @@ class MultiSend:
         self.address = address
         self.ethereum_client = ethereum_client
         self.call_only = call_only
-        addresses = (
+        multi_send_addresses = (
             self.MULTISEND_CALL_ONLY_ADDRESSES
             if call_only
             else self.MULTISEND_ADDRESSES
@@ -205,17 +205,21 @@ class MultiSend:
             )
         elif ethereum_client:
             # Try to detect MultiSend address if not provided
-            for address in addresses:
-                if ethereum_client.is_contract(address):
-                    self.address = address
+            for multi_send_address in multi_send_addresses:
+                multi_send_address_checksum = ChecksumAddress(
+                    HexAddress(HexStr(multi_send_address))
+                )
+                if ethereum_client.is_contract(multi_send_address_checksum):
+                    self.address = multi_send_address_checksum
                     break
         else:
-            self.address = addresses[0]
+            self.address = ChecksumAddress(HexAddress(HexStr(multi_send_addresses[0])))
 
         if not self.address:
-            raise ValueError(
-                f"Cannot find a MultiSend contract for chainId={self.ethereum_client.get_chain_id()}"
+            chain_id = (
+                self.ethereum_client.get_chain_id() if self.ethereum_client else "N/A"
             )
+            raise ValueError(f"Cannot find a MultiSend contract for chainId={chain_id}")
 
     @property
     def w3(self):

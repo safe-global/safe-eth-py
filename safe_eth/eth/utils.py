@@ -1,6 +1,6 @@
 import os
 from functools import lru_cache
-from typing import Union
+from typing import Any, Union
 
 import eth_abi
 from eth._utils.address import generate_contract_address
@@ -23,7 +23,7 @@ def get_empty_tx_params() -> TxParams:
 
 
 @lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 512)))
-def _keccak_256(value: bytes) -> bytes:
+def _keccak_256(value: bytes) -> keccak_256:
     return keccak_256(value)
 
 
@@ -34,7 +34,7 @@ def fast_keccak(value: bytes) -> Hash32:
     :param value:
     :return: Keccak256 used by ethereum as `HexBytes`
     """
-    return HexBytes(_keccak_256(value).digest())
+    return Hash32(HexBytes(_keccak_256(value).digest()))
 
 
 def fast_keccak_text(value: str) -> Hash32:
@@ -233,3 +233,23 @@ def mk_contract_address_2(
     init_code_hash = fast_keccak(init_code)
     contract_address = fast_keccak(HexBytes("ff") + from_ + salt + init_code_hash)
     return fast_bytes_to_checksum_address(contract_address[12:])
+
+
+def bytes_to_float(value: Any) -> float:
+    """
+    Convert a value of type Any to float.
+
+    :param value: The value to convert.
+    :return: The converted float value.
+    :raises ValueError: If the value cannot be converted to float.
+    """
+    assert value is not None, "Cannot convert None to float"
+    if isinstance(value, (int, float)):
+        return float(value)
+    elif isinstance(value, bytes):
+        try:
+            return float(int.from_bytes(value, "big"))
+        except (ValueError, OverflowError) as e:
+            raise ValueError(f"Cannot convert bytes to float: {e}")
+    else:
+        raise ValueError(f"Unsupported type for conversion to float: {type(value)}")

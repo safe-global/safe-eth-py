@@ -5,12 +5,12 @@ Every entry contains a tuple with address, deployment block number and version
 """
 from typing import Dict, List, Tuple
 
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 
 from safe_eth.eth import EthereumNetwork
 
-SAFE_SIMULATE_TX_ACCESSOR_ADDRESS: ChecksumAddress = (
-    "0x3d4BA2E0884aa488718476ca2FB8Efc291A46199"
+SAFE_SIMULATE_TX_ACCESSOR_ADDRESS: ChecksumAddress = ChecksumAddress(
+    HexAddress(HexStr("0x3d4BA2E0884aa488718476ca2FB8Efc291A46199"))
 )
 
 MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {

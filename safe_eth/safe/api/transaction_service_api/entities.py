@@ -1,6 +1,8 @@
-from typing import Any, List, Optional, TypedDict
+from typing import Any, List, Optional, TypedDict, Union
 
-from eth_typing import AnyAddress, HexStr
+from eth_typing import Address, ChecksumAddress, HexAddress, HexStr
+
+AnyAddressType = Union[Address, HexAddress, ChecksumAddress]
 
 
 class ParameterDecoded(TypedDict):
@@ -22,22 +24,22 @@ class Erc20Info(TypedDict):
 
 
 class Balance(TypedDict):
-    token_address: Optional[AnyAddress]
+    token_address: Optional[AnyAddressType]
     token: Optional[Erc20Info]
     balance: int
 
 
 class DelegateUser(TypedDict):
-    safe: Optional[AnyAddress]
-    delegate: AnyAddress
-    delegator: AnyAddress
+    safe: Optional[AnyAddressType]
+    delegate: AnyAddressType
+    delegator: AnyAddressType
     label: str
 
 
 class MessageConfirmation(TypedDict):
     created: str
     modified: str
-    owner: AnyAddress
+    owner: AnyAddressType
     signature: HexStr
     signatureType: str
 
@@ -45,17 +47,17 @@ class MessageConfirmation(TypedDict):
 class Message(TypedDict):
     created: str
     modified: str
-    safe: AnyAddress
+    safe: AnyAddressType
     messageHash: HexStr
     message: Any
-    proposedBy: AnyAddress
+    proposedBy: AnyAddressType
     safeAppId: int
     confirmations: Optional[List[MessageConfirmation]]
     preparedSignature: Optional[HexStr]
 
 
 class TransactionConfirmation(TypedDict):
-    owner: AnyAddress
+    owner: AnyAddressType
     submissionDate: str
     transactionHash: HexStr
     signature: HexStr
@@ -63,16 +65,16 @@ class TransactionConfirmation(TypedDict):
 
 
 class Transaction(TypedDict):
-    safe: AnyAddress
-    to: AnyAddress
+    safe: AnyAddressType
+    to: AnyAddressType
     value: str
     data: Optional[HexStr]
     operation: int
-    gasToken: Optional[AnyAddress]
+    gasToken: Optional[AnyAddressType]
     safeTxGas: int
     baseGas: int
     gasPrice: str
-    refundReceiver: Optional[AnyAddress]
+    refundReceiver: Optional[AnyAddressType]
     nonce: int
     execution_date: str
     submission_date: str
@@ -80,8 +82,8 @@ class Transaction(TypedDict):
     blockNumber: Optional[int]
     transactionHash: HexStr
     safeTxHash: HexStr
-    proposer: AnyAddress
-    executor: Optional[AnyAddress]
+    proposer: AnyAddressType
+    executor: Optional[AnyAddressType]
     isExecuted: bool
     isSuccessful: Optional[bool]
     ethGasPrice: Optional[str]

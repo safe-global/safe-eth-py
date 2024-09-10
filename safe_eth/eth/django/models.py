@@ -45,6 +45,7 @@ class EthereumAddressBinaryField(models.Field):
     ) -> Optional[ChecksumAddress]:
         if value:
             return fast_bytes_to_checksum_address(value)
+        return None
 
     def get_prep_value(self, value: ChecksumAddress) -> Optional[bytes]:
         if value:
@@ -56,6 +57,7 @@ class EthereumAddressBinaryField(models.Field):
                     code="invalid",
                     params={"value": value},
                 )
+        return None
 
     def to_python(self, value) -> Optional[ChecksumAddress]:
         if value is not None:
@@ -67,6 +69,7 @@ class EthereumAddressBinaryField(models.Field):
                     code="invalid",
                     params={"value": value},
                 )
+        return None
 
     def formfield(self, **kwargs):
         defaults = {
@@ -91,9 +94,11 @@ class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
 
     def from_db_value(
         self, value: memoryview, expression, connection
-    ) -> Optional[HexAddress]:
+    ) -> Optional[ChecksumAddress]:
         if value:
-            return HexAddress(HexStr("0x" + bytes(value).hex()))
+            return ChecksumAddress(HexAddress(HexStr("0x" + bytes(value).hex())))
+
+        return None
 
     def to_python(self, value) -> Optional[ChecksumAddress]:
         if value is not None:
@@ -103,13 +108,16 @@ class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
                         raise ValueError(
                             "Cannot convert %s to a checksum address, 20 bytes were expected"
                         )
-                return HexAddress(HexStr(to_normalized_address(value)[2:]))
+                return ChecksumAddress(
+                    HexAddress(HexStr(to_normalized_address(value)[2:]))
+                )
             except ValueError:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
                 )
+        return None
 
 
 class UnsignedDecimal(models.DecimalField):
@@ -218,10 +226,12 @@ class Keccak256Field(models.BinaryField):
     def from_db_value(self, value: memoryview, expression, connection) -> Optional[str]:
         if value:
             return HexBytes(value.tobytes()).hex()
+        return None
 
     def get_prep_value(self, value: Union[bytes, str]) -> Optional[bytes]:
         if value:
             return self._to_bytes(value)
+        return None
 
     def value_to_string(self, obj):
         return str(self.value_from_object(obj))
@@ -236,6 +246,7 @@ class Keccak256Field(models.BinaryField):
                     code="invalid",
                     params={"value": value},
                 )
+        return None
 
     def formfield(self, **kwargs):
         defaults = {

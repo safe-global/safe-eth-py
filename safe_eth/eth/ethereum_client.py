@@ -112,23 +112,33 @@ def tx_with_exception_handling(func):
     error_with_exception: Dict[str, Exception] = {
         "EIP-155": ChainIdIsRequired,
         "Transaction with the same hash was already imported": TransactionAlreadyImported,
-        "replacement transaction underpriced": ReplacementTransactionUnderpriced,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L72
-        "There is another transaction with same nonce in the queue": ReplacementTransactionUnderpriced,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L374
+        "replacement transaction underpriced": ReplacementTransactionUnderpriced,
+        # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L72
+        "There is another transaction with same nonce in the queue": ReplacementTransactionUnderpriced,
+        # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L374
         "There are too many transactions in the queue. Your transaction was dropped due to limit. Try increasing "
-        "the fee": TransactionQueueLimitReached,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L380
-        "txpool is full": TransactionQueueLimitReached,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L68
-        "transaction underpriced": TransactionGasPriceTooLow,  # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L64
-        "Transaction gas price is too low": TransactionGasPriceTooLow,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L386
+        "the fee": TransactionQueueLimitReached,
+        # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L380
+        "txpool is full": TransactionQueueLimitReached,
+        # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L68
+        "transaction underpriced": TransactionGasPriceTooLow,
+        # https://github.com/ethereum/go-ethereum/blob/eaccdba4ab310e3fb98edbc4b340b5e7c4d767fd/core/tx_pool.go#L64
+        "Transaction gas price is too low": TransactionGasPriceTooLow,
+        # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L386
         "from not found": FromAddressNotFound,
         "correct nonce": InvalidNonce,
-        "nonce too low": NonceTooLow,  # https://github.com/ethereum/go-ethereum/blob/bbfb1e4008a359a8b57ec654330c0e674623e52f/core/error.go#L46
-        "nonce too high": NonceTooHigh,  # https://github.com/ethereum/go-ethereum/blob/bbfb1e4008a359a8b57ec654330c0e674623e52f/core/error.go#L46
-        "insufficient funds": InsufficientFunds,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L389
+        "nonce too low": NonceTooLow,
+        # https://github.com/ethereum/go-ethereum/blob/bbfb1e4008a359a8b57ec654330c0e674623e52f/core/error.go#L46
+        "nonce too high": NonceTooHigh,
+        # https://github.com/ethereum/go-ethereum/blob/bbfb1e4008a359a8b57ec654330c0e674623e52f/core/error.go#L46
+        "insufficient funds": InsufficientFunds,
+        # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L389
         "doesn't have enough funds": InsufficientFunds,
         "sender account not recognized": SenderAccountNotFoundInNode,
         "unknown account": UnknownAccount,
         "exceeds block gas limit": GasLimitExceeded,  # Geth
-        "exceeds current gas limit": GasLimitExceeded,  # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L392
+        "exceeds current gas limit": GasLimitExceeded,
+        # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L392
     }
 
     @wraps(func)
@@ -538,12 +548,10 @@ class Erc20Manager(EthereumClientManager):
         )
 
         return_balances = [
-            {
-                "token_address": token_address,
-                "balance": balance
-                if isinstance(balance, int)
-                else 0,  # A `revert` with bytes can be returned
-            }
+            BalanceDict(
+                balance=balance if isinstance(balance, int) else 0,
+                token_address=token_address,
+            )
             for token_address, balance in zip(token_addresses, balances)
         ]
 
@@ -552,10 +560,9 @@ class Erc20Manager(EthereumClientManager):
 
         # Add ether balance response
         return [
-            {
-                "token_address": None,
-                "balance": self.ethereum_client.get_balance(address),
-            }
+            BalanceDict(
+                balance=self.ethereum_client.get_balance(address), token_address=None
+            )
         ] + return_balances
 
     def get_name(self, erc20_address: ChecksumAddress) -> str:
@@ -710,7 +717,7 @@ class Erc20Manager(EthereumClientManager):
                 for address in addresses
             ]
             # Topics for transfer `to` and `from` an address
-            all_topics = [
+            all_topics: List[Sequence[Any]] = [
                 [topic_0, addresses_encoded],  # Topics from
                 [topic_0, None, addresses_encoded],  # Topics to
             ]
@@ -729,11 +736,9 @@ class Erc20Manager(EthereumClientManager):
 
             # Decode events. Just pick valid ERC20 Transfer events (ERC721 `Transfer` has the same signature)
             for event in self.slow_w3.eth.get_logs(parameters):
-                event["args"] = self._decode_transfer_log(
-                    event["data"], event["topics"]
-                )
-                if event["args"]:
-                    erc20_events.append(LogReceiptDecoded(event))
+                event_args = self._decode_transfer_log(event["data"], event["topics"])
+                if event_args:
+                    erc20_events.append(LogReceiptDecoded(**event, args=event_args))
 
         erc20_events.sort(key=lambda x: x["blockNumber"])
         return erc20_events
@@ -788,7 +793,7 @@ class Erc20Manager(EthereumClientManager):
         if to_address:
             argument_filters["to"] = to_address
 
-        return erc20.events.Transfer.create_filter(
+        return erc20.events.Transfer.create_filter(  # type: ignore[attr-defined]
             fromBlock=from_block,
             toBlock=to_block,
             address=token_address,
@@ -1000,6 +1005,7 @@ class TracingManager(EthereumClientManager):
                     trace_address = trace_address[:-1]
                 else:
                     return trace
+        return None
 
     def get_next_traces(
         self,
@@ -1035,7 +1041,7 @@ class TracingManager(EthereumClientManager):
         return traces
 
     def trace_block(self, block_identifier: BlockIdentifier) -> List[BlockTrace]:
-        return self.slow_w3.tracing.trace_block(block_identifier)
+        return self.slow_w3.tracing.trace_block(block_identifier)  # type: ignore[attr-defined]
 
     def trace_blocks(
         self, block_identifiers: Sequence[BlockIdentifier]
@@ -1057,14 +1063,14 @@ class TracingManager(EthereumClientManager):
         ]
 
         results = self.ethereum_client.raw_batch_request(payload)
-        return [trace_list_result_formatter(block_traces) for block_traces in results]
+        return [trace_list_result_formatter(block_traces) for block_traces in results]  # type: ignore[arg-type]
 
     def trace_transaction(self, tx_hash: EthereumHash) -> List[FilterTrace]:
         """
         :param tx_hash:
         :return: List of internal txs for `tx_hash`
         """
-        return self.slow_w3.tracing.trace_transaction(tx_hash)
+        return self.slow_w3.tracing.trace_transaction(tx_hash)  # type: ignore[attr-defined]
 
     def trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
@@ -1085,7 +1091,7 @@ class TracingManager(EthereumClientManager):
             for i, tx_hash in enumerate(tx_hashes)
         ]
         results = self.ethereum_client.raw_batch_request(payload)
-        return [trace_list_result_formatter(tx_traces) for tx_traces in results]
+        return [trace_list_result_formatter(tx_traces) for tx_traces in results]  # type: ignore[arg-type]
 
     def trace_filter(
         self,
@@ -1186,7 +1192,7 @@ class TracingManager(EthereumClientManager):
         if to_address:
             parameters["toAddress"] = to_address
 
-        return self.slow_w3.tracing.trace_filter(parameters)
+        return self.slow_w3.tracing.trace_filter(parameters)  # type: ignore[attr-defined]
 
 
 class EthereumClient:
@@ -1238,7 +1244,7 @@ class EthereumClient:
             # Don't spend resources con converting dictionaries to attribute dictionaries
             w3.middleware_onion.remove("attrdict")
             # Disable web3 automatic retry, it's handled on our HTTP Session
-            w3.provider.middlewares = []
+            w3.provider.middlewares = ()
             if self.use_caching_middleware:
                 w3.middleware_onion.add(simple_cache_middleware)
 
@@ -1264,7 +1270,7 @@ class EthereumClient:
 
     def raw_batch_request(
         self, payload: Sequence[Dict[str, Any]], batch_size: Optional[int] = None
-    ) -> Iterable[Optional[Dict[str, Any]]]:
+    ) -> Iterable[Union[Optional[Dict[str, Any]], List[Dict[str, Any]]]]:
         """
         Perform a raw batch JSON RPC call
 
@@ -1290,7 +1296,7 @@ class EthereumClient:
                     response.status_code,
                     response.content,
                 )
-                raise ValueError(f"Batch request error: {response.content}")
+                raise ValueError(f"Batch request error: {response.content!r}")
 
             results = response.json()
 
@@ -1328,7 +1334,7 @@ class EthereumClient:
         """
         :return: RPC version information
         """
-        return self.w3.clientVersion
+        return self.w3.client_version
 
     def get_network(self) -> EthereumNetwork:
         """
@@ -1353,8 +1359,9 @@ class EthereumClient:
         address = os.environ.get(
             "SAFE_SINGLETON_FACTORY_ADDRESS", SAFE_SINGLETON_FACTORY_ADDRESS
         )
-        if self.is_contract(address):
-            return address
+        address_checksum = ChecksumAddress(HexAddress(HexStr(address)))
+        if self.is_contract(address_checksum):
+            return address_checksum
         return None
 
     @cache
@@ -1369,7 +1376,7 @@ class EthereumClient:
             return False
 
     @cached_property
-    def multicall(self) -> "Multicall":  # noqa F821
+    def multicall(self) -> "Multicall":  # type: ignore # noqa F821
         from .multicall import Multicall
 
         try:
@@ -1567,13 +1574,13 @@ class EthereumClient:
         if from_:
             tx["from"] = from_
         if value:
-            tx["value"] = value
+            tx["value"] = Wei(value)
         if data:
             tx["data"] = data
         if gas:
             tx["gas"] = gas
         if gas_price:
-            tx["gasPrice"] = gas_price
+            tx["gasPrice"] = Wei(gas_price)
         try:
             return self.w3.eth.estimate_gas(tx, block_identifier=block_identifier)
         except (Web3Exception, ValueError):
@@ -1641,15 +1648,15 @@ class EthereumClient:
         :raises: ValueError if EIP1559 not supported
         """
         base_fee_per_gas, max_priority_fee_per_gas = self.estimate_fee_eip1559(tx_speed)
-        tx = TxParams(tx)  # Don't modify provided tx
+        tx = TxParams(**tx)  # Don't modify provided tx
         if "gasPrice" in tx:
             del tx["gasPrice"]
 
         if "chainId" not in tx:
             tx["chainId"] = self.get_chain_id()
 
-        tx["maxPriorityFeePerGas"] = max_priority_fee_per_gas
-        tx["maxFeePerGas"] = base_fee_per_gas + max_priority_fee_per_gas
+        tx["maxPriorityFeePerGas"] = Wei(max_priority_fee_per_gas)
+        tx["maxFeePerGas"] = Wei(base_fee_per_gas + max_priority_fee_per_gas)
         return tx
 
     def get_balance(
@@ -1726,7 +1733,11 @@ class EthereumClient:
         receipts = []
         for tx_receipt in results:
             # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
-            if tx_receipt and tx_receipt["blockNumber"] is not None:
+            if (
+                tx_receipt
+                and isinstance(tx_receipt, dict)
+                and tx_receipt["blockNumber"] is not None
+            ):
                 receipts.append(receipt_formatter(tx_receipt))
             else:
                 receipts.append(None)
@@ -1774,7 +1785,7 @@ class EthereumClient:
         results = self.raw_batch_request(payload)
         blocks = []
         for raw_block in results:
-            if raw_block:
+            if raw_block and isinstance(raw_block, dict):
                 if "extraData" in raw_block:
                     del raw_block[
                         "extraData"
@@ -1813,30 +1824,30 @@ class EthereumClient:
         :return:
         """
 
-        tx_params: TxParams = tx_params or {}
+        new_tx_params: TxParams = tx_params if tx_params is not None else {}
 
         if from_address:
-            tx_params["from"] = from_address
+            new_tx_params["from"] = from_address
 
         if to_address:
-            tx_params["to"] = to_address
+            new_tx_params["to"] = to_address
 
         if value is not None:
-            tx_params["value"] = value
+            new_tx_params["value"] = Wei(value)
 
         if gas_price is not None:
-            tx_params["gasPrice"] = gas_price
+            new_tx_params["gasPrice"] = Wei(gas_price)
 
         if gas is not None:
-            tx_params["gas"] = gas
+            new_tx_params["gas"] = gas
 
         if nonce is not None:
-            tx_params["nonce"] = nonce
+            new_tx_params["nonce"] = Nonce(nonce)
 
         if chain_id is not None:
-            tx_params["chainId"] = chain_id
+            new_tx_params["chainId"] = chain_id
 
-        return tx_params
+        return new_tx_params
 
     @tx_with_exception_handling
     def send_transaction(self, transaction_dict: TxParams) -> HexBytes:
@@ -1844,7 +1855,13 @@ class EthereumClient:
 
     @tx_with_exception_handling
     def send_raw_transaction(self, raw_transaction: EthereumData) -> HexBytes:
-        return self.w3.eth.send_raw_transaction(bytes(raw_transaction))
+        if isinstance(raw_transaction, bytes):
+            value_bytes = raw_transaction
+        else:
+            value_bytes = bytes.fromhex(
+                raw_transaction.replace("0x", "")
+            )  # Remove '0x' and convert
+        return self.w3.eth.send_raw_transaction(value_bytes)
 
     def send_unsigned_transaction(
         self,
@@ -1936,6 +1953,7 @@ class EthereumClient:
                     address, block_identifier=block_identifier
                 )
                 number_errors -= 1
+        return HexBytes("")
 
     def send_eth_to(
         self,

@@ -9,7 +9,7 @@ import requests
 from eth_abi import decode as decode_abi
 from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_packed
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3.contract import Contract
 from web3.exceptions import Web3Exception
@@ -23,7 +23,12 @@ from ..contracts import (
     get_uniswap_v2_pair_contract,
     get_uniswap_v2_router_contract,
 )
-from ..utils import fast_bytes_to_checksum_address, fast_keccak, get_empty_tx_params
+from ..utils import (
+    bytes_to_float,
+    fast_bytes_to_checksum_address,
+    fast_keccak,
+    get_empty_tx_params,
+)
 from .abis.aave_abis import AAVE_ATOKEN_ABI
 from .abis.balancer_abis import balancer_pool_abi
 from .abis.cream_abis import cream_ctoken_abi
@@ -70,7 +75,7 @@ class PricePoolOracle(BaseOracle):
 
 class ComposedPriceOracle(BaseOracle):
     @abstractmethod
-    def get_underlying_tokens(self, *args) -> List[Tuple[UnderlyingToken]]:
+    def get_underlying_tokens(self, *args) -> List[UnderlyingToken]:
         raise NotImplementedError
 
 
@@ -132,10 +137,14 @@ class UniswapOracle(PriceOracle):
     def _get_balances_without_batching(
         self, uniswap_exchange_address: str, token_address: str
     ):
-        balance = self.ethereum_client.get_balance(uniswap_exchange_address)
-        token_decimals = self.ethereum_client.erc20.get_decimals(token_address)
+        uniswap_exchange_address_checksum = ChecksumAddress(
+            HexAddress(HexStr(uniswap_exchange_address))
+        )
+        token_address_checksum = ChecksumAddress(HexAddress(HexStr(token_address)))
+        balance = self.ethereum_client.get_balance(uniswap_exchange_address_checksum)
+        token_decimals = self.ethereum_client.erc20.get_decimals(token_address_checksum)
         token_balance = self.ethereum_client.erc20.get_balance(
-            uniswap_exchange_address, token_address
+            uniswap_exchange_address_checksum, token_address_checksum
         )
         return balance, token_decimals, token_balance
 
@@ -149,7 +158,9 @@ class UniswapOracle(PriceOracle):
             "params": [uniswap_exchange_address, "latest"],
             "id": 0,
         }
-        erc20 = get_erc20_contract(self.w3, token_address)
+        erc20 = get_erc20_contract(
+            self.w3, ChecksumAddress(HexAddress(HexStr(token_address)))
+        )
         params = get_empty_tx_params()
         decimals_data = erc20.functions.decimals().build_transaction(params)["data"]
         token_balance_data = erc20.functions.balanceOf(
@@ -252,7 +263,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             self.ROUTER_ADDRESSES[EthereumNetwork.MAINNET],
         )
         self.router = get_uniswap_v2_router_contract(
-            ethereum_client.w3, self.router_address
+            ethereum_client.w3, ChecksumAddress(HexAddress(HexStr(self.router_address)))
         )
 
     @classmethod
@@ -265,9 +276,15 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         :return: `True` if Oracle is available for the EthereumClient provided, `False` otherwise
         """
         return ethereum_client.is_contract(
-            cls.ROUTER_ADDRESSES.get(
-                ethereum_client.get_network(),
-                cls.ROUTER_ADDRESSES[EthereumNetwork.MAINNET],
+            ChecksumAddress(
+                HexAddress(
+                    HexStr(
+                        cls.ROUTER_ADDRESSES.get(
+                            ethereum_client.get_network(),
+                            cls.ROUTER_ADDRESSES[EthereumNetwork.MAINNET],
+                        )
+                    )
+                )
             )
         )
 
@@ -346,7 +363,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         :return: Reserves of `token_address` and `token_address_2` used to price trades and distribute liquidity.
         """
         pair_contract = get_uniswap_v2_pair_contract(
-            self.ethereum_client.w3, pair_address
+            self.ethereum_client.w3, ChecksumAddress(HexAddress(HexStr(pair_address)))
         )
         # Reserves return token_1 reserves, token_2 reserves and block timestamp (mod 2**32) of last interaction
         reserves_1, reserves_2, _ = pair_contract.functions.getReserves().call()
@@ -424,10 +441,10 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 self.ethereum_client.w3, pool_token_address
             )
             (
-                (reserves_1, reserves_2, _),
+                token_reserves,
                 token_address_1,
                 token_address_2,
-                total_supply,
+                total_supply_response,
             ) = self.ethereum_client.batch_call(
                 [
                     pair_contract.functions.getReserves(),
@@ -436,6 +453,12 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                     pair_contract.functions.totalSupply(),
                 ]
             )
+            if token_reserves is not None:
+                (reserves_1, reserves_2, _) = token_reserves
+            else:
+                reserves_1, reserves_2 = 0.0, 0.0
+
+            total_supply = bytes_to_float(total_supply_response)
             decimals_1 = get_decimals(token_address_1, self.ethereum_client)
             decimals_2 = get_decimals(token_address_2, self.ethereum_client)
 
@@ -447,7 +470,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 (reserves_1, reserves_2),
             ):
                 try:
-                    price = self.get_price(token_address)
+                    price = self.get_price(str(token_address))
                     total_value = (reserves / 10**decimals_1) * price
                     return (total_value * 2) / (total_supply / 1e18)
                 except CannotGetPriceFromOracle:
@@ -461,6 +484,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             message = f"Cannot get uniswap v2 price for pool token={pool_token_address}"
             logger.debug(message)
             raise CannotGetPriceFromOracle(message) from e
+        return 0
 
 
 class AaveOracle(PriceOracle):
@@ -493,8 +517,9 @@ class AaveOracle(PriceOracle):
                 "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"
             )
         try:
+            token_address_checksum = ChecksumAddress(HexAddress(HexStr(token_address)))
             underlying_token = (
-                self.w3.eth.contract(token_address, abi=AAVE_ATOKEN_ABI)
+                self.w3.eth.contract(token_address_checksum, abi=AAVE_ATOKEN_ABI)
                 .functions.UNDERLYING_ASSET_ADDRESS()
                 .call()
             )
@@ -529,8 +554,9 @@ class CreamOracle(PriceOracle):
 
     def get_price(self, token_address: str) -> float:
         try:
+            address_checksum = ChecksumAddress(HexAddress(HexStr(token_address)))
             underlying_token = (
-                self.w3.eth.contract(token_address, abi=cream_ctoken_abi)
+                self.w3.eth.contract(address_checksum, abi=cream_ctoken_abi)
                 .functions.underlying()
                 .call()
             )
@@ -542,7 +568,7 @@ class CreamOracle(PriceOracle):
 
 
 class ZerionComposedOracle(ComposedPriceOracle):
-    ZERION_ADAPTER_ADDRESS = None
+    ZERION_ADAPTER_ADDRESS: Optional[str] = None
 
     def __init__(
         self,
@@ -580,10 +606,14 @@ class ZerionComposedOracle(ComposedPriceOracle):
         """
         :return: https://curve.readthedocs.io/registry-registry.html
         """
-        if self.ethereum_client.is_contract(self.zerion_adapter_address):
-            return self.w3.eth.contract(
-                self.zerion_adapter_address, abi=ZERION_TOKEN_ADAPTER_ABI
-            )
+        address = (
+            ChecksumAddress(HexAddress(HexStr(self.zerion_adapter_address)))
+            if self.zerion_adapter_address
+            else None
+        )
+        if address and self.ethereum_client.is_contract(address):
+            return self.w3.eth.contract(address, abi=ZERION_TOKEN_ADAPTER_ABI)
+        return None
 
     def get_underlying_tokens(
         self, token_address: ChecksumAddress
@@ -643,7 +673,10 @@ class CurveOracle(ZerionComposedOracle):
         More info on https://resources.curve.fi/base-features/understanding-gauges
         """
         if CURVE_GAUGE_TO_LP_TOKEN.get(token_address):
-            return super().get_underlying_tokens(CURVE_GAUGE_TO_LP_TOKEN[token_address])
+            address = ChecksumAddress(
+                HexAddress(HexStr(CURVE_GAUGE_TO_LP_TOKEN[token_address]))
+            )
+            return super().get_underlying_tokens(address)
 
         return super().get_underlying_tokens(token_address)
 
@@ -710,7 +743,7 @@ class YearnOracle(ComposedPriceOracle):
 
     def get_underlying_tokens(
         self, token_address: ChecksumAddress
-    ) -> List[Tuple[float, ChecksumAddress]]:
+    ) -> List[UnderlyingToken]:
         """
         :param token_address:
         :return: Price per share and underlying token
@@ -766,12 +799,13 @@ class BalancerOracle(PricePoolOracle):
             balancer_pool_contract = self.w3.eth.contract(
                 pool_token_address, abi=balancer_pool_abi
             )
-            current_tokens, total_supply = self.ethereum_client.batch_call(
+            current_tokens, total_supply_response = self.ethereum_client.batch_call(
                 [
                     balancer_pool_contract.functions.getCurrentTokens(),
                     balancer_pool_contract.functions.totalSupply(),
                 ]
             )
+            total_supply = bytes_to_float(total_supply_response)
             if not current_tokens:
                 raise ValueError
             number_tokens = len(current_tokens)
@@ -785,7 +819,9 @@ class BalancerOracle(PricePoolOracle):
                     for token_address in current_tokens
                 ]
                 + [
-                    get_erc20_contract(self.w3, token_address).functions.decimals()
+                    get_erc20_contract(
+                        self.w3, ChecksumAddress(HexAddress(HexStr(str(token_address))))
+                    ).functions.decimals()
                     for token_address in current_tokens
                 ]
             )
@@ -795,10 +831,12 @@ class BalancerOracle(PricePoolOracle):
                 self.price_oracle.get_price(token_address)
                 for token_address in current_tokens
             ]
-            total_eth_value = 0
-            for token_balance, token_decimal, token_price in zip(
+            total_eth_value = 0.0
+            for token_balance_bytes, token_decimal_bytes, token_price in zip(
                 token_balances, token_decimals, token_prices
             ):
+                token_balance = bytes_to_float(token_balance_bytes)
+                token_decimal = bytes_to_float(token_decimal_bytes)
                 total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
         except (Web3Exception, DecodingError, ValueError):
@@ -821,12 +859,14 @@ class MooniswapOracle(BalancerOracle):
             balancer_pool_contract = self.w3.eth.contract(
                 pool_token_address, abi=mooniswap_abi
             )
-            tokens, total_supply = self.ethereum_client.batch_call(
+            tokens, total_supply_response = self.ethereum_client.batch_call(
                 [
                     balancer_pool_contract.functions.getTokens(),
                     balancer_pool_contract.functions.totalSupply(),
                 ]
             )
+            total_supply = bytes_to_float(total_supply_response)
+
             if not tokens:
                 raise ValueError
             if len(tokens) == 1 or any(
@@ -838,13 +878,21 @@ class MooniswapOracle(BalancerOracle):
                 for token in tokens:
                     try:
                         price = self.price_oracle.get_price(token)
-                        token_contract = get_erc20_contract(self.w3, token)
-                        token_balance, token_decimals = self.ethereum_client.batch_call(
+                        token_contract = get_erc20_contract(
+                            self.w3, ChecksumAddress(HexAddress(HexStr(str(token))))
+                        )
+                        (
+                            token_balance_response,
+                            token_decimals_response,
+                        ) = self.ethereum_client.batch_call(
                             [
                                 token_contract.functions.balanceOf(pool_token_address),
                                 token_contract.functions.decimals(),
                             ]
                         )
+                        token_balance = bytes_to_float(token_balance_response)
+                        token_decimals = bytes_to_float(token_decimals_response)
+
                         total_value = (token_balance / 10**token_decimals) * price
                         return (total_value * 2) / (total_supply / 1e18)
                     except CannotGetPriceFromOracle:

@@ -29,7 +29,7 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Install dependencies
-        run: pip install -U pre-commit
+        run: pip install -U pre-commit -r requirements-test.txt
       - name: Run pre-commit
         run: pre-commit run --all-files
 

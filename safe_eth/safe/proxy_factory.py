@@ -43,7 +43,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             "1.4.1": ProxyFactoryV141,
         }
         instance_class = versions[version]
-        instance = super().__new__(instance_class)
+        instance = super().__new__(instance_class)  # type: ignore[type-abstract]
         return instance
 
     @classmethod
@@ -57,8 +57,8 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         :param deployer_account: Ethereum Account
         :return: ``EthereumTxSent`` with the deployed contract address
         """
-        contract_fn = cls.get_contract_fn(cls)
-        contract = contract_fn(ethereum_client.w3)
+        contract_fn = cls.get_contract_fn(cls)  # type: ignore[arg-type]
+        contract = contract_fn(ethereum_client.w3, None)
         constructor_data = contract.constructor().build_transaction(
             get_empty_tx_params()
         )["data"]
@@ -197,7 +197,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         """
 
         if chain_specific:
-            salt_nonce = fast_keccak(
+            salt_nonce_encoded = fast_keccak(
                 encode_packed(
                     ["bytes32", "uint256", "uint256"],
                     [
@@ -208,7 +208,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
                 )
             )
         else:
-            salt_nonce = fast_keccak(
+            salt_nonce_encoded = fast_keccak(
                 encode_packed(
                     ["bytes32", "uint256"], [fast_keccak(initializer), salt_nonce]
                 )
@@ -219,7 +219,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             ["bytes", "uint256"], [proxy_creation_code, int(master_copy, 0)]
         )
 
-        return mk_contract_address_2(self.address, salt_nonce, deployment_data)
+        return mk_contract_address_2(self.address, salt_nonce_encoded, deployment_data)
 
     def deploy_proxy_contract_with_nonce(
         self,
@@ -256,26 +256,26 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
 
 
 class ProxyFactoryV100(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_0_0_contract
 
 
 class ProxyFactoryV111(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_1_1_contract
 
 
 class ProxyFactoryV130(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_3_0_contract
 
 
 class ProxyFactoryV141(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_4_1_contract
 
     @cache
-    def get_proxy_runtime_code(self) -> Optional[bytes]:
+    def get_proxy_runtime_code(self) -> bytes:
         """
         :return: From v1.4.1 onwards the method is not available
         :raises: NotImplementedError

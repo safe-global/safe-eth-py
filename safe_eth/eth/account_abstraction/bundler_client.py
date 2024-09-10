@@ -2,13 +2,13 @@ import logging
 from functools import cache, lru_cache
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-from eth_typing import ChecksumAddress, HexStr
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 
 from safe_eth.util.http import prepare_http_session
 
 from .exceptions import BundlerClientConnectionException, BundlerClientResponseException
-from .user_operation import UserOperation
+from .user_operation import UserOperation, UserOperationV07
 from .user_operation_receipt import UserOperationReceipt
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,11 @@ class BundlerClient:
 
     def _do_request(
         self, payload: Union[Dict[Any, Any], Sequence[Dict[Any, Any]]]
-    ) -> Union[Optional[Union[Dict[str, Any]]], Optional[List[Dict[str, Any]]]]:
+    ) -> Union[
+        Optional[Union[Dict[str, Any]]],
+        Optional[List[Dict[str, Any]]],
+        Optional[List[str]],
+    ]:
         """
         :param payload: Allows simple request or a batch request
         :return: Result of the request
@@ -49,7 +53,7 @@ class BundlerClient:
 
         if not response.ok:
             raise BundlerClientConnectionException(
-                f"Error connecting to bundler {self.url} : {response.status_code} {response.content}"
+                f"Error connecting to bundler {self.url} : {response.status_code} {response.content!r}"
             )
 
         bundler_responses = response.json()
@@ -122,7 +126,7 @@ class BundlerClient:
     @lru_cache(maxsize=1024)
     def get_user_operation_by_hash(
         self, user_operation_hash: HexStr
-    ) -> Optional[UserOperation]:
+    ) -> Optional[Union[UserOperation, UserOperationV07]]:
         """
         https://docs.alchemy.com/reference/eth-getuseroperationbyhash
 
@@ -133,11 +137,10 @@ class BundlerClient:
         """
         payload = self._get_user_operation_by_hash_payload(user_operation_hash)
         result = self._do_request(payload)
-        return (
-            UserOperation.from_bundler_response(user_operation_hash, result)
-            if result
-            else None
-        )
+        if result and isinstance(result, dict):
+            return UserOperation.from_bundler_response(user_operation_hash, result)
+        else:
+            return None
 
     @lru_cache(maxsize=1024)
     def get_user_operation_receipt(
@@ -153,12 +156,15 @@ class BundlerClient:
         """
         payload = self._get_user_operation_receipt_payload(user_operation_hash)
         result = self._do_request(payload)
-        return UserOperationReceipt.from_bundler_response(result) if result else None
+        if result and isinstance(result, dict):
+            return UserOperationReceipt.from_bundler_response(result)
+        else:
+            return None
 
     @lru_cache(maxsize=1024)
     def get_user_operation_and_receipt(
         self, user_operation_hash: HexStr
-    ) -> Optional[Tuple[UserOperation, UserOperationReceipt]]:
+    ) -> Optional[Tuple[Union[UserOperation, UserOperationV07], UserOperationReceipt]]:
         """
         Get UserOperation and UserOperationReceipt in the same request using a batch query.
         NOTE: Batch requests are not supported by Pimlico
@@ -172,13 +178,19 @@ class BundlerClient:
             self._get_user_operation_by_hash_payload(user_operation_hash, request_id=1),
             self._get_user_operation_receipt_payload(user_operation_hash, request_id=2),
         ]
-        result = self._do_request(payload)
-        if not (result and result[0]):
-            return None
+        results = self._do_request(payload)
+        if (
+            results
+            and isinstance(results, list)
+            and len(results) >= 2
+            and isinstance(results[0], dict)
+            and isinstance(results[1], dict)
+        ):
+            return UserOperation.from_bundler_response(
+                user_operation_hash, results[0]
+            ), self._parse_user_operation_receipt(results[1])
 
-        return UserOperation.from_bundler_response(
-            user_operation_hash, result[0]
-        ), self._parse_user_operation_receipt(result[1])
+        return None
 
     @lru_cache(maxsize=None)
     def supported_entry_points(self) -> List[ChecksumAddress]:
@@ -195,4 +207,12 @@ class BundlerClient:
             "params": [],
             "id": 1,
         }
-        return self._do_request(payload)
+        result = self._do_request(payload)
+        if result and isinstance(result, list):
+            return [
+                ChecksumAddress(HexAddress(HexStr(address)))
+                for address in result
+                if isinstance(address, str)
+            ]
+
+        return []

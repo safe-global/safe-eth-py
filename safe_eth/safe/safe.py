@@ -4,19 +4,19 @@ import os
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_abi.packed import encode_packed
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
-from eth_typing import ChecksumAddress, Hash32, HexStr
+from eth_typing import ChecksumAddress, Hash32, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 from web3.exceptions import Web3Exception
-from web3.types import BlockIdentifier, TxParams
+from web3.types import BlockIdentifier, TxParams, Wei
 
 from safe_eth.eth import EthereumClient, EthereumTxSent
 from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
@@ -94,7 +94,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         if cls is not Safe:
             return super().__new__(cls, *args, **kwargs)
 
-        versions: Dict[str, Safe] = {
+        versions: Dict[str, Type[Safe]] = {
             "0.0.1": SafeV001,
             "1.0.0": SafeV100,
             "1.1.1": SafeV111,
@@ -111,7 +111,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         except (Web3Exception, ValueError):
             version = None  # Cannot detect the version
 
-        instance_class = versions.get(version, default_version)
+        instance_class = versions.get(version or "", default_version)
         instance = super().__new__(instance_class)
         return instance
 
@@ -142,8 +142,15 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     def simulate_tx_accessor_address(self) -> ChecksumAddress:
         if self._simulate_tx_accessor_address:
             return self._simulate_tx_accessor_address
-        return os.environ.get(
-            "SAFE_SIMULATE_TX_ACCESSOR_ADDRESS", SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
+        return ChecksumAddress(
+            HexAddress(
+                HexStr(
+                    os.environ.get(
+                        "SAFE_SIMULATE_TX_ACCESSOR_ADDRESS",
+                        SAFE_SIMULATE_TX_ACCESSOR_ADDRESS,
+                    )
+                )
+            )
         )
 
     @simulate_tx_accessor_address.setter
@@ -153,7 +160,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     def retrieve_version(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> str:
-        return self.contract.functions.VERSION().call(block_identifier=block_identifier)
+        return self.contract.functions.VERSION().call(
+            block_identifier=block_identifier or "latest"
+        )
 
     @cached_property
     def domain_separator(self) -> Optional[bytes]:
@@ -180,8 +189,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param deployer_account: Ethereum account
         :return: ``EthereumTxSent`` with the deployed contract address
         """
-        contract_fn = cls.get_contract_fn(cls)
-        safe_contract = contract_fn(ethereum_client.w3)
+        contract_fn = cls.get_contract_fn(cls)  # type: ignore[arg-type]
+        safe_contract = contract_fn(ethereum_client.w3, None)
         constructor_data = safe_contract.constructor().build_transaction(
             get_empty_tx_params()
         )["data"]
@@ -193,9 +202,10 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             .functions.VERSION()
             .call()
         )
-        assert deployed_version == cls.get_version(
-            cls
-        ), f"Deployed version {deployed_version} is not matching expected {cls.get_version(cls)} version"
+        safe_version = cls.get_version(cls)  # type: ignore[arg-type]
+        assert (
+            deployed_version == safe_version
+        ), f"Deployed version {deployed_version} is not matching expected {safe_version} version"
 
         logger.info(
             "Deployed and initialized Safe Master Contract version=%s on address %s by %s",
@@ -360,7 +370,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             {
                 "from": safe_address,
                 "gas": 0,  # Don't call estimate
-                "gasPrice": 0,  # Don't get gas price
+                "gasPrice": Wei(0),  # Don't get gas price
             }
         )
 
@@ -371,7 +381,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         }
 
         if gas_limit:
-            tx_params["gas"] = hex(gas_limit)
+            tx_params["gas"] = HexStr(hex(gas_limit))
 
         query = {
             "jsonrpc": "2.0",
@@ -398,7 +408,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                     )
 
         raise CannotEstimateGas(
-            f"Received {response.status_code} - {response.content} from ethereum node"
+            f"Received {response.status_code} - {response.content!r} from ethereum node"
         )
 
     def estimate_tx_gas_with_web3(
@@ -452,7 +462,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                     value,
                     data,
                     operation,
-                    gas_limit=gas_estimated + base_gas + 32000,
+                    gas_limit=gas_estimated + (base_gas or 0) + 32000,
                 )
                 return gas_estimated
             except CannotEstimateGas:
@@ -517,10 +527,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
         :return: Message hash
         """
-
         if isinstance(message, str):
-            message = message.encode()
-        message_hash = fast_keccak(message)
+            message_to_hash = message.encode()  # Convertir str a bytes
+        else:
+            message_to_hash = message
+
+        message_hash = fast_keccak(message_to_hash)
 
         safe_message_hash = fast_keccak(
             eth_abi.encode(
@@ -613,9 +625,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     def retrieve_domain_separator(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
-    ) -> str:
+    ) -> Optional[bytes]:
         return self.contract.functions.domainSeparator().call(
-            block_identifier=block_identifier
+            block_identifier=block_identifier or "latest"
         )
 
     def retrieve_code(self) -> HexBytes:
@@ -670,6 +682,15 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param block_identifier:
         :return: List of module addresses
         """
+        if pagination is None:
+            pagination = 50
+
+        if max_modules_to_retrieve is None:
+            max_modules_to_retrieve = 500
+
+        if block_identifier is None:
+            block_identifier = "latest"
+
         if not hasattr(self.contract.functions, "getModulesPaginated"):
             # Custom code for Safes < v1.3.0
             # Safe V1_0_0 can get into an infinite loop if it's not initialized
@@ -709,7 +730,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     ) -> bool:
         return (
             self.contract.functions.approvedHashes(owner, safe_hash).call(
-                block_identifier=block_identifier
+                block_identifier=block_identifier or "latest"
             )
             == 1
         )
@@ -720,33 +741,35 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> bool:
         return self.contract.functions.signedMessages(message_hash).call(
-            block_identifier=block_identifier
+            block_identifier=block_identifier or "latest"
         )
 
     def retrieve_is_owner(
         self, owner: str, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> bool:
         return self.contract.functions.isOwner(owner).call(
-            block_identifier=block_identifier
+            block_identifier=block_identifier or "latest"
         )
 
     def retrieve_nonce(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> int:
-        return self.contract.functions.nonce().call(block_identifier=block_identifier)
+        return self.contract.functions.nonce().call(
+            block_identifier=block_identifier or "latest"
+        )
 
     def retrieve_owners(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> List[str]:
         return self.contract.functions.getOwners().call(
-            block_identifier=block_identifier
+            block_identifier=block_identifier or "latest"
         )
 
     def retrieve_threshold(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> int:
         return self.contract.functions.getThreshold().call(
-            block_identifier=block_identifier
+            block_identifier=block_identifier or "latest"
         )
 
     def build_multisig_tx(
@@ -873,7 +896,7 @@ class SafeV001(Safe):
     def get_version(self):
         return "0.0.1"
 
-    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V0_0_1_contract
 
     @staticmethod
@@ -901,7 +924,7 @@ class SafeV001(Safe):
             2,  # Threshold. Maximum security
             NULL_ADDRESS,  # Address for optional DELEGATE CALL
             b"",  # Data for optional DELEGATE CALL
-        ).build_transaction({"to": NULL_ADDRESS, "gas": 0, "gasPrice": 0})["data"]
+        ).build_transaction({"to": NULL_ADDRESS, "gas": 0, "gasPrice": Wei(0)})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -918,7 +941,7 @@ class SafeV100(Safe):
     def get_version(self):
         return "1.0.0"
 
-    def get_contract_fn(self) -> Contract:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V1_0_0_contract
 
     @staticmethod
@@ -949,7 +972,7 @@ class SafeV100(Safe):
             NULL_ADDRESS,  # Payment token
             0,  # Payment
             NULL_ADDRESS,  # Refund receiver
-        ).build_transaction({"to": NULL_ADDRESS, "gas": 0, "gasPrice": 0})["data"]
+        ).build_transaction({"to": NULL_ADDRESS, "gas": 0, "gasPrice": Wei(0)})["data"]
 
         ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
             deployer_account, constructor_data, HexBytes(initializer_data)
@@ -966,7 +989,7 @@ class SafeV111(Safe):
     def get_version(self):
         return "1.1.1"
 
-    def get_contract_fn(self) -> Contract:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V1_1_1_contract
 
 
@@ -974,7 +997,7 @@ class SafeV120(Safe):
     def get_version(self):
         return "1.2.0"
 
-    def get_contract_fn(self) -> Contract:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V1_1_1_contract
 
 
@@ -982,7 +1005,7 @@ class SafeV130(Safe):
     def get_version(self):
         return "1.3.0"
 
-    def get_contract_fn(self) -> Contract:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V1_3_0_contract
 
 
@@ -990,7 +1013,7 @@ class SafeV141(Safe):
     def get_version(self):
         return "1.4.1"
 
-    def get_contract_fn(self) -> Contract:
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V1_4_1_contract
 
     def estimate_tx_gas_with_safe(
@@ -1042,7 +1065,9 @@ class SafeV141(Safe):
             return estimate
         except DecodingError as e:
             try:
-                decoded_revert = eth_abi.decode(["string"], accessible_data)
+                decoded_revert: Union[tuple[Any], str] = eth_abi.decode(
+                    ["string"], accessible_data
+                )
             except DecodingError:
                 decoded_revert = "No revert message"
             raise CannotEstimateGas(

@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 from ...util.http import prepare_http_session
@@ -116,7 +116,7 @@ class EtherscanClient:
         EthereumNetwork.HOLESKY: "https://api-holesky.etherscan.io",
         EthereumNetwork.LINEA_SEPOLIA: "https://api-sepolia.lineascan.build",
     }
-    HTTP_HEADERS = {
+    HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
         "User-Agent": "curl/7.77.0",
     }
 
@@ -130,9 +130,9 @@ class EtherscanClient:
     ):
         self.network = network
         self.api_key = api_key
-        self.base_url = self.NETWORK_WITH_URL.get(network)
-        self.base_api_url = self.NETWORK_WITH_API_URL.get(network)
-        if self.base_api_url is None:
+        self.base_url = self.NETWORK_WITH_URL.get(network, "")
+        self.base_api_url = self.NETWORK_WITH_API_URL.get(network, "")
+        if not self.base_api_url:
             raise EtherscanClientConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
             )
@@ -146,7 +146,7 @@ class EtherscanClient:
             url += f"&apikey={self.api_key}"
         return url
 
-    def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
+    def _do_request(self, url: str) -> Optional[Union[Dict[str, Any], List[Any], str]]:
         response = self.http_session.get(url, timeout=self.request_timeout)
 
         if response.ok:
@@ -157,8 +157,11 @@ class EtherscanClient:
                 raise EtherscanRateLimitError
             if response_json["status"] == "1":
                 return result
+        return None
 
-    def _retry_request(self, url: str, retry: bool = True) -> Optional[Dict[str, Any]]:
+    def _retry_request(
+        self, url: str, retry: bool = True
+    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
         for _ in range(3):
             try:
                 return self._do_request(url)
@@ -167,6 +170,7 @@ class EtherscanClient:
                     raise exc
                 else:
                     time.sleep(5)
+        return None
 
     def get_contract_metadata(
         self, contract_address: str, retry: bool = True
@@ -179,6 +183,7 @@ class EtherscanClient:
             contract_abi = contract_source_code["ABI"]
             if contract_abi:
                 return ContractMetadata(contract_name, contract_abi, False)
+        return None
 
     def get_contract_source_code(self, contract_address: str, retry: bool = True):
         """
@@ -203,11 +208,19 @@ class EtherscanClient:
         url = self.build_url(
             f"api?module=contract&action=getsourcecode&address={contract_address}"
         )
-        result = self._retry_request(url, retry=retry)  # Returns a list
-        if result:
-            result = result[0]
-            abi_str = result["ABI"]
-            result["ABI"] = json.loads(abi_str) if abi_str.startswith("[") else None
+        response = self._retry_request(url, retry=retry)  # Returns a list
+        if response and isinstance(response, list):
+            result = response[0]
+            abi_str = result.get("ABI")
+
+            if isinstance(abi_str, str) and abi_str.startswith("["):
+                try:
+                    result["ABI"] = json.loads(abi_str)
+                except json.JSONDecodeError:
+                    result["ABI"] = None  # Handle the case where JSON decoding fails
+            else:
+                result["ABI"] = None
+
             return result
 
     def get_contract_abi(self, contract_address: str, retry: bool = True):
@@ -215,5 +228,11 @@ class EtherscanClient:
             f"api?module=contract&action=getabi&address={contract_address}"
         )
         result = self._retry_request(url, retry=retry)
-        if result:
-            return json.loads(result)
+        if isinstance(result, dict):
+            return result
+        elif isinstance(result, str):
+            try:
+                return json.loads(result)
+            except json.JSONDecodeError:
+                pass
+        return None
