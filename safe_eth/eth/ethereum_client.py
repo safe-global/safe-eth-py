@@ -11,6 +11,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     Union,
     cast,
 )
@@ -109,7 +110,7 @@ def tx_with_exception_handling(func):
     :param func:
     :return:
     """
-    error_with_exception: Dict[str, Exception] = {
+    error_with_exception: Dict[str, Type[Exception]] = {
         "EIP-155": ChainIdIsRequired,
         "Transaction with the same hash was already imported": TransactionAlreadyImported,
         "replacement transaction underpriced": ReplacementTransactionUnderpriced,
@@ -466,8 +467,8 @@ class Erc20Manager(EthereumClientManager):
             elif topics_len == 3:
                 # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
                 # 3 topics (transfer topic + from + to)
+                value_data = HexBytes(data)
                 try:
-                    value_data = HexBytes(data)
                     value = eth_abi.decode(["uint256"], value_data)[0]
                 except DecodingError:
                     logger.warning(
@@ -475,8 +476,8 @@ class Erc20Manager(EthereumClientManager):
                         value_data.hex(),
                     )
                     return None
+                from_to_data = b"".join(topics[1:])
                 try:
-                    from_to_data = b"".join(topics[1:])
                     _from, to = (
                         fast_to_checksum_address(address)
                         for address in eth_abi.decode(
@@ -493,8 +494,8 @@ class Erc20Manager(EthereumClientManager):
             elif topics_len == 4:
                 # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
                 # 4 topics (transfer topic + from + to + tokenId)
+                from_to_token_id_data = b"".join(topics[1:])
                 try:
-                    from_to_token_id_data = b"".join(topics[1:])
                     _from, to, token_id = eth_abi.decode(
                         ["address", "address", "uint256"], from_to_token_id_data
                     )
@@ -1482,13 +1483,19 @@ class EthereumClient:
         :param check_receipt:
         :param deterministic: Use Safe singleton factory for CREATE2 deterministic deployment
         :return:
+        :raises ValueError: No contract was deployed/initialized
         """
         contract_address: Optional[ChecksumAddress] = None
+        assert (
+            constructor_data and initializer_data
+        ), "At least constructor_data or initializer_data must be provided"
+        tx_hash: Optional[HexBytes] = None
+        tx: Optional[TxParams] = None
         for data in (constructor_data, initializer_data):
             # Because initializer_data is not mandatory
             if data:
                 data = HexBytes(data)
-                tx: TxParams = {
+                tx = {
                     "from": deployer_account.address,
                     "data": data,
                     "gasPrice": self.w3.eth.gas_price,
@@ -1528,7 +1535,9 @@ class EthereumClient:
                     assert tx_receipt
                     assert tx_receipt["status"]
 
-        return EthereumTxSent(tx_hash, tx, contract_address)
+        if tx_hash is not None and tx is not None:
+            return EthereumTxSent(tx_hash, tx, contract_address)
+        raise ValueError("No contract was deployed/initialized")
 
     def get_nonce_for_account(
         self,
@@ -1633,6 +1642,8 @@ class EthereumClient:
             percentile = 90
         elif tx_speed == TxSpeed.FASTEST:
             percentile = 100
+        else:
+            percentile = 50
 
         result = self.w3.eth.fee_history(1, "latest", reward_percentiles=[percentile])
         # Get next block `base_fee_per_gas`
@@ -1755,11 +1766,10 @@ class EthereumClient:
 
     def _parse_block_identifier(self, block_identifier: BlockIdentifier) -> str:
         if isinstance(block_identifier, int):
-            return hex(block_identifier)
+            return HexStr(hex(block_identifier))
         elif isinstance(block_identifier, bytes):
-            return HexBytes(block_identifier).hex()
-        else:
-            return block_identifier
+            return HexStr(HexBytes(block_identifier).hex())
+        return str(block_identifier)
 
     def get_blocks(
         self,
@@ -1820,7 +1830,7 @@ class EthereumClient:
         :param gas_price:
         :param nonce:
         :param chain_id:
-        :param tx_params: An existing TxParams dictionary will be replaced by the providen values
+        :param tx_params: An existing TxParams dictionary will be replaced by the provided values
         :return:
         """
 
