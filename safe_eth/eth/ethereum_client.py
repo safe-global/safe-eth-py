@@ -1487,7 +1487,7 @@ class EthereumClient:
         """
         contract_address: Optional[ChecksumAddress] = None
         assert (
-            constructor_data and initializer_data
+            constructor_data or initializer_data
         ), "At least constructor_data or initializer_data must be provided"
         tx_hash: Optional[HexBytes] = None
         tx: Optional[TxParams] = None
