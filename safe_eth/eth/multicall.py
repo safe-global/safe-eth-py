@@ -115,7 +115,6 @@ class Multicall(ContractBase):
             ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
                 deployer_account, constructor_data
             )
-
             assert ethereum_tx_sent.contract_address is not None
             contract_address = ethereum_tx_sent.contract_address
             logger.info(

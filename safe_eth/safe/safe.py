@@ -431,7 +431,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     def estimate_tx_gas_by_trying(
         self, to: ChecksumAddress, value: int, data: Union[bytes, str], operation: int
-    ):
+    ) -> int:
         """
         Try to get an estimation with Safe's `requiredTxGas`. If estimation is successful, try to set a gas limit and
         estimate again. If gas estimation is ok, same gas estimation should be returned, if it's less than required
@@ -802,7 +802,6 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param refund_receiver: Address of receiver of gas payment (or `0x000..000` if tx.origin).
         :param signatures: Packed signature data ({bytes32 r}{bytes32 s}{uint8 v})
         :param safe_nonce: Nonce of the safe (to calculate hash)
-        :param safe_version: Safe version (to calculate hash)
         :return: SafeTx
         """
 
@@ -893,15 +892,15 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
 
 class SafeV001(Safe):
-    def get_version(self):
+    def get_version(self) -> str:
         return "0.0.1"
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V0_0_1_contract
 
-    @staticmethod
+    @classmethod
     def deploy_contract(
-        ethereum_client: EthereumClient, deployer_account: LocalAccount
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
@@ -938,15 +937,15 @@ class SafeV001(Safe):
 
 
 class SafeV100(Safe):
-    def get_version(self):
+    def get_version(self) -> str:
         return "1.0.0"
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_safe_V1_0_0_contract
 
-    @staticmethod
+    @classmethod
     def deploy_contract(
-        ethereum_client: EthereumClient, deployer_account: LocalAccount
+        cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
         Deploy master contract. Takes deployer_account (if unlocked in the node) or the deployer private key
@@ -986,7 +985,7 @@ class SafeV100(Safe):
 
 
 class SafeV111(Safe):
-    def get_version(self):
+    def get_version(self) -> str:
         return "1.1.1"
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
@@ -994,7 +993,7 @@ class SafeV111(Safe):
 
 
 class SafeV120(Safe):
-    def get_version(self):
+    def get_version(self) -> str:
         return "1.2.0"
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
@@ -1002,7 +1001,7 @@ class SafeV120(Safe):
 
 
 class SafeV130(Safe):
-    def get_version(self):
+    def get_version(self) -> str:
         return "1.3.0"
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
@@ -1010,7 +1009,7 @@ class SafeV130(Safe):
 
 
 class SafeV141(Safe):
-    def get_version(self):
+    def get_version(self) -> str:
         return "1.4.1"
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
