@@ -15,7 +15,7 @@ from eth_typing import ChecksumAddress, Hash32, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
-from web3.exceptions import Web3Exception
+from web3.exceptions import ContractLogicError, Web3Exception
 from web3.types import BlockIdentifier, TxParams, Wei
 
 from safe_eth.eth import EthereumClient, EthereumTxSent
@@ -1050,7 +1050,7 @@ class SafeV141(Safe):
             accessible_data = simulator.functions.simulate(
                 accessor.address, simulation_data
             ).call(params)
-        except ValueError as e:
+        except (ValueError, ContractLogicError) as e:
             raise CannotEstimateGas(f"Reverted call using SimulateTxAccessor {e}")
         try:
             # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
