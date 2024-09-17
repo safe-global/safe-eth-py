@@ -2647,6 +2647,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.SNAXCHAIN: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 378233),  # v1.3.0
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 388424),  # v1.3.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 388607), # v1.4.1
     ],
     EthereumNetwork.Q_MAINNET: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 15479481),  # v1.4.1
