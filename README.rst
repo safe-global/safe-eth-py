@@ -44,7 +44,7 @@ Once the issue is created or edited, an automatic validation will be executed an
 Ethereum utils
 --------------
 safe_eth.eth
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 - ``class EthereumClient (ethereum_node_url: str)``: Class to connect and do operations
   with an ethereum node. Uses web3 and raw rpc calls for things not supported in web3.
   Only ``http/https`` urls are supported for the node url.
@@ -73,14 +73,13 @@ If you want to use the underlying `web3.py <https://github.com/ethereum/web3.py>
 
 
 safe_eth.eth.constants
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 - ``NULL_ADDRESS (0x000...0)``: Solidity ``address(0)``.
 - ``SENTINEL_ADDRESS (0x000...1)``: Used for Safe's linked lists (modules, owners...).
 - Maximum and minimum values for `R`, `S` and `V` in ethereum signatures.
 
 safe_eth.eth.oracles
-~~~~~~~~~~~~~~~~~~
-
+~~~~~~~~~~~~~~~~~~~~
 Price oracles for Uniswap, UniswapV2, Kyber, SushiSwap, Aave, Balancer, Curve, Mooniswap, Yearn...
 Example:
 
@@ -97,7 +96,7 @@ Example:
 
 
 safe_eth.eth.utils
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Contains utils for ethereum operations:
 
