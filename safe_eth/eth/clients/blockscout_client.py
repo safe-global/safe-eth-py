@@ -133,6 +133,7 @@ class BlockscoutClient:
         EthereumNetwork.GPT_MAINNET: "https://explorer.gptprotocol.io/api/v1/graphql",
         EthereumNetwork.BOB_SEPOLIA: "https://bob-sepolia.explorer.gobob.xyz/api/v1/graphql",
         EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io/api/v1/graphql",
+        EthereumNetwork.Q_MAINNET: "https://explorer.q.org/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
