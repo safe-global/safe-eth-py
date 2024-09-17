@@ -112,7 +112,7 @@ jobs:
     - name: Install dependencies
       if: steps.check-comment.outputs.result == 'true'
       run: |
-        grep -E "web3" requirements.txt | xargs pip install PyGithub safe-eth-py@git+https://github.com/safe-global/safe-eth-py@main pre-commit
+        pip install PyGithub safe-eth-py@git+https://github.com/safe-global/safe-eth-py@main pre-commit $(grep -E "mypy" requirements-test.txt) $(grep -E "web3" requirements.txt)
         pre-commit install
 
     - name: Process Issue and Create PR
