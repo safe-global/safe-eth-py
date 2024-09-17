@@ -2620,4 +2620,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.BOB_SEPOLIA: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 1298122),  # v1.3.0
     ],
+    EthereumNetwork.SNAXCHAIN: [
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 378233),  # v1.3.0
+    ],
 }
