@@ -6,26 +6,59 @@ from typing import Optional
 import requests
 from git import Repo
 
+# GitHub repository config
 GIT_URL = "https://github.com/wevm/viem.git"
-REPO_DIR = "sources"
+LOCAL_REPO_DIR = "sources"
 
-ATTR_ID = "id"
-ATTR_URL = "url"
-ATTR_API_URL = "api_url"
-ATTR_MULTICALL_ADDRESS = "multicall_address"
+# Viem regex patterns
+VIEM_ATTR_ID = "id"
+VIEM_ATTR_URL = "url"
+VIEM_ATTR_API_URL = "api_url"
+VIEM_ATTR_MULTICALL_ADDRESS = "multicall_address"
 
-SEARCH_PATTERNS = {
-    ATTR_ID: r"id\s*:\s*([\d_]+)",
-    ATTR_URL: r"url\s*:\s*[\'\"]([^\'\"]+)[\'\"]",
-    ATTR_API_URL: r"apiUrl\s*:\s*[\'\"]([^\'\"]+)[\'\"]",
-    ATTR_MULTICALL_ADDRESS: r"multicall3\s*:\s*{\s*address\s*:\s*[\'\"]([^\'\"]+)[\'\"]",
+VIEM_SEARCH_PATTERNS = {
+    VIEM_ATTR_ID: re.compile(r"id\s*:\s*([\d_]+)"),
+    VIEM_ATTR_URL: re.compile(r"url\s*:\s*[\'\"]([^\'\"]+)[\'\"]"),
+    VIEM_ATTR_API_URL: re.compile(r"apiUrl\s*:\s*[\'\"]([^\'\"]+)[\'\"]"),
+    VIEM_ATTR_MULTICALL_ADDRESS: re.compile(
+        r"multicall3\s*:\s*{\s*address\s*:\s*[\'\"]([^\'\"]+)[\'\"]"
+    ),
 }
+
+
+# Local processing regex patterns
+NON_WORD_DIGIT_PATTERN = re.compile(r"[^\w\d]+")
+CLOSING_PARENTHESIS_PATTERN = re.compile(r"\)")
+
+ETHEREUM_NETWORK_CLASS_PATTERN = re.compile(
+    r'class EthereumNetwork\(Enum\):(\s*\n\s*"""[^"]*"""\s*\n\s*)?(.+?)(\n\s*@.*)',
+    re.MULTILINE | re.DOTALL,
+)
+ETHEREUM_NETWORK_CLASS_EXISTING_ENTRY_PATTERN = re.compile(r"^\s*(\w+)\s*=")
+
+CONFIG_ENUM_ATTR_NETWORK_WITH_URL = "NETWORK_WITH_URL"
+CONFIG_ENUM_ATTR_NETWORK_WITH_API_URL = "NETWORK_WITH_API_URL"
+CONFIG_ENUM_ATTR_ADDRESSES = "ADDRESSES"
+
+CONFIG_ENUM_PATTERNS = {
+    CONFIG_ENUM_ATTR_NETWORK_WITH_URL: re.compile(
+        r"NETWORK_WITH_URL = \{\n(.+?)(\n\s*}.*)", re.MULTILINE | re.DOTALL
+    ),
+    CONFIG_ENUM_ATTR_NETWORK_WITH_API_URL: re.compile(
+        r"NETWORK_WITH_API_URL = \{\n(.+?)(\n\s*}.*)", re.MULTILINE | re.DOTALL
+    ),
+    CONFIG_ENUM_ATTR_ADDRESSES: re.compile(
+        r"ADDRESSES = \{\n(.+?)(\n\s*}.*)", re.MULTILINE | re.DOTALL
+    ),
+}
+
+DEFAULT_PATTERN = re.compile(r"$^")
 
 
 def clean_resources() -> None:
     """Removes the intermediate resources used (source repository)"""
     try:
-        shutil.rmtree(REPO_DIR)
+        shutil.rmtree(LOCAL_REPO_DIR)
     except OSError:
         pass
 
@@ -39,7 +72,8 @@ def convert_chain_name(name: str) -> str:
     :return: The converted chain name suitable for use as a constant.
     """
     # Change every symbol that is not a word or digit for underscore
-    name_converted = re.sub(r"[^\w\d]+", r"_", name.upper().replace(")", ""))
+    name_upper = CLOSING_PARENTHESIS_PATTERN.sub("", name.upper())
+    name_converted = NON_WORD_DIGIT_PATTERN.sub("_", name_upper)
     # Add underscore at the beggining if start by digit
     if name_converted[0].isdigit():
         name_converted = "_" + name_converted
@@ -75,7 +109,7 @@ def validate_api_url(api_url: str) -> bool:
     """
     try:
         url = f"{api_url}?module=stats&action=ethsupply"
-        response = requests.get(url, verify=False)
+        response = requests.get(url, verify=False, timeout=10)
         if response.status_code == 200:
             tx_status = response.json().get("status", "")
             if tx_status == "1":
@@ -98,20 +132,18 @@ def upsert_chain_id(chain_id: int, chain_enum_name: str) -> str:
     file_path = "safe_eth/eth/ethereum_network.py"
     with open(file_path, "r") as file:
         content = file.read()
-    match = re.search(
-        r'class EthereumNetwork\(Enum\):(\s*\n\s*"""[^"]*"""\s*\n\s*)?(.+?)(\n\s*@.*)',
-        content,
-        re.MULTILINE | re.DOTALL,
-    )
+    match = ETHEREUM_NETWORK_CLASS_PATTERN.search(content)
     if match:
         enum_lines = str(match.group(2).strip()).split("\n")
         existing_entry = next(
             (line for line in enum_lines if re.search(rf"\b{chain_id}\b", line)), None
         )
         if existing_entry:
-            match = re.match(r"^\s*(\w+)\s*=", existing_entry)
-            if match:
-                current_constant_name = match.group(1)
+            existing_entry_match = ETHEREUM_NETWORK_CLASS_EXISTING_ENTRY_PATTERN.match(
+                existing_entry
+            )
+            if existing_entry_match:
+                current_constant_name = existing_entry_match.group(1)
                 print(
                     f"Entry with ID '{chain_id}' already exists with the name '{current_constant_name}'."
                 )
@@ -153,16 +185,14 @@ def upsert_chain_info_enum_based(
     """
     with open(file_path, "r") as file:
         content = file.read()
-    match = re.search(
-        config_enum_name + r" = \{\n(.+?)(\n\s*}.*)", content, re.MULTILINE | re.DOTALL
-    )
+    match = CONFIG_ENUM_PATTERNS.get(config_enum_name, DEFAULT_PATTERN).search(content)
     if match:
         url_lines = str(match.group(1).strip()).split("\n")
         existing_entry_index = next(
             (
                 i
                 for i, line in enumerate(url_lines)
-                if re.search(f"EthereumNetwork.{chain_enum_name}:", line)
+                if f"EthereumNetwork.{chain_enum_name}:" in line
             ),
             None,
         )
@@ -201,37 +231,38 @@ def process_chains() -> None:
     and writes multicall contract addresses to a JSON file.
     """
     clean_resources()
-    Repo.clone_from(GIT_URL, REPO_DIR)
+    Repo.clone_from(GIT_URL, LOCAL_REPO_DIR)
 
     chains_info = []
 
-    for f_name in glob(REPO_DIR + "/src/chains/definitions/**/*.ts", recursive=True):
+    for f_name in glob(
+        LOCAL_REPO_DIR + "/src/chains/definitions/**/*.ts", recursive=True
+    ):
         with open(f_name, "r") as file:
             content = file.read()
         chain_info = {}
-        for key, pattern in SEARCH_PATTERNS.items():
+        for key, pattern in VIEM_SEARCH_PATTERNS.items():
             match = re.search(pattern, content)
             if match:
                 chain_info[key] = match.group(1)
         if chain_info:
             chains_info.append(chain_info)
-
     for chain_info in chains_info:
-        chain_id = int(chain_info[ATTR_ID].replace("_", ""))
+        chain_id = int(chain_info[VIEM_ATTR_ID].replace("_", ""))
         chain_name = get_chain_enum_name(chain_id)
         if chain_name:
             chain_enum_name = upsert_chain_id(chain_id, chain_name)
 
-            if chain_info.get(ATTR_URL) and chain_info.get(ATTR_API_URL):
-                chain_explorer_url = chain_info[ATTR_URL]
-                chain_explorer_api_url = chain_info[ATTR_API_URL]
+            if chain_info.get(VIEM_ATTR_URL) and chain_info.get(VIEM_ATTR_API_URL):
+                chain_explorer_url = chain_info[VIEM_ATTR_URL]
+                chain_explorer_api_url = chain_info[VIEM_ATTR_API_URL]
                 is_valid_api_url = validate_api_url(chain_explorer_api_url)
                 if is_valid_api_url:
                     upsert_chain_info_enum_based(
                         chain_enum_name,
                         chain_explorer_url,
                         "safe_eth/eth/clients/etherscan_client.py",
-                        "NETWORK_WITH_URL",
+                        CONFIG_ENUM_ATTR_NETWORK_WITH_URL,
                     )
                     base_api_url = (
                         chain_explorer_api_url[: -len("/api")]
@@ -242,15 +273,15 @@ def process_chains() -> None:
                         chain_enum_name,
                         base_api_url,
                         "safe_eth/eth/clients/etherscan_client.py",
-                        "NETWORK_WITH_API_URL",
+                        CONFIG_ENUM_ATTR_NETWORK_WITH_API_URL,
                     )
 
-            if chain_info.get(ATTR_MULTICALL_ADDRESS):
+            if chain_info.get(VIEM_ATTR_MULTICALL_ADDRESS):
                 upsert_chain_info_enum_based(
                     chain_enum_name,
-                    chain_info[ATTR_MULTICALL_ADDRESS],
+                    chain_info[VIEM_ATTR_MULTICALL_ADDRESS],
                     "safe_eth/eth/multicall.py",
-                    "ADDRESSES",
+                    CONFIG_ENUM_ATTR_ADDRESSES,
                 )
 
     clean_resources()
