@@ -151,6 +151,7 @@ class EtherscanClient:
         EthereumNetwork.ARTELA_TESTNET: "https://betanet-scan.artela.network",
         EthereumNetwork.EOS_EVM_NETWORK: "https://explorer.evm.eosnetwork.com",
         EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://explorer-sepolia.shape.network",
+        EthereumNetwork.SHAPE: "https://shapescan.xyz",
     }
 
     NETWORK_WITH_API_URL = {
