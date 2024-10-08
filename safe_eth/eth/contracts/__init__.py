@@ -25,6 +25,7 @@ MultiSend: 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
 MultiSendCallOnly: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
 SimulateTxAccessor: 0x3d4BA2E0884aa488718476ca2FB8Efc291A46199
 SignMessageLib: 0xd53cd0aB83D845Ac265BE939c57F53AD838012c9
+SafeToL2Migration: 0xfF83F6335d8930cBad1c0D439A841f01888D9f69
 """
 
 import json
@@ -64,6 +65,7 @@ contracts = {
     "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
     "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
     "safe_V1_4_1": "Safe_V1_4_1.json",
+    "safe_to_l2_migration": "SafeToL2Migration.json",
     "simulate_tx_accessor_V1_4_1": "SimulateTxAccessor_V1_4_1.json",
     "sign_message_lib": "SignMessageLib.json",
     "uniswap_exchange": "uniswap_exchange.json",
@@ -174,6 +176,12 @@ def get_compatibility_fallback_handler_V1_3_0_contract(
 
 
 def get_compatibility_fallback_handler_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_safe_to_l2_migration_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
