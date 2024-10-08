@@ -150,6 +150,7 @@ class EtherscanClient:
         EthereumNetwork.Q_TESTNET: "https://explorer.qtestnet.org",
         EthereumNetwork.ARTELA_TESTNET: "https://betanet-scan.artela.network",
         EthereumNetwork.EOS_EVM_NETWORK: "https://explorer.evm.eosnetwork.com",
+        EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://explorer-sepolia.shape.network",
     }
 
     NETWORK_WITH_API_URL = {
@@ -280,6 +281,7 @@ class EtherscanClient:
         EthereumNetwork.Q_TESTNET: "https://explorer.qtestnet.org",
         EthereumNetwork.ARTELA_TESTNET: "https://betanet-scan.artela.network",
         EthereumNetwork.EOS_EVM_NETWORK: "https://explorer.evm.eosnetwork.com",
+        EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://explorer-sepolia.shape.network",
     }
     HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
         "User-Agent": "curl/7.77.0",
