@@ -10,8 +10,16 @@ from ..constants import NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..exceptions import BatchCallFunctionFailed
 from ..multicall import Multicall, MulticallDecodedResult
+from ..utils import fast_is_checksum_address
 from .ethereum_test_case import EthereumTestCaseMixin
 from .utils import just_test_if_mainnet_node
+
+
+class TestMulticallAddresses(TestCase):
+    def test_addresses_are_checksum_address(self):
+        addresses = Multicall.ADDRESSES
+        for _, address in addresses.items():
+            self.assertTrue(fast_is_checksum_address(address))
 
 
 class TestMulticallGanache(EthereumTestCaseMixin, TestCase):
