@@ -138,6 +138,7 @@ class BlockscoutClient:
         EthereumNetwork.VANA_MOKSHA_TESTNET: "https://api.moksha.vanascan.io/api/v1/graphql",
         EthereumNetwork.CONNEXT_SEPOLIA: "https://scan.testnet.everclear.org/api/v1/graphql",
         EthereumNetwork.EVERCLEAR_MAINNET: "https://scan.everclear.org/api/v1/graphql",
+        EthereumNetwork.BAHAMUT: "https://api.ftnscan.com/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
