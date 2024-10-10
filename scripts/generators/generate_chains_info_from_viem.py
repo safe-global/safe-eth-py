@@ -6,6 +6,8 @@ from typing import Optional
 import requests
 from git import Repo
 
+from safe_eth.eth.utils import fast_to_checksum_address
+
 # GitHub repository config
 GIT_URL = "https://github.com/wevm/viem.git"
 LOCAL_REPO_DIR = "sources"
@@ -279,7 +281,7 @@ def process_chains() -> None:
             if chain_info.get(VIEM_ATTR_MULTICALL_ADDRESS):
                 upsert_chain_info_enum_based(
                     chain_enum_name,
-                    chain_info[VIEM_ATTR_MULTICALL_ADDRESS],
+                    fast_to_checksum_address(chain_info[VIEM_ATTR_MULTICALL_ADDRESS]),
                     "safe_eth/eth/multicall.py",
                     CONFIG_ENUM_ATTR_ADDRESSES,
                 )

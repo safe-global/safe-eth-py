@@ -104,7 +104,7 @@ class EtherscanClient:
         EthereumNetwork.ROLLUX_MAINNET: "https://explorer.rollux.com",
         EthereumNetwork.ZKSYNC_SEPOLIA_TESTNET: "https://sepolia-era.zksync.network/",
         EthereumNetwork.ATLETA_OLYMPIA: "https://blockscout.atleta.network",
-        EthereumNetwork.CELO_ALFAJORES_TESTNET: "https://explorer.celo.org/alfajores",
+        EthereumNetwork.CELO_ALFAJORES_TESTNET: "https://celo-alfajores.blockscout.com",
         EthereumNetwork.GRAVITY_ALPHA_MAINNET: "https://explorer.gravity.xyz",
         EthereumNetwork.ANCIENT8: "https://scan.ancient8.gg",
         EthereumNetwork.DCHAIN_TESTNET: "https://dchaintestnet-2713017997578000-1.testnet.sagaexplorer.io",
@@ -152,6 +152,11 @@ class EtherscanClient:
         EthereumNetwork.EOS_EVM_NETWORK: "https://explorer.evm.eosnetwork.com",
         EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://explorer-sepolia.shape.network",
         EthereumNetwork.SHAPE: "https://shapescan.xyz",
+        EthereumNetwork.FASTEX_CHAIN_BAHAMUT_OASIS_TESTNET: "https://oasis.ftnscan.com",
+        EthereumNetwork.ASSET_CHAIN_MAINNET: "https://scan.assetchain.org",
+        EthereumNetwork.PHOENIX_MAINNET: "https://phoenixplorer.com",
+        EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
+        EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
     }
 
     NETWORK_WITH_API_URL = {
@@ -219,7 +224,7 @@ class EtherscanClient:
         EthereumNetwork.ASSET_CHAIN_TESTNET: "https://scan-testnet.assetchain.org",
         EthereumNetwork.LISK: "https://blockscout.lisk.com",
         EthereumNetwork.NEXI_MAINNET: "https://www.nexiscan.com",
-        EthereumNetwork.MINATO: "https://explorer-testnet.soneium.org/api/",
+        EthereumNetwork.MINATO: "https://explorer-testnet.soneium.org",
         EthereumNetwork.EOS_EVM_NETWORK_TESTNET: "https://explorer.testnet.evm.eosnetwork.com",
         EthereumNetwork.BITTORRENT_CHAIN_MAINNET: "https://api.bttcscan.com",
         EthereumNetwork.RSS3_VSL_SEPOLIA_TESTNET: "https://scan.testnet.rss3.io",
@@ -237,7 +242,7 @@ class EtherscanClient:
         EthereumNetwork.ROLLUX_MAINNET: "https://explorer.rollux.com",
         EthereumNetwork.ZKSYNC_SEPOLIA_TESTNET: "https://api-sepolia-era.zksync.network",
         EthereumNetwork.ATLETA_OLYMPIA: "https://blockscout.atleta.network",
-        EthereumNetwork.CELO_ALFAJORES_TESTNET: "https://explorer.celo.org",
+        EthereumNetwork.CELO_ALFAJORES_TESTNET: "https://celo-alfajores.blockscout.com",
         EthereumNetwork.GRAVITY_ALPHA_MAINNET: "https://explorer.gravity.xyz",
         EthereumNetwork.ANCIENT8: "https://scan.ancient8.gg",
         EthereumNetwork.DCHAIN_TESTNET: "https://api-dchaintestnet-2713017997578000-1.testnet.sagaexplorer.io",
@@ -284,6 +289,11 @@ class EtherscanClient:
         EthereumNetwork.EOS_EVM_NETWORK: "https://explorer.evm.eosnetwork.com",
         EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://explorer-sepolia.shape.network",
         EthereumNetwork.SHAPE: "https://shapescan.xyz",
+        EthereumNetwork.FASTEX_CHAIN_BAHAMUT_OASIS_TESTNET: "https://oasis.ftnscan.com",
+        EthereumNetwork.ASSET_CHAIN_MAINNET: "https://scan.assetchain.org",
+        EthereumNetwork.PHOENIX_MAINNET: "https://phoenixplorer.com",
+        EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
+        EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
     }
     HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
         "User-Agent": "curl/7.77.0",
