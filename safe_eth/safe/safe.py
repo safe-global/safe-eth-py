@@ -31,6 +31,8 @@ from safe_eth.eth.contracts import (
     get_safe_V1_4_1_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
 )
+from safe_eth.eth.proxies import MinimalProxy, SafeProxy, StandardProxy
+from safe_eth.eth.typing import EthereumData
 from safe_eth.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
@@ -38,7 +40,6 @@ from safe_eth.eth.utils import (
     get_empty_tx_params,
 )
 
-from ..eth.typing import EthereumData
 from .addresses import SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
 from .enums import SafeOperationEnum
 from .exceptions import CannotEstimateGas, CannotRetrieveSafeInfoException
@@ -660,10 +661,18 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     def retrieve_master_copy_address(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> ChecksumAddress:
-        address = self.w3.eth.get_storage_at(
-            self.address, "0x00", block_identifier=block_identifier
-        )[-20:].rjust(20, b"\0")
-        return fast_bytes_to_checksum_address(address)
+        """
+        :param block_identifier:
+        :return: Returns the implementation address. Multiple types of proxies are supported
+        """
+        for ProxyClass in (SafeProxy, StandardProxy, MinimalProxy):
+            proxy = ProxyClass(self.address, self.ethereum_client)
+            address = proxy.get_implementation_address(
+                block_identifier=block_identifier
+            )
+            if address != NULL_ADDRESS:
+                return address
+        return address
 
     def retrieve_modules(
         self,
