@@ -38,6 +38,9 @@ from safe_eth.eth.utils import (
     get_empty_tx_params,
 )
 
+from ..eth.proxies.minimal_proxy import MinimalProxy
+from ..eth.proxies.safe_proxy import SafeProxy
+from ..eth.proxies.standard_proxy import StandardProxy
 from ..eth.typing import EthereumData
 from .addresses import SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
 from .enums import SafeOperationEnum
@@ -660,10 +663,16 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     def retrieve_master_copy_address(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> ChecksumAddress:
-        address = self.w3.eth.get_storage_at(
-            self.address, "0x00", block_identifier=block_identifier
-        )[-20:].rjust(20, b"\0")
-        return fast_bytes_to_checksum_address(address)
+        """
+        :param block_identifier:
+        :return: Returns the implementation address. Multiple types of proxies are supported
+        """
+        for ProxyClass in (SafeProxy, MinimalProxy, StandardProxy):
+            proxy = ProxyClass(self.address, self.ethereum_client)
+            address = proxy.get_singleton_address(block_identifier=block_identifier)
+            if address != NULL_ADDRESS:
+                return address
+        return address
 
     def retrieve_modules(
         self,
