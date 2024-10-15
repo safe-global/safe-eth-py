@@ -130,7 +130,7 @@ class TransactionServiceApi(SafeBaseAPI):
     ) -> TransactionServiceTx:
         signatures = self.parse_signatures(tx_raw)
         safe_tx = TransactionServiceTx(
-            to_checksum_address(tx_raw["proposer"]),
+            to_checksum_address(tx_raw["proposer"]) if tx_raw["proposer"] else None,
             self.ethereum_client,
             tx_raw["safe"],
             tx_raw["to"],
