@@ -6,6 +6,7 @@ from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
+from web3.types import TxParams
 
 from safe_eth.eth import EthereumClient, EthereumTxSent
 from safe_eth.eth.contracts import get_multi_send_contract
@@ -303,15 +304,29 @@ class MultiSend:
     def get_contract(self):
         return get_multi_send_contract(self.w3, self.address)
 
-    def build_tx_data(self, multi_send_txs: List[MultiSendTx]) -> bytes:
+    def build_tx(
+        self, multi_send_txs: List[MultiSendTx], tx_params: Optional[TxParams] = None
+    ) -> TxParams:
         """
         Txs don't need to be valid to get through
 
         :param multi_send_txs:
+        :param tx_params:
         :return:
         """
         multisend_contract = self.get_contract()
         encoded_multisend_data = b"".join([x.encoded_data for x in multi_send_txs])
         return multisend_contract.functions.multiSend(
             encoded_multisend_data
-        ).build_transaction(get_empty_tx_params())["data"]
+        ).build_transaction(tx_params or {})
+
+    def build_tx_data(self, multi_send_txs: List[MultiSendTx]) -> HexBytes:
+        """
+        Txs don't need to be valid to get through
+
+        :param multi_send_txs:
+        :return:
+        """
+        return HexBytes(
+            self.build_tx(multi_send_txs, tx_params=get_empty_tx_params())["data"]
+        )
