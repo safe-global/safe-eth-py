@@ -2367,6 +2367,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 7709119),  # v1.3.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 13877066), # v1.4.1
     ],
     EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 1315556),  # v1.3.0
