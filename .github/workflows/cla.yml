@@ -21,12 +21,14 @@ jobs:
           path-to-signatures: 'signatures/version1/cla.json'
           path-to-document: 'https://safe.global/cla'
           # branch should not be protected
-          branch: 'cla-signatures'
+          branch: 'main'
           allowlist: falvaradorodriguez,hectorgomezv,moisses89,fmrsabino,luarx,rmeissner,Uxio0,*bot # may need to update this expression if we add new bots
 
-          #below are the optional inputs - If the optional inputs are not given, then default values will be taken
-          #remote-organization-name: enter the remote organization name where the signatures should be stored (Default is storing the signatures in the same repository)
-          #remote-repository-name:  enter the  remote repository name where the signatures should be stored (Default is storing the signatures in the same repository)
+          # the followings are the optional inputs - If the optional inputs are not given, then default values will be taken
+          # enter the remote organization name where the signatures should be stored (Default is storing the signatures in the same repository)
+          remote-organization-name: 'safe-global'
+          # enter the  remote repository name where the signatures should be stored (Default is storing the signatures in the same repository)
+          remote-repository-name: 'cla-signatures'
           #create-file-commit-message: 'For example: Creating file for storing CLA Signatures'
           #signed-commit-message: 'For example: $contributorName has signed the CLA in #$pullRequestNo'
           #custom-notsigned-prcomment: 'pull request comment with Introductory message to ask new contributors to sign'
