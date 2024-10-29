@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class UnderlyingToken:
     address: ChecksumAddress
-    quantity: int
+    quantity: float
 
 
 class BaseOracle(ABC):
