@@ -320,7 +320,7 @@ class EtherscanClient:
         self.request_timeout = request_timeout
 
     def build_url(self, path: str):
-        url = urljoin(self.base_api_url, path)
+        url = urljoin(self.base_api_url, f"api?{path}")
         if self.api_key:
             url += f"&apikey={self.api_key}"
         return url
@@ -385,7 +385,7 @@ class EtherscanClient:
         :return:
         """
         url = self.build_url(
-            f"api?module=contract&action=getsourcecode&address={contract_address}"
+            f"module=contract&action=getsourcecode&address={contract_address}"
         )
         response = self._retry_request(url, retry=retry)  # Returns a list
         if response and isinstance(response, list):
@@ -404,7 +404,7 @@ class EtherscanClient:
 
     def get_contract_abi(self, contract_address: str, retry: bool = True):
         url = self.build_url(
-            f"api?module=contract&action=getabi&address={contract_address}"
+            f"module=contract&action=getabi&address={contract_address}"
         )
         result = self._retry_request(url, retry=retry)
         if isinstance(result, dict):

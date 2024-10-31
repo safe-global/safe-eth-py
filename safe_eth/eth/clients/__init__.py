@@ -12,6 +12,7 @@ from .etherscan_client import (
     EtherscanClientException,
     EtherscanRateLimitError,
 )
+from .etherscan_client_v2 import EtherscanClientV2
 from .sourcify_client import (
     SourcifyClient,
     SourcifyClientConfigurationProblem,
@@ -25,6 +26,7 @@ __all__ = [
     "ContractMetadata",
     "EnsClient",
     "EtherscanClient",
+    "EtherscanClientV2",
     "EtherscanClientConfigurationProblem",
     "EtherscanClientException",
     "EtherscanRateLimitError",
