@@ -23,8 +23,14 @@ class EtherscanClientV2(EtherscanClient):
         self.network = network
         self.base_api_url = self.BASE_API_V2_URL
 
+    def build_url(self, query: str) -> str:
+        url = urljoin(self.base_api_url, f"v2/api?chainid={self.network.value}&{query}")
+        if self.api_key:
+            url += f"&apikey={self.api_key}"
+        return url
+
     @classmethod
-    def _get_supported_networks(cls) -> List[Dict[str, Any]]:
+    def get_supported_networks(cls) -> List[Dict[str, Any]]:
         """
         Fetches a list of supported networks by the Etherscan API v2.
 
@@ -44,13 +50,7 @@ class EtherscanClientV2(EtherscanClient):
         :param network: The Ethereum network to check.
         :return: True if the network is supported; False otherwise.
         """
-        supported_networks = cls._get_supported_networks()
+        supported_networks = cls.get_supported_networks()
         return any(
             item.get("chainid") == str(network.value) for item in supported_networks
         )
-
-    def build_url(self, path: str) -> str:
-        url = urljoin(self.base_api_url, f"v2/api?chainid={self.network.value}&{path}")
-        if self.api_key:
-            url += f"&apikey={self.api_key}"
-        return url

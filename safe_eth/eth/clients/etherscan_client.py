@@ -319,8 +319,8 @@ class EtherscanClient:
         self.http_session.headers = self.HTTP_HEADERS
         self.request_timeout = request_timeout
 
-    def build_url(self, path: str):
-        url = urljoin(self.base_api_url, f"api?{path}")
+    def build_url(self, query: str):
+        url = urljoin(self.base_api_url, f"api?{query}")
         if self.api_key:
             url += f"&apikey={self.api_key}"
         return url
