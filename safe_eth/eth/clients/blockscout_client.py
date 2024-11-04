@@ -92,6 +92,7 @@ class BlockscoutClient:
         EthereumNetwork.UNREAL_OLD: "https://unreal.blockscout.com/graphiql",
         EthereumNetwork.TAIKO_KATLA_L2: "https://explorer.katla.taiko.xyz/graphiql",
         EthereumNetwork.SEI_DEVNET: "https://seitrace.com/graphiql",
+        EthereumNetwork.INK_SEPOLIA: "https://explorer-sepolia.inkonchain.com/api/v1/graphql"
         EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/api/v1/graphql",
         EthereumNetwork.BOTANIX_TESTNET: "https://blockscout.botanixlabs.dev/graphiql",
         EthereumNetwork.REYA_NETWORK: "https://explorer.reya.network/graphiql",
