@@ -141,6 +141,7 @@ class BlockscoutClient:
         EthereumNetwork.BAHAMUT: "https://api.ftnscan.com/api/v1/graphql",
         EthereumNetwork.GAME7_TESTNET: "https://testnet.game7.io/api/v1/graphql",
         EthereumNetwork.GAME7: "https://mainnet.game7.io/api/v1/graphql",
+        EthereumNetwork.MORPH_HOLESKY: "https://explorer-api-holesky.morphl2.io/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
