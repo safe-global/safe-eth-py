@@ -143,6 +143,7 @@ class BlockscoutClient:
         EthereumNetwork.GAME7: "https://mainnet.game7.io/api/v1/graphql",
         EthereumNetwork.MORPH_HOLESKY: "https://explorer-api-holesky.morphl2.io/api/v1/graphql",
         EthereumNetwork.INK_SEPOLIA: "https://explorer-sepolia.inkonchain.com/api/v1/graphql",
+        EthereumNetwork.STORY_ODYSSEY_TESTNET: "https://odyssey-testnet-explorer.storyscan.xyz/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
