@@ -713,8 +713,7 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
         ]
 
         with self.assertRaisesMessage(
-            ValueError,
-            "Problem with payload=`{'id': 0, 'jsonrpc': '2.0', 'method': 'eth_getTransactionByHash', 'params': '0x5afea3f32970a22f4e63a815c174fa989e3b659826e5f52496662bb256baf3b2'}` result={'jsonrpc': '2.0', 'id': None, 'error': {'code': -32000, 'message': 'batch length does not support more than 500'}}",
+            ValueError, f"Batch request error: {session_post_mock.return_value}"
         ):
             list(self.ethereum_client.raw_batch_request(payload))
 
@@ -749,6 +748,24 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
 
         results = list(self.ethereum_client.raw_batch_request(payload, batch_size=1))
         self.assertEqual(len(results), 2)
+
+        payload = [
+            {
+                "id": i,
+                "jsonrpc": "2.0",
+                "method": "eth_getTransactionByHash",
+                "params": "0x5afea3f32970a22f4e63a815c174fa989e3b659826e5f52496662bb256baf3b2",
+            }
+            for i in range(10)
+        ]
+
+        # Content should not matter, only the number of elements
+        session_post_mock.return_value = [{}, {}]
+        with self.assertRaisesMessage(
+            ValueError,
+            "Batch request error: Different number of results than payload requests were returned",
+        ):
+            list(self.ethereum_client.raw_batch_request(payload))
 
 
 class TestEthereumNetwork(EthereumTestCaseMixin, TestCase):
