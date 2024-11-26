@@ -1284,16 +1284,15 @@ class EthereumClient:
 
         batch_size = batch_size or self.batch_request_max_size
 
-        all_results = []
-        for chunk in chunks(payload, batch_size):
+        for payload_chunk in chunks(payload, batch_size):
             response = self.http_session.post(
-                self.ethereum_node_url, json=chunk, timeout=self.slow_timeout
+                self.ethereum_node_url, json=payload_chunk, timeout=self.slow_timeout
             )
 
             if not response.ok:
                 logger.error(
                     "Problem doing raw batch request with payload=%s status_code=%d result=%s",
-                    chunk,
+                    payload_chunk,
                     response.status_code,
                     response.content,
                 )
@@ -1301,23 +1300,40 @@ class EthereumClient:
 
             results = response.json()
 
-            # If there's an error some nodes return a json instead of a list
-            if isinstance(results, dict) and "error" in results:
+            # If there's an error some nodes return a json instead of a list, and other return a list of one element
+            if (isinstance(results, dict) and "error" in results) or (
+                isinstance(results, list)
+                and len(results) == 1
+                and "error" in results[0]
+            ):
                 logger.error(
-                    "Batch request problem with payload=%s, result=%s)", chunk, results
+                    "Batch request problem with payload=%s, result=%s)",
+                    payload_chunk,
+                    results,
                 )
                 raise ValueError(f"Batch request error: {results}")
 
-            all_results.extend(results)
+            if len(results) != len(payload_chunk):
+                logger.error(
+                    "Different number of results than payload requests were returned doing raw batch request "
+                    "with payload=%s result=%s",
+                    payload_chunk,
+                    response.content,
+                )
+                raise ValueError(
+                    "Batch request error: Different number of results than payload requests were returned"
+                )
 
-        # Nodes like Erigon send back results out of order
-        for query, result in zip(payload, sorted(all_results, key=lambda x: x["id"])):
-            if "result" not in result:
-                message = f"Problem with payload=`{query}` result={result}"
-                logger.error(message)
-                raise ValueError(message)
+            # Sorted due to Nodes like Erigon send back results out of order
+            for query, result in zip(payload, sorted(results, key=lambda x: x["id"])):
+                if "result" not in result:
+                    message = (
+                        f"Batch request problem with payload=`{query}` result={result}"
+                    )
+                    logger.error(message)
+                    raise ValueError(f"Batch request error: {message}")
 
-            yield result["result"]
+                yield result["result"]
 
     @property
     def current_block_number(self):
