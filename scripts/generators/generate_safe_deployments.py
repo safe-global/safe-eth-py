@@ -39,7 +39,7 @@ def get_safe_deployments(*args, **kwds):
 
 def get_network_addresses(safe_deployment: Dict) -> Dict[str, List[str]]:
     """
-    Convert canonical and non-canonical from safe-deplyments json to the corresponding addresses.
+    Convert canonical and non-canonical from safe-deployments json to the corresponding addresses.
 
     :param safe_deployment:
     :return:
@@ -47,12 +47,17 @@ def get_network_addresses(safe_deployment: Dict) -> Dict[str, List[str]]:
     network_addresses = {}
 
     # Applying list because networkAddresses is not list for all networks
-    for chain_id, address_type in safe_deployment["networkAddresses"].items():
-        addresses = []
-        if not isinstance(address_type, list):
-            address_type = [address_type]
-        for address_value in address_type:
-            addresses.append(safe_deployment["deployments"][address_value]["address"])
+    for chain_id, address_types in safe_deployment["networkAddresses"].items():
+        addresses: List[str] = []
+        if not isinstance(address_types, list):
+            address_types = [address_types]
+        for address_type in address_types:
+            address = safe_deployment["deployments"][address_type]["address"]
+            if address_type.lower() == "canonical":
+                # Canonical address must be first on the list
+                addresses.insert(0, address)
+            else:
+                addresses.append(address)
 
         network_addresses[chain_id] = addresses
 
@@ -63,7 +68,9 @@ def generate_safe_deployments_py():
     """
     Get safe deployments addresses from https://github.com/safe-global/safe-deployments/ and generate python dictionary file
     """
-    safe_deployments = {}
+
+    # Store the version with list of addresses
+    safe_deployments: Dict[str, List[str]] = {}
     # Clone repo
     with get_safe_deployments() as repo:
         repo.git.checkout(SAFE_DEPLOYMENTS_VERSION)
