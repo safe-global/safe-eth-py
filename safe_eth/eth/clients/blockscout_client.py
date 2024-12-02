@@ -145,6 +145,7 @@ class BlockscoutClient:
         EthereumNetwork.INK_SEPOLIA: "https://explorer-sepolia.inkonchain.com/api/v1/graphql",
         EthereumNetwork.STORY_ODYSSEY_TESTNET: "https://odyssey-testnet-explorer.storyscan.xyz/api/v1/graphql",
         EthereumNetwork.SWELL_NETWORK_TESTNET: "https://swell-testnet-explorer.alt.technology/api/v1/graphql",
+        EthereumNetwork.PLUME_DEVNET: "https://test-explorer.plumenetwork.xyz/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
