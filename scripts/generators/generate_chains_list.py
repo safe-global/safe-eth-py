@@ -22,7 +22,7 @@ def clean_resources() -> None:
 def convert_name(name: str) -> str:
     # Change every symbol that is not a word or digit for underscore
     name_converted = re.sub(r"[^\w\d]+", r"_", name.upper().replace(")", ""))
-    # Add underscore at the beggining if start by digit
+    # Add underscore at the beginning if start by digit
     if name_converted[0].isdigit():
         name_converted = "_" + name_converted
 
