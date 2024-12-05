@@ -148,6 +148,7 @@ class BlockscoutClient:
         EthereumNetwork.PLUME_DEVNET: "https://test-explorer.plumenetwork.xyz/api/v1/graphql",
         EthereumNetwork.PLUME_MAINNET: "https://phoenix-explorer.plumenetwork.xyz/api/v1/graphql",
         EthereumNetwork.SWELL_NETWORK: "https://explorer.swellnetwork.io/api/v1/graphql",
+        EthereumNetwork.HASHKEY_CHAIN_TESTNET: "https://hashkeychain-testnet-explorer.alt.technology/api/v1/graphql",
     }
 
     def __init__(self, network: EthereumNetwork):
