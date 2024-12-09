@@ -157,6 +157,7 @@ class EtherscanClient:
         EthereumNetwork.PHOENIX_MAINNET: "https://phoenixplorer.com",
         EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
         EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
+        EthereumNetwork.SONIC_MAINNET: "https://sonicscan.org",
     }
 
     NETWORK_WITH_API_URL = {
