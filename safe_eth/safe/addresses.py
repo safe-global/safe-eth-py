@@ -3029,4 +3029,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.WATERFALL_9_TEST_NETWORK: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 7329623),  # v1.4.1
     ],
+    EthereumNetwork.WATERFALL_NETWORK: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2517833),  # v1.4.1
+    ],
 }
