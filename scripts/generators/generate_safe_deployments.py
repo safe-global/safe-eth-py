@@ -53,11 +53,7 @@ def get_network_addresses(safe_deployment: Dict) -> Dict[str, List[str]]:
             address_types = [address_types]
         for address_type in address_types:
             address = safe_deployment["deployments"][address_type]["address"]
-            if address_type.lower() == "canonical":
-                # Canonical address must be first on the list
-                addresses.insert(0, address)
-            else:
-                addresses.append(address)
+            addresses.append(address)
 
         network_addresses[chain_id] = addresses
 
