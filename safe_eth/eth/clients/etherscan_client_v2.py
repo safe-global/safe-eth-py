@@ -9,6 +9,12 @@ from safe_eth.eth.clients import EtherscanClient
 
 
 class EtherscanClientV2(EtherscanClient):
+    """
+    Etherscan API V2 supports multiple chains in the same url.
+
+    Reference: https://docs.etherscan.io/etherscan-v2
+    """
+
     BASE_API_V2_URL = "https://api.etherscan.io"
 
     def __init__(
@@ -35,6 +41,24 @@ class EtherscanClientV2(EtherscanClient):
         Fetches a list of supported networks by the Etherscan API v2.
 
         :return: List of supported networks, or empty list if request fails.
+
+        Example response
+        ```
+        {
+            "chainname":"Ethereum Mainnet",
+            "chainid":"1",
+            "blockexplorer":"https://etherscan.io",
+            "apiurl":"https://api.etherscan.io/v2/api?chainid=1",
+            "status":1
+        },
+        {
+            "chainname":"Sepolia Testnet",
+            "chainid":"11155111",
+            "blockexplorer":"https://sepolia.etherscan.io",
+            "apiurl":"https://api.etherscan.io/v2/api?chainid=11155111",
+            "status":1
+        }
+        ```
         """
         url = urljoin(cls.BASE_API_V2_URL, "v2/chainlist")
         response = requests.get(url)
@@ -48,7 +72,7 @@ class EtherscanClientV2(EtherscanClient):
         Checks if a given Ethereum network is supported by the Etherscan API v2.
 
         :param network: The Ethereum network to check.
-        :return: True if the network is supported; False otherwise.
+        :return: `True` if the network is supported; `False` otherwise.
         """
         supported_networks = cls.get_supported_networks()
         return any(
