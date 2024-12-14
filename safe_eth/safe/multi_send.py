@@ -174,6 +174,7 @@ class MultiSend:
         "0x998739BFdAAdde7C933B942a68053933098f9EDa",  # MultiSend v1.3.0 (EIP-155)
     )
     MULTISEND_CALL_ONLY_ADDRESSES = (
+        "0x0408EF011960d02349d50286D20531229BCef773",  # this is a HACK
         "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",  # MultiSend Call Only v1.3.0
         "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",  # MultiSend Call Only v1.3.0 (EIP-155)
     )
