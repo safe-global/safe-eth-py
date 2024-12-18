@@ -41,10 +41,12 @@ class EnsClient:
         """
         :return: True if service is available, False if it's down
         """
+        query = {"query": "{ __schema { queryType { name } } }"}
         try:
-            return self.request_session.get(
-                self.config.url, timeout=self.request_timeout
-            ).ok
+            response = self.request_session.post(
+                self.config.url, json=query, timeout=self.request_timeout
+            )
+            return response.ok
         except IOError:
             return False
 
