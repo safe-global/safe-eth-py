@@ -76,6 +76,7 @@ jobs:
         ETHEREUM_POLYGON_NODE: ${{ secrets.ETHEREUM_POLYGON_NODE }}
         ETHEREUM_4337_BUNDLER_URL: ${{ secrets.ETHEREUM_4337_BUNDLER_URL }}
         ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        ENS_CLIENT_API_KEY: ${{ secrets.ENS_CLIENT_API_KEY }}
     - name: Send results to coveralls
       # Ignore coveralls issues
       continue-on-error: true

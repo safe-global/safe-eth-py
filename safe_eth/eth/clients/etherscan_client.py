@@ -100,7 +100,7 @@ class EtherscanClient:
         EthereumNetwork.ACALA_NETWORK: "https://blockscout.acala.network",
         EthereumNetwork.ANCIENT8_TESTNET: "https://scanv2-testnet.ancient8.gg",
         EthereumNetwork.FLARE_TESTNET_COSTON2: "https://coston2-explorer.flare.network",
-        EthereumNetwork.PUPPYNET_SHIBARIUM: "https://puppyscan.shib.io",
+        EthereumNetwork.PUPPYNET: "https://puppyscan.shib.io",
         EthereumNetwork.ROLLUX_MAINNET: "https://explorer.rollux.com",
         EthereumNetwork.ZKSYNC_SEPOLIA_TESTNET: "https://sepolia-era.zksync.network/",
         EthereumNetwork.ATLETA_OLYMPIA: "https://blockscout.atleta.network",
@@ -157,6 +157,7 @@ class EtherscanClient:
         EthereumNetwork.PHOENIX_MAINNET: "https://phoenixplorer.com",
         EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
         EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
+        EthereumNetwork.SONIC_MAINNET: "https://sonicscan.org",
     }
 
     NETWORK_WITH_API_URL = {
@@ -238,7 +239,7 @@ class EtherscanClient:
         EthereumNetwork.ACALA_NETWORK: "https://blockscout.acala.network",
         EthereumNetwork.ANCIENT8_TESTNET: "https://scanv2-testnet.ancient8.gg",
         EthereumNetwork.FLARE_TESTNET_COSTON2: "https://coston2-explorer.flare.network",
-        EthereumNetwork.PUPPYNET_SHIBARIUM: "https://puppyscan.shib.io",
+        EthereumNetwork.PUPPYNET: "https://puppyscan.shib.io",
         EthereumNetwork.ROLLUX_MAINNET: "https://explorer.rollux.com",
         EthereumNetwork.ZKSYNC_SEPOLIA_TESTNET: "https://api-sepolia-era.zksync.network",
         EthereumNetwork.ATLETA_OLYMPIA: "https://blockscout.atleta.network",
@@ -294,6 +295,7 @@ class EtherscanClient:
         EthereumNetwork.PHOENIX_MAINNET: "https://phoenixplorer.com",
         EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
         EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
+        EthereumNetwork.SONIC_MAINNET: "https://api.sonicscan.org",
     }
     HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
         "User-Agent": "curl/7.77.0",

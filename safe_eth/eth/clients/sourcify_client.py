@@ -21,12 +21,13 @@ class SourcifyClient:
     """
     Get contract metadata from Sourcify. Matches can be full or partial:
 
-      - Full: Both the source files as well as the meta data files were an exact match between the deployed bytecode
+      - Full: Both the source files and the metadata files were an exact match between the deployed bytecode
         and the published files.
       - Partial: Source code compiles to the same bytecode and thus the contract behaves in the same way,
-        but the source code can be different: Variables can have misleading names,
+        but the source code can be different: variables can have misleading names,
         comments can be different and especially the NatSpec comments could have been modified.
 
+    Reference: https://docs.sourcify.dev/docs/api/
     """
 
     def __init__(
