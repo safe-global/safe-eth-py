@@ -1,11 +1,17 @@
+import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
+import aiohttp
 import requests
 
 from safe_eth.eth import EthereumNetwork
-from safe_eth.eth.clients import EtherscanClient
+from safe_eth.eth.clients import (
+    ContractMetadata,
+    EtherscanClient,
+    EtherscanRateLimitError,
+)
 
 
 class EtherscanClientV2(EtherscanClient):
@@ -78,3 +84,81 @@ class EtherscanClientV2(EtherscanClient):
         return any(
             item.get("chainid") == str(network.value) for item in supported_networks
         )
+
+
+class AsyncEtherscanClientV2(EtherscanClientV2):
+    def __init__(
+        self,
+        network: EthereumNetwork,
+        api_key: Optional[str] = None,
+        request_timeout: int = int(
+            os.environ.get("ETHERSCAN_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
+        max_requests: int = int(os.environ.get("ETHERSCAN_CLIENT_MAX_REQUESTS", 100)),
+    ):
+        super().__init__(network, api_key, request_timeout)
+        self.async_session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
+        )
+
+    async def _async_do_request(
+        self, url: str
+    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+        """
+        Async version of _do_request
+        """
+        async with self.async_session.get(
+            url, timeout=self.request_timeout
+        ) as response:
+            if response.ok:
+                response_json = await response.json()
+                result = response_json["result"]
+                if "Max rate limit reached" in result:
+                    # Max rate limit reached, please use API Key for higher rate limit
+                    raise EtherscanRateLimitError
+                if response_json["status"] == "1":
+                    return result
+            return None
+
+    async def async_get_contract_source_code(
+        self,
+        contract_address: str,
+    ):
+        """
+        Asynchronous version of get_contract_source_code
+        Does not implement retries
+
+        :param contract_address:
+        """
+        url = self.build_url(
+            f"module=contract&action=getsourcecode&address={contract_address}"
+        )
+        response = await self._async_do_request(url)  # Returns a list
+        return self.process_response(response)
+
+    async def async_get_contract_metadata(
+        self, contract_address: str
+    ) -> Optional[ContractMetadata]:
+        contract_source_code = await self.async_get_contract_source_code(
+            contract_address
+        )
+        if contract_source_code:
+            contract_name = contract_source_code["ContractName"]
+            contract_abi = contract_source_code["ABI"]
+            if contract_abi:
+                return ContractMetadata(contract_name, contract_abi, False)
+        return None
+
+    async def async_get_contract_abi(self, contract_address: str):
+        url = self.build_url(
+            f"module=contract&action=getabi&address={contract_address}"
+        )
+        result = await self._async_do_request(url)
+        if isinstance(result, dict):
+            return result
+        elif isinstance(result, str):
+            try:
+                return json.loads(result)
+            except json.JSONDecodeError:
+                pass
+        return None

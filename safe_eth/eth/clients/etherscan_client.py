@@ -366,6 +366,21 @@ class EtherscanClient:
                 return ContractMetadata(contract_name, contract_abi, False)
         return None
 
+    def process_response(self, response):
+        if response and isinstance(response, list):
+            result = response[0]
+            abi_str = result.get("ABI")
+
+            if isinstance(abi_str, str) and abi_str.startswith("["):
+                try:
+                    result["ABI"] = json.loads(abi_str)
+                except json.JSONDecodeError:
+                    result["ABI"] = None  # Handle the case where JSON decoding fails
+            else:
+                result["ABI"] = None
+
+            return result
+
     def get_contract_source_code(self, contract_address: str, retry: bool = True):
         """
         Get source code for a contract. Source code query also returns:
@@ -390,19 +405,7 @@ class EtherscanClient:
             f"module=contract&action=getsourcecode&address={contract_address}"
         )
         response = self._retry_request(url, retry=retry)  # Returns a list
-        if response and isinstance(response, list):
-            result = response[0]
-            abi_str = result.get("ABI")
-
-            if isinstance(abi_str, str) and abi_str.startswith("["):
-                try:
-                    result["ABI"] = json.loads(abi_str)
-                except json.JSONDecodeError:
-                    result["ABI"] = None  # Handle the case where JSON decoding fails
-            else:
-                result["ABI"] = None
-
-            return result
+        return self.process_response(response)
 
     def get_contract_abi(self, contract_address: str, retry: bool = True):
         url = self.build_url(

@@ -158,7 +158,6 @@ class BlockscoutClient:
         request_timeout: int = int(
             os.environ.get("BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT", 10)
         ),
-        max_requests: int = int(os.environ.get("BLOCKSCOUT_CLIENT_MAX_REQUESTS", 100)),
     ):
         self.network = network
         self.grahpql_url = self.NETWORK_WITH_URL.get(network, "")
@@ -168,10 +167,6 @@ class BlockscoutClient:
                 f"Network {network.name} - {network.value} not supported"
             )
         self.http_session = requests.Session()
-        # Limit simultaneous connections to the same host.
-        self.async_session = aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
-        )
 
     def build_url(self, path: str):
         return urljoin(self.grahpql_url, path)
@@ -182,18 +177,6 @@ class BlockscoutClient:
             return None
 
         return response.json()
-
-    async def _async_do_request(self, url: str, query: str) -> Optional[Dict[str, Any]]:
-        """
-        Asynchronous version of _do_request
-        """
-        async with self.async_session.post(
-            url, son={"query": query}, timeout=self.request_timeout
-        ) as response:
-            if not response.ok:
-                return None
-
-            return await response.json()
 
     def get_contract_metadata(
         self, address: ChecksumAddress
@@ -211,6 +194,34 @@ class BlockscoutClient:
                 smart_contract["name"], json.loads(smart_contract["abi"]), False
             )
         return None
+
+
+class AsyncBlockscoutClient(BlockscoutClient):
+    def __init__(
+        self,
+        network: EthereumNetwork,
+        request_timeout: int = int(
+            os.environ.get("BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
+        max_requests: int = int(os.environ.get("BLOCKSCOUT_CLIENT_MAX_REQUESTS", 100)),
+    ):
+        super().__init__(network, request_timeout)
+        # Limit simultaneous connections to the same host.
+        self.async_session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
+        )
+
+    async def _async_do_request(self, url: str, query: str) -> Optional[Dict[str, Any]]:
+        """
+        Asynchronous version of _do_request
+        """
+        async with self.async_session.post(
+            url, json={"query": query}, timeout=self.request_timeout
+        ) as response:
+            if not response.ok:
+                return None
+
+            return await response.json()
 
     async def async_get_contract_metadata(
         self, address: ChecksumAddress

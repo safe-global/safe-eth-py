@@ -47,11 +47,6 @@ class SourcifyClient:
         self.base_url_repo = base_url_repo
         self.http_session = prepare_http_session(10, max_requests)
         self.request_timeout = request_timeout
-        # Limit simultaneous connections to the same host.
-        self.async_session = aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
-        )
-
         if not self.is_chain_supported(network.value):
             raise SourcifyClientConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
@@ -72,18 +67,6 @@ class SourcifyClient:
             return None
 
         return response.json()
-
-    async def _async_do_request(self, url: str) -> Optional[Dict[str, Any]]:
-        """
-        Asynchronous version of _do_request
-        """
-        async with self.async_session.get(
-            url, timeout=self.request_timeout
-        ) as response:
-            if not response.ok:
-                return None
-
-            return await response.json()
 
     def is_chain_supported(self, chain_id: int) -> bool:
         chains = self.get_chains()
@@ -126,6 +109,36 @@ class SourcifyClient:
                 name = self._get_name_from_metadata(metadata)
                 return ContractMetadata(name, abi, match_type == "partial_match")
         return None
+
+
+class AsyncSourcifyClient(SourcifyClient):
+    def __init__(
+        self,
+        network: EthereumNetwork = EthereumNetwork.MAINNET,
+        base_url_api: str = "https://sourcify.dev",
+        base_url_repo: str = "https://repo.sourcify.dev/",
+        request_timeout: int = int(
+            os.environ.get("SOURCIFY_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
+        max_requests: int = int(os.environ.get("SOURCIFY_CLIENT_MAX_REQUESTS", 100)),
+    ):
+        super().__init__(network, base_url_api, base_url_repo, request_timeout)
+        # Limit simultaneous connections to the same host.
+        self.async_session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
+        )
+
+    async def _async_do_request(self, url: str) -> Optional[Dict[str, Any]]:
+        """
+        Asynchronous version of _do_request
+        """
+        async with self.async_session.get(
+            url, timeout=self.request_timeout
+        ) as response:
+            if not response.ok:
+                return None
+
+            return await response.json()
 
     async def async_get_contract_metadata(
         self, contract_address: str
