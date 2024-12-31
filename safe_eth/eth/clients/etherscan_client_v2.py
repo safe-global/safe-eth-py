@@ -134,7 +134,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
             f"module=contract&action=getsourcecode&address={contract_address}"
         )
         response = await self._async_do_request(url)  # Returns a list
-        return self.process_response(response)
+        return self._process_response(response)
 
     async def async_get_contract_metadata(
         self, contract_address: str
