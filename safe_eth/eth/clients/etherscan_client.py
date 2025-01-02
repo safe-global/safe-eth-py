@@ -359,8 +359,16 @@ class EtherscanClient:
     ) -> Optional[ContractMetadata]:
         contract_name = contract_data["ContractName"]
         contract_abi = contract_data["ABI"]
+        contract_proxy_implementation_address = (
+            contract_data.get("Implementation") or None
+        )
         if contract_abi:
-            return ContractMetadata(contract_name, contract_abi, False)
+            return ContractMetadata(
+                contract_name,
+                contract_abi,
+                False,
+                contract_proxy_implementation_address,
+            )
         return None
 
     def get_contract_metadata(

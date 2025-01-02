@@ -36,10 +36,26 @@ class TestEtherscanClientV2(TestCase):
             )
             self.assertEqual(contract_metadata.name, "GnosisSafe")
             self.assertEqual(contract_metadata.abi, safe_master_copy_abi)
+            self.assertIsNone(contract_metadata.implementation)
 
             random_address = "0xaE32496491b53841efb51829d6f886387708F99a"
             self.assertIsNone(etherscan_api.get_contract_abi(random_address))
             self.assertIsNone(etherscan_api.get_contract_metadata(random_address))
+        except EtherscanRateLimitError:
+            self.skipTest("Etherscan rate limit reached")
+
+    def test_etherscan_get_contract_metadata(self):
+        try:
+            etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
+            proxy_address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+            contract_metadata = etherscan_api.get_contract_metadata(proxy_address)
+            self.assertEqual(contract_metadata.name, "FiatTokenProxy")
+            self.assertEqual(
+                contract_metadata.implementation,
+                "0x43506849d7c04f9138d1a2050bbf3a0c054402dd",
+            )
+
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
 
