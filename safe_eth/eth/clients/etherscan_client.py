@@ -353,6 +353,16 @@ class EtherscanClient:
                     time.sleep(5)
         return None
 
+    @staticmethod
+    def _process_contract_metadata(
+        contract_data: Dict[str, Any]
+    ) -> Optional[ContractMetadata]:
+        contract_name = contract_data["ContractName"]
+        contract_abi = contract_data["ABI"]
+        if contract_abi:
+            return ContractMetadata(contract_name, contract_abi, False)
+        return None
+
     def get_contract_metadata(
         self, contract_address: str, retry: bool = True
     ) -> Optional[ContractMetadata]:
@@ -360,11 +370,24 @@ class EtherscanClient:
             contract_address, retry=retry
         )
         if contract_source_code:
-            contract_name = contract_source_code["ContractName"]
-            contract_abi = contract_source_code["ABI"]
-            if contract_abi:
-                return ContractMetadata(contract_name, contract_abi, False)
+            return self._process_contract_metadata(contract_source_code)
         return None
+
+    @staticmethod
+    def _process_get_contract_source_code_response(response):
+        if response and isinstance(response, list):
+            result = response[0]
+            abi_str = result.get("ABI")
+
+            if isinstance(abi_str, str) and abi_str.startswith("["):
+                try:
+                    result["ABI"] = json.loads(abi_str)
+                except json.JSONDecodeError:
+                    result["ABI"] = None  # Handle the case where JSON decoding fails
+            else:
+                result["ABI"] = None
+
+            return result
 
     def get_contract_source_code(self, contract_address: str, retry: bool = True):
         """
@@ -390,19 +413,7 @@ class EtherscanClient:
             f"module=contract&action=getsourcecode&address={contract_address}"
         )
         response = self._retry_request(url, retry=retry)  # Returns a list
-        if response and isinstance(response, list):
-            result = response[0]
-            abi_str = result.get("ABI")
-
-            if isinstance(abi_str, str) and abi_str.startswith("["):
-                try:
-                    result["ABI"] = json.loads(abi_str)
-                except json.JSONDecodeError:
-                    result["ABI"] = None  # Handle the case where JSON decoding fails
-            else:
-                result["ABI"] = None
-
-            return result
+        return self._process_get_contract_source_code_response(response)
 
     def get_contract_abi(self, contract_address: str, retry: bool = True):
         url = self.build_url(

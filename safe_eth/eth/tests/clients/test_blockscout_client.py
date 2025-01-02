@@ -1,9 +1,12 @@
+import unittest
+
 from django.test import TestCase
 
 import pytest
 
 from ... import EthereumNetwork
 from ...clients import BlockscoutClient, BlockScoutConfigurationProblem
+from ...clients.blockscout_client import AsyncBlockscoutClient
 from .mocks import sourcify_safe_metadata
 
 
@@ -23,3 +26,19 @@ class TestBlockscoutClient(TestCase):
         self.assertEqual(contract_metadata.abi, safe_master_copy_abi)
         random_address = "0xaE32496491b53841efb51829d6f886387708F99a"
         self.assertIsNone(blockscout_client.get_contract_metadata(random_address))
+
+
+class TestAsyncBlockscoutClient(unittest.IsolatedAsyncioTestCase):
+    async def test_async_blockscout_client(self):
+        blockscout_client = AsyncBlockscoutClient(EthereumNetwork.GNOSIS)
+        safe_master_copy_abi = sourcify_safe_metadata["output"]["abi"]
+        safe_master_copy_address = "0x6851D6fDFAfD08c0295C392436245E5bc78B0185"
+        contract_metadata = await blockscout_client.async_get_contract_metadata(
+            safe_master_copy_address
+        )
+        self.assertEqual(contract_metadata.name, "GnosisSafe")
+        self.assertEqual(contract_metadata.abi, safe_master_copy_abi)
+        random_address = "0xaE32496491b53841efb51829d6f886387708F99a"
+        self.assertIsNone(
+            await blockscout_client.async_get_contract_metadata(random_address)
+        )

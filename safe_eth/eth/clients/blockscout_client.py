@@ -1,7 +1,9 @@
 import json
+import os
 from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
+import aiohttp
 import requests
 from eth_typing import ChecksumAddress
 
@@ -150,9 +152,16 @@ class BlockscoutClient:
         EthereumNetwork.EXSAT_TESTNET: "https://scan-testnet.exsat.network/api/v1/graphql",
     }
 
-    def __init__(self, network: EthereumNetwork):
+    def __init__(
+        self,
+        network: EthereumNetwork,
+        request_timeout: int = int(
+            os.environ.get("BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
+    ):
         self.network = network
         self.grahpql_url = self.NETWORK_WITH_URL.get(network, "")
+        self.request_timeout = request_timeout
         if not self.grahpql_url:
             raise BlockScoutConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
@@ -169,19 +178,69 @@ class BlockscoutClient:
 
         return response.json()
 
+    @staticmethod
+    def _process_contract_metadata(
+        contract_data: dict[str, Any]
+    ) -> Optional[ContractMetadata]:
+        """
+        Return a ContractMetadata from BlockScout response
+
+        :param contract_data:
+        :return:
+        """
+        if (
+            "error" not in contract_data
+            and contract_data.get("data", {}).get("address", {})
+            and contract_data["data"]["address"]["smartContract"]
+        ):
+            smart_contract = contract_data["data"]["address"]["smartContract"]
+            return ContractMetadata(
+                smart_contract["name"], json.loads(smart_contract["abi"]), False
+            )
+        return None
+
     def get_contract_metadata(
         self, address: ChecksumAddress
     ) -> Optional[ContractMetadata]:
         query = '{address(hash: "%s") { hash, smartContract {name, abi} }}' % address
-        result = self._do_request(self.grahpql_url, query)
-        if (
-            result
-            and "error" not in result
-            and result.get("data", {}).get("address", {})
-            and result["data"]["address"]["smartContract"]
-        ):
-            smart_contract = result["data"]["address"]["smartContract"]
-            return ContractMetadata(
-                smart_contract["name"], json.loads(smart_contract["abi"]), False
-            )
+        contract_data = self._do_request(self.grahpql_url, query)
+        if contract_data:
+            return self._process_contract_metadata(contract_data)
+        return None
+
+
+class AsyncBlockscoutClient(BlockscoutClient):
+    def __init__(
+        self,
+        network: EthereumNetwork,
+        request_timeout: int = int(
+            os.environ.get("BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
+        max_requests: int = int(os.environ.get("BLOCKSCOUT_CLIENT_MAX_REQUESTS", 100)),
+    ):
+        super().__init__(network, request_timeout)
+        # Limit simultaneous connections to the same host.
+        self.async_session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
+        )
+
+    async def _async_do_request(self, url: str, query: str) -> Optional[Dict[str, Any]]:
+        """
+        Asynchronous version of _do_request
+        """
+        async with self.async_session.post(
+            url, json={"query": query}, timeout=self.request_timeout
+        ) as response:
+            if not response.ok:
+                return None
+
+            return await response.json()
+
+    async def async_get_contract_metadata(
+        self, address: ChecksumAddress
+    ) -> Optional[ContractMetadata]:
+        query = '{address(hash: "%s") { hash, smartContract {name, abi} }}' % address
+        contract_data = await self._async_do_request(self.grahpql_url, query)
+        if contract_data:
+            return self._process_contract_metadata(contract_data)
         return None
