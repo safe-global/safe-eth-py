@@ -367,7 +367,7 @@ class EtherscanClient:
         return None
 
     @staticmethod
-    def _process_response(response):
+    def _process_get_contract_source_code_response(response):
         if response and isinstance(response, list):
             result = response[0]
             abi_str = result.get("ABI")
@@ -406,7 +406,7 @@ class EtherscanClient:
             f"module=contract&action=getsourcecode&address={contract_address}"
         )
         response = self._retry_request(url, retry=retry)  # Returns a list
-        return self._process_response(response)
+        return self._process_get_contract_source_code_response(response)
 
     def get_contract_abi(self, contract_address: str, retry: bool = True):
         url = self.build_url(

@@ -91,6 +91,20 @@ class SourcifyClient:
         result = self._do_request(url)
         return result or {}
 
+    def _process_contract_metadata(
+        self, contract_data: dict[str, Any], match_type: str
+    ) -> ContractMetadata:
+        """
+        Return a ContractMetadata from Sourcify response
+
+        :param contract_data:
+        :param match_type:
+        :return:
+        """
+        abi = self._get_abi_from_metadata(contract_data)
+        name = self._get_name_from_metadata(contract_data)
+        return ContractMetadata(name, abi, match_type == "partial_match")
+
     def get_contract_metadata(
         self, contract_address: str
     ) -> Optional[ContractMetadata]:
@@ -103,11 +117,9 @@ class SourcifyClient:
                 self.base_url_repo,
                 f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
             )
-            metadata = self._do_request(url)
-            if metadata:
-                abi = self._get_abi_from_metadata(metadata)
-                name = self._get_name_from_metadata(metadata)
-                return ContractMetadata(name, abi, match_type == "partial_match")
+            contract_data = self._do_request(url)
+            if contract_data:
+                return self._process_contract_metadata(contract_data, match_type)
         return None
 
 
@@ -155,9 +167,7 @@ class AsyncSourcifyClient(SourcifyClient):
                 self.base_url_repo,
                 f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
             )
-            metadata = await self._async_do_request(url)
-            if metadata:
-                abi = self._get_abi_from_metadata(metadata)
-                name = self._get_name_from_metadata(metadata)
-                return ContractMetadata(name, abi, match_type == "partial_match")
+            contract_data = await self._async_do_request(url)
+            if contract_data:
+                return self._process_contract_metadata(contract_data, match_type)
         return None

@@ -178,21 +178,33 @@ class BlockscoutClient:
 
         return response.json()
 
+    def _process_contract_metadata(
+        self, contract_data: dict[str, Any]
+    ) -> Optional[ContractMetadata]:
+        """
+        Return a ContractMetadata from BlockScout response
+
+        :param contract_data:
+        :return:
+        """
+        if (
+            "error" not in contract_data
+            and contract_data.get("data", {}).get("address", {})
+            and contract_data["data"]["address"]["smartContract"]
+        ):
+            smart_contract = contract_data["data"]["address"]["smartContract"]
+            return ContractMetadata(
+                smart_contract["name"], json.loads(smart_contract["abi"]), False
+            )
+        return None
+
     def get_contract_metadata(
         self, address: ChecksumAddress
     ) -> Optional[ContractMetadata]:
         query = '{address(hash: "%s") { hash, smartContract {name, abi} }}' % address
-        result = self._do_request(self.grahpql_url, query)
-        if (
-            result
-            and "error" not in result
-            and result.get("data", {}).get("address", {})
-            and result["data"]["address"]["smartContract"]
-        ):
-            smart_contract = result["data"]["address"]["smartContract"]
-            return ContractMetadata(
-                smart_contract["name"], json.loads(smart_contract["abi"]), False
-            )
+        contract_data = self._do_request(self.grahpql_url, query)
+        if contract_data:
+            return self._process_contract_metadata(contract_data)
         return None
 
 
@@ -227,15 +239,7 @@ class AsyncBlockscoutClient(BlockscoutClient):
         self, address: ChecksumAddress
     ) -> Optional[ContractMetadata]:
         query = '{address(hash: "%s") { hash, smartContract {name, abi} }}' % address
-        result = await self._async_do_request(self.grahpql_url, query)
-        if (
-            result
-            and "error" not in result
-            and result.get("data", {}).get("address", {})
-            and result["data"]["address"]["smartContract"]
-        ):
-            smart_contract = result["data"]["address"]["smartContract"]
-            return ContractMetadata(
-                smart_contract["name"], json.loads(smart_contract["abi"]), False
-            )
+        contract_data = await self._async_do_request(self.grahpql_url, query)
+        if contract_data:
+            return self._process_contract_metadata(contract_data)
         return None
