@@ -353,6 +353,16 @@ class EtherscanClient:
                     time.sleep(5)
         return None
 
+    @staticmethod
+    def _process_contract_metadata(
+        contract_data: Dict[str, Any]
+    ) -> Optional[ContractMetadata]:
+        contract_name = contract_data["ContractName"]
+        contract_abi = contract_data["ABI"]
+        if contract_abi:
+            return ContractMetadata(contract_name, contract_abi, False)
+        return None
+
     def get_contract_metadata(
         self, contract_address: str, retry: bool = True
     ) -> Optional[ContractMetadata]:
@@ -360,10 +370,7 @@ class EtherscanClient:
             contract_address, retry=retry
         )
         if contract_source_code:
-            contract_name = contract_source_code["ContractName"]
-            contract_abi = contract_source_code["ABI"]
-            if contract_abi:
-                return ContractMetadata(contract_name, contract_abi, False)
+            return self._process_contract_metadata(contract_source_code)
         return None
 
     @staticmethod

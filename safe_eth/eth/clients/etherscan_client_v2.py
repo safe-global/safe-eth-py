@@ -143,10 +143,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
             contract_address
         )
         if contract_source_code:
-            contract_name = contract_source_code["ContractName"]
-            contract_abi = contract_source_code["ABI"]
-            if contract_abi:
-                return ContractMetadata(contract_name, contract_abi, False)
+            return self._process_contract_metadata(contract_source_code)
         return None
 
     async def async_get_contract_abi(self, contract_address: str):
