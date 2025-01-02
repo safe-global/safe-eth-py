@@ -178,8 +178,9 @@ class BlockscoutClient:
 
         return response.json()
 
+    @staticmethod
     def _process_contract_metadata(
-        self, contract_data: dict[str, Any]
+        contract_data: dict[str, Any]
     ) -> Optional[ContractMetadata]:
         """
         Return a ContractMetadata from BlockScout response
