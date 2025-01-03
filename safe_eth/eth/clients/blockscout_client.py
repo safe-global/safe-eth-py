@@ -150,6 +150,7 @@ class BlockscoutClient:
         EthereumNetwork.SWELLCHAIN: "https://explorer.swellnetwork.io/api/v1/graphql",
         EthereumNetwork.HASHKEY_CHAIN_TESTNET: "https://hashkeychain-testnet-explorer.alt.technology/api/v1/graphql",
         EthereumNetwork.EXSAT_TESTNET: "https://scan-testnet.exsat.network/api/v1/graphql",
+        EthereumNetwork.HASHKEY_CHAIN: "https://explorer.hsk.xyz/api/v1/graphql",
     }
 
     def __init__(
