@@ -1,5 +1,5 @@
 -r requirements.txt
-coverage==7.6.8
+coverage==7.6.10
 faker==33.3.0
 mypy==1.14.1
 pytest==8.3.4
