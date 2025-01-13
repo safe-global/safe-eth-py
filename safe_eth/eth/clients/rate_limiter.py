@@ -37,7 +37,7 @@ class RateLimiter:
         now = time.monotonic()
         time_since_update = now - self.updated_at
         if time_since_update >= 1:
-            self.available_conns = self.rate
+            self.available_conns = min(self.rate - self.available_conns, 0)
             self.updated_at = now
 
 
