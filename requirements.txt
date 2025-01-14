@@ -5,7 +5,6 @@ hexbytes==0.3.1
 packaging
 psycopg2-binary==2.9.10
 py-evm==0.10.1b2
-pysha3>=1.0.0,<2.0.0; python_version<"3.9"
 requests==2.32.3
-safe-pysha3>=1.0.0; python_version>="3.9"
+safe-pysha3>=1.0.0
 web3==6.20.2
