@@ -225,7 +225,7 @@ class Keccak256Field(models.BinaryField):
 
     def from_db_value(self, value: memoryview, expression, connection) -> Optional[str]:
         if value:
-            return HexBytes(value.tobytes()).hex()
+            return HexBytes(bytes(value)).hex()
         return None
 
     def get_prep_value(self, value: Union[bytes, str]) -> Optional[bytes]:
