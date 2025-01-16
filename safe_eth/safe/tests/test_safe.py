@@ -4,6 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
+from web3.exceptions import Web3RPCError
 
 from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from safe_eth.eth.contracts import get_safe_contract, get_sign_message_lib_contract
@@ -681,7 +682,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             initializer=b"",
         )
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
-        with self.assertRaisesMessage(ValueError, "revert"):
+        with self.assertRaisesMessage(Web3RPCError, "revert"):
             self.assertEqual(safe.retrieve_modules(), [])
         self.assertEqual(safe.retrieve_all_info().modules, [])
 

@@ -100,7 +100,7 @@ class SafeCreator:
             master_copy_address, initializer
         ).build_transaction({"from": deployer_account.address})
         tx_hash = ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
+            tx, private_key=HexBytes(deployer_account.key).to_0x_hex()
         )
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt

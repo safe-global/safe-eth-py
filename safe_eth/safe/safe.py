@@ -15,7 +15,12 @@ from eth_typing import ChecksumAddress, Hash32, HexAddress, HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
-from web3.exceptions import ContractLogicError, Web3Exception
+from web3.exceptions import (
+    ContractLogicError,
+    Web3Exception,
+    Web3RPCError,
+    Web3ValueError,
+)
 from web3.types import BlockIdentifier, TxParams, Wei
 
 from safe_eth.eth import EthereumClient, EthereumTxSent
@@ -425,7 +430,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return self.ethereum_client.estimate_gas(
                 to, from_=self.address, value=value, data=data
             )
-        except (Web3Exception, ValueError) as exc:
+        except (Web3Exception, Web3ValueError, Web3RPCError) as exc:
             raise CannotEstimateGas(
                 f"Cannot estimate gas with `eth_estimateGas`: {exc}"
             ) from exc
@@ -446,8 +451,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :raises: CannotEstimateGas
         """
         if not data:
-            data = b""
-        elif isinstance(data, str):
+            data = HexBytes(b"")
+        else:
             data = HexBytes(data)
 
         gas_estimated = self.estimate_tx_gas_with_safe(to, value, data, operation)
@@ -472,7 +477,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                     self.address,
                     gas_estimated,
                     to,
-                    data.hex(),
+                    data.to_0x_hex(),
                 )
                 block_gas_limit = (
                     block_gas_limit
@@ -1059,7 +1064,7 @@ class SafeV141(Safe):
             accessible_data = simulator.functions.simulate(
                 accessor.address, simulation_data
             ).call(params)
-        except (ValueError, ContractLogicError) as e:
+        except (Web3ValueError, Web3RPCError, ContractLogicError) as e:
             raise CannotEstimateGas(f"Reverted call using SimulateTxAccessor {e}")
         try:
             # Simulate returns (uint256 estimate, bool success, bytes memory returnData)

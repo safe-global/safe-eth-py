@@ -79,6 +79,6 @@ class Keccak256FieldForm(HexFieldForm):
             raise ValidationError(
                 self.error_messages["length"],
                 code="length",
-                params={"value": python_value.hex()},
+                params={"value": python_value.to_0x_hex()},
             )
         return python_value

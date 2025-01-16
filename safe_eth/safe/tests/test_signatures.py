@@ -18,7 +18,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         account = Account.create()
         # Random hash
         random_hash = fast_keccak_text("tanxugueiras")
-        signature = account.signHash(random_hash)
+        signature = account.unsafe_sign_hash(random_hash)
         self.assertEqual(
             get_signing_address(random_hash, signature.v, signature.r, signature.s),
             account.address,
@@ -49,7 +49,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         )
 
         # Use deprecated isValidSignature method (receives bytes)
-        signature = owner.signHash(safe_message_hash)
+        signature = owner.unsafe_sign_hash(safe_message_hash)
         is_valid_bytes_fn = compatibility_contract.get_function_by_signature(
             "isValidSignature(bytes,bytes)"
         )
@@ -67,7 +67,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
             safe_message_hash,
         )
 
-        signature = owner.signHash(safe_message_hash)
+        signature = owner.unsafe_sign_hash(safe_message_hash)
         is_valid_bytes_fn = compatibility_contract.get_function_by_signature(
             "isValidSignature(bytes32,bytes)"
         )
@@ -93,7 +93,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         )
 
         # Use isValidSignature method (receives bytes)
-        signature = owner.signHash(safe_message_hash)
+        signature = owner.unsafe_sign_hash(safe_message_hash)
 
         self.assertEqual(
             contract.functions.isValidSignature(

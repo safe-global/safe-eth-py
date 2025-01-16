@@ -15,7 +15,7 @@ from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract.contract import Contract, ContractFunction
-from web3.exceptions import ContractLogicError
+from web3.exceptions import ContractLogicError, Web3RPCError, Web3ValueError
 
 from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from .contracts import ContractBase, get_multicall_v3_contract
@@ -430,7 +430,7 @@ class Multicall(ContractBase):
                 MulticallResult(success, data if data else None)
                 for success, data in result
             ]
-        except (ContractLogicError, OverflowError, ValueError):
+        except (ContractLogicError, OverflowError, Web3ValueError, Web3RPCError):
             raise BatchCallFunctionFailed
 
     def try_aggregate(
