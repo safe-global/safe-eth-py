@@ -58,7 +58,7 @@ class EnsClient:
         """
         if not domain_hash:
             domain_hash = b""
-        return HexStr("0x" + HexBytes(domain_hash).hex()[2:].rjust(64, "0"))
+        return HexStr("0x" + HexBytes(domain_hash).hex().rjust(64, "0"))
 
     @cache
     def _query_by_domain_hash(self, domain_hash_str: HexStr) -> Optional[str]:

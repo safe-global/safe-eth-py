@@ -152,8 +152,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         if safe_tx.safe_tx_hash != safe_tx_hash:
             raise ApiSafeTxHashNotMatchingException(
-                f"API safe-tx-hash: {safe_tx_hash.hex() if isinstance(safe_tx_hash, bytes) else safe_tx_hash} "
-                f"doesn't match the calculated safe-tx-hash: {safe_tx.safe_tx_hash.hex()}"
+                f"API safe-tx-hash: {HexBytes(safe_tx_hash).to_0x_hex()} doesn't match the calculated safe-tx-hash: {HexBytes(safe_tx.safe_tx_hash).to_0x_hex()}"
             )
 
         return safe_tx
@@ -176,7 +175,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
         """
-        safe_tx_hash_str = HexBytes(safe_tx_hash).hex()
+        safe_tx_hash_str = HexBytes(safe_tx_hash).to_0x_hex()
         response = self._get_request(
             f"/api/v1/multisig-transactions/{safe_tx_hash_str}/"
         )
@@ -258,10 +257,10 @@ class TransactionServiceApi(SafeBaseAPI):
         :param signatures:
         :return: True if new confirmation was created
         """
-        safe_tx_hash_str = HexBytes(safe_tx_hash).hex()
+        safe_tx_hash_str = HexBytes(safe_tx_hash).to_0x_hex()
         response = self._post_request(
-            f"/api/v1/multisig-transactions/{safe_tx_hash_str}/confirmations/",
-            payload={"signature": HexBytes(signatures).hex()},
+            f"/api/v1/multisig-transactions/{safe_tx_hash!r}/confirmations/",
+            payload={"signature": HexBytes(signatures).to_0x_hex()},
         )
         if not response.ok:
             raise SafeAPIException(
@@ -280,7 +279,7 @@ class TransactionServiceApi(SafeBaseAPI):
         add_payload = {
             "delegate": delegate_address,
             "delegator": delegator_address,
-            "signature": HexBytes(signature).hex(),
+            "signature": HexBytes(signature).to_0x_hex(),
             "label": label,
         }
         if safe_address:
@@ -309,7 +308,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         remove_payload = {
             "delegator": delegator_address,
-            "signature": HexBytes(signature).hex(),
+            "signature": HexBytes(signature).to_0x_hex(),
         }
         if safe_address:
             remove_payload["safe"] = safe_address
@@ -327,7 +326,7 @@ class TransactionServiceApi(SafeBaseAPI):
         data = {
             "to": safe_tx.to,
             "value": safe_tx.value,
-            "data": safe_tx.data.hex() if safe_tx.data else None,
+            "data": safe_tx.data.to_0x_hex() if safe_tx.data else None,
             "operation": safe_tx.operation,
             "gasToken": safe_tx.gas_token,
             "safeTxGas": safe_tx.safe_tx_gas,
@@ -335,7 +334,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "gasPrice": safe_tx.gas_price,
             "refundReceiver": safe_tx.refund_receiver,
             "nonce": safe_tx.safe_nonce,
-            "contractTransactionHash": safe_tx.safe_tx_hash.hex(),
+            "contractTransactionHash": safe_tx.safe_tx_hash.to_0x_hex(),
             "sender": sender,
             "signature": safe_tx.signatures.hex() if safe_tx.signatures else None,
             "origin": "Safe-CLI",
@@ -380,7 +379,7 @@ class TransactionServiceApi(SafeBaseAPI):
         payload = {
             "message": message,
             "safeAppId": safe_app_id,
-            "signature": HexBytes(signature).hex(),
+            "signature": HexBytes(signature).to_0x_hex(),
         }
         response = self._post_request(
             f"/api/v1/safes/{safe_address}/messages/", payload
@@ -396,7 +395,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :return: Safe message for provided Safe message hash
         """
         response = self._get_request(
-            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/"
+            f"/api/v1/messages/{HexBytes(safe_message_hash).to_0x_hex()}/"
         )
         if not response.ok:
             raise SafeAPIException(f"Cannot get messages: {response.content!r}")
@@ -423,9 +422,10 @@ class TransactionServiceApi(SafeBaseAPI):
         :param signature:
         :return:
         """
-        payload = {"signature": HexBytes(signature).hex()}
+        payload = {"signature": HexBytes(signature).to_0x_hex()}
         response = self._post_request(
-            f"/api/v1/messages/{HexBytes(safe_message_hash).hex()}/signatures/", payload
+            f"/api/v1/messages/{HexBytes(safe_message_hash).to_0x_hex()}/signatures/",
+            payload,
         )
         if not response.ok:
             raise SafeAPIException(
@@ -443,7 +443,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param to_address: address of the contract. This will be used in case of more than one function identifiers matching.
         :return:
         """
-        payload = {"data": HexBytes(data).hex()}
+        payload = {"data": HexBytes(data).to_0x_hex()}
         if to_address:
             payload["to"] = to_address
         response = self._post_request("/api/v1/data-decoder/", payload)

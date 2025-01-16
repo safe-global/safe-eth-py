@@ -89,7 +89,7 @@ class HexadecimalField(serializers.Field):
             obj = HexBytes(obj.hex())
         elif not isinstance(obj, HexBytes):
             obj = HexBytes(obj)
-        return obj.hex()
+        return obj.to_0x_hex()
 
     def to_internal_value(self, data):
         if isinstance(data, (bytes, memoryview)):

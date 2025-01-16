@@ -144,7 +144,7 @@ class TestSerializers(TestCase):
             hex_value = value if isinstance(value, str) else value.hex()
             a.value = value
             serializer = HexadecimalSerializerTest(a)
-            self.assertEqual(serializer.data["value"], HexBytes(hex_value).hex())
+            self.assertEqual(serializer.data["value"], HexBytes(hex_value).to_0x_hex())
 
     def test_hash_serializer_field(self):
         value = fast_keccak_text("test").hex()
