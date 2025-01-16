@@ -176,8 +176,9 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 self.transaction_service_api.get_safe_transaction(safe_tx_invalid_hash)
 
             safe_tx_hash_expected = transaction_mock.get("safeTxHash")
+
             self.assertIn(
-                f"API safe-tx-hash: {safe_tx_invalid_hash.hex()} doesn't match the calculated safe-tx-hash: {safe_tx_hash_expected}",
+                f"API safe-tx-hash: {safe_tx_invalid_hash.to_0x_hex()} doesn't match the calculated safe-tx-hash: {safe_tx_hash_expected}",
                 str(context.exception),
             )
 
@@ -186,7 +187,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             with self.assertRaises(SafeAPIException) as context:
                 self.transaction_service_api.get_safe_transaction(safe_tx_hash)
             self.assertIn(
-                f"Cannot get transaction with safe-tx-hash={safe_tx_hash.hex()}:",
+                f"Cannot get transaction with safe-tx-hash={safe_tx_hash.to_0x_hex()}:",
                 str(context.exception),
             )
 
@@ -199,7 +200,9 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             message_hash = self.transaction_service_api.create_delegate_message_hash(
                 delegate_address
             )
-            signature = delegator_account.signHash(message_hash).signature.hex()
+            signature = HexBytes(
+                delegator_account.unsafe_sign_hash(message_hash).signature
+            ).to_0x_hex()
             self.transaction_service_api.remove_delegate(
                 delegate_address, delegator_account.address, signature
             )
@@ -232,7 +235,9 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             message_hash = self.transaction_service_api.create_delegate_message_hash(
                 delegate_address
             )
-            signature = delegator_account.signHash(message_hash).signature.hex()
+            signature = HexBytes(
+                delegator_account.unsafe_sign_hash(message_hash).signature
+            ).to_0x_hex()
             label = "test label"
             self.transaction_service_api.add_delegate(
                 delegate_address, delegator_account.address, label, signature
@@ -276,7 +281,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             to_address = "0x4127839cdf4F73d9fC9a2C2861d8d1799e9DF40C"
             decoded_data = self.transaction_service_api.decode_data(data, to_address)
             expected_url = "/api/v1/data-decoder/"
-            expected_payload = {"data": HexBytes(data).hex(), "to": to_address}
+            expected_payload = {"data": HexBytes(data).to_0x_hex(), "to": to_address}
             mock_post_request.assert_called_once_with(expected_url, expected_payload)
             self.assertEqual(decoded_data.get("method"), "approve")
             self.assertEqual(decoded_data.get("parameters")[0].get("name"), "spender")

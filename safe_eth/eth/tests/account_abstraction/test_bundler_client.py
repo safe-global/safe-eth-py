@@ -32,7 +32,7 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(
             return_value={"jsonrpc": "2.0", "id": 1, "result": None}
         )
-        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
+        user_operation_hash = safe_4337_user_operation_hash_mock.to_0x_hex()
 
         self.assertIsNone(self.bundler.get_user_operation_by_hash(user_operation_hash))
         mock_session.return_value.json = MagicMock(return_value=user_operation_mock)
@@ -72,7 +72,7 @@ class TestBundlerClient(TestCase):
         mock_session.return_value.json = MagicMock(
             return_value={"jsonrpc": "2.0", "id": 1, "result": None}
         )
-        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
+        user_operation_hash = safe_4337_user_operation_hash_mock.to_0x_hex()
         self.assertIsNone(self.bundler.get_user_operation_receipt(user_operation_hash))
         mock_session.return_value.json = MagicMock(
             return_value=copy.deepcopy(user_operation_receipt_mock)
@@ -116,7 +116,7 @@ class TestBundlerClient(TestCase):
                 {"jsonrpc": "2.0", "id": 2, "result": None},
             ]
         )
-        user_operation_hash = safe_4337_user_operation_hash_mock.hex()
+        user_operation_hash = safe_4337_user_operation_hash_mock.to_0x_hex()
         self.assertIsNone(
             self.bundler.get_user_operation_and_receipt(user_operation_hash)
         )

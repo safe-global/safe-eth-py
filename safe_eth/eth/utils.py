@@ -226,9 +226,11 @@ def mk_contract_address_2(
     salt = HexBytes(salt)
     init_code = HexBytes(init_code)
 
-    assert len(from_) == 20, f"Address {from_.hex()} is not valid. Must be 20 bytes"
-    assert len(salt) == 32, f"Salt {salt.hex()} is not valid. Must be 32 bytes"
-    assert len(init_code) > 0, f"Init code {init_code.hex()} is not valid"
+    assert (
+        len(from_) == 20
+    ), f"Address {from_.to_0x_hex()} is not valid. Must be 20 bytes"
+    assert len(salt) == 32, f"Salt {salt.to_0x_hex()} is not valid. Must be 32 bytes"
+    assert len(init_code) > 0, f"Init code {init_code.to_0x_hex()} is not valid"
 
     init_code_hash = fast_keccak(init_code)
     contract_address = fast_keccak(HexBytes("ff") + from_ + salt + init_code_hash)

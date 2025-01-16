@@ -92,7 +92,7 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
             "0x123477d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf195"
         )
         message = defunct_hash_message(primitive=safe_tx_hash)
-        signature = account.signHash(message)["signature"]
+        signature = account.unsafe_sign_hash(message)["signature"]
         signature = signature[:64] + HexBytes(signature[64] + 4)  # Add 4 to v
         safe_signature = SafeSignatureEthSign(signature, safe_tx_hash)
         self.assertEqual(safe_signature.owner, owner)
@@ -119,7 +119,7 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
         safe_tx_hash = HexBytes(
             "0x123477d1b1b8dec52329a983ae26238b65f74b7dd9fb28d74ad9548e92aaf195"
         )
-        signature = account.signHash(safe_tx_hash)["signature"]
+        signature = account.unsafe_sign_hash(safe_tx_hash)["signature"]
         safe_signature = SafeSignatureEOA(signature, safe_tx_hash)
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(safe_signature.signature_type, SafeSignatureType.EOA)
@@ -190,7 +190,9 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         message = "Testing EIP191 message signing"
         message_hash = defunct_hash_message(text=message)
         safe_owner_message_hash = safe_owner.get_message_hash(message_hash)
-        safe_owner_signature = account.signHash(safe_owner_message_hash)["signature"]
+        safe_owner_signature = account.unsafe_sign_hash(safe_owner_message_hash)[
+            "signature"
+        ]
         safe_parent_message_hash = safe.get_message_hash(message_hash)
 
         # Build EIP1271 signature v=0 r=safe v=dynamic_part dynamic_part=size+owner_signature
@@ -240,10 +242,10 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx_hash = safe_tx.safe_tx_hash
 
         safe_owner_1_message_hash = safe_owner_1.get_message_hash(safe_tx_hash_preimage)
-        safe_owner_1_eoa_1_signature = safe_owner_1_eoa_1.signHash(
+        safe_owner_1_eoa_1_signature = safe_owner_1_eoa_1.unsafe_sign_hash(
             safe_owner_1_message_hash
         )["signature"]
-        safe_owner_1_eoa_2_signature = safe_owner_1_eoa_2.signHash(
+        safe_owner_1_eoa_2_signature = safe_owner_1_eoa_2.unsafe_sign_hash(
             safe_owner_1_message_hash
         )["signature"]
         safe_owner_1_eoa_signature = (
@@ -261,7 +263,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )
 
         safe_owner_2_message_hash = safe_owner_2.get_message_hash(safe_tx_hash_preimage)
-        safe_owner_2_eoa_1_signature = safe_owner_2_eoa_1.signHash(
+        safe_owner_2_eoa_1_signature = safe_owner_2_eoa_1.unsafe_sign_hash(
             safe_owner_2_message_hash
         )["signature"]
 
@@ -274,7 +276,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )
 
         eoa_signature = SafeSignatureEOA(
-            eoa.signHash(safe_tx_hash)["signature"], safe_tx_hash
+            eoa.unsafe_sign_hash(safe_tx_hash)["signature"], safe_tx_hash
         )
 
         signatures = SafeSignature.export_signatures(
@@ -324,7 +326,9 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
             safe_tx_hash_2
         ).call()
-        contract_signature = owner_1.signHash(safe_tx_hash_2_message_hash)["signature"]
+        contract_signature = owner_1.unsafe_sign_hash(safe_tx_hash_2_message_hash)[
+            "signature"
+        ]
 
         encoded_contract_signature_with_offset = encode_abi(
             ["bytes"], [contract_signature]
@@ -380,7 +384,9 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx_hash_message_hash = safe_contract.functions.getMessageHash(
             safe_tx_hash
         ).call()
-        contract_signature_2 = owner_1.signHash(safe_tx_hash_message_hash)["signature"]
+        contract_signature_2 = owner_1.unsafe_sign_hash(safe_tx_hash_message_hash)[
+            "signature"
+        ]
         encoded_contract_signature_2 = encode_abi(["bytes"], [contract_signature_2])[
             32:
         ]  # It will {32 bytes offset}{32 bytes size}, we don't need offset

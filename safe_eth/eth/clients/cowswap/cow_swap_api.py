@@ -163,7 +163,7 @@ class CowSwapAPI:
             "feeAmount": str(order.feeAmount),
             "kind": order.kind,
             "partiallyFillable": order.partiallyFillable,
-            "signature": signed_message.signature.hex(),
+            "signature": signed_message.signature.to_0x_hex(),
             "signingScheme": "ethsign",
             "from": from_address,
         }

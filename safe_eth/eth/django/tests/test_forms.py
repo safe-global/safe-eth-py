@@ -77,7 +77,7 @@ class TestForms(TestCase):
             form.errors["value"], ['"0x1234" keccak256 hash should be 32 bytes.']
         )
 
-        form = Keccak256Form(data={"value": fast_keccak_text("testing").hex()})
+        form = Keccak256Form(data={"value": fast_keccak_text("testing").to_0x_hex()})
         self.assertTrue(form.is_valid())
 
         form = Keccak256Form(data={"value": ""})

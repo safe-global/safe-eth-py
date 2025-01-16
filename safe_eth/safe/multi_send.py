@@ -48,7 +48,7 @@ class MultiSendTx:
         self.operation = operation
         self.to = to
         self.value = value
-        self.data = HexBytes(data) if data else b""
+        self.data = HexBytes(data) if data else HexBytes(b"")
         self.old_encoding = old_encoding
 
     def __eq__(self, other):
@@ -69,7 +69,7 @@ class MultiSendTx:
         return 21 + 32 * 2 + self.data_length
 
     def __repr__(self):
-        data = self.data[:4].hex() + ("..." if len(self.data) > 4 else "")
+        data = self.data[:4].to_0x_hex() + ("..." if len(self.data) > 4 else "")
         return (
             f"MultisendTx operation={self.operation.name} to={self.to} value={self.value} "
             f"data={data}"
@@ -288,7 +288,7 @@ class MultiSend:
         )
 
         tx_hash = ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
+            tx, private_key=HexBytes(deployer_account.key).to_0x_hex()
         )
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=120)
         assert tx_receipt
