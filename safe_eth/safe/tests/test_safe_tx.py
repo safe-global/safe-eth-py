@@ -73,7 +73,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
             safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1
         )
         tx_hash, _ = safe_tx.execute(
-            tx_sender_private_key=self.ethereum_test_account.key
+            tx_sender_private_key=self.ethereum_test_account.key.to_0x_hex()
         )
         self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         self.assertEqual(safe.retrieve_nonce(), 1)

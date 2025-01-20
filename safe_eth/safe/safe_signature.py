@@ -9,7 +9,7 @@ from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
 from eth_typing import BlockIdentifier, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
-from web3.exceptions import Web3Exception
+from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError
 
 from safe_eth.eth import EthereumClient
 from safe_eth.eth.contracts import (
@@ -288,12 +288,12 @@ class SafeSignatureContract(SafeSignature):
         )
         try:
             return is_valid_signature_fn(
-                self.safe_hash_preimage, self.contract_signature
+                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
             ).call() in (
                 self.EIP1271_MAGIC_VALUE,
                 self.EIP1271_MAGIC_VALUE_UPDATED,
             )
-        except (Web3Exception, DecodingError, ValueError):
+        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
             # Error using `pending` block identifier or contract does not exist
             logger.warning(
                 "Cannot check EIP1271 signature from contract %s", self.owner
@@ -332,7 +332,7 @@ class SafeSignatureApprovedHash(SafeSignature):
                     ).call(block_identifier=block_identifier)
                     == 1
                 )
-            except (Web3Exception, DecodingError, ValueError) as e:
+            except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as e:
                 # Error using `pending` block identifier
                 exception = e
         raise exception  # This should never happen

@@ -38,7 +38,7 @@ from web3.exceptions import (
     TransactionNotFound,
     Web3Exception,
 )
-from web3.middleware import geth_poa_middleware, simple_cache_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.types import (
     BlockData,
     BlockIdentifier,
@@ -307,7 +307,7 @@ class BatchCallManager(EthereumClientManager):
             payloads, sorted(all_results, key=lambda x: x["id"])
         ):
             if "error" in result:
-                fn_name = payload.get("fn_name", HexBytes(payload["data"]).hex())
+                fn_name = payload.get("fn_name", HexBytes(payload["data"]).to_0x_hex())
                 errors.append(f'`{fn_name}`: {result["error"]}')
                 return_values.append(None)
             else:
@@ -324,7 +324,9 @@ class BatchCallManager(EthereumClientManager):
                     else:
                         return_values.append(normalized_data)
                 except (DecodingError, OverflowError):
-                    fn_name = payload.get("fn_name", HexBytes(payload["data"]).hex())
+                    fn_name = payload.get(
+                        "fn_name", HexBytes(payload["data"]).to_0x_hex()
+                    )
                     errors.append(f"`{fn_name}`: DecodingError, cannot decode")
                     return_values.append(None)
 
@@ -473,7 +475,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `uint256 value` from data=%s",
-                        value_data.hex(),
+                        value_data.to_0x_hex(),
                     )
                     return None
                 from_to_data = b"".join(topics[1:])
@@ -488,7 +490,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `address from, address to` from topics=%s",
-                        HexBytes(from_to_data).hex(),
+                        HexBytes(from_to_data).to_0x_hex(),
                     )
                     return None
             elif topics_len == 4:
@@ -506,7 +508,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `address from, address to` from topics=%s",
-                        HexBytes(from_to_token_id_data).hex(),
+                        HexBytes(from_to_token_id_data).to_0x_hex(),
                     )
                     return None
         return None
@@ -711,10 +713,10 @@ class Erc20Manager(EthereumClientManager):
         :param token_address: Address of the token
         :return: List of events sorted by blockNumber
         """
-        topic_0 = self.TRANSFER_TOPIC.hex()
+        topic_0 = self.TRANSFER_TOPIC.to_0x_hex()
         if addresses:
             addresses_encoded = [
-                HexBytes(eth_abi.encode(["address"], [address])).hex()
+                HexBytes(eth_abi.encode(["address"], [address])).to_0x_hex()
                 for address in addresses
             ]
             # Topics for transfer `to` and `from` an address
@@ -794,9 +796,9 @@ class Erc20Manager(EthereumClientManager):
         if to_address:
             argument_filters["to"] = to_address
 
-        return erc20.events.Transfer.create_filter(  # type: ignore[attr-defined]
-            fromBlock=from_block,
-            toBlock=to_block,
+        return erc20.events.Transfer.create_filter(
+            from_block=from_block,
+            to_block=to_block,
             address=token_address,
             argument_filters=argument_filters,
         ).get_all_entries()
@@ -1087,7 +1089,7 @@ class TracingManager(EthereumClientManager):
                 "id": i,
                 "jsonrpc": "2.0",
                 "method": "trace_transaction",
-                "params": [HexBytes(tx_hash).hex()],
+                "params": [HexBytes(tx_hash).to_0x_hex()],
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
@@ -1210,7 +1212,7 @@ class EthereumClient:
         provider_timeout: int = 15,
         slow_provider_timeout: int = 60,
         retry_count: int = 1,
-        use_caching_middleware: bool = True,
+        use_request_caching: bool = True,
         batch_request_max_size: int = 500,
     ):
         """
@@ -1218,22 +1220,24 @@ class EthereumClient:
         :param provider_timeout: Timeout for regular RPC queries
         :param slow_provider_timeout: Timeout for slow (tracing, logs...) and custom RPC queries
         :param retry_count: Retry count for failed requests
-        :param use_caching_middleware: Use web3 simple cache middleware: https://web3py.readthedocs.io/en/stable/middleware.html#web3.middleware.construct_simple_cache_middleware
+        :param use_request_caching: Use web3 request caching https://web3py.readthedocs.io/en/latest/internals.html#request-caching
         :param batch_request_max_size: Max size for JSON RPC Batch requests. Some providers have a limitation on 500
         """
         self.http_session = prepare_http_session(1, 100, retry_count=retry_count)
         self.ethereum_node_url: str = ethereum_node_url
         self.timeout = provider_timeout
         self.slow_timeout = slow_provider_timeout
-        self.use_caching_middleware = use_caching_middleware
+        self.use_request_caching = use_request_caching
 
         self.w3_provider = HTTPProvider(
             self.ethereum_node_url,
+            cache_allowed_requests=use_request_caching,
             request_kwargs={"timeout": provider_timeout},
             session=self.http_session,
         )
         self.w3_slow_provider = HTTPProvider(
             self.ethereum_node_url,
+            cache_allowed_requests=use_request_caching,
             request_kwargs={"timeout": slow_provider_timeout},
             session=self.http_session,
         )
@@ -1244,21 +1248,17 @@ class EthereumClient:
         for w3 in self.w3, self.slow_w3:
             # Don't spend resources con converting dictionaries to attribute dictionaries
             w3.middleware_onion.remove("attrdict")
-            # Disable web3 automatic retry, it's handled on our HTTP Session
-            w3.provider.middlewares = ()
-            if self.use_caching_middleware:
-                w3.middleware_onion.add(simple_cache_middleware)
 
         # The geth_poa_middleware is required to connect to geth --dev or the Goerli public network.
         # It may also be needed for other EVM compatible blockchains like Polygon or BNB Chain (Binance Smart Chain).
         try:
             if self.get_network() != EthereumNetwork.MAINNET:
                 for w3 in self.w3, self.slow_w3:
-                    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                    w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
         except (IOError, OSError):
             # For tests using dummy connections (like IPC)
             for w3 in self.w3, self.slow_w3:
-                w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
@@ -1542,7 +1542,7 @@ class EthereumClient:
 
                 tx["gas"] = self.w3.eth.estimate_gas(tx)
                 tx_hash = self.send_unsigned_transaction(
-                    tx, private_key=deployer_account.key
+                    tx, private_key=HexBytes(deployer_account.key).to_0x_hex()
                 )
                 if check_receipt:
                     tx_receipt = self.get_transaction_receipt(
@@ -1709,7 +1709,7 @@ class EthereumClient:
                 "id": i,
                 "jsonrpc": "2.0",
                 "method": "eth_getTransactionByHash",
-                "params": [HexBytes(tx_hash).hex()],
+                "params": [HexBytes(tx_hash).to_0x_hex()],
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
@@ -1752,7 +1752,7 @@ class EthereumClient:
                 "id": i,
                 "jsonrpc": "2.0",
                 "method": "eth_getTransactionReceipt",
-                "params": [HexBytes(tx_hash).hex()],
+                "params": [HexBytes(tx_hash).to_0x_hex()],
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
@@ -1784,7 +1784,7 @@ class EthereumClient:
         if isinstance(block_identifier, int):
             return HexStr(hex(block_identifier))
         elif isinstance(block_identifier, bytes):
-            return HexStr(HexBytes(block_identifier).hex())
+            return HexStr(HexBytes(block_identifier).to_0x_hex())
         return str(block_identifier)
 
     def get_blocks(
@@ -1938,7 +1938,7 @@ class EthereumClient:
                         "Sending %d wei from %s to %s", tx["value"], address, tx["to"]
                     )
                     try:
-                        return self.send_raw_transaction(signed_tx.rawTransaction)
+                        return self.send_raw_transaction(signed_tx.raw_transaction)
                     except TransactionAlreadyImported as e:
                         # Sometimes Parity 2.2.11 fails with Transaction already imported, even if it's not, but it's
                         # processed
