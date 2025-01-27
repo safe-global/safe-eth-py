@@ -64,7 +64,7 @@ class SafeInfo:
 
 class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     """
-    Collection of methods and utilies to handle a Safe
+    Collection of methods and utilities to handle a Safe
     """
 
     # keccak256("fallback_manager.handler.address")
