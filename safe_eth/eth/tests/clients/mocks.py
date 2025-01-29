@@ -1010,3 +1010,14 @@ etherscan_source_code_mock = [
         "SwarmSource": "bzzr://eba952a8e826ae22d1831da9d381d7b6c153687b8cb43c646ad31acd2ce84288",
     }
 ]
+
+safe_proxy_abi_mock = [
+    {
+        "inputs": [
+            {"internalType": "address", "name": "_singleton", "type": "address"}
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+    },
+    {"stateMutability": "payable", "type": "fallback"},
+]
