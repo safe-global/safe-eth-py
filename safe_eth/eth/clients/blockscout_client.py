@@ -56,6 +56,7 @@ class BlockscoutClient:
         EthereumNetwork.KAIA_MAINNET: "https://scope.klaytn.com/api/v2/",
         EthereumNetwork.KROMA: "https://blockscout.kroma.network/api/v2/",
         EthereumNetwork.KROMA_SEPOLIA: "https://blockscout.sepolia.kroma.network/api/v2/",
+        EthereumNetwork.LINEA: "https://api-explorer.linea.build/api/v2/",
         EthereumNetwork.LISK: "https://blockscout.lisk.com/api/v2/",
         EthereumNetwork.LISK_SEPOLIA_TESTNET: "https://sepolia-blockscout.lisk.com/api/v2/",
         EthereumNetwork.LORENZO: "https://scan.lorenzo-protocol.xyz/api/v2/",
