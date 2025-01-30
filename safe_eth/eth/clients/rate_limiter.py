@@ -1,5 +1,4 @@
 import asyncio
-import time
 from functools import cache
 from logging import getLogger
 
@@ -17,10 +16,9 @@ class RateLimiter:
         self.client = client
         self.rate = rate
         self.available_conns = rate  # Initialize available conns
-        self.updated_at = time.monotonic()
         self._waiters = []  # List of tasks that are waiting for a connection
         self.loop = asyncio.get_event_loop()
-        self._schedule_next_release_connections()  # Schedule first wakeup
+        self._schedule_next_release_connections()  # Schedule first release connections
 
     async def get(self, *args, **kwargs):
         await self._wait_for_available_conn()
@@ -32,7 +30,7 @@ class RateLimiter:
 
     def _wakeup_waiters(self):
         """
-        Unblock tasks waitting for connections
+        Unblock tasks waiting for connections
         """
         while self.available_conns > 0 and self._waiters:
             future = self._waiters.pop(0)
