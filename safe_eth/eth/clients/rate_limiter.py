@@ -18,6 +18,9 @@ class RateLimiter:
         self.rate = rate
         self.available_conns = rate  # Initialize available conns
         self.updated_at = time.monotonic()
+        self._waiters = []  # List of tasks that are waiting for a connection
+        self.loop = asyncio.get_event_loop()
+        self._schedule_next_release_connections()  # Schedule first wakeup
 
     async def get(self, *args, **kwargs):
         await self._wait_for_available_conn()
@@ -27,18 +30,36 @@ class RateLimiter:
         await self._wait_for_available_conn()
         return self.client.post(*args, **kwargs)
 
+    def _wakeup_waiters(self):
+        """
+        Unblock tasks waitting for connections
+        """
+        while self.available_conns > 0 and self._waiters:
+            future = self._waiters.pop(0)
+            future.set_result(None)  # Release await
+            self.available_conns -= 1
+
     async def _wait_for_available_conn(self):
-        while self.available_conns < 1:
-            self._release_available_conns()
-            await asyncio.sleep(0.1)
-        self.available_conns -= 1
+        if self.available_conns < 1:
+            future = asyncio.Future()
+            self._waiters.append(future)
+            await future
+        else:
+            self.available_conns -= 1
 
     def _release_available_conns(self):
-        now = time.monotonic()
-        time_since_update = now - self.updated_at
-        if time_since_update >= 1:
-            self.available_conns = min(self.rate - self.available_conns, 0)
-            self.updated_at = now
+        """
+        Release new connections
+        """
+        self.available_conns += self.rate - self.available_conns
+        self._wakeup_waiters()
+        self._schedule_next_release_connections()
+
+    def _schedule_next_release_connections(self):
+        """
+        Schedule next release connections
+        """
+        self.loop.call_later(1, self._release_available_conns)
 
 
 @cache
