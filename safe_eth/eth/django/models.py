@@ -97,7 +97,7 @@ class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
         self, value: memoryview, expression, connection
     ) -> Optional[ChecksumAddress]:
         if value:
-            return ChecksumAddress(HexAddress(HexStr("0x" + bytes(value).hex())))
+            return ChecksumAddress(HexAddress(HexStr(to_0x_hex_str(bytes(value)))))
 
         return None
 

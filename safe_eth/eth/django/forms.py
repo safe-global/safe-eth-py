@@ -40,7 +40,7 @@ class HexFieldForm(forms.CharField):
 
     def prepare_value(self, value: memoryview) -> str:
         if value:
-            return "0x" + bytes(value).hex()
+            return to_0x_hex_str(bytes(value))
         else:
             return ""
 
