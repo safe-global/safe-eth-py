@@ -1,6 +1,4 @@
-from typing import Any, Iterable, Sequence, Union
-
-from hexbytes import HexBytes
+from typing import Any, Iterable, Sequence
 
 
 def chunks(elements: Sequence[Any], n: int) -> Iterable[Any]:
@@ -13,12 +11,11 @@ def chunks(elements: Sequence[Any], n: int) -> Iterable[Any]:
         yield elements[i : i + n]
 
 
-def to_0x_hex_str(value: Union[bytes, HexBytes]) -> str:
+def to_0x_hex_str(value: bytes) -> str:
     """
-    Convert bytes or HexBytes to a 0x-prefixed hex string
-    :param value: bytes or HexBytes value
+    Convert bytes to a 0x-prefixed hex string
+
+    :param value: bytes value
     :return: 0x-prefixed hex string
     """
-    if isinstance(value, HexBytes):
-        return value.to_0x_hex()
     return "0x" + value.hex()
