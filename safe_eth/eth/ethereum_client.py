@@ -63,6 +63,7 @@ from safe_eth.eth.utils import (
 from safe_eth.util import chunks
 
 from ..util.http import prepare_http_session
+from ..util.util import to_0x_hex_str
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
     GAS_CALL_DATA_BYTE,
@@ -307,7 +308,9 @@ class BatchCallManager(EthereumClientManager):
             payloads, sorted(all_results, key=lambda x: x["id"])
         ):
             if "error" in result:
-                fn_name = payload.get("fn_name", HexBytes(payload["data"]).to_0x_hex())
+                fn_name = payload.get(
+                    "fn_name", to_0x_hex_str(HexBytes(payload["data"]))
+                )
                 errors.append(f'`{fn_name}`: {result["error"]}')
                 return_values.append(None)
             else:
@@ -325,7 +328,7 @@ class BatchCallManager(EthereumClientManager):
                         return_values.append(normalized_data)
                 except (DecodingError, OverflowError):
                     fn_name = payload.get(
-                        "fn_name", HexBytes(payload["data"]).to_0x_hex()
+                        "fn_name", to_0x_hex_str(HexBytes(payload["data"]))
                     )
                     errors.append(f"`{fn_name}`: DecodingError, cannot decode")
                     return_values.append(None)
@@ -475,7 +478,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `uint256 value` from data=%s",
-                        value_data.to_0x_hex(),
+                        to_0x_hex_str(value_data),
                     )
                     return None
                 from_to_data = b"".join(topics[1:])
@@ -490,7 +493,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `address from, address to` from topics=%s",
-                        HexBytes(from_to_data).to_0x_hex(),
+                        to_0x_hex_str(from_to_data),
                     )
                     return None
             elif topics_len == 4:
@@ -508,7 +511,7 @@ class Erc20Manager(EthereumClientManager):
                 except DecodingError:
                     logger.warning(
                         "Cannot decode Transfer event `address from, address to` from topics=%s",
-                        HexBytes(from_to_token_id_data).to_0x_hex(),
+                        to_0x_hex_str(from_to_token_id_data),
                     )
                     return None
         return None
@@ -713,10 +716,10 @@ class Erc20Manager(EthereumClientManager):
         :param token_address: Address of the token
         :return: List of events sorted by blockNumber
         """
-        topic_0 = self.TRANSFER_TOPIC.to_0x_hex()
+        topic_0 = to_0x_hex_str(self.TRANSFER_TOPIC)
         if addresses:
             addresses_encoded = [
-                HexBytes(eth_abi.encode(["address"], [address])).to_0x_hex()
+                to_0x_hex_str(eth_abi.encode(["address"], [address]))
                 for address in addresses
             ]
             # Topics for transfer `to` and `from` an address
@@ -1089,7 +1092,7 @@ class TracingManager(EthereumClientManager):
                 "id": i,
                 "jsonrpc": "2.0",
                 "method": "trace_transaction",
-                "params": [HexBytes(tx_hash).to_0x_hex()],
+                "params": [to_0x_hex_str(HexBytes(tx_hash))],
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
@@ -1542,7 +1545,7 @@ class EthereumClient:
 
                 tx["gas"] = self.w3.eth.estimate_gas(tx)
                 tx_hash = self.send_unsigned_transaction(
-                    tx, private_key=HexBytes(deployer_account.key).to_0x_hex()
+                    tx, private_key=to_0x_hex_str(deployer_account.key)
                 )
                 if check_receipt:
                     tx_receipt = self.get_transaction_receipt(
@@ -1709,7 +1712,7 @@ class EthereumClient:
                 "id": i,
                 "jsonrpc": "2.0",
                 "method": "eth_getTransactionByHash",
-                "params": [HexBytes(tx_hash).to_0x_hex()],
+                "params": [to_0x_hex_str(HexBytes(tx_hash))],
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
@@ -1752,7 +1755,7 @@ class EthereumClient:
                 "id": i,
                 "jsonrpc": "2.0",
                 "method": "eth_getTransactionReceipt",
-                "params": [HexBytes(tx_hash).to_0x_hex()],
+                "params": [to_0x_hex_str(HexBytes(tx_hash))],
             }
             for i, tx_hash in enumerate(tx_hashes)
         ]
@@ -1784,7 +1787,7 @@ class EthereumClient:
         if isinstance(block_identifier, int):
             return HexStr(hex(block_identifier))
         elif isinstance(block_identifier, bytes):
-            return HexStr(HexBytes(block_identifier).to_0x_hex())
+            return HexStr(to_0x_hex_str(HexBytes(block_identifier)))
         return str(block_identifier)
 
     def get_blocks(

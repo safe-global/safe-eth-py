@@ -3,7 +3,8 @@ import os
 from django.test import TestCase
 
 import pytest
-from hexbytes import HexBytes
+
+from safe_eth.util.util import to_0x_hex_str
 
 from ...account_abstraction import BundlerClient, UserOperation, UserOperationReceipt
 from ...account_abstraction.user_operation import UserOperationV07
@@ -30,7 +31,7 @@ class TestE2EBundlerClient(TestCase):
         self.assertGreater(self.bundler.get_chain_id(), 0)
 
     def test_get_user_operation_by_hash(self):
-        user_operation_hash = safe_4337_user_operation_hash_mock.to_0x_hex()
+        user_operation_hash = to_0x_hex_str(safe_4337_user_operation_hash_mock)
 
         expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]
@@ -41,9 +42,9 @@ class TestE2EBundlerClient(TestCase):
             expected_user_operation,
         )
         self.assertEqual(
-            HexBytes(
+            to_0x_hex_str(
                 user_operation.calculate_user_operation_hash(safe_4337_chain_id_mock)
-            ).to_0x_hex(),
+            ),
             user_operation_hash,
         )
 
@@ -51,20 +52,20 @@ class TestE2EBundlerClient(TestCase):
         """
         Test UserOperation v0.7
         """
-        user_operation_hash = user_operation_v07_hash.to_0x_hex()
+        user_operation_hash = to_0x_hex_str(user_operation_v07_hash)
         user_operation = self.bundler.get_user_operation_by_hash(user_operation_hash)
         self.assertIsInstance(user_operation, UserOperationV07)
         self.assertEqual(
-            HexBytes(
+            to_0x_hex_str(
                 user_operation.calculate_user_operation_hash(
                     user_operation_v07_chain_id
                 )
-            ).to_0x_hex(),
+            ),
             user_operation_hash,
         )
 
     def test_get_user_operation_receipt(self):
-        user_operation_hash = safe_4337_user_operation_hash_mock.to_0x_hex()
+        user_operation_hash = to_0x_hex_str(safe_4337_user_operation_hash_mock)
         expected_user_operation_receipt = UserOperationReceipt.from_bundler_response(
             user_operation_receipt_mock["result"]
         )
@@ -76,7 +77,7 @@ class TestE2EBundlerClient(TestCase):
 
     @pytest.mark.xfail(reason="Some bundlers don't support batch requests")
     def test_get_user_operation_and_receipt(self):
-        user_operation_hash = safe_4337_user_operation_hash_mock.to_0x_hex()
+        user_operation_hash = to_0x_hex_str(safe_4337_user_operation_hash_mock)
 
         expected_user_operation = UserOperation.from_bundler_response(
             user_operation_hash, user_operation_mock["result"]

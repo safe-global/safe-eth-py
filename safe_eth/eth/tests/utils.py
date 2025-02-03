@@ -8,11 +8,11 @@ import pytest
 import requests
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
-from hexbytes import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 from web3.types import TxParams
 
+from ...util.util import to_0x_hex_str
 from ..contracts import get_example_erc20_contract
 
 
@@ -104,7 +104,7 @@ def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:
     tx_hash = w3.eth.send_raw_transaction(bytes(signed_tx.raw_transaction))
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     assert tx_receipt["status"] == 1, "Error with tx %s - %s" % (
-        tx_hash.to_0x_hex(),
+        to_0x_hex_str(tx_hash),
         tx,
     )
     return tx_hash
@@ -147,7 +147,7 @@ def bytes_to_str(o: Any) -> Any:
     :return:
     """
     if isinstance(o, bytes):
-        return HexBytes(o).to_0x_hex()
+        return to_0x_hex_str(o)
     if isinstance(o, dict):
         o = dict(o)  # Remove AttributeDict
         for k in o.keys():

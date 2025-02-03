@@ -45,6 +45,7 @@ from safe_eth.eth.utils import (
     get_empty_tx_params,
 )
 
+from ..util.util import to_0x_hex_str
 from .addresses import SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
 from .enums import SafeOperationEnum
 from .exceptions import CannotEstimateGas, CannotRetrieveSafeInfoException
@@ -477,7 +478,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                     self.address,
                     gas_estimated,
                     to,
-                    data.to_0x_hex(),
+                    to_0x_hex_str(data),
                 )
                 block_gas_limit = (
                     block_gas_limit

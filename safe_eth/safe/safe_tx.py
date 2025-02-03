@@ -16,6 +16,7 @@ from safe_eth.eth.eip712 import eip712_encode
 from safe_eth.eth.ethereum_client import TxSpeed
 
 from ..eth.utils import fast_keccak
+from ..util.util import to_0x_hex_str
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -100,7 +101,7 @@ class SafeTx:
 
     def __str__(self):
         return (
-            f"SafeTx - safe={self.safe_address} - to={self.to} - value={self.value} - data={self.data.to_0x_hex()} - "
+            f"SafeTx - safe={self.safe_address} - to={self.to} - value={self.value} - data={to_0x_hex_str(self.data)} - "
             f"operation={self.operation} - safe-tx-gas={self.safe_tx_gas} - base-gas={self.base_gas} - "
             f"gas-price={self.gas_price} - gas-token={self.gas_token} - refund-receiver={self.refund_receiver} - "
             f"signers = {self.signers}"
