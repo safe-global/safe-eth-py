@@ -45,7 +45,7 @@ dependencies = [
     "py-evm>=0.7.0a1",
     "requests>=2",
     "safe-pysha3>=1.0.0",
-    "web3>=6.2.0,<7.0.0",
+    "web3>=7",
 ]
 
 [project.optional-dependencies]
