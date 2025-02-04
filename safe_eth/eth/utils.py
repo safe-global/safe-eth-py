@@ -11,6 +11,8 @@ from hexbytes import HexBytes
 from sha3 import keccak_256
 from web3.types import TxParams, Wei
 
+from safe_eth.util.util import to_0x_hex_str
+
 
 def get_empty_tx_params() -> TxParams:
     """
@@ -226,9 +228,11 @@ def mk_contract_address_2(
     salt = HexBytes(salt)
     init_code = HexBytes(init_code)
 
-    assert len(from_) == 20, f"Address {from_.hex()} is not valid. Must be 20 bytes"
-    assert len(salt) == 32, f"Salt {salt.hex()} is not valid. Must be 32 bytes"
-    assert len(init_code) > 0, f"Init code {init_code.hex()} is not valid"
+    assert (
+        len(from_) == 20
+    ), f"Address {to_0x_hex_str(from_)} is not valid. Must be 20 bytes"
+    assert len(salt) == 32, f"Salt {to_0x_hex_str(salt)} is not valid. Must be 32 bytes"
+    assert len(init_code) > 0, f"Init code {to_0x_hex_str(init_code)} is not valid"
 
     init_code_hash = fast_keccak(init_code)
     contract_address = fast_keccak(HexBytes("ff") + from_ + salt + init_code_hash)

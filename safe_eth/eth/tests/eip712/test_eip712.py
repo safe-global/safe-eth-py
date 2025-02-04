@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from safe_eth.eth.eip712 import eip712_encode_hash
+from safe_eth.util.util import to_0x_hex_str
 
 
 class TestEIP712(TestCase):
@@ -85,7 +86,7 @@ class TestEIP712(TestCase):
 
         payload["types"] = self.types
         self.assertEqual(
-            eip712_encode_hash(payload).hex(),
+            to_0x_hex_str(eip712_encode_hash(payload)),
             "0x7c02fe79823722257b42ea95720e7dd31d51c3f6769dc0f56a271800dd030ef1",
         )
 
@@ -103,7 +104,7 @@ class TestEIP712(TestCase):
             "message": self.mailbox,
         }
         self.assertEqual(
-            eip712_encode_hash(payload).hex(),
+            to_0x_hex_str(eip712_encode_hash(payload)),
             "0x7c02fe79823722257b42ea95720e7dd31d51c3f6769dc0f56a271800dd030ef1",
         )
 
@@ -130,7 +131,7 @@ class TestEIP712(TestCase):
         }
 
         self.assertEqual(
-            eip712_encode_hash(payload).hex(),
+            to_0x_hex_str(eip712_encode_hash(payload)),
             "0x2950cf06416c6c20059f24a965e3baf51a24f4ef49a1e7b1a47ee13ee08cde1f",
         )
 
@@ -205,7 +206,7 @@ class TestEIP712(TestCase):
             },
         }
         self.assertEqual(
-            eip712_encode_hash(payload).hex(),
+            to_0x_hex_str(eip712_encode_hash(payload)),
             "0x2f6856dbd51836973c1e61852b64949556aa2e7f253d9e20e682f9a02d436791",
         )
 
@@ -263,7 +264,7 @@ class TestEIP712(TestCase):
             },
         }
         self.assertEqual(
-            eip712_encode_hash(payload).hex(),
+            to_0x_hex_str(eip712_encode_hash(payload)),
             "0x5dd3156111fb5e400606d4dd75ff097e36eb56614c84924b5eb6d1cf1b5038cf",
         )
 
@@ -320,6 +321,6 @@ class TestEIP712(TestCase):
         }
 
         self.assertEqual(
-            eip712_encode_hash(payload).hex(),
+            to_0x_hex_str(eip712_encode_hash(payload)),
             "0x9a55335a1d86221594e96018fc3df611a1485d95b5b2afbef1540ac51f63d249",
         )

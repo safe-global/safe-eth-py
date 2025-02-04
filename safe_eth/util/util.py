@@ -9,3 +9,13 @@ def chunks(elements: Sequence[Any], n: int) -> Iterable[Any]:
     """
     for i in range(0, len(elements), n):
         yield elements[i : i + n]
+
+
+def to_0x_hex_str(value: bytes) -> str:
+    """
+    Convert bytes to a 0x-prefixed hex string
+
+    :param value: bytes value
+    :return: 0x-prefixed hex string
+    """
+    return "0x" + value.hex()

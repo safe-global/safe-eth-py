@@ -5,6 +5,9 @@ from django.test import TestCase
 
 from eth_account import Account
 from faker import Faker
+from hexbytes import HexBytes
+
+from safe_eth.util.util import to_0x_hex_str
 
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
 from ...utils import fast_is_checksum_address, fast_keccak_text
@@ -145,8 +148,8 @@ class TestModels(TestCase):
             Uint32.objects.create(value=-2)
 
     def test_keccak256_field(self):
-        value_hexbytes = fast_keccak_text(faker.name())
-        value_hex_with_0x: str = value_hexbytes.hex()
+        value_hexbytes = HexBytes(fast_keccak_text(faker.name()))
+        value_hex_with_0x: str = to_0x_hex_str(value_hexbytes)
         value_hex_without_0x: str = value_hex_with_0x[2:]
         value: bytes = bytes(value_hexbytes)
 

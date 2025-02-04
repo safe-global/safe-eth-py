@@ -10,8 +10,10 @@ from eth_account import Account
 from eth_typing import URI, HexStr
 from hexbytes import HexBytes
 from web3.eth import Eth
+from web3.exceptions import Web3RPCError
 from web3.types import TxParams
 
+from ...util.util import to_0x_hex_str
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (
@@ -663,7 +665,7 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.tracing.trace_filter()
 
         with self.assertRaisesMessage(
-            ValueError, "The method trace_filter does not exist/is not available"
+            Web3RPCError, "The method trace_filter does not exist/is not available"
         ):
             self.ethereum_client.tracing.trace_filter(
                 to_address=[Account.create().address]
@@ -1188,7 +1190,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         ]
         blocks = self.ethereum_client.get_blocks(block_numbers, full_transactions=True)
         block_hashes = [block["hash"] for block in blocks]
-        block_hashes_hex = [block_hash.hex() for block_hash in block_hashes]
+        block_hashes_hex = [to_0x_hex_str(block_hash) for block_hash in block_hashes]
         for block_number, block in zip(block_numbers, blocks):
             self.assertEqual(block["number"], block_number)
             self.assertEqual(len(block["hash"]), 32)

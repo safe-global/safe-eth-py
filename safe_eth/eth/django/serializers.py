@@ -7,6 +7,7 @@ from hexbytes import HexBytes
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from ...util.util import to_0x_hex_str
 from ..constants import (
     SIGNATURE_R_MAX_VALUE,
     SIGNATURE_R_MIN_VALUE,
@@ -89,7 +90,7 @@ class HexadecimalField(serializers.Field):
             obj = HexBytes(obj.hex())
         elif not isinstance(obj, HexBytes):
             obj = HexBytes(obj)
-        return obj.hex()
+        return to_0x_hex_str(obj)
 
     def to_internal_value(self, data):
         if isinstance(data, (bytes, memoryview)):

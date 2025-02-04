@@ -7,6 +7,8 @@ import requests
 from eth_typing import HexStr
 from hexbytes import HexBytes
 
+from safe_eth.util.util import to_0x_hex_str
+
 
 class EnsClient:
     """
@@ -58,7 +60,7 @@ class EnsClient:
         """
         if not domain_hash:
             domain_hash = b""
-        return HexStr("0x" + HexBytes(domain_hash).hex()[2:].rjust(64, "0"))
+        return HexStr(to_0x_hex_str(HexBytes(domain_hash)).rjust(66, "0"))
 
     @cache
     def _query_by_domain_hash(self, domain_hash_str: HexStr) -> Optional[str]:

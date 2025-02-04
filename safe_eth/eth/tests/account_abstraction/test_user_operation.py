@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from safe_eth.util.util import to_0x_hex_str
+
 from ...account_abstraction import UserOperation
 from ...account_abstraction.user_operation import UserOperationV07
 from ..mocks.mock_bundler import (
@@ -15,7 +17,7 @@ class TestUserOperation(TestCase):
     def test_calculate_user_operation_hash_V06(self):
         user_operation_hash = safe_4337_user_operation_hash_mock
         user_operation = UserOperation.from_bundler_response(
-            user_operation_hash.hex(), user_operation_mock["result"]
+            to_0x_hex_str(user_operation_hash), user_operation_mock["result"]
         )
         self.assertIsInstance(user_operation, UserOperation)
         self.assertEqual(
@@ -26,7 +28,7 @@ class TestUserOperation(TestCase):
     def test_calculate_user_operation_hash_V07(self):
         user_operation_hash = user_operation_v07_hash
         user_operation = UserOperation.from_bundler_response(
-            user_operation_hash.hex(), user_operation_v07_mock["result"]
+            to_0x_hex_str(user_operation_hash), user_operation_v07_mock["result"]
         )
         self.assertIsInstance(user_operation, UserOperationV07)
         self.assertEqual(

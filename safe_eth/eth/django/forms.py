@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from hexbytes import HexBytes
 
 from safe_eth.eth.utils import fast_is_checksum_address
+from safe_eth.util.util import to_0x_hex_str
 
 
 class EthereumAddressFieldForm(forms.CharField):
@@ -39,7 +40,7 @@ class HexFieldForm(forms.CharField):
 
     def prepare_value(self, value: memoryview) -> str:
         if value:
-            return "0x" + bytes(value).hex()
+            return to_0x_hex_str(bytes(value))
         else:
             return ""
 
@@ -79,6 +80,6 @@ class Keccak256FieldForm(HexFieldForm):
             raise ValidationError(
                 self.error_messages["length"],
                 code="length",
-                params={"value": python_value.hex()},
+                params={"value": to_0x_hex_str(python_value)},
             )
         return python_value
