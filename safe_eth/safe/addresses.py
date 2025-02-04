@@ -1993,6 +1993,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 95, "1.3.0"),  # v1.3.0
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 93, "1.3.0+L2"),  # v1.3.0+L2
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 5780860, "1.3.0"),  # v1.3.0
+        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 5728153, "1.3.0+L2"),  # v1.3.0+L2
     ],
     EthereumNetwork.WATERFALL_9_TEST_NETWORK: [
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 7329851, "1.4.1"),  # v1.4.1
