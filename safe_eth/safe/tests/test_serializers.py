@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from eth_account import Account
 
-from ..serializers import SafeMultisigEstimateTxSerializer
+from ..serializers import SafeMultisigTxSerializer
 
 
 class TestSerializers(TestCase):
@@ -16,7 +16,7 @@ class TestSerializers(TestCase):
             "value": 1,
             "operation": 0,
         }
-        serializer = SafeMultisigEstimateTxSerializer(data=data)
+        serializer = SafeMultisigTxSerializer(data=data)
 
         # To and data cannot be empty
         self.assertFalse(serializer.is_valid())
@@ -28,7 +28,7 @@ class TestSerializers(TestCase):
             "value": 1,
             "operation": 2,
         }
-        serializer = SafeMultisigEstimateTxSerializer(data=data)
+        serializer = SafeMultisigTxSerializer(data=data)
         # Operation cannot be contract creation and to set
         self.assertFalse(serializer.is_valid())
 
@@ -40,6 +40,6 @@ class TestSerializers(TestCase):
             "value": 1,
             "operation": 2,
         }
-        serializer = SafeMultisigEstimateTxSerializer(data=data)
+        serializer = SafeMultisigTxSerializer(data=data)
         # Operation is not contract creation and to is not empty
         self.assertFalse(serializer.is_valid())

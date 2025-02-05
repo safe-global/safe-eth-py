@@ -6,13 +6,16 @@ from safe_eth.eth.django.serializers import EthereumAddressField, HexadecimalFie
 from .enums import SafeOperationEnum
 
 
-class SafeMultisigEstimateTxSerializer(serializers.Serializer):
+class SafeMultisigTxSerializer(serializers.Serializer):
     safe = EthereumAddressField()
     to = EthereumAddressField()
     value = serializers.IntegerField(min_value=0)
     data = HexadecimalField(default=None, allow_null=True, allow_blank=True)
     operation = serializers.IntegerField(min_value=0)
     gas_token = EthereumAddressField(
+        default=None, allow_null=True, allow_zero_address=True
+    )
+    refund_receiver = EthereumAddressField(
         default=None, allow_null=True, allow_zero_address=True
     )
 
@@ -41,13 +44,3 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
             #      raise ValidationError('Operation is Create, but not `data` was provided')
 
         return data
-
-
-class SafeMultisigTxSerializer(SafeMultisigEstimateTxSerializer):
-    safe_tx_gas = serializers.IntegerField(min_value=0)
-    base_gas = serializers.IntegerField(min_value=0)
-    gas_price = serializers.IntegerField(min_value=0)
-    refund_receiver = EthereumAddressField(
-        default=None, allow_null=True, allow_zero_address=True
-    )
-    nonce = serializers.IntegerField(min_value=0)

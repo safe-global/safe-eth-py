@@ -8,14 +8,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from ...util.util import to_0x_hex_str
-from ..constants import (
-    SIGNATURE_R_MAX_VALUE,
-    SIGNATURE_R_MIN_VALUE,
-    SIGNATURE_S_MAX_VALUE,
-    SIGNATURE_S_MIN_VALUE,
-    SIGNATURE_V_MAX_VALUE,
-    SIGNATURE_V_MIN_VALUE,
-)
 from ..utils import fast_is_checksum_address
 
 logger = logging.getLogger(__name__)
@@ -143,54 +135,3 @@ class Uint32Field(serializers.DecimalField):
         kwargs["max_digits"] = 10
         kwargs["decimal_places"] = 0
         super().__init__(**kwargs)
-
-
-# ================================================ #
-#                Base Serializers
-# ================================================ #
-class SignatureSerializer(serializers.Serializer):
-    v = serializers.IntegerField(
-        min_value=SIGNATURE_V_MIN_VALUE, max_value=SIGNATURE_V_MAX_VALUE
-    )
-    r = serializers.IntegerField(
-        min_value=SIGNATURE_R_MIN_VALUE, max_value=SIGNATURE_R_MAX_VALUE
-    )
-    s = serializers.IntegerField(
-        min_value=SIGNATURE_S_MIN_VALUE, max_value=SIGNATURE_S_MAX_VALUE
-    )
-
-
-class TransactionSerializer(serializers.Serializer):
-    from_ = EthereumAddressField()
-    value = serializers.IntegerField(min_value=0)
-    data = HexadecimalField()
-    gas = serializers.IntegerField(min_value=0)
-    gas_price = serializers.IntegerField(min_value=0)
-    nonce = serializers.IntegerField(min_value=0)
-
-    def get_fields(self):
-        result = super().get_fields()
-        # Rename `from_` to `from`
-        from_ = result.pop("from_")
-        result["from"] = from_
-        return result
-
-
-class TransactionResponseSerializer(serializers.Serializer):
-    """
-    Use chars to avoid problems with big ints (i.e. JavaScript)
-    """
-
-    from_ = EthereumAddressField()
-    value = serializers.IntegerField(min_value=0)
-    data = serializers.CharField()
-    gas = serializers.CharField()
-    gas_price = serializers.CharField()
-    nonce = serializers.IntegerField(min_value=0)
-
-    def get_fields(self):
-        result = super().get_fields()
-        # Rename `from_` to `from`
-        from_ = result.pop("from_")
-        result["from"] = from_
-        return result
