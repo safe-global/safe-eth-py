@@ -232,6 +232,7 @@ class Multicall(ContractBase):
         EthereumNetwork.FUSION_TESTNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.AREON_NETWORK_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.FLARE_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.BERACHAIN: "0xcA11bde05977b3631167028862bE2a173976CA11",
     }
 
     def __init__(
