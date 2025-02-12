@@ -1,7 +1,5 @@
 import unittest
 
-from django.test import TestCase
-
 import pytest
 
 from ... import EthereumNetwork
@@ -10,7 +8,7 @@ from ...clients.blockscout_client import AsyncBlockscoutClient
 from .mocks import safe_proxy_abi_mock, sourcify_safe_metadata
 
 
-class TestBlockscoutClient(TestCase):
+class TestBlockscoutClient(unittest.TestCase):
     @pytest.mark.flaky(reruns=5)
     def test_blockscout_client(self):
         with self.assertRaises(BlockScoutConfigurationProblem):
