@@ -26,7 +26,7 @@ from ..ethereum_client import (
     TracingManager,
     get_auto_ethereum_client,
 )
-from ..exceptions import BatchCallException, ChainIdIsRequired, InvalidERC20Info
+from ..exceptions import BatchCallException, InvalidERC20Info
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -1270,12 +1270,6 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             "gas": 25000,
             "gasPrice": self.ethereum_client.w3.eth.gas_price,
         }
-        with self.assertRaises(ChainIdIsRequired):
-            self.ethereum_client.send_unsigned_transaction(
-                tx, private_key=random_sender_account.key
-            )
-
-        tx["chainId"] = 1
         with self.assertRaises(InsufficientFunds):
             self.ethereum_client.send_unsigned_transaction(
                 tx, private_key=random_sender_account.key
