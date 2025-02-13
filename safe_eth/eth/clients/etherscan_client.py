@@ -297,6 +297,7 @@ class EtherscanClient:
         EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
         EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
         EthereumNetwork.SONIC_MAINNET: "https://api.sonicscan.org",
+        EthereumNetwork.BERACHAIN: "https://api.berascan.com",
     }
     HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
         "User-Agent": "curl/7.77.0",
