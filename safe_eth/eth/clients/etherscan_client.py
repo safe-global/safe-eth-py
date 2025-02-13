@@ -158,6 +158,7 @@ class EtherscanClient:
         EthereumNetwork.SNAXCHAIN: "https://explorer.snaxchain.io",
         EthereumNetwork.ZKFAIR_MAINNET: "https://scan.zkfair.io",
         EthereumNetwork.SONIC_MAINNET: "https://sonicscan.org",
+        EthereumNetwork.BERACHAIN: "https://berascan.com",
     }
 
     NETWORK_WITH_API_URL = {
