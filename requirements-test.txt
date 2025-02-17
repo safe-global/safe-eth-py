@@ -3,7 +3,7 @@ coverage==7.6.11
 faker==35.2.0
 mypy==1.15.0
 pytest==8.3.4
-pytest-django==4.9.0
+pytest-django==4.10.0
 pytest-env==1.1.5
 pytest-rerunfailures==15.0
 pytest-sugar==1.0.0
