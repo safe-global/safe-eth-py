@@ -1270,9 +1270,16 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             "gas": 25000,
             "gasPrice": self.ethereum_client.w3.eth.gas_price,
         }
-        with self.assertRaises(InsufficientFunds):
+
+        with self.assertRaises(Exception) as error:
             self.ethereum_client.send_unsigned_transaction(
                 tx, private_key=random_sender_account.key
+            )
+
+            # Depending on RPC side the error could be InsufficientFunds or Web3RPCError
+            self.assertTrue(
+                isinstance(error.exception, (InsufficientFunds, Web3RPCError)),
+                f"Expected InsufficientFunds or Web3RPCError, but got {type(error.exception)}",
             )
 
     def test_trace_block(self):

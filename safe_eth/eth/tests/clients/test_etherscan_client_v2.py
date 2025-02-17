@@ -21,6 +21,7 @@ class TestEtherscanClientV2(TestCase):
 
         return EtherscanClientV2(network, api_key=etherscan_api_key)
 
+    @pytest.mark.flaky(reruns=5)
     def test_etherscan_get_abi(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
@@ -44,6 +45,7 @@ class TestEtherscanClientV2(TestCase):
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
 
+    @pytest.mark.flaky(reruns=5)
     def test_etherscan_get_contract_metadata(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
@@ -59,6 +61,7 @@ class TestEtherscanClientV2(TestCase):
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
 
+    @pytest.mark.flaky(reruns=5)
     def test_is_supported_network(self):
         try:
             self.assertTrue(
@@ -81,6 +84,7 @@ class TestAsyncEtherscanClientV2(unittest.IsolatedAsyncioTestCase):
 
         return AsyncEtherscanClientV2(network, api_key=etherscan_api_key)
 
+    @pytest.mark.flaky(reruns=5)
     async def test_async_etherscan_get_abi(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
