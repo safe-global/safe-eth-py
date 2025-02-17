@@ -64,6 +64,7 @@ class TestE2EBundlerClient(TestCase):
             user_operation_hash,
         )
 
+    @pytest.mark.xfail(reason="Unexpected and not documented changes on bundler")
     def test_get_user_operation_receipt(self):
         user_operation_hash = to_0x_hex_str(safe_4337_user_operation_hash_mock)
         expected_user_operation_receipt = UserOperationReceipt.from_bundler_response(
