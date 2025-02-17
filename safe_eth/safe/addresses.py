@@ -3152,4 +3152,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 45810),  # v1.3.0 eip155
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 41386),  # v1.3.0 canonical
     ],
+    EthereumNetwork.EVM_ON_FLOW: [
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 3041363),  # v1.3.0
+    ],
 }
