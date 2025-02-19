@@ -97,6 +97,7 @@ class BlockscoutClient:
         EthereumNetwork.ZORA_SEPOLIA_TESTNET: "https://sepolia.explorer.zora.energy/api/v2/",
         EthereumNetwork.EVM_ON_FLOW: "https://evm.flowscan.io/api/v2",
         EthereumNetwork.EVM_ON_FLOW_TESTNET: "https://evm-testnet.flowscan.io/api/v2",
+        EthereumNetwork.BIRDLAYER: "https://scan.birdlayer.xyz/api/v2",
     }
 
     def __init__(
