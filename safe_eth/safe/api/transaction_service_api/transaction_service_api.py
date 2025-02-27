@@ -41,6 +41,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
         EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
         EthereumNetwork.ZKSYNC_MAINNET: "https://safe-transaction-zksync.safe.global",
+        EthereumNetwork.SOPHON_MAINNET: "https://transaction.safe.sophon.xyz",
     }
 
     def __init__(
