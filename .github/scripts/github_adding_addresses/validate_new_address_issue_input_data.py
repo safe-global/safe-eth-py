@@ -19,6 +19,7 @@ from safe_eth.eth import EthereumClient
 from safe_eth.eth.utils import mk_contract_address_2
 
 ERRORS = []
+WARNINGS = []
 
 
 def convert_chain_name(name: str) -> str:
@@ -164,26 +165,21 @@ def validate_blockscout_client_url(
         ]
 
         if client_url_domain not in chain_explorers_urls_domains:
-            ERRORS.append(
+            WARNINGS.append(
                 f"Blockscout Client URL ({url}) not contained in the list of explorers urls in the chain."
             )
-            return None
         try:
-            body = {"query": '{transaction(hash: "%s") {status}}' % tx_hash}
-            response = requests.post(url, json=body, verify=False)
+            request_url = url.rstrip("/") + f"/transactions/{tx_hash}"
+            response = requests.get(request_url, verify=False)
             if response.status_code == 200:
-                tx_status = (
-                    response.json()
-                    .get("data", {})
-                    .get("transaction", {})
-                    .get("status", {})
-                )
-                if tx_status.lower() == "ok":
+                tx_status = response.json().get("status", "").lower()
+                if tx_status == "ok":
                     return None
-        except (IOError, ConnectionError) as e:
+        except (IOError, ConnectionError, AttributeError) as e:
             print(f"Error validating Blockscout Client URL: {e}")
 
         ERRORS.append(f"Blockscout Client URL ({url}) not valid.")
+        return None
 
 
 def validate_etherscan_client_urls(
@@ -204,10 +200,9 @@ def validate_etherscan_client_urls(
             f"{extract(base_url).domain}.{extract(base_url).suffix}"
         )
         if client_base_url_domain not in chain_explorers_urls_domains:
-            ERRORS.append(
+            WARNINGS.append(
                 f"Etherscan Client URL ({base_url}) not contained in the list of explorers urls in the chain"
             )
-            return None
 
     if api_url:
         parsed_api_url = urlparse(api_url)
@@ -218,23 +213,30 @@ def validate_etherscan_client_urls(
             return None
         client_api_url_domain = f"{extract(api_url).domain}.{extract(api_url).suffix}"
         if client_api_url_domain not in chain_explorers_urls_domains:
-            ERRORS.append(
+            WARNINGS.append(
                 f"Etherscan Client URL API ({api_url}) not contained in the list of explorers urls in the chain"
             )
-            return None
 
         try:
             url = f"{api_url}/api?module=transaction&action=gettxreceiptstatus&txhash={tx_hash}"
             response = requests.get(url, verify=False)
 
             if response.status_code == 200:
+                request_status = response.json().get("status", "")
+                if request_status == "0":
+                    request_failure_message = response.json().get("result", "")
+                    ERRORS.append(
+                        f"Error validating Etherscan Client API URL: {request_failure_message}"
+                    )
+                    return None
                 tx_status = response.json().get("result", {}).get("status", "")
                 if tx_status == "1":
                     return None
-        except (IOError, ConnectionError) as e:
+        except (IOError, ConnectionError, AttributeError) as e:
             print(f"Error validating Etherscan Client API URL: {e}")
 
         ERRORS.append(f"Etherscan Client API URL ({api_url}) not valid.")
+        return None
 
 
 def validate_version(version: str) -> None:
@@ -364,8 +366,8 @@ def validate_issue_inputs() -> None:
     print(f"Chain ID: {chain_id_input}")
     print(f"RPC URL: {rpc_url}")
     print(f"Blockscout Client URL: {blockscout_client_url}")
-    print(f"Etherscan Client URL: {etherscan_client_url}")
-    print(f"Etherscan Client API URL: {etherscan_client_api_url}")
+    print(f"Etherscan Client V1 URL: {etherscan_client_url}")
+    print(f"Etherscan Client V1 API URL: {etherscan_client_api_url}")
     print(f"Version: {version}")
     print(f"Address (Master copy): {address_master_copy}")
     print(f"Deployment Tx hash (Master copy): {tx_hash_master_copy}")
@@ -424,28 +426,40 @@ def validate_issue_inputs() -> None:
         "Proxy factory", address_proxy, tx_hash_proxy, rpc_url
     )
 
+    result_comments = []
+
+    if len(WARNINGS) > 0:
+        warnings_comment = "\n- ".join(WARNINGS)
+        result_comments.append(
+            "⚠️ Validation has detected the following warnings:"
+            + f"\n- {warnings_comment}"
+            + "\n\n"
+        )
+
     if len(ERRORS) > 0:
         errors_comment = "\n- ".join(ERRORS)
-        add_message_to_env(
-            "Validation has failed with the following errors:"
+        result_comments.append(
+            "❌ Validation has failed with the following errors:"
             + f"\n- {errors_comment}"
-            + "\n\n Validation failed!❌"
+            + "\n\n Validation failed!"
         )
+        add_message_to_env("\n".join(result_comments))
         return None
+
     chain_name_comment = chain_name if chain_name else "N/A"
     tx_master_block_comment = tx_master_info.get("block") if tx_master_info else "N/A"
     tx_master_l2_block_comment = (
         tx_master_l2_info.get("block") if tx_master_l2_info else "N/A"
     )
     tx_proxy_block_comment = tx_proxy_info.get("block") if tx_proxy_info else "N/A"
-    add_message_to_env(
-        "All elements have been validated and are correct:"
+    result_comments.append(
+        "✅ All elements have been validated and are correct:"
         + f"\n- Chain ID: {chain_id}"
         + f"\n- Chain Name: {chain_name_comment}"
         + f"\n- RPC URL: {rpc_url}"
         + f"\n- Blockscout Client URL: {blockscout_client_url}"
-        + f"\n- Etherscan Client URL: {etherscan_client_url}"
-        + f"\n- Etherscan Client API URL: {etherscan_client_api_url}"
+        + f"\n- Etherscan Client V1 URL: {etherscan_client_url}"
+        + f"\n- Etherscan Client V1 API URL: {etherscan_client_api_url}"
         + f"\n- Version: {version}"
         + f"\n- Address Master Copy: {address_master_copy}"
         + f"\n- Tx Hash Master Copy: {tx_hash_master_copy}"
@@ -456,8 +470,9 @@ def validate_issue_inputs() -> None:
         + f"\n- Address Proxy: {address_proxy}"
         + f"\n- Tx Hash Proxy: {tx_hash_proxy}"
         + f"\n- Tx Block Proxy: {tx_proxy_block_comment}"
-        + "\n\n Validation successful!✅"
+        + "\n\n Validation successful!"
     )
+    add_message_to_env("\n".join(result_comments))
 
 
 if __name__ == "__main__":

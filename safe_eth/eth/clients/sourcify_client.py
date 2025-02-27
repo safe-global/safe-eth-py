@@ -3,6 +3,8 @@ from functools import cache
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
+import aiohttp
+
 from ...util.http import prepare_http_session
 from .. import EthereumNetwork
 from ..utils import fast_is_checksum_address
@@ -21,12 +23,13 @@ class SourcifyClient:
     """
     Get contract metadata from Sourcify. Matches can be full or partial:
 
-      - Full: Both the source files as well as the meta data files were an exact match between the deployed bytecode
+      - Full: Both the source files and the metadata files were an exact match between the deployed bytecode
         and the published files.
       - Partial: Source code compiles to the same bytecode and thus the contract behaves in the same way,
-        but the source code can be different: Variables can have misleading names,
+        but the source code can be different: variables can have misleading names,
         comments can be different and especially the NatSpec comments could have been modified.
 
+    Reference: https://docs.sourcify.dev/docs/api/
     """
 
     def __init__(
@@ -37,13 +40,13 @@ class SourcifyClient:
         request_timeout: int = int(
             os.environ.get("SOURCIFY_CLIENT_REQUEST_TIMEOUT", 10)
         ),
+        max_requests: int = int(os.environ.get("SOURCIFY_CLIENT_MAX_REQUESTS", 100)),
     ):
         self.network = network
         self.base_url_api = base_url_api
         self.base_url_repo = base_url_repo
-        self.http_session = prepare_http_session(10, 100)
+        self.http_session = prepare_http_session(10, max_requests)
         self.request_timeout = request_timeout
-
         if not self.is_chain_supported(network.value):
             raise SourcifyClientConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
@@ -88,6 +91,20 @@ class SourcifyClient:
         result = self._do_request(url)
         return result or {}
 
+    def _process_contract_metadata(
+        self, contract_data: dict[str, Any], match_type: str
+    ) -> ContractMetadata:
+        """
+        Return a ContractMetadata from Sourcify response
+
+        :param contract_data:
+        :param match_type:
+        :return:
+        """
+        abi = self._get_abi_from_metadata(contract_data)
+        name = self._get_name_from_metadata(contract_data)
+        return ContractMetadata(name, abi, match_type == "partial_match")
+
     def get_contract_metadata(
         self, contract_address: str
     ) -> Optional[ContractMetadata]:
@@ -100,9 +117,57 @@ class SourcifyClient:
                 self.base_url_repo,
                 f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
             )
-            metadata = self._do_request(url)
-            if metadata:
-                abi = self._get_abi_from_metadata(metadata)
-                name = self._get_name_from_metadata(metadata)
-                return ContractMetadata(name, abi, match_type == "partial_match")
+            contract_data = self._do_request(url)
+            if contract_data:
+                return self._process_contract_metadata(contract_data, match_type)
+        return None
+
+
+class AsyncSourcifyClient(SourcifyClient):
+    def __init__(
+        self,
+        network: EthereumNetwork = EthereumNetwork.MAINNET,
+        base_url_api: str = "https://sourcify.dev",
+        base_url_repo: str = "https://repo.sourcify.dev/",
+        request_timeout: int = int(
+            os.environ.get("SOURCIFY_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
+        max_requests: int = int(os.environ.get("SOURCIFY_CLIENT_MAX_REQUESTS", 100)),
+    ):
+        super().__init__(network, base_url_api, base_url_repo, request_timeout)
+        # Limit simultaneous connections to the same host.
+        self.async_session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
+        )
+
+    async def _async_do_request(self, url: str) -> Optional[Dict[str, Any]]:
+        """
+        Asynchronous version of _do_request
+        """
+        async with self.async_session.get(
+            url, timeout=self.request_timeout
+        ) as response:
+            if not response.ok:
+                return None
+
+            return await response.json()
+
+    async def async_get_contract_metadata(
+        self, contract_address: str
+    ) -> Optional[ContractMetadata]:
+        """
+        Asynchronous version of get_contract_metadata
+        """
+        assert fast_is_checksum_address(
+            contract_address
+        ), "Expecting a checksummed address"
+
+        for match_type in ("full_match", "partial_match"):
+            url = urljoin(
+                self.base_url_repo,
+                f"/contracts/{match_type}/{self.network.value}/{contract_address}/metadata.json",
+            )
+            contract_data = await self._async_do_request(url)
+            if contract_data:
+                return self._process_contract_metadata(contract_data, match_type)
         return None

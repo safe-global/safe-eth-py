@@ -19,6 +19,7 @@ class TestEtherscanClient(TestCase):
 
         return EtherscanClient(network, api_key=etherscan_api_key)
 
+    @pytest.mark.xfail(reason="Test might fail due to API key limits, we don't retry")
     def test_etherscan_get_abi(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)

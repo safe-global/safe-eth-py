@@ -45,19 +45,19 @@ body:
     id: blockscout_client_url
     attributes:
       label: Blockscout Client URL
-      description: Blockscout URL.
-      placeholder: ex. https://gnosis.blockscout.com/api/v1/graphql
+      description: Blockscout REST API URL.
+      placeholder: ex. https://gnosis.blockscout.com/api/v2
   - type: input
     id: etherscan_client_url
     attributes:
-      label: Etherscan Client URL
-      description: Etherscan URL.
+      label: Etherscan Client V1 URL
+      description: Etherscan URL (Etherscan V2 does not require a different URL for each chain. https://docs.etherscan.io/etherscan-v2).
       placeholder: ex. https://etherscan.io
   - type: input
     id: etherscan_client_api_url
     attributes:
-      label: Etherscan Client API URL
-      description: Etherscan URL.
+      label: Etherscan Client V1 API URL
+      description: Etherscan API URL (Etherscan V2 does not require a different URL for each chain. https://docs.etherscan.io/etherscan-v2).
       placeholder: ex. https://api.etherscan.io
   - type: dropdown
     id: version

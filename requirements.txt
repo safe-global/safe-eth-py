@@ -1,11 +1,10 @@
-django==5.1.3
-django-filter==24.3
+django==5.1.6
+django-filter==25.1
 djangorestframework==3.15.2
-hexbytes==0.3.1
+hexbytes==1.3.0
 packaging
-psycopg2-binary==2.9.10
+psycopg[binary]==3.2.4
 py-evm==0.10.1b2
-pysha3>=1.0.0,<2.0.0; python_version<"3.9"
 requests==2.32.3
-safe-pysha3>=1.0.0; python_version>="3.9"
-web3==6.20.2
+safe-pysha3>=1.0.0
+web3==7.8.0

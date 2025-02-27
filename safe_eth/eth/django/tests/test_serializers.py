@@ -4,6 +4,8 @@ from eth_account import Account
 from hexbytes import HexBytes
 from rest_framework import serializers
 
+from safe_eth.util.util import to_0x_hex_str
+
 from ...constants import NULL_ADDRESS, SENTINEL_ADDRESS
 from ...utils import fast_keccak_text, get_eth_address_with_invalid_checksum
 from ..serializers import (
@@ -144,7 +146,9 @@ class TestSerializers(TestCase):
             hex_value = value if isinstance(value, str) else value.hex()
             a.value = value
             serializer = HexadecimalSerializerTest(a)
-            self.assertEqual(serializer.data["value"], HexBytes(hex_value).hex())
+            self.assertEqual(
+                serializer.data["value"], to_0x_hex_str(HexBytes(hex_value))
+            )
 
     def test_hash_serializer_field(self):
         value = fast_keccak_text("test").hex()

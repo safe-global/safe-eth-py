@@ -1,3 +1,4 @@
+import unittest
 from typing import List
 from unittest import mock
 from unittest.mock import MagicMock
@@ -6,7 +7,10 @@ from django.test import TestCase
 
 from ... import EthereumNetwork
 from ...clients import SourcifyClient
-from ...clients.sourcify_client import SourcifyClientConfigurationProblem
+from ...clients.sourcify_client import (
+    AsyncSourcifyClient,
+    SourcifyClientConfigurationProblem,
+)
 
 
 class TestSourcifyClient(TestCase):
@@ -55,6 +59,48 @@ class TestSourcifyClient(TestCase):
         partial_match_contract_address = "0x000000000000C1CB11D5c062901F32D06248CE48"
         token_contract_metadata_mainnet = sourcify_client_mainnet.get_contract_metadata(
             partial_match_contract_address
+        )
+        assert token_contract_metadata_mainnet is not None
+        self.assertEqual(token_contract_metadata_mainnet.name, "LiquidGasToken")
+        self.assertIsInstance(token_contract_metadata_mainnet.abi, List)
+        self.assertTrue(token_contract_metadata_mainnet.abi)
+        self.assertTrue(token_contract_metadata_mainnet.partial_match)
+
+
+class TestAsyncSourcifyClient(unittest.IsolatedAsyncioTestCase):
+    @mock.patch.object(SourcifyClient, "is_chain_supported", return_value=True)
+    async def test_async_get_contract_metadata(
+        self, is_chain_supported_mock: MagicMock
+    ):
+        sourcify_client_mainnet = AsyncSourcifyClient()
+        safe_contract_address = "0x41675C099F32341bf84BFc5382aF534df5C7461a"
+        try:
+            safe_contract_metadata_mainnet = (
+                await sourcify_client_mainnet.async_get_contract_metadata(
+                    safe_contract_address
+                )
+            )
+        except IOError:
+            self.skipTest("Cannot connect to Sourcify")
+        assert safe_contract_metadata_mainnet is not None
+        self.assertEqual(safe_contract_metadata_mainnet.name, "Safe")
+        self.assertIsInstance(safe_contract_metadata_mainnet.abi, List)
+        self.assertTrue(safe_contract_metadata_mainnet.abi)
+        self.assertFalse(safe_contract_metadata_mainnet.partial_match)
+        sourcify_client_sepolia = AsyncSourcifyClient(EthereumNetwork.SEPOLIA)
+        contract_metadata_sepolia = (
+            await sourcify_client_sepolia.async_get_contract_metadata(
+                safe_contract_address
+            )
+        )
+        self.assertEqual(safe_contract_metadata_mainnet, contract_metadata_sepolia)
+
+        # Testing sourcify partial match token
+        partial_match_contract_address = "0x000000000000C1CB11D5c062901F32D06248CE48"
+        token_contract_metadata_mainnet = (
+            await sourcify_client_mainnet.async_get_contract_metadata(
+                partial_match_contract_address
+            )
         )
         assert token_contract_metadata_mainnet is not None
         self.assertEqual(token_contract_metadata_mainnet.name, "LiquidGasToken")

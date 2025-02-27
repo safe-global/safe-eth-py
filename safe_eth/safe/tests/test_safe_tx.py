@@ -6,6 +6,7 @@ from eth_account import Account
 from hexbytes import HexBytes
 
 from ...eth.utils import get_empty_tx_params
+from ...util.util import to_0x_hex_str
 from ..enums import SafeOperationEnum
 from ..exceptions import NotEnoughSafeTransactionGas, SignaturesDataTooShort
 from ..multi_send import MultiSendOperation, MultiSendTx
@@ -73,7 +74,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
             safe_tx.call(tx_sender_address=self.ethereum_test_account.address), 1
         )
         tx_hash, _ = safe_tx.execute(
-            tx_sender_private_key=self.ethereum_test_account.key
+            tx_sender_private_key=to_0x_hex_str(self.ethereum_test_account.key)
         )
         self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         self.assertEqual(safe.retrieve_nonce(), 1)

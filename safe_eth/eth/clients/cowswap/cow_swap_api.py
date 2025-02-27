@@ -10,6 +10,7 @@ from safe_eth.eth import EthereumNetwork, EthereumNetworkNotSupported
 from safe_eth.eth.constants import NULL_ADDRESS
 from safe_eth.eth.eip712 import eip712_encode_hash
 from safe_eth.util.http import prepare_http_session
+from safe_eth.util.util import to_0x_hex_str
 
 from .order import Order, OrderKind
 
@@ -163,7 +164,7 @@ class CowSwapAPI:
             "feeAmount": str(order.feeAmount),
             "kind": order.kind,
             "partiallyFillable": order.partiallyFillable,
-            "signature": signed_message.signature.hex(),
+            "signature": to_0x_hex_str(signed_message.signature),
             "signingScheme": "ethsign",
             "from": from_address,
         }

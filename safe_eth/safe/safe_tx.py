@@ -16,6 +16,7 @@ from safe_eth.eth.eip712 import eip712_encode
 from safe_eth.eth.ethereum_client import TxSpeed
 
 from ..eth.utils import fast_keccak
+from ..util.util import to_0x_hex_str
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -83,7 +84,7 @@ class SafeTx:
         self.safe_address = safe_address
         self.to = to or NULL_ADDRESS
         self.value = int(value)
-        self.data = HexBytes(data) if data else b""
+        self.data = HexBytes(data) if data else HexBytes(b"")
         self.operation = int(operation)
         self.safe_tx_gas = int(safe_tx_gas)
         self.base_gas = int(base_gas)
@@ -100,7 +101,7 @@ class SafeTx:
 
     def __str__(self):
         return (
-            f"SafeTx - safe={self.safe_address} - to={self.to} - value={self.value} - data={self.data.hex()} - "
+            f"SafeTx - safe={self.safe_address} - to={self.to} - value={self.value} - data={to_0x_hex_str(self.data)} - "
             f"operation={self.operation} - safe-tx-gas={self.safe_tx_gas} - base-gas={self.base_gas} - "
             f"gas-price={self.gas_price} - gas-token={self.gas_token} - refund-receiver={self.refund_receiver} - "
             f"signers = {self.signers}"
@@ -415,7 +416,7 @@ class SafeTx:
         :return: Signature
         """
         account = Account.from_key(private_key)
-        signature_dict = account.signHash(self.safe_tx_hash)
+        signature_dict = account.unsafe_sign_hash(self.safe_tx_hash)
         signature = signature_to_bytes(
             signature_dict["v"], signature_dict["r"], signature_dict["s"]
         )

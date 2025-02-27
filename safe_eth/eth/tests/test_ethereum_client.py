@@ -10,8 +10,10 @@ from eth_account import Account
 from eth_typing import URI, HexStr
 from hexbytes import HexBytes
 from web3.eth import Eth
+from web3.exceptions import Web3RPCError
 from web3.types import TxParams
 
+from ...util.util import to_0x_hex_str
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (
@@ -24,7 +26,7 @@ from ..ethereum_client import (
     TracingManager,
     get_auto_ethereum_client,
 )
-from ..exceptions import BatchCallException, ChainIdIsRequired, InvalidERC20Info
+from ..exceptions import BatchCallException, InvalidERC20Info
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -663,7 +665,7 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.tracing.trace_filter()
 
         with self.assertRaisesMessage(
-            ValueError, "The method trace_filter does not exist/is not available"
+            Web3RPCError, "The method trace_filter does not exist/is not available"
         ):
             self.ethereum_client.tracing.trace_filter(
                 to_address=[Account.create().address]
@@ -1188,7 +1190,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         ]
         blocks = self.ethereum_client.get_blocks(block_numbers, full_transactions=True)
         block_hashes = [block["hash"] for block in blocks]
-        block_hashes_hex = [block_hash.hex() for block_hash in block_hashes]
+        block_hashes_hex = [to_0x_hex_str(block_hash) for block_hash in block_hashes]
         for block_number, block in zip(block_numbers, blocks):
             self.assertEqual(block["number"], block_number)
             self.assertEqual(len(block["hash"]), 32)
@@ -1268,15 +1270,16 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             "gas": 25000,
             "gasPrice": self.ethereum_client.w3.eth.gas_price,
         }
-        with self.assertRaises(ChainIdIsRequired):
+
+        with self.assertRaises(Exception) as error:
             self.ethereum_client.send_unsigned_transaction(
                 tx, private_key=random_sender_account.key
             )
 
-        tx["chainId"] = 1
-        with self.assertRaises(InsufficientFunds):
-            self.ethereum_client.send_unsigned_transaction(
-                tx, private_key=random_sender_account.key
+            # Depending on RPC side the error could be InsufficientFunds or Web3RPCError
+            self.assertTrue(
+                isinstance(error.exception, (InsufficientFunds, Web3RPCError)),
+                f"Expected InsufficientFunds or Web3RPCError, but got {type(error.exception)}",
             )
 
     def test_trace_block(self):

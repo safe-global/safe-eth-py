@@ -7,3 +7,4 @@ class ContractMetadata:
     name: Optional[str]
     abi: List[Dict[str, Any]]
     partial_match: bool
+    implementation: Optional[str] = None

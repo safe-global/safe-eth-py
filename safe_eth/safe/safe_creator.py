@@ -16,6 +16,7 @@ from safe_eth.eth.contracts import (
 )
 from safe_eth.eth.utils import get_empty_tx_params
 
+from ..util.util import to_0x_hex_str
 from .exceptions import InvalidERC20Token, InvalidPaymentToken
 from .proxy_factory import ProxyFactory
 from .safe_create2_tx import SafeCreate2Tx, SafeCreate2TxBuilder
@@ -100,7 +101,7 @@ class SafeCreator:
             master_copy_address, initializer
         ).build_transaction({"from": deployer_account.address})
         tx_hash = ethereum_client.send_unsigned_transaction(
-            tx, private_key=deployer_account.key
+            tx, private_key=to_0x_hex_str(deployer_account.key)
         )
         tx_receipt = ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
         assert tx_receipt

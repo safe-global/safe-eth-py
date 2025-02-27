@@ -10,6 +10,7 @@ from eth_typing import ChecksumAddress, HexAddress, HexStr
 from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 
+from ...util.util import to_0x_hex_str
 from ..utils import fast_bytes_to_checksum_address, fast_to_checksum_address
 from .forms import EthereumAddressFieldForm, HexFieldForm, Keccak256FieldForm
 from .validators import validate_address, validate_checksumed_address
@@ -96,7 +97,7 @@ class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
         self, value: memoryview, expression, connection
     ) -> Optional[ChecksumAddress]:
         if value:
-            return ChecksumAddress(HexAddress(HexStr("0x" + bytes(value).hex())))
+            return ChecksumAddress(HexAddress(HexStr(to_0x_hex_str(bytes(value)))))
 
         return None
 
@@ -225,7 +226,7 @@ class Keccak256Field(models.BinaryField):
 
     def from_db_value(self, value: memoryview, expression, connection) -> Optional[str]:
         if value:
-            return HexBytes(value.tobytes()).hex()
+            return to_0x_hex_str(bytes(value))
         return None
 
     def get_prep_value(self, value: Union[bytes, str]) -> Optional[bytes]:
