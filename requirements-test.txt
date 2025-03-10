@@ -1,6 +1,6 @@
 -r requirements.txt
 coverage==7.6.11
-faker==35.2.0
+faker==37.0.0
 mypy==1.15.0
 pytest==8.3.4
 pytest-django==4.10.0
