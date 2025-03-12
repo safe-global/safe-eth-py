@@ -1201,6 +1201,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.BOTANIX_TESTNET: [
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 165429, "1.4.1+L2"),
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 165430, "1.4.1"),
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 1368719, "1.3.0"),  # v1.3.0
     ],
     EthereumNetwork.BLAST_SEPOLIA_TESTNET: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 1087958, "1.3.0+L2"),
