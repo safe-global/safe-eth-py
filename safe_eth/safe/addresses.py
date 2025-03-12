@@ -2153,7 +2153,11 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     ],
     EthereumNetwork.ABSTRACT_SEPOLIA_TESTNET: [
         ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 2207773, "1.3.0"),  # v1.3.0
-        ("0x1727c2c531cf966f902E5927b98490fDFb3b2b70", 2207769, "1.3.0+L2"),  # v1.3.0+L2
+        (
+            "0x1727c2c531cf966f902E5927b98490fDFb3b2b70",
+            2207769,
+            "1.3.0+L2",
+        ),  # v1.3.0+L2
     ],
 }
 
