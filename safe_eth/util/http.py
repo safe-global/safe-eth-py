@@ -49,10 +49,7 @@ def build_full_url(base_url: str, url: str) -> str:
     if not base_url.startswith(("http://", "https://")):
         base_url = f"http://{base_url}/"
 
-    if base_url.endswith("/"):
-        base_url = base_url.rstrip("/")
-
-    if url.startswith("/"):
-        url = url.lstrip("/")
+    base_url = base_url.rstrip("/")
+    url = url.lstrip("/")
 
     return urljoin(f"{base_url}/", url)
