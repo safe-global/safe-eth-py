@@ -1,6 +1,5 @@
 from abc import ABC
 from typing import Dict, Optional
-from urllib.parse import urljoin
 
 import requests
 
@@ -9,7 +8,7 @@ from safe_eth.eth.ethereum_client import (
     EthereumNetwork,
     EthereumNetworkNotSupported,
 )
-from safe_eth.util.http import prepare_http_session
+from safe_eth.util.http import build_full_url, prepare_http_session
 
 
 class SafeAPIException(Exception):
@@ -46,11 +45,11 @@ class SafeBaseAPI(ABC):
         return cls(ethereum_network, ethereum_client=ethereum_client)
 
     def _get_request(self, url: str) -> requests.Response:
-        full_url = urljoin(self.base_url, url)
+        full_url = build_full_url(self.base_url, url)
         return self.http_session.get(full_url, timeout=self.request_timeout)
 
     def _post_request(self, url: str, payload: Dict) -> requests.Response:
-        full_url = urljoin(self.base_url, url)
+        full_url = build_full_url(self.base_url, url)
         return self.http_session.post(
             full_url,
             json=payload,
@@ -59,7 +58,7 @@ class SafeBaseAPI(ABC):
         )
 
     def _delete_request(self, url: str, payload: Dict) -> requests.Response:
-        full_url = urljoin(self.base_url, url)
+        full_url = build_full_url(self.base_url, url)
         return self.http_session.delete(
             full_url,
             json=payload,

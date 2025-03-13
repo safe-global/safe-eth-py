@@ -1,4 +1,5 @@
 from typing import Union
+from urllib.parse import urljoin
 
 import requests
 
@@ -32,3 +33,23 @@ def prepare_http_session(
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
+
+
+def build_full_url(base_url: str, url: str) -> str:
+    """
+    Combines a base URL and a relative URL into a complete URL.
+
+    Ensures the base URL has the correct scheme (http:// or https://) and
+    removes any duplicate slashes between the base URL and the relative URL.
+
+    :param base_url: Base URL
+    :param url: Relative URL
+    :return: The complete URL formed by combining base_url and url.
+    """
+    if not base_url.startswith(("http://", "https://")):
+        base_url = f"http://{base_url}/"
+
+    base_url = base_url.rstrip("/")
+    url = url.lstrip("/")
+
+    return urljoin(f"{base_url}/", url)
