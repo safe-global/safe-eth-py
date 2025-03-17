@@ -151,14 +151,14 @@ class TransactionServiceApi(SafeBaseAPI):
             HexBytes(tx_raw["transactionHash"]) if tx_raw["transactionHash"] else None
         )
 
-        if safe_tx.safe_tx_hash != safe_tx_hash:
+        if safe_tx.safe_tx_hash != HexBytes(safe_tx_hash):
             raise ApiSafeTxHashNotMatchingException(
                 f"API safe-tx-hash: {to_0x_hex_str(HexBytes(safe_tx_hash))} doesn't match the calculated safe-tx-hash: {to_0x_hex_str(HexBytes(safe_tx.safe_tx_hash))}"
             )
 
         return safe_tx
 
-    def get_balances(self, safe_address: str) -> List[Balance]:
+    def get_balances(self, safe_address: ChecksumAddress) -> List[Balance]:
         """
 
         :param safe_address:
@@ -167,7 +167,7 @@ class TransactionServiceApi(SafeBaseAPI):
         response = self._get_request(f"/api/v1/safes/{safe_address}/balances/")
         if not response.ok:
             raise SafeAPIException(f"Cannot get balances: {response.content!r}")
-        return response.json()
+        return response.json().get("results", [])
 
     def get_safe_transaction(
         self, safe_tx_hash: Union[bytes, HexStr]
@@ -178,7 +178,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         safe_tx_hash_str = to_0x_hex_str(HexBytes(safe_tx_hash))
         response = self._get_request(
-            f"/api/v1/multisig-transactions/{safe_tx_hash_str}/"
+            f"/api/v2/multisig-transactions/{safe_tx_hash_str}/"
         )
         if not response.ok:
             raise SafeAPIException(
@@ -203,7 +203,7 @@ class TransactionServiceApi(SafeBaseAPI):
         :param safe_address:
         :return: a list of transactions for provided Safe
         """
-        url = f"/api/v1/safes/{safe_address}/multisig-transactions/"
+        url = f"/api/v2/safes/{safe_address}/multisig-transactions/"
 
         if kwargs:
             query_string = urlencode(
@@ -341,7 +341,7 @@ class TransactionServiceApi(SafeBaseAPI):
             "origin": "Safe-CLI",
         }
         response = self._post_request(
-            f"/api/v1/safes/{safe_tx.safe_address}/multisig-transactions/", data
+            f"/api/v2/safes/{safe_tx.safe_address}/multisig-transactions/", data
         )
         if not response.ok:
             raise SafeAPIException(f"Error posting transaction: {response.content!r}")
@@ -356,7 +356,7 @@ class TransactionServiceApi(SafeBaseAPI):
         """
         payload = {"safeTxHash": safe_tx_hash, "signature": signature}
         response = self._delete_request(
-            f"/api/v1/multisig-transactions/{safe_tx_hash}/", payload
+            f"/api/v2/multisig-transactions/{safe_tx_hash}/", payload
         )
         if not response.ok:
             raise SafeAPIException(f"Error deleting transaction: {response.content!r}")
