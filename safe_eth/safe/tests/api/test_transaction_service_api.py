@@ -33,7 +33,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
         self.safe_address = "0xAedF684C1c41B51CbD228116e11484425d2FACB9"
 
     def test_constructor(self):
-        ethereum_network = EthereumNetwork.GOERLI
+        ethereum_network = EthereumNetwork.SEPOLIA
         base_url = "https://safe.global"
         transaction_service_api = TransactionServiceApi(
             ethereum_network, ethereum_client=None, base_url=base_url
@@ -47,7 +47,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             TransactionServiceApi.from_ethereum_client(self.ethereum_client)
 
         with mock.patch.object(
-            EthereumClient, "get_network", return_value=EthereumNetwork.GOERLI
+            EthereumClient, "get_network", return_value=EthereumNetwork.SEPOLIA
         ):
             transaction_service_api = TransactionServiceApi.from_ethereum_client(
                 self.ethereum_client
@@ -55,7 +55,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 transaction_service_api.ethereum_client, self.ethereum_client
             )
-            self.assertEqual(transaction_service_api.network, EthereumNetwork.GOERLI)
+            self.assertEqual(transaction_service_api.network, EthereumNetwork.SEPOLIA)
 
     def test_data_decoded_to_text(self):
         decoded_data_text = self.transaction_service_api.data_decoded_to_text(
