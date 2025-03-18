@@ -25,7 +25,7 @@ from hexbytes import HexBytes
 from web3 import HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.method_formatters import (
-    block_formatter,
+    block_result_formatter,
     receipt_formatter,
     trace_list_result_formatter,
     transaction_result_formatter,
@@ -1819,7 +1819,7 @@ class EthereumClient:
                     del raw_block[
                         "extraData"
                     ]  # Remove extraData, raises some problems on parsing
-                blocks.append(block_formatter(raw_block))
+                blocks.append(block_result_formatter(raw_block))
             else:
                 blocks.append(None)
         return blocks
