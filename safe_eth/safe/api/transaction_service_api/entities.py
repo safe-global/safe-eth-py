@@ -71,11 +71,11 @@ class Transaction(TypedDict):
     data: Optional[HexStr]
     operation: int
     gasToken: Optional[AnyAddressType]
-    safeTxGas: int
-    baseGas: int
+    safeTxGas: str
+    baseGas: str
     gasPrice: str
     refundReceiver: Optional[AnyAddressType]
-    nonce: int
+    nonce: str
     execution_date: str
     submission_date: str
     modified: str

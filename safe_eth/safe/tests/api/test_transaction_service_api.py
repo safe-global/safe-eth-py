@@ -86,7 +86,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 self.safe_address, limit=2, nonce__lt=30, failed=False
             )
 
-        expected_url = f"/api/v1/safes/{self.safe_address}/multisig-transactions/?limit=2&nonce__lt=30&failed=False"
+        expected_url = f"/api/v2/safes/{self.safe_address}/multisig-transactions/?limit=2&nonce__lt=30&failed=False"
         mock_get_request.assert_called_once_with(expected_url)
 
         # Test valid safe tx has
