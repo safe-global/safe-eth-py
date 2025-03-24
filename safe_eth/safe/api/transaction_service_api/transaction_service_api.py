@@ -44,6 +44,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.OPTIMISM: "https://safe-transaction-optimism.safe.global",
         EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
         EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
+        EthereumNetwork.SEI_NETWORK: "https://transaction.sei-safe.protofire.io/",
         EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
         EthereumNetwork.SCROLL: "https://safe-transaction-scroll.safe.global",
         EthereumNetwork.SONIC_MAINNET: "https://safe-transaction-sonic.safe.global",
