@@ -42,10 +42,11 @@ def get_safe_deployments(*args, **kwds):
 
 def get_network_addresses_by_chain(safe_deployment: Dict) -> Dict[str, List[str]]:
     """
-    Convert canonical and non-canonical from safe-deployments json to the corresponding addresses.
+    Generates a dictionary mapping chains to their respective addresses.
+    Translates address types to actual addresses from the safe_deployment dictionary.
 
     :param safe_deployment:
-    :return:
+    :return: a dictionary of chains with lists of corresponding addresses.
     """
     network_addresses_by_chain = {}
 
@@ -65,10 +66,10 @@ def get_network_addresses_by_chain(safe_deployment: Dict) -> Dict[str, List[str]
 
 def get_default_network_addresses(deployments: Dict) -> List[str]:
     """
-    Get addresses from deployments dict.
+    Get default safe addresses from the provided deployments dict.
 
-    :param deployments: deployments dict on safe_deployments
-    :return:
+    :param deployments:
+    :return: list of addresses
     """
     addresses: List[str] = []
 
