@@ -65,9 +65,9 @@ def get_network_addresses_by_chain(safe_deployment: Dict) -> Dict[str, List[str]
 
 def get_default_network_addresses(deployments: Dict) -> List[str]:
     """
-    Convert canonical and non-canonical from safe-deployments json to the corresponding addresses.
+    Get addresses from deployments dict.
 
-    :param safe_deployment:
+    :param deployments: deployments dict on safe_deployments
     :return:
     """
     addresses: List[str] = []
