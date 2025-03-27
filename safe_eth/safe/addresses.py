@@ -3,11 +3,13 @@ Contains information about Safe contract addresses deployed in every chain
 
 Every entry contains a tuple with address, deployment block number and version
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 
 from safe_eth.eth import EthereumNetwork
+from safe_eth.eth.utils import fast_to_checksum_address
+from safe_eth.safe.safe_deployments import default_safe_deployments
 
 SAFE_SIMULATE_TX_ACCESSOR_ADDRESS: ChecksumAddress = ChecksumAddress(
     HexAddress(HexStr("0x3d4BA2E0884aa488718476ca2FB8Efc291A46199"))
@@ -3224,3 +3226,35 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 2207746),  # v1.3.0
     ],
 }
+
+
+safe_singleton_contract_names = ["GnosisSafe", "GnosisSafeL2", "Safe", "SafeL2"]
+safe_proxy_factory_contract_names = [
+    "ProxyFactory",
+    "GnosisSafeProxyFactory",
+    "SafeProxyFactory",
+]
+
+
+def get_default_addresses_with_version(
+    filter_contract_names: Union[List, None] = None
+) -> List[Tuple[ChecksumAddress, str]]:
+    """
+    Get the default addresses and versions from contract names.
+    The version is the extended one with L2 in case of L2 contract.
+
+    :return: list of Safe deployment contract addresses with version
+    """
+    default_addresses: List[Tuple[ChecksumAddress, str]] = []
+    for version, contracts in default_safe_deployments.items():
+        for contract_name, addresses in contracts.items():
+            if not filter_contract_names or contract_name in filter_contract_names:
+                for address in addresses:
+                    extended_version = (
+                        version + "+L2" if "L2" in contract_name else version
+                    )
+                    default_addresses.append(
+                        (fast_to_checksum_address(address), extended_version)
+                    )
+
+    return default_addresses
