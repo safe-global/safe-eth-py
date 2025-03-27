@@ -4,7 +4,13 @@ from packaging.version import Version
 
 from safe_eth.eth import EthereumNetwork
 from safe_eth.eth.utils import fast_is_checksum_address
-from safe_eth.safe.addresses import MASTER_COPIES, PROXY_FACTORIES
+from safe_eth.safe.addresses import (
+    MASTER_COPIES,
+    PROXY_FACTORIES,
+    get_default_addresses_with_version,
+    safe_proxy_factory_contract_names,
+    safe_singleton_contract_names,
+)
 
 
 class TestAddresses(TestCase):
@@ -28,3 +34,15 @@ class TestAddresses(TestCase):
                 self.assertEqual(len(proxy_factory), 2)
                 self.assertTrue(fast_is_checksum_address(proxy_factory[0]))
                 self.assertGreaterEqual(proxy_factory[1], 0)
+
+    def test_get_default_addresses_with_version(self):
+        all_defaults_with_version = get_default_addresses_with_version()
+        self.assertEqual(len(all_defaults_with_version), 60)
+        default_singletons = get_default_addresses_with_version(
+            safe_singleton_contract_names
+        )
+        self.assertEqual(len(default_singletons), 13)
+        default_singletons = get_default_addresses_with_version(
+            safe_proxy_factory_contract_names
+        )
+        self.assertEqual(len(default_singletons), 7)
