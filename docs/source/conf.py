@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 # -- Project information -----------------------------------------------------
 
 project = "Safe-eth-py"
-copyright = "2018-2024"
+copyright = "2018-2025"
 author = "Uxio, Moisés, Felipe"
 
 
