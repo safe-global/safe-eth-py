@@ -3229,6 +3229,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.ABSTRACT_SEPOLIA_TESTNET: [
         ("0xDAec33641865E4651fB43181C6DB6f7232Ee91c2", 2207746),  # v1.3.0
     ],
+    EthereumNetwork.OKTO_TESTNET: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 5693633),  # v1.4.1
+    ],
 }
 
 
