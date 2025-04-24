@@ -1282,6 +1282,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
                 f"Expected InsufficientFunds or Web3RPCError, but got {type(error.exception)}",
             )
 
+    @pytest.mark.flaky(reruns=5)
     def test_trace_block(self):
         block_numbers = [13191781, 2191709, 15630274]
         block_mocks = [
@@ -1296,6 +1297,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
                     trace_block_mock,
                 )
 
+    @pytest.mark.flaky(reruns=5)
     def test_trace_blocks(self):
         block_numbers = [13191781, 2191709, 15630274]
         block_mocks = [
@@ -1308,6 +1310,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             block_mocks,
         )
 
+    @pytest.mark.flaky(reruns=5)
     def test_trace_transaction(self):
         for tx_hash in [
             # Safe 1.3.0 deployment
@@ -1321,6 +1324,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
                     trace_transaction_mocks[tx_hash],
                 )
 
+    @pytest.mark.flaky(reruns=5)
     def test_trace_transactions(self):
         tx_hashes = [
             "0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f",  # Safe 1.3.0 deployment
@@ -1333,6 +1337,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             [trace_transaction_mocks[tx_hash] for tx_hash in tx_hashes],
         )
 
+    @pytest.mark.flaky(reruns=5)
     def test_trace_filter(self):
         safe_1_3_0_address = "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552"
         self.assertListEqual(
