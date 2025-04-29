@@ -122,6 +122,7 @@ Contributors
 `See contributors <https://github.com/safe-global/safe-eth-py/graphs/contributors>`_
 
 .. |ci| image:: https://github.com/safe-global/safe-eth-py/actions/workflows/python.yml/badge.svg
+    :target: https://github.com/safe-global/safe-eth-py/actions
     :alt: Github Actions CI build
 
 .. |coveralls| image:: https://coveralls.io/repos/github/safe-global/safe-eth-py/badge.svg
