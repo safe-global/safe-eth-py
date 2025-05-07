@@ -2243,6 +2243,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         ),  # v1.3.0+L2
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 2231705, "1.4.1"),  # v1.4.1
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 2231707, "1.4.1+L2"),  # v1.4.1+L2
     ],
 }
 
