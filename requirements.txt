@@ -7,4 +7,4 @@ psycopg[binary]==3.2.6
 py-evm==0.12.0b1
 requests==2.32.3
 safe-pysha3>=1.0.0
-web3==7.9.0
+web3==7.11.0
