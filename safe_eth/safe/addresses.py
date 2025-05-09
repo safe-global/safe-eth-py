@@ -3180,6 +3180,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.ZIRCUIT_MAINNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 131958),  # v1.3.0
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 8246),  # v1.3.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 12993033), # v1.4.1
     ],
     EthereumNetwork.BOB_SEPOLIA: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 1298122),  # v1.3.0
