@@ -527,12 +527,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
+    def get_message_hash_and_preimage(self, message: Union[str, Hash32]) -> Tuple[Hash32, HexStr]:
         """
-        Return hash of a message that can be signed by owners.
+        Return hash of a message and its preimage that can be signed by owners.
 
         :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
-        :return: Message hash
+        :return: Hex encoded message data
         """
         if isinstance(message, str):
             message_to_hash = message.encode()  # Convertir str a bytes
@@ -546,17 +546,26 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
             )
         )
-        return fast_keccak(
-            encode_packed(
-                ["bytes1", "bytes1", "bytes32", "bytes32"],
-                [
-                    bytes.fromhex("19"),
-                    bytes.fromhex("01"),
-                    self.domain_separator,
-                    safe_message_hash,
-                ],
-            )
+        message_preimage = encode_packed(
+            ["bytes1", "bytes1", "bytes32", "bytes32"],
+            [
+                bytes.fromhex("19"),
+                bytes.fromhex("01"),
+                self.domain_separator,
+                safe_message_hash,
+            ],
         )
+        return fast_keccak(message_preimage), message_preimage
+
+    def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
+        """
+        Return hash of a message that can be signed by owners.
+
+        :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
+        :return: Message hash
+        """
+        hash, _ = self.get_message_hash_and_preimage(message)
+        return hash
 
     def retrieve_all_info(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
