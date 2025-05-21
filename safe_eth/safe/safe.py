@@ -527,9 +527,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def encode_message_data(self, message: Union[str, Hash32]) -> Hash32:
+    def get_message_hash_and_preimage(self, message: Union[str, Hash32]) -> Tuple[Hash32, HexStr]:
         """
-        Return the encoded SafeMessage data that can be signed by owners.
+        Return hash of a message and its preimage that can be signed by owners.
 
         :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
         :return: Hex encoded message data
@@ -546,7 +546,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
             )
         )
-        return encode_packed(
+        message_preimage = encode_packed(
             ["bytes1", "bytes1", "bytes32", "bytes32"],
             [
                 bytes.fromhex("19"),
@@ -555,6 +555,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 safe_message_hash,
             ],
         )
+        return fast_keccak(message_preimage), message_preimage
 
     def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
         """
@@ -563,9 +564,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
         :return: Message hash
         """
-        return fast_keccak(
-            self.encode_message_data(message)
-        )
+        hash, _ = self.get_message_hash_and_preimage(message)
+        return hash
 
     def retrieve_all_info(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
