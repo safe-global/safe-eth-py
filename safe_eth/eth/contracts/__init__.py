@@ -54,6 +54,7 @@ contracts = {
     "example_erc20": "ERC20TestToken.json",
     "kyber_network_proxy": "kyber_network_proxy.json",
     "multi_send": "MultiSend.json",
+    "multi_send_call_only": "MultiSendCallOnly.json",
     "paying_proxy": "PayingProxy.json",
     "proxy": "Proxy_V1_1_1.json",
     "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",
@@ -222,6 +223,12 @@ def get_delegate_constructor_proxy_contract(
 
 
 def get_multi_send_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_multi_send_call_only_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
