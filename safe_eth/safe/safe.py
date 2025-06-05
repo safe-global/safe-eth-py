@@ -4,7 +4,7 @@ import os
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import eth_abi
 from eth_abi.exceptions import DecodingError
@@ -527,7 +527,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def get_message_hash_and_preimage(self, message: Union[str, Hash32]) -> Tuple[Hash32, HexStr]:
+    def get_message_hash_and_preimage(
+        self, message: Union[str, Hash32]
+    ) -> Tuple[Hash32, bytes]:
         """
         Return hash of a message and its preimage that can be signed by owners.
 
@@ -535,7 +537,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :return: Hex encoded message data
         """
         if isinstance(message, str):
-            message_to_hash = message.encode()  # Convertir str a bytes
+            message_to_hash = message.encode()  # str -> bytes
         else:
             message_to_hash = message
 
@@ -564,8 +566,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
         :return: Message hash
         """
-        hash, _ = self.get_message_hash_and_preimage(message)
-        return hash
+        message_hash, _ = self.get_message_hash_and_preimage(message)
+        return message_hash
 
     def retrieve_all_info(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
@@ -812,7 +814,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     ) -> SafeTx:
         """
         Allows to execute a Safe transaction confirmed by required number of owners and then pays the account
-        that submitted the transaction. The fees are always transfered, even if the user transaction fails
+        that submitted the transaction. The fees are always transferred, even if the user transaction fails
 
         :param to: Destination address of Safe transaction
         :param value: Ether value of Safe transaction
@@ -1049,7 +1051,7 @@ class SafeV141(Safe):
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> int:
         """
-        Estimate tx gas. Use `SimulateTxAccesor` and `simulate` on the `CompatibilityFallHandler`
+        Estimate tx gas. Use `SimulateTxAccessor` and `simulate` on the `CompatibilityFallHandler`
 
         :param to:
         :param value:
