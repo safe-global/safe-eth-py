@@ -9,7 +9,6 @@ from hexbytes import HexBytes
 from safe_eth.eth import EthereumClient, EthereumTxSent
 from safe_eth.eth.constants import NULL_ADDRESS
 from safe_eth.eth.contracts import (
-    get_compatibility_fallback_handler_contract,
     get_delegate_constructor_proxy_contract,
     get_safe_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
@@ -109,33 +108,6 @@ class SafeCreator:
 
         contract_address = tx_receipt["contractAddress"]
         return EthereumTxSent(tx_hash, tx, contract_address)
-
-    @staticmethod
-    def deploy_compatibility_fallback_handler(
-        ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> EthereumTxSent:
-        """
-        Deploy Last compatibility Fallback handler
-
-        :param ethereum_client:
-        :param deployer_account: Ethereum account
-        :return: ``EthereumTxSent`` with the deployed contract address
-        """
-
-        contract = get_compatibility_fallback_handler_contract(ethereum_client.w3)
-        constructor_data = contract.constructor().build_transaction(
-            get_empty_tx_params()
-        )["data"]
-        ethereum_tx_sent = ethereum_client.deploy_and_initialize_contract(
-            deployer_account, constructor_data
-        )
-        logger.info(
-            "Deployed and initialized Compatibility Fallback Handler version=%s on address %s by %s",
-            "1.4.1",
-            ethereum_tx_sent.contract_address,
-            deployer_account.address,
-        )
-        return ethereum_tx_sent
 
     @staticmethod
     def deploy_simulate_tx_accessor(

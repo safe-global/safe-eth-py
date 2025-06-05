@@ -29,13 +29,18 @@ from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSend
 from safe_eth.safe.proxy_factory import ProxyFactory, ProxyFactoryV141
 
+from ..compatibility_fallback_handler import (
+    CompatibilityFallbackHandlerV130,
+    CompatibilityFallbackHandlerV141,
+)
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
 
 logger = logging.getLogger(__name__)
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
-    compatibility_fallback_handler: Contract
+    compatibility_fallback_handler_V1_4_1: Contract
+    compatibility_fallback_handler_V1_3_0: Contract
     multi_send: MultiSend
     multi_send_contract: Contract
     proxy_factory: ProxyFactory
@@ -54,7 +59,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         "safe_V1_1_1": SafeV111.deploy_contract,
         "safe_V1_3_0": SafeV130.deploy_contract,
         "safe_V1_4_1": SafeV141.deploy_contract,
-        "compatibility_fallback_handler": Safe.deploy_compatibility_fallback_handler,
+        "compatibility_fallback_handler_V1_3_0": CompatibilityFallbackHandlerV130.deploy_contract,
+        "compatibility_fallback_handler_V1_4_1": CompatibilityFallbackHandlerV141.deploy_contract,
         "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
         "proxy_factory": ProxyFactoryV141.deploy_contract,
         "multi_send": MultiSend.deploy_contract,
@@ -88,9 +94,14 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         cls.configure_django_settings()
         cls.configure_envvars()
 
-        cls.compatibility_fallback_handler = (
+        cls.compatibility_fallback_handler_V1_4_1 = (
             get_compatibility_fallback_handler_contract(
-                cls.w3, cls.contract_addresses["compatibility_fallback_handler"]
+                cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_4_1"]
+            )
+        )
+        cls.compatibility_fallback_handler_V1_3_0 = (
+            get_compatibility_fallback_handler_contract(
+                cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_3_0"]
             )
         )
         cls.simulate_tx_accessor_V1_4_1 = get_simulate_tx_accessor_V1_4_1_contract(
@@ -137,7 +148,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
 
             settings.SAFE_CONTRACT_ADDRESS = cls.contract_addresses["safe_V1_4_1"]
             settings.SAFE_DEFAULT_CALLBACK_HANDLER = cls.contract_addresses[
-                "compatibility_fallback_handler"
+                "compatibility_fallback_handler_V1_4_1"
             ]
             settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses["multi_send"]
             settings.SAFE_PROXY_FACTORY_ADDRESS = cls.contract_addresses[
@@ -282,7 +293,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         """
 
         fallback_handler = (
-            fallback_handler or self.compatibility_fallback_handler.address
+            fallback_handler or self.compatibility_fallback_handler_V1_4_1.address
         )
         owners = (
             owners
@@ -346,7 +357,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             threshold=threshold,
             owners=owners,
             initial_funding_wei=initial_funding_wei,
-            fallback_handler=fallback_handler,
+            fallback_handler=fallback_handler
+            or self.compatibility_fallback_handler_V1_4_1.address,
         )
 
     def deploy_test_safe_v1_3_0(
@@ -374,7 +386,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             threshold=threshold,
             owners=owners,
             initial_funding_wei=initial_funding_wei,
-            fallback_handler=fallback_handler,
+            fallback_handler=fallback_handler
+            or self.compatibility_fallback_handler_V1_3_0.address,
         )
 
     def deploy_test_safe_v1_1_1(
