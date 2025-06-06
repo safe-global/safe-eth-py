@@ -2325,6 +2325,10 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 416926, "1.4.1"),  # v1.4.1
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 416924, "1.4.1+L2"),  # v1.4.1+L2
     ],
+    EthereumNetwork.STORY_AENEID_TESTNET: [
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 973663, "1.4.1"),  # v1.4.1
+        ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 974369, "1.4.1+L2"),  # v1.4.1+L2
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
@@ -3431,6 +3435,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.AUTONOMYS_TAURUS_TESTNET: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 416910),  # v1.4.1
+    ],
+    EthereumNetwork.STORY_AENEID_TESTNET: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 973637),  # v1.4.1
     ],
 }
 
