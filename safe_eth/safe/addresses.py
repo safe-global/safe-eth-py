@@ -2226,6 +2226,8 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.STORY: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 542735, "1.3.0"),  # v1.3.0
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 542731, "1.3.0+L2"),  # v1.3.0+L2
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 621448, "1.3.0"),  # v1.3.0
+        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 621444, "1.3.0+L2"),  # v1.3.0+L2
     ],
     EthereumNetwork.NIBIRU_CATACLYSM_1: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 21722399, "1.3.0"),  # v1.3.0
@@ -3399,6 +3401,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.STORY: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 542710),  # v1.3.0
+        ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 621416), # v1.3.0
     ],
     EthereumNetwork.NIBIRU_CATACLYSM_1: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 21722329),  # v1.3.0
