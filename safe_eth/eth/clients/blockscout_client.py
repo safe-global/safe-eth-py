@@ -103,6 +103,7 @@ class BlockscoutClient:
         EthereumNetwork.AUTONOMYS_TAURUS_TESTNET: "https://explorer.auto-evm.taurus.autonomys.xyz/api/v2/",
         EthereumNetwork.STORY_AENEID_TESTNET: "https://aeneid.storyscan.xyz/api/v2/",
         EthereumNetwork.STORY: "https://mainnet.storyscan.xyz/api/v2/",
+        EthereumNetwork.AUTONITY_PICCADILLY_TIBER_TESTNET: "https://piccadilly.autonity.org/api/v2",
     }
 
     def __init__(
