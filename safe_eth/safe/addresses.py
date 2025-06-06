@@ -2226,6 +2226,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.STORY: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 542735, "1.3.0"),  # v1.3.0
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 542731, "1.3.0+L2"),  # v1.3.0+L2
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 621448, "1.3.0"),  # v1.3.0
     ],
     EthereumNetwork.NIBIRU_CATACLYSM_1: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 21722399, "1.3.0"),  # v1.3.0
