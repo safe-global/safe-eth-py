@@ -283,15 +283,15 @@ class SafeSignatureContract(SafeSignature):
         )
         is_valid_signature_fn = (
             compatibility_fallback_handler.get_function_by_signature(
-                "isValidSignature(bytes,bytes)"
+                "isValidSignature(bytes32,bytes)"
             )
         )
         try:
-            return is_valid_signature_fn(
-                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-            ).call() in (
-                self.EIP1271_MAGIC_VALUE,
-                self.EIP1271_MAGIC_VALUE_UPDATED,
+            return (
+                is_valid_signature_fn(
+                    bytes(self.safe_hash_preimage), bytes(self.contract_signature)
+                ).call()
+                == self.EIP1271_MAGIC_VALUE_UPDATED
             )
         except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
             # Error using `pending` block identifier or contract does not exist
