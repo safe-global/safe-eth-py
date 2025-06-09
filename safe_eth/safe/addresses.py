@@ -2387,6 +2387,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     ],
     EthereumNetwork.SONEIUM_TESTNET_MINATO: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 1835127, "1.3.0"),  # v1.3.0
+        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 1835122, "1.3.0+L2"),  # v1.3.0+L2
     ],
 }
 
