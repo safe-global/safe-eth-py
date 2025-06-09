@@ -3488,6 +3488,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 21674875),  # v1.3.0
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 14069955),  # v1.4.1
     ],
+    EthereumNetwork.BERACHAIN_BEPOLIA: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2067958),  # v1.4.1
+    ],
 }
 
 
