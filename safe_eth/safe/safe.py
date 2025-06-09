@@ -4,7 +4,7 @@ import os
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import eth_abi
 from eth_abi.exceptions import DecodingError
@@ -528,8 +528,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             )
 
     def get_message_hash_and_preimage(
-        self, message: Union[str, Hash32]
-    ) -> Tuple[Hash32, bytes]:
+        self, message: Union[str, bytes]
+    ) -> tuple[Hash32, bytes]:
         """
         Return hash of a message and its preimage that can be signed by owners.
 
@@ -559,7 +559,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         )
         return fast_keccak(message_preimage), message_preimage
 
-    def get_message_hash(self, message: Union[str, Hash32]) -> Hash32:
+    def get_message_hash(self, message: Union[str, bytes]) -> Hash32:
         """
         Return hash of a message that can be signed by owners.
 
@@ -885,7 +885,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param tx_gas: Gas for the external tx. If not, `(safe_tx_gas + data_gas) * 2` will be used
         :param tx_gas_price: Gas price of the external tx. If not, `gas_price` will be used
         :param block_identifier:
-        :return: Tuple(tx_hash, tx)
+        :return: EthereumTxSent
         :raises: InvalidMultisigTx: If user tx cannot go through the Safe
         """
 
