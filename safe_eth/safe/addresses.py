@@ -2403,7 +2403,11 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     ],
     EthereumNetwork.IMMUTABLE_ZKEVM: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 1602100, "1.3.0"),  # v1.3.0
-        ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 1602095, "1.3.0+L2"),  # v1.3.0+L2
+        (
+            "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
+            1602095,
+            "1.3.0+L2",
+        ),  # v1.3.0+L2
     ],
 }
 
