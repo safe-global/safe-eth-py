@@ -1,3 +1,5 @@
+import base64
+
 from django.core.exceptions import ValidationError
 from django.core.serializers import serialize
 from django.db import transaction
@@ -14,6 +16,7 @@ from ...utils import fast_is_checksum_address, fast_keccak_text
 from .models import (
     EthereumAddressBinary,
     EthereumAddressFastBinary,
+    HexV2Hash,
     Keccak256Hash,
     Uint32,
     Uint96,
@@ -221,3 +224,28 @@ class TestModels(TestCase):
         serialized = serialize("json", Uint256.objects.all())
         # value should be in serialized data
         self.assertIn(str(value), serialized)
+
+    def test_hexv2_field(self):
+        hexvalue = HexBytes("0x1234abcd")
+        alt_inputs = [hexvalue, b"\x12\x34\xab\xcd", "0x1234abcd"]
+
+        for v in alt_inputs:
+            with self.subTest(v=v):
+                obj = HexV2Hash.objects.create(value=v)
+                obj.refresh_from_db()
+                self.assertIsInstance(obj.value, HexBytes)
+                self.assertEqual(obj.value, hexvalue)
+
+        # Test null
+        obj = HexV2Hash.objects.create(value=None)
+        obj.refresh_from_db()
+        self.assertIsNone(obj.value)
+
+    def test_serialize_hexv2_field_to_json(self):
+        hexvalue = HexBytes("0x1234abcd")
+        expected_base64 = base64.b64encode(bytes(hexvalue)).decode()
+
+        HexV2Hash.objects.create(value=hexvalue)
+        serialized = serialize("json", HexV2Hash.objects.all())
+
+        self.assertIn(expected_base64, serialized)
