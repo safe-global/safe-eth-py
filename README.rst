@@ -117,6 +117,31 @@ It includes:
 - **safe_eth.safe.serializers**: Serializers for Safe (signature, transaction...).
 - All the tests are written using Django Test suite.
 
+
+Safe APIs
+--------------
+safe_eth.safe.api
+~~~~~~~~~~~~
+Interaction with the Safe Transaction Service API to manage Safes, transactions, delegates, and messages.
+
+An API key can be used for authenticated requests, but it is optional. You can either set it as an environment
+variable or pass it directly to the constructor via the api_key parameter. A custom service URL can also be provided
+using the base_url parameter.
+
+.. code-block:: bash
+
+ export SAFE_TRANSACTION_SERVICE_API_KEY=[api-key-jwt-token-value]
+
+Example:
+
+.. code-block:: python
+
+    from safe_eth.eth import EthereumNetwork
+    from safe_eth.safe.api import TransactionServiceApi
+
+    transaction_service_api = TransactionServiceApi(EthereumNetwork.GNOSIS)
+    transactions = transaction_service_api.get_transactions("0xAedF684C1c41B51CbD228116e11484425d2FACB9")
+
 Contributors
 ------------
 `See contributors <https://github.com/safe-global/safe-eth-py/graphs/contributors>`_
