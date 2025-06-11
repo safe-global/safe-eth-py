@@ -67,6 +67,16 @@ class TestEnsClient(TestCase):
                     {
                         "domain": {
                             "isMigrated": True,
+                            "labelName": "safelabs",
+                            "labelhash": "0x2a539ee95e2c8d636de6e60ea4f8ea6a44b8d78593c53e849214f259c4b72b4e",
+                            "name": "safelabs.eth",
+                            "parent": {"name": "eth"},
+                        },
+                        "expiryDate": "1844142767",
+                    },
+                    {
+                        "domain": {
+                            "isMigrated": True,
                             "labelName": "safe-dao",
                             "labelhash": "0x3dcf430070cc5f52fbe66433a72fc6eed2860b28527f9016933599d41cbf6d9e",
                             "name": "safe-dao.eth",
