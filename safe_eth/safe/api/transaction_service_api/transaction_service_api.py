@@ -69,7 +69,7 @@ class TransactionServiceApi(SafeBaseAPI):
     ):
         super().__init__(network, ethereum_client, base_url, api_key, request_timeout)
 
-    def get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
+    def _get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
         network_short_name = self.NETWORK_SHORTNAME.get(network)
         if not network_short_name:
             return None

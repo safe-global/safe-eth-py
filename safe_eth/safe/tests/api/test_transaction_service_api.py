@@ -100,6 +100,20 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 f"{transaction_service_api.TRANSACTION_SERVICE_BASE_URL}/sep",
             )
 
+    def test_custom_base_url(self):
+        ethereum_network = EthereumNetwork.GNOSIS
+        transaction_service_api_with_custom_url = TransactionServiceApi(
+            ethereum_network,
+            ethereum_client=None,
+            base_url="https://safe-transaction-gnosis-chain.safe.global",
+            api_key=None,
+        )
+        transactions = transaction_service_api_with_custom_url.get_transactions(
+            self.safe_address
+        )
+        self.assertIsInstance(transactions, list)
+        self.assertGreaterEqual(len(transactions), 6)
+
     def test_data_decoded_to_text(self):
         decoded_data_text = self.transaction_service_api.data_decoded_to_text(
             transaction_data_mock
