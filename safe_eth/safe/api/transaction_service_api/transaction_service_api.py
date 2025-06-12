@@ -25,44 +25,55 @@ class ApiSafeTxHashNotMatchingException(SafeAPIException):
 
 
 class TransactionServiceApi(SafeBaseAPI):
-    URL_BY_NETWORK = {
-        EthereumNetwork.ARBITRUM_ONE: "https://safe-transaction-arbitrum.safe.global",
-        EthereumNetwork.AURORA_MAINNET: "https://safe-transaction-aurora.safe.global",
-        EthereumNetwork.AVALANCHE_C_CHAIN: "https://safe-transaction-avalanche.safe.global",
-        EthereumNetwork.BASE: "https://safe-transaction-base.safe.global",
-        EthereumNetwork.BASE_SEPOLIA_TESTNET: "https://safe-transaction-base-sepolia.safe.global",
-        EthereumNetwork.BERACHAIN: "https://safe-transaction-berachain.safe.global",
-        EthereumNetwork.BLAST: "https://safe-transaction-blast.safe.global",
-        EthereumNetwork.BNB_SMART_CHAIN_MAINNET: "https://safe-transaction-bsc.safe.global",
-        EthereumNetwork.CELO_MAINNET: "https://safe-transaction-celo.safe.global",
-        EthereumNetwork.GNOSIS: "https://safe-transaction-gnosis-chain.safe.global",
-        EthereumNetwork.GNOSIS_CHIADO_TESTNET: "https://safe-transaction-chiado.safe.global",
-        EthereumNetwork.INK: "https://safe-transaction-ink.safe.global",
-        EthereumNetwork.LINEA: "https://safe-transaction-linea.safe.global",
-        EthereumNetwork.MAINNET: "https://safe-transaction-mainnet.safe.global",
-        EthereumNetwork.MANTLE: "https://safe-transaction-mantle.safe.global",
-        EthereumNetwork.OPTIMISM: "https://safe-transaction-optimism.safe.global",
-        EthereumNetwork.POLYGON: "https://safe-transaction-polygon.safe.global",
-        EthereumNetwork.POLYGON_ZKEVM: "https://safe-transaction-zkevm.safe.global",
-        EthereumNetwork.SEPOLIA: "https://safe-transaction-sepolia.safe.global",
-        EthereumNetwork.SCROLL: "https://safe-transaction-scroll.safe.global",
-        EthereumNetwork.SONIC_MAINNET: "https://safe-transaction-sonic.safe.global",
-        EthereumNetwork.UNICHAIN: "https://safe-transaction-unichain.safe.global",
-        EthereumNetwork.WORLD_CHAIN: "https://safe-transaction-worldchain.safe.global",
-        EthereumNetwork.X_LAYER_MAINNET: "https://safe-transaction-xlayer.safe.global",
-        EthereumNetwork.ZKSYNC_MAINNET: "https://safe-transaction-zksync.safe.global",
+    NETWORK_SHORTNAME = {
+        EthereumNetwork.ARBITRUM_ONE: "arb1",
+        EthereumNetwork.AURORA_MAINNET: "aurora",
+        EthereumNetwork.AVALANCHE_C_CHAIN: "avax",
+        EthereumNetwork.BASE: "base",
+        EthereumNetwork.BASE_SEPOLIA_TESTNET: "basesep",
+        EthereumNetwork.BERACHAIN: "berachain",
+        EthereumNetwork.BLAST: "blastmainnet",
+        EthereumNetwork.BNB_SMART_CHAIN_MAINNET: "bnb",
+        EthereumNetwork.CELO_MAINNET: "celo",
+        EthereumNetwork.GNOSIS: "gno",
+        EthereumNetwork.GNOSIS_CHIADO_TESTNET: "chi",
+        EthereumNetwork.HEMI_NETWORK: "hemi",
+        EthereumNetwork.INK: "ink",
+        EthereumNetwork.KATANA_MAINNET: "katana",
+        EthereumNetwork.LENS: "lens",
+        EthereumNetwork.LINEA: "linea",
+        EthereumNetwork.MAINNET: "eth",
+        EthereumNetwork.MANTLE: "mantle",
+        EthereumNetwork.OPTIMISM: "oeth",
+        EthereumNetwork.POLYGON: "pol",
+        EthereumNetwork.POLYGON_ZKEVM: "zkevm",
+        EthereumNetwork.SCROLL: "scr",
+        EthereumNetwork.SEPOLIA: "sep",
+        EthereumNetwork.SONIC_MAINNET: "sonic",
+        EthereumNetwork.UNICHAIN: "unichain",
+        EthereumNetwork.WORLD_CHAIN: "wc",
+        EthereumNetwork.X_LAYER_MAINNET: "okb",
+        EthereumNetwork.ZKSYNC_MAINNET: "zksync",
     }
+    TRANSACTION_SERVICE_BASE_URL = "https://api.safe.global/tx-service"
 
     def __init__(
         self,
         network: EthereumNetwork,
         ethereum_client: Optional[EthereumClient] = None,
         base_url: Optional[str] = None,
+        api_key: Optional[str] = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
         request_timeout: int = int(
             os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
         ),
     ):
-        super().__init__(network, ethereum_client, base_url, request_timeout)
+        super().__init__(network, ethereum_client, base_url, api_key, request_timeout)
+
+    def _get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
+        network_short_name = self.NETWORK_SHORTNAME.get(network)
+        if not network_short_name:
+            return None
+        return f"{self.TRANSACTION_SERVICE_BASE_URL}/{network_short_name}"
 
     @classmethod
     def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:

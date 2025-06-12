@@ -1,9 +1,11 @@
 import copy
+import os
 from unittest import mock
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 from eth_typing import HexStr
 from hexbytes import HexBytes
@@ -27,6 +29,17 @@ from ..mocks.mock_transactions import (
 
 class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
     def setUp(self) -> None:
+        safe_transaction_service_api_key_variable_name = (
+            "SAFE_TRANSACTION_SERVICE_API_KEY"
+        )
+        safe_transaction_service_api_key = os.environ.get(
+            safe_transaction_service_api_key_variable_name
+        )
+        if not safe_transaction_service_api_key:
+            pytest.skip(
+                f"{safe_transaction_service_api_key_variable_name} needs to be defined"
+            )
+
         self.transaction_service_api = TransactionServiceApi(
             EthereumNetwork.GNOSIS, ethereum_client=self.ethereum_client
         )
@@ -36,11 +49,37 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
         ethereum_network = EthereumNetwork.SEPOLIA
         base_url = "https://safe.global"
         transaction_service_api = TransactionServiceApi(
-            ethereum_network, ethereum_client=None, base_url=base_url
+            ethereum_network,
+            ethereum_client=None,
+            base_url=base_url,
+            api_key="test-api-key",
         )
         self.assertEqual(transaction_service_api.network, ethereum_network)
         self.assertIsNone(transaction_service_api.ethereum_client)
         self.assertEqual(transaction_service_api.base_url, base_url)
+        self.assertEqual(transaction_service_api.api_key, "test-api-key")
+
+        ethereum_network = EthereumNetwork.INK
+        transaction_service_api_calculated_base_url_with_env_api_key = (
+            TransactionServiceApi(ethereum_network)
+        )
+        self.assertEqual(
+            transaction_service_api_calculated_base_url_with_env_api_key.network,
+            ethereum_network,
+        )
+        self.assertIsNone(
+            transaction_service_api_calculated_base_url_with_env_api_key.ethereum_client
+        )
+        self.assertEqual(
+            transaction_service_api_calculated_base_url_with_env_api_key.base_url,
+            f"{transaction_service_api_calculated_base_url_with_env_api_key.TRANSACTION_SERVICE_BASE_URL}/ink",
+        )
+        self.assertIsNotNone(
+            transaction_service_api_calculated_base_url_with_env_api_key.api_key
+        )
+
+        with self.assertRaises(EthereumNetworkNotSupported):
+            TransactionServiceApi(EthereumNetwork.BOBA_NETWORK)
 
     def test_from_ethereum_client(self):
         with self.assertRaisesMessage(EthereumNetworkNotSupported, "GANACHE"):
@@ -56,6 +95,24 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 transaction_service_api.ethereum_client, self.ethereum_client
             )
             self.assertEqual(transaction_service_api.network, EthereumNetwork.SEPOLIA)
+            self.assertEqual(
+                transaction_service_api.base_url,
+                f"{transaction_service_api.TRANSACTION_SERVICE_BASE_URL}/sep",
+            )
+
+    def test_custom_base_url(self):
+        ethereum_network = EthereumNetwork.GNOSIS
+        transaction_service_api_with_custom_url = TransactionServiceApi(
+            ethereum_network,
+            ethereum_client=None,
+            base_url="https://safe-transaction-gnosis-chain.safe.global",
+            api_key=None,
+        )
+        transactions = transaction_service_api_with_custom_url.get_transactions(
+            self.safe_address
+        )
+        self.assertIsInstance(transactions, list)
+        self.assertGreaterEqual(len(transactions), 6)
 
     def test_data_decoded_to_text(self):
         decoded_data_text = self.transaction_service_api.data_decoded_to_text(
