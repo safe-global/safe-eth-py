@@ -124,9 +124,10 @@ safe_eth.safe.api
 ~~~~~~~~~~~~
 Interaction with the Safe Transaction Service API to manage Safes, transactions, delegates, and messages.
 
-An API key can be used for authenticated requests, but it is optional. You can either set it as an environment
-variable or pass it directly to the constructor via the api_key parameter. A custom service URL can also be provided
-using the base_url parameter.
+To use the default Transaction Service, you need an API key. You can set this API key either as an environment variable
+or pass it directly to the constructor using the `api_key` parameter. To obtain your API key, create an account on the
+Safe Developer Portal at https://developer.safe.global. Additionally, you can choose to use a custom service by setting
+the `base_url` parameter, the API key may not be required.
 
 .. code-block:: bash
 
