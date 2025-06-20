@@ -107,6 +107,7 @@ class BlockscoutClient:
         EthereumNetwork.SONEIUM_TESTNET_MINATO: "https://soneium-minato.blockscout.com/api/v2/",
         EthereumNetwork.IMMUTABLE_ZKEVM: "https://explorer.immutable.com/api/v2/",
         EthereumNetwork.IMMUTABLE_ZKEVM_TESTNET: "https://explorer.testnet.immutable.com/api/v2/",
+        EthereumNetwork.ARENA_Z: "https://explorer.arena-z.gg/api/v2",
     }
 
     def __init__(
