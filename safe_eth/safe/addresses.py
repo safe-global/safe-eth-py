@@ -3635,6 +3635,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.PLATON_MAINNET: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 121386465),  # v1.4.1
     ],
+    EthereumNetwork.ARENA_Z: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 1528714),  # v1.4.1
+    ],
 }
 
 
