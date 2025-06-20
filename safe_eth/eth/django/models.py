@@ -196,6 +196,26 @@ class HexV2Field(models.BinaryField):
         defaults.update(kwargs)
         return super().formfield(**defaults)
 
+    def from_db_value(self, value, expression, connection):
+        if value:
+            return HexBytes(bytes(value))
+        return None
+
+    def to_python(self, value):
+        if value is None or isinstance(value, HexBytes):
+            return value
+        return HexBytes(value)
+
+    def get_prep_value(self, value):
+        if value is None:
+            return None
+        try:
+            return bytes(HexBytes(value))
+        except (TypeError, ValueError) as e:
+            raise exceptions.ValidationError(
+                f"Invalid hex value for HexV2Field: {value!r}"
+            ) from e
+
 
 class Keccak256Field(models.BinaryField):
     description = "Keccak256 hash stored as binary"
