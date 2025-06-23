@@ -121,7 +121,7 @@ It includes:
 Safe APIs
 --------------
 safe_eth.safe.api
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 Interaction with the Safe Transaction Service API to manage Safes, transactions, delegates, and messages.
 
 To use the default Transaction Service, you need an API key. You can set this API key either as an environment variable
