@@ -108,6 +108,11 @@ class BlockscoutClient:
         EthereumNetwork.IMMUTABLE_ZKEVM: "https://explorer.immutable.com/api/v2/",
         EthereumNetwork.IMMUTABLE_ZKEVM_TESTNET: "https://explorer.testnet.immutable.com/api/v2/",
         EthereumNetwork.ARENA_Z: "https://explorer.arena-z.gg/api/v2",
+        EthereumNetwork.TAC_SAINT_PETERSBURG: "https://spb.explorer.tac.build/api/v2/",
+        EthereumNetwork.TAC_MAINNET: "https://explorer.tac.build/api/v2/",
+        EthereumNetwork.SHAPE: "https://shapescan.xyz/api/v2",
+        EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://sepolia.shapescan.xyz/api/v2/",
+        EthereumNetwork.STORY_AENEID_TESTNET: "https://aeneid.storyscan.io/api/v2/",
     }
 
     def __init__(

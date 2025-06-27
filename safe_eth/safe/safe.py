@@ -527,14 +527,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def get_message_hash_and_preimage(
-        self, message: Union[str, bytes]
-    ) -> tuple[Hash32, bytes]:
+    def get_message_preimage(self, message: Union[str, bytes]) -> bytes:
         """
-        Return hash of a message and its preimage that can be signed by owners.
+        Return preimage for a message that can be signed by owners.
 
         :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
-        :return: Hex encoded message data
+        :return: Preimage for the provided message
         """
         if isinstance(message, str):
             message_to_hash = message.encode()  # str -> bytes
@@ -548,7 +546,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 ["bytes32", "bytes32"], [self.SAFE_MESSAGE_TYPEHASH, message_hash]
             )
         )
-        message_preimage = encode_packed(
+        return encode_packed(
             ["bytes1", "bytes1", "bytes32", "bytes32"],
             [
                 bytes.fromhex("19"),
@@ -557,6 +555,17 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 safe_message_hash,
             ],
         )
+
+    def get_message_hash_and_preimage(
+        self, message: Union[str, bytes]
+    ) -> tuple[Hash32, bytes]:
+        """
+        Return hash of a message and its preimage that can be signed by owners.
+
+        :param message: Message that should be hashed. A ``Hash32`` must be provided for EIP191 or EIP712 messages
+        :return: Tuple of message hash and preimage for the provided message
+        """
+        message_preimage = self.get_message_preimage(message)
         return fast_keccak(message_preimage), message_preimage
 
     def get_message_hash(self, message: Union[str, bytes]) -> Hash32:
