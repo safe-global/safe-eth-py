@@ -108,6 +108,7 @@ class BlockscoutClient:
         EthereumNetwork.IMMUTABLE_ZKEVM: "https://explorer.immutable.com/api/v2/",
         EthereumNetwork.IMMUTABLE_ZKEVM_TESTNET: "https://explorer.testnet.immutable.com/api/v2/",
         EthereumNetwork.ARENA_Z: "https://explorer.arena-z.gg/api/v2",
+        EthereumNetwork.TAC_SAINT_PETERSBURG: "https://spb.explorer.tac.build/api/v2/",
     }
 
     def __init__(
