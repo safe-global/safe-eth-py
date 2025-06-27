@@ -112,6 +112,7 @@ class BlockscoutClient:
         EthereumNetwork.TAC_MAINNET: "https://explorer.tac.build/api/v2/",
         EthereumNetwork.SHAPE: "https://shapescan.xyz/api/v2",
         EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://sepolia.shapescan.xyz/api/v2/",
+        EthereumNetwork.STORY_AENEID_TESTNET: "https://aeneid.storyscan.io/api/v2/",
     }
 
     def __init__(
