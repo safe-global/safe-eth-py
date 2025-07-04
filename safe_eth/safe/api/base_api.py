@@ -66,9 +66,13 @@ class SafeBaseAPI(ABC):
         return base_url
 
     @classmethod
-    def from_ethereum_client(cls, ethereum_client: EthereumClient) -> "SafeBaseAPI":
+    def from_ethereum_client(
+        cls,
+        ethereum_client: EthereumClient,
+        api_key: Optional[str] = None,
+    ) -> "SafeBaseAPI":
         ethereum_network = ethereum_client.get_network()
-        return cls(ethereum_network, ethereum_client=ethereum_client)
+        return cls(ethereum_network, ethereum_client=ethereum_client, api_key=api_key)
 
     def _get_request_headers(self, include_json_body: bool = False) -> Dict[str, str]:
         """
