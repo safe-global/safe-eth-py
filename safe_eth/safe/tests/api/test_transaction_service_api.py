@@ -89,7 +89,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             EthereumClient, "get_network", return_value=EthereumNetwork.SEPOLIA
         ):
             transaction_service_api = TransactionServiceApi.from_ethereum_client(
-                self.ethereum_client
+                self.ethereum_client, api_key="test-api-key"
             )
             self.assertEqual(
                 transaction_service_api.ethereum_client, self.ethereum_client
@@ -99,6 +99,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 transaction_service_api.base_url,
                 f"{transaction_service_api.TRANSACTION_SERVICE_BASE_URL}/sep",
             )
+            self.assertEqual(transaction_service_api.api_key, "test-api-key")
 
     def test_custom_base_url(self):
         ethereum_network = EthereumNetwork.GNOSIS
