@@ -2602,6 +2602,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.SOPHON_TESTNET: [
         ("0xC35F063962328aC65cED5D4c3fC5dEf8dec68dFa", 75651, "1.4.1"),  # v1.4.1
         ("0x610fcA2e0279Fa1F8C00c8c2F71dF522AD469380", 75652, "1.4.1+L2"),  # v1.4.1+L2
+        ("0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910", 13509, "1.3.0"),  # v1.3.0
     ],
 }
 
