@@ -1,3 +1,6 @@
+import base64
+
+from django.core.serializers import serialize
 from django.test import TestCase
 
 from eth_account import Account
@@ -15,6 +18,7 @@ from ..serializers import (
     Uint32Field,
     Uint96Field,
 )
+from .models import HexV2Hash
 
 
 class EthereumAddressSerializerTest(serializers.Serializer):
@@ -211,3 +215,23 @@ class TestSerializers(TestCase):
         value = 2**34
         serializer = Uint32SerializerTest(data={"value": value})
         self.assertFalse(serializer.is_valid())
+
+    def test_hexv2field(self):
+        hex_value = HexBytes("0x1234abcd")
+        alt_inputs = [hex_value, b"\x12\x34\xab\xcd"]
+
+        for v in alt_inputs:
+            with self.subTest(v=v):
+                obj = HexV2Hash.objects.create(value=v)
+                obj.refresh_from_db()
+                self.assertIsInstance(obj.value, bytes)
+                self.assertEqual(obj.value, bytes(v))
+
+    def test_serialize_hexv2field_to_json(self):
+        hexvalue = HexBytes("0x1234abcd")
+        expected_base64 = base64.b64encode(bytes(hexvalue)).decode()
+
+        HexV2Hash.objects.create(value=hexvalue)
+        serialized = serialize("json", HexV2Hash.objects.all())
+
+        self.assertIn(expected_base64, serialized)
