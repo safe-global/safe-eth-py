@@ -33,11 +33,14 @@ def convert_chain_name(name: str) -> str:
 
 def get_chain_enum_name(chain_id: int) -> Optional[str]:
     try:
-        url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
+        url = "https://chainlist.org/rpcs.json"
         response = requests.get(url)
 
         if response.status_code == 200:
-            return convert_chain_name(response.json().get("name"))
+            chains_data = response.json()
+            for chain_data in chains_data:
+                if chain_data.get("chainId") == chain_id:
+                    return convert_chain_name(chain_data.get("name", ""))
         return None
     except (IOError, ConnectionError) as e:
         print(f"Error getting chain name: {e}")
@@ -143,12 +146,19 @@ def validate_etherscan_client_required_urls(base_url: str, api_url: str) -> None
 
 def get_chain_explorers_urls(chain_id: int) -> List[str]:
     try:
-        url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
+        url = "https://chainlist.org/rpcs.json"
         response = requests.get(url)
 
         if response.status_code == 200:
-            explorers = response.json().get("explorers", [])
-            return [explorer.get("url") for explorer in explorers]
+            chains_data = response.json()
+            for chain_data in chains_data:
+                if chain_data.get("chainId") == chain_id:
+                    explorers = chain_data.get("explorers", [])
+                    return [
+                        explorer.get("url")
+                        for explorer in explorers
+                        if explorer.get("url")
+                    ]
     except (IOError, ConnectionError) as e:
         print(f"Error getting chain explorers urls: {e}")
     return []

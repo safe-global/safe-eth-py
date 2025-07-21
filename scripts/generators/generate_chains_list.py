@@ -1,22 +1,10 @@
-import json
 import re
-import shutil
-from glob import glob
 from operator import itemgetter
 
-from git import Repo
+import requests
 
-GIT_URL = "https://github.com/ethereum-lists/chains.git"
-REPO_DIR = "sources"
+CHAINLIST_URL = "https://chainlist.org/rpcs.json"
 RESULT_FILE_PATH = "result.txt"
-
-
-def clean_resources() -> None:
-    """Removes the intermediate resources used (source repository)"""
-    try:
-        shutil.rmtree(REPO_DIR)
-    except OSError:
-        pass
 
 
 def convert_name(name: str) -> str:
@@ -31,22 +19,25 @@ def convert_name(name: str) -> str:
 
 def process_chains() -> None:
     """
-    Reads all JSON files in the REPO_DIR directory and processes the data
-    in order to write one line per JSON to a result.txt file. Each line is
+    Fetches chain data from chainlist.org/rpcs.json and processes the data
+    in order to write one line per chain to a result.txt file. Each line is
     formatted as 'CHAIN_NAME = CHAIN_ID'
     """
-    clean_resources()
     result_file = open(RESULT_FILE_PATH, "w")
-    Repo.clone_from(GIT_URL, REPO_DIR)
+
+    # Fetch chains data from chainlist.org
+    response = requests.get(CHAINLIST_URL)
+    response.raise_for_status()
+    chains_data = response.json()
+
     chains = []
-    for f_name in glob(REPO_DIR + "/_data/chains/*.json"):
-        f = open(f_name)
-        data = json.load(f)
-        chain = {
-            "name": convert_name(data["name"]),
-            "chainId": data["chainId"],
-        }
-        chains.append(chain)
+    for chain_data in chains_data:
+        if "name" in chain_data and "chainId" in chain_data:
+            chain = {
+                "name": convert_name(chain_data["name"]),
+                "chainId": chain_data["chainId"],
+            }
+            chains.append(chain)
 
     # sort the list by chainId
     chains = sorted(chains, key=itemgetter("chainId"))
@@ -57,8 +48,6 @@ def process_chains() -> None:
                 chain["chainId"],
             )
         )
-
-    clean_resources()
 
 
 if __name__ == "__main__":

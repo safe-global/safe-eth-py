@@ -84,17 +84,20 @@ def convert_chain_name(name: str) -> str:
 
 def get_chain_enum_name(chain_id: int) -> Optional[str]:
     """
-    Retrieves the chain name for a given chain ID from the Ethereum Chains GitHub repository.
+    Retrieves the chain name for a given chain ID from chainlist.org/rpcs.json.
     Converts the name to a constant format using `convert_chain_name`.
 
     :param chain_id: The ID of the chain.
     :return: The converted chain name as a string, or None if the request fails.
     """
     try:
-        url = f"https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-{chain_id}.json"
+        url = "https://chainlist.org/rpcs.json"
         response = requests.get(url)
         if response.status_code == 200:
-            return convert_chain_name(response.json().get("name"))
+            chains_data = response.json()
+            for chain_data in chains_data:
+                if chain_data.get("chainId") == chain_id:
+                    return convert_chain_name(chain_data.get("name", ""))
         return None
     except IOError as e:
         print(f"Error getting chain name: {e}")
