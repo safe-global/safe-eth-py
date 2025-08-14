@@ -3,7 +3,6 @@ import os
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
-import aiohttp
 import requests
 
 from safe_eth.eth import EthereumNetwork
@@ -12,6 +11,7 @@ from safe_eth.eth.clients import (
     EtherscanClient,
     EtherscanRateLimitError,
 )
+from safe_eth.eth.clients.rate_limiter import get_client_rate_limited
 
 
 class EtherscanClientV2(EtherscanClient):
@@ -97,9 +97,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
         max_requests: int = int(os.environ.get("ETHERSCAN_CLIENT_MAX_REQUESTS", 100)),
     ):
         super().__init__(network, api_key, request_timeout)
-        self.async_session = aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
-        )
+        self.client = get_client_rate_limited(self.base_api_url, 5)  # 5 per second
 
     async def _async_do_request(
         self, url: str
@@ -107,9 +105,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
         """
         Async version of _do_request
         """
-        async with self.async_session.get(
-            url, timeout=self.request_timeout
-        ) as response:
+        async with await self.client.get(url, timeout=self.request_timeout) as response:
             if response.ok:
                 response_json = await response.json()
                 result = response_json["result"]
