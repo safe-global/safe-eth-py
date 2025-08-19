@@ -21,7 +21,7 @@ jobs:
           const comment = context.payload.comment.body;
           const teamMembers = await github.rest.teams.listMembersInOrg({
             org: 'safe-global',
-            team_slug: 'mainframe',
+            team_slug: 'revenue',
           });
           const isMember = context.payload.sender.type === 'User' && teamMembers.data.some(member => member.login === context.payload.sender.login);
           if (comment.trim() === '/execute' && isMember) {
