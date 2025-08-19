@@ -2570,6 +2570,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 235983, "1.4.1+L2"),  # v1.4.1+L2
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 235718, "1.3.0"),  # v1.3.0
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 235717, "1.3.0+L2"),  # v1.3.0+L2
+        ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 529880, "1.3.0+L2"),  # v1.3.0+L2
     ],
     EthereumNetwork.TAC_SAINT_PETERSBURG: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 2049675, "1.3.0"),  # v1.3.0
@@ -3868,6 +3869,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.BOTANIX_MAINNET: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 235940),  # v1.4.1
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 235706),  # v1.3.0
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 529867),  # v1.3.0
     ],
     EthereumNetwork.TAC_SAINT_PETERSBURG: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 2049644),  # v1.3.0
