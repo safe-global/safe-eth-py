@@ -1,20 +1,30 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Union
+import time
+from typing import Any, Dict, List, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import aiohttp
 import requests
 
 from safe_eth.eth import EthereumNetwork
-from safe_eth.eth.clients import (
-    ContractMetadata,
-    EtherscanClient,
-    EtherscanRateLimitError,
-)
+from safe_eth.eth.clients import ContractMetadata
+from safe_eth.util.http import prepare_http_session
 
 
-class EtherscanClientV2(EtherscanClient):
+class EtherscanClientException(Exception):
+    pass
+
+
+class EtherscanClientConfigurationProblem(Exception):
+    pass
+
+
+class EtherscanRateLimitError(EtherscanClientException):
+    pass
+
+
+class EtherscanClientV2:
     """
     Etherscan API V2 supports multiple chains in the same url.
 
@@ -22,6 +32,9 @@ class EtherscanClientV2(EtherscanClient):
     """
 
     BASE_API_V2_URL = "https://api.etherscan.io"
+    HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
+        "User-Agent": "curl/7.77.0",
+    }
 
     def __init__(
         self,
@@ -31,15 +44,44 @@ class EtherscanClientV2(EtherscanClient):
             os.environ.get("ETHERSCAN_CLIENT_REQUEST_TIMEOUT", 10)
         ),
     ):
-        super().__init__(EthereumNetwork.MAINNET, api_key, request_timeout)
+        self.api_key = api_key
         self.network = network
         self.base_api_url = self.BASE_API_V2_URL
+        self.http_session = prepare_http_session(10, 100)
+        self.http_session.headers = self.HTTP_HEADERS
+        self.request_timeout = request_timeout
 
     def build_url(self, query: str) -> str:
         url = urljoin(self.base_api_url, f"v2/api?chainid={self.network.value}&{query}")
         if self.api_key:
             url += f"&apikey={self.api_key}"
         return url
+
+    def _do_request(self, url: str) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+        response = self.http_session.get(url, timeout=self.request_timeout)
+
+        if response.ok:
+            response_json = response.json()
+            result = response_json["result"]
+            if "Max rate limit reached" in result:
+                # Max rate limit reached, please use API Key for higher rate limit
+                raise EtherscanRateLimitError
+            if response_json["status"] == "1":
+                return result
+        return None
+
+    def _retry_request(
+        self, url: str, retry: bool = True
+    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+        for _ in range(3):
+            try:
+                return self._do_request(url)
+            except EtherscanRateLimitError as exc:
+                if not retry:
+                    raise exc
+                else:
+                    time.sleep(5)
+        return None
 
     @classmethod
     def get_supported_networks(cls) -> List[Dict[str, Any]]:
@@ -84,6 +126,90 @@ class EtherscanClientV2(EtherscanClient):
         return any(
             item.get("chainid") == str(network.value) for item in supported_networks
         )
+
+    @staticmethod
+    def _process_contract_metadata(
+        contract_data: Dict[str, Any]
+    ) -> Optional[ContractMetadata]:
+        contract_name = contract_data["ContractName"]
+        contract_abi = contract_data["ABI"]
+        contract_proxy_implementation_address = (
+            contract_data.get("Implementation") or None
+        )
+        if contract_abi:
+            return ContractMetadata(
+                contract_name,
+                contract_abi,
+                False,
+                contract_proxy_implementation_address,
+            )
+        return None
+
+    def get_contract_metadata(
+        self, contract_address: str, retry: bool = True
+    ) -> Optional[ContractMetadata]:
+        contract_source_code = self.get_contract_source_code(
+            contract_address, retry=retry
+        )
+        if contract_source_code:
+            return self._process_contract_metadata(contract_source_code)
+        return None
+
+    @staticmethod
+    def _process_get_contract_source_code_response(response):
+        if response and isinstance(response, list):
+            result = response[0]
+            abi_str = result.get("ABI")
+
+            if isinstance(abi_str, str) and abi_str.startswith("["):
+                try:
+                    result["ABI"] = json.loads(abi_str)
+                except json.JSONDecodeError:
+                    result["ABI"] = None  # Handle the case where JSON decoding fails
+            else:
+                result["ABI"] = None
+
+            return result
+
+    def get_contract_source_code(self, contract_address: str, retry: bool = True):
+        """
+        Get source code for a contract. Source code query also returns:
+
+            - ContractName: "",
+            - CompilerVersion: "",
+            - OptimizationUsed: "",
+            - Runs: "",
+            - ConstructorArguments: ""
+            - EVMVersion: "Default",
+            - Library: "",
+            - LicenseType: "",
+            - Proxy: "0",
+            - Implementation: "",
+            - SwarmSource: ""
+
+        :param contract_address:
+        :param retry: if ``True``, try again if there's Rate Limit Error
+        :return:
+        """
+        url = self.build_url(
+            f"module=contract&action=getsourcecode&address={contract_address}"
+        )
+        response = self._retry_request(url, retry=retry)  # Returns a list
+        return self._process_get_contract_source_code_response(response)
+
+    def get_contract_abi(self, contract_address: str, retry: bool = True):
+        url = self.build_url(
+            f"module=contract&action=getabi&address={contract_address}"
+        )
+        result = self._retry_request(url, retry=retry)
+        if isinstance(result, dict):
+            return result
+        elif isinstance(result, str):
+            try:
+                return json.loads(result)
+            except json.JSONDecodeError:
+                pass
+        return None
 
 
 class AsyncEtherscanClientV2(EtherscanClientV2):
