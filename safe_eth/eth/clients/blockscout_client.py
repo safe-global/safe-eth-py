@@ -159,7 +159,7 @@ class BlockscoutClient:
                 name,
                 abi,
                 False,
-                implementations[0]["address"] if implementations else None,
+                implementations[0]["address_hash"] if implementations else None,
             )
         return None
 
