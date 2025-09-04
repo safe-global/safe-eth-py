@@ -296,7 +296,7 @@ class SafeCreate2TxBuilder:
     ) -> bytes:
         empty_params: TxParams = get_empty_tx_params()
 
-        if self.safe_version in ("1.4.1", "1.3.0", "1.1.1"):
+        if self.safe_version in ("1.5.0", "1.4.1", "1.3.0", "1.1.1"):
             return HexBytes(
                 self.master_copy_contract.functions.setup(
                     owners,

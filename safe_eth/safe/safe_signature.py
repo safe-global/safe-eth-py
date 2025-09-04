@@ -283,7 +283,7 @@ class SafeSignatureContract(SafeSignature):
         )
         is_valid_signature_fn = (
             compatibility_fallback_handler.get_function_by_signature(
-                "isValidSignature(bytes,bytes)"
+                "isValidSignature(bytes32,bytes)"
             )
         )
         try:

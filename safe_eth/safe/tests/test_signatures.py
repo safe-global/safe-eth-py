@@ -51,7 +51,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
         # Use deprecated isValidSignature method (receives bytes)
         signature = owner.unsafe_sign_hash(safe_message_hash)
         is_valid_bytes_fn = compatibility_contract.get_function_by_signature(
-            "isValidSignature(bytes,bytes)"
+            "isValidSignature(bytes32,bytes)"
         )
         self.assertEqual(
             is_valid_bytes_fn(message.encode(), signature.signature).call(),
