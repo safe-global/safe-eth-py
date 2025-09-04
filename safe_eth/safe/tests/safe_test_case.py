@@ -18,6 +18,7 @@ from safe_eth.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_safe_V1_5_0_contract,
     get_sign_message_lib_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
 )
@@ -32,8 +33,9 @@ from safe_eth.safe.proxy_factory import ProxyFactory, ProxyFactoryV141
 from ..compatibility_fallback_handler import (
     CompatibilityFallbackHandlerV130,
     CompatibilityFallbackHandlerV141,
+    CompatibilityFallbackHandlerV150
 )
-from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
+from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141, SafeV150
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     proxy_factory: ProxyFactory
     proxy_factory_contract: Contract
     safe_contract_V1_4_1: Contract
+    safe_contract_V1_5_0: Contract
     safe_contract_V0_0_1: Contract
     safe_contract_V1_0_0: Contract
     safe_contract_V1_1_1: Contract
@@ -59,8 +62,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         "safe_V1_1_1": SafeV111.deploy_contract,
         "safe_V1_3_0": SafeV130.deploy_contract,
         "safe_V1_4_1": SafeV141.deploy_contract,
+        "safe_V1_5_0": SafeV150.deploy_contract,
         "compatibility_fallback_handler_V1_3_0": CompatibilityFallbackHandlerV130.deploy_contract,
         "compatibility_fallback_handler_V1_4_1": CompatibilityFallbackHandlerV141.deploy_contract,
+        "compatibility_fallback_handler_V1_5_0": CompatibilityFallbackHandlerV150.deploy_contract,
         "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
         "proxy_factory": ProxyFactoryV141.deploy_contract,
         "multi_send": MultiSend.deploy_contract,
@@ -73,7 +78,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         """
         :return: Last Safe Contract available
         """
-        return self.safe_contract_V1_4_1
+        return self.safe_contract_V1_5_0
 
     @classmethod
     def setUpClass(cls):
@@ -94,6 +99,11 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         cls.configure_django_settings()
         cls.configure_envvars()
 
+        cls.compatibility_fallback_handler_V1_5_0 = (
+            get_compatibility_fallback_handler_contract(
+                cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_5_0"]
+            )
+        )
         cls.compatibility_fallback_handler_V1_4_1 = (
             get_compatibility_fallback_handler_contract(
                 cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_4_1"]
@@ -106,6 +116,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         )
         cls.simulate_tx_accessor_V1_4_1 = get_simulate_tx_accessor_V1_4_1_contract(
             cls.w3, cls.contract_addresses["simulate_tx_accessor_V1_4_1"]
+        )
+        cls.safe_contract_V1_5_0 = get_safe_V1_5_0_contract(
+            cls.w3, cls.contract_addresses["safe_V1_5_0"]
         )
         cls.safe_contract_V1_4_1 = get_safe_V1_4_1_contract(
             cls.w3, cls.contract_addresses["safe_V1_4_1"]
@@ -146,9 +159,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         try:
             from django.conf import settings
 
-            settings.SAFE_CONTRACT_ADDRESS = cls.contract_addresses["safe_V1_4_1"]
+            settings.SAFE_CONTRACT_ADDRESS = cls.contract_addresses["safe_V1_5_0"]
             settings.SAFE_DEFAULT_CALLBACK_HANDLER = cls.contract_addresses[
-                "compatibility_fallback_handler_V1_4_1"
+                "compatibility_fallback_handler_V1_5_0"
             ]
             settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses["multi_send"]
             settings.SAFE_PROXY_FACTORY_ADDRESS = cls.contract_addresses[
@@ -174,6 +187,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             ]
             settings.SAFE_VALID_CONTRACT_ADDRESSES = {
                 settings.SAFE_CONTRACT_ADDRESS,
+                settings.SAFE_V1_4_1_CONTRACT_ADDRESS,
                 settings.SAFE_V1_3_0_CONTRACT_ADDRESS,
                 settings.SAFE_V1_1_1_CONTRACT_ADDRESS,
                 settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
@@ -280,7 +294,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         fallback_handler: Optional[ChecksumAddress] = None,
     ) -> Safe:
         """
-        Internal method to deploy Safes from 1.1.1 to 1.4.1, as setup method didn't change
+        Internal method to deploy Safes from 1.1.1 to 1.5.0, as setup method didn't change
 
         :param master_copy_version:
         :param master_copy_address:
@@ -293,7 +307,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         """
 
         fallback_handler = (
-            fallback_handler or self.compatibility_fallback_handler_V1_4_1.address
+            fallback_handler or self.compatibility_fallback_handler_V1_5_0.address
         )
         owners = (
             owners
@@ -308,7 +322,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         payment = 0
         payment_receiver = NULL_ADDRESS
         initializer = HexBytes(
-            self.safe_contract_V1_4_1.functions.setup(
+            self.safe_contract_V1_5_0.functions.setup(
                 owners,
                 threshold,
                 to,
@@ -359,6 +373,35 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             initial_funding_wei=initial_funding_wei,
             fallback_handler=fallback_handler
             or self.compatibility_fallback_handler_V1_4_1.address,
+        )
+
+    def deploy_test_safe_v1_5_0(
+        self,
+        number_owners: int = 3,
+        threshold: Optional[int] = None,
+        owners: Optional[List[ChecksumAddress]] = None,
+        initial_funding_wei: int = 0,
+        fallback_handler: Optional[ChecksumAddress] = None,
+    ) -> Safe:
+        """
+        Deploy a Safe v1.5.0
+
+        :param number_owners:
+        :param threshold:
+        :param owners:
+        :param initial_funding_wei:
+        :param fallback_handler:
+        :return:
+        """
+        return self._deploy_new_test_safe(
+            "1.5.0",
+            self.safe_contract_V1_5_0.address,
+            number_owners=number_owners,
+            threshold=threshold,
+            owners=owners,
+            initial_funding_wei=initial_funding_wei,
+            fallback_handler=fallback_handler
+            or self.compatibility_fallback_handler_V1_5_0.address,
         )
 
     def deploy_test_safe_v1_3_0(

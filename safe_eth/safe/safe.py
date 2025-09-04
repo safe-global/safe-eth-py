@@ -28,13 +28,16 @@ from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_AD
 from safe_eth.eth.contracts import (
     ContractBase,
     get_compatibility_fallback_handler_contract,
+    get_compatibility_fallback_handler_V1_4_1_contract,
     get_safe_contract,
     get_safe_V0_0_1_contract,
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_safe_V1_5_0_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
+    get_simulate_tx_accessor_V1_5_0_contract
 )
 from safe_eth.eth.proxies import MinimalProxy, SafeProxy, StandardProxy
 from safe_eth.eth.typing import EthereumData
@@ -108,8 +111,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             "1.2.0": SafeV120,
             "1.3.0": SafeV130,
             "1.4.1": SafeV141,
+            "1.5.0": SafeV150,
         }
-        default_version = SafeV141
+        default_version = SafeV150
 
         version: Optional[str]
         try:
@@ -1071,6 +1075,72 @@ class SafeV141(Safe):
         :return:
         """
         accessor = get_simulate_tx_accessor_V1_4_1_contract(
+            self.w3, address=self.simulate_tx_accessor_address
+        )
+        simulator = get_compatibility_fallback_handler_V1_4_1_contract(
+            self.w3, address=self.address
+        )
+        simulation_data = accessor.functions.simulate(
+            to, value, data, operation
+        ).build_transaction(get_empty_tx_params())["data"]
+        params: TxParams = {"gas": gas_limit} if gas_limit else {}
+        # params = {'gas': 2_045_741}
+        try:
+            accessible_data = simulator.functions.simulate(
+                accessor.address, simulation_data
+            ).call(params)
+        except (Web3ValueError, Web3RPCError, ContractLogicError) as e:
+            raise CannotEstimateGas(f"Reverted call using SimulateTxAccessor {e}")
+        try:
+            # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
+            (estimate, success, return_data) = eth_abi.decode(
+                ["uint256", "bool", "bytes"], accessible_data
+            )
+            if not success:
+                raise CannotEstimateGas(
+                    "Cannot estimate gas using SimulateTxAccessor - Execution not successful"
+                )
+            return estimate
+        except DecodingError as e:
+            try:
+                decoded_revert: Union[tuple[Any], str] = eth_abi.decode(
+                    ["string"], accessible_data
+                )
+            except DecodingError:
+                decoded_revert = "No revert message"
+            raise CannotEstimateGas(
+                f"Cannot estimate gas using SimulateTxAccessor {e} - {decoded_revert}"
+            )
+
+
+class SafeV150(Safe):
+    def get_version(self) -> str:
+        return "1.5.0"
+
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_safe_V1_5_0_contract
+
+    def estimate_tx_gas_with_safe(
+        self,
+        to: ChecksumAddress,
+        value: int,
+        data: bytes,
+        operation: int,
+        gas_limit: Optional[int] = None,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> int:
+        """
+        Estimate tx gas. Use `SimulateTxAccessor` and `simulate` on the `CompatibilityFallHandler`
+
+        :param to:
+        :param value:
+        :param data:
+        :param operation:
+        :param gas_limit:
+        :param block_identifier:
+        :return:
+        """
+        accessor = get_simulate_tx_accessor_V1_5_0_contract(
             self.w3, address=self.simulate_tx_accessor_address
         )
         simulator = get_compatibility_fallback_handler_contract(

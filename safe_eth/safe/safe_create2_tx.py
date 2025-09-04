@@ -16,6 +16,7 @@ from safe_eth.eth.contracts import (
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_safe_V1_5_0_contract,
 )
 from safe_eth.eth.utils import (
     fast_is_checksum_address,
@@ -56,6 +57,7 @@ class SafeCreate2TxBuilder:
     """
 
     MASTER_COPY_VERSION_WITH_CONTRACT = {
+        "1.5.0": get_safe_V1_5_0_contract,
         "1.4.1": get_safe_V1_4_1_contract,
         "1.3.0": get_safe_V1_3_0_contract,
         "1.1.1": get_safe_V1_1_1_contract,
@@ -88,7 +90,7 @@ class SafeCreate2TxBuilder:
             self.safe_version
         )
         if not master_copy_contract_fn:
-            raise ValueError("Safe version must be 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
+            raise ValueError("Safe version must be 1.5.0, 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
 
         self.master_copy_contract = master_copy_contract_fn(w3, master_copy_address)
 
@@ -320,4 +322,4 @@ class SafeCreate2TxBuilder:
                 ).build_transaction(empty_params)["data"]
             )
         else:
-            raise ValueError("Safe version must be 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
+            raise ValueError("Safe version must be 1.5.0, 1.4.1, 1.3.0, 1.1.1 or 1.0.0")

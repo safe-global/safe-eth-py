@@ -17,7 +17,7 @@ from ..exceptions import (
     CouldNotPayGasWithToken,
     InvalidInternalTx,
 )
-from ..safe import Safe, SafeV100, SafeV111, SafeV130, SafeV141
+from ..safe import Safe, SafeV100, SafeV111, SafeV130, SafeV141, SafeV150
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -30,7 +30,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         """
         :return: Last Safe Contract available
         """
-        return self.safe_contract_V1_4_1
+        return self.safe_contract_V1_5_0
 
     def deploy_test_safe(self, *args, **kwargs):
         """
@@ -38,7 +38,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         :param kwargs:
         :return: Deployed Safe Contract with the last version available
         """
-        return super().deploy_test_safe_v1_4_1(*args, **kwargs)
+        return super().deploy_test_safe_v1_5_0(*args, **kwargs)
 
     def test_create(self):
         owners = [self.ethereum_test_account.address]
