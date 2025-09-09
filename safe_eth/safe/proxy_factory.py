@@ -18,6 +18,7 @@ from safe_eth.eth.contracts import (
     get_proxy_1_1_1_mainnet_deployed_bytecode,
     get_proxy_1_3_0_deployed_bytecode,
     get_proxy_1_4_1_deployed_bytecode,
+    get_proxy_1_5_0_deployed_bytecode,
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
