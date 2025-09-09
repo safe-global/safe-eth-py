@@ -14,7 +14,7 @@ jobs:
 
     - name: Check if comment is "/execute" by repo owner
       id: check-comment
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.TOKEN_GITHUB_READ_ORG_TEAMS }} # Important: This secret with read permissions on the teams information must be configured in repository settings -> secrets -> actions
         script: |
@@ -33,7 +33,7 @@ jobs:
 
     - name: Add comment to issue with starting message
       if: steps.check-comment.outputs.result == 'true'
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -46,7 +46,7 @@ jobs:
 
     - name: Add comment to issue with command failure
       if: steps.check-comment.outputs.result == 'false'
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -60,7 +60,7 @@ jobs:
     - name: Get issue inputs
       if: steps.check-comment.outputs.result == 'true'
       id: get-issue-inputs
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -150,7 +150,7 @@ jobs:
 
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
