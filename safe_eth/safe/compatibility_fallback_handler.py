@@ -18,7 +18,7 @@ from safe_eth.eth.utils import get_empty_tx_params
 
 class CompatibilityFallbackHandler(ContractBase, metaclass=ABCMeta):
     def __new__(
-        cls, *args, version: str = "1.4.1", **kwargs
+        cls, *args, version: str = "1.5.0", **kwargs
     ) -> "CompatibilityFallbackHandler":
         if cls is not CompatibilityFallbackHandler:
             return super().__new__(cls)
