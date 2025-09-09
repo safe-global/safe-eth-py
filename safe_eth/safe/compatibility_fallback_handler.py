@@ -26,6 +26,7 @@ class CompatibilityFallbackHandler(ContractBase, metaclass=ABCMeta):
         versions = {
             "1.3.0": CompatibilityFallbackHandlerV130,
             "1.4.1": CompatibilityFallbackHandlerV141,
+            "1.5.0": CompatibilityFallbackHandlerV150,
         }
         instance_class = versions[version]
         instance = super().__new__(instance_class)  # type: ignore[type-abstract]
