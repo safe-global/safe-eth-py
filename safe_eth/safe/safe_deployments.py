@@ -439,7 +439,9 @@ safe_deployments = {
                 "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4"
             ],
             "232": [
-                "0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A"
+                "0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A",
+                "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4",
+                "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804"
             ],
             "239": [
                 "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804",
@@ -1708,7 +1710,9 @@ safe_deployments = {
                 "0x7cbB62EaA69F79e6873cD1ecB2392971036cFAa4"
             ],
             "232": [
-                "0xcB8e5E438c5c2b45FbE17B02Ca9aF91509a8ad56"
+                "0xcB8e5E438c5c2b45FbE17B02Ca9aF91509a8ad56",
+                "0x7cbB62EaA69F79e6873cD1ecB2392971036cFAa4",
+                "0xB19D6FFc2182150F8Eb585b79D4ABcd7C5640A9d"
             ],
             "239": [
                 "0xB19D6FFc2182150F8Eb585b79D4ABcd7C5640A9d",
@@ -2977,7 +2981,9 @@ safe_deployments = {
                 "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552"
             ],
             "232": [
-                "0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910"
+                "0xB00ce5CCcdEf57e539ddcEd01DF43a13855d9910",
+                "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+                "0x69f4D1788e39c87893C980c06EdF4b7f686e2938"
             ],
             "239": [
                 "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
@@ -4246,7 +4252,9 @@ safe_deployments = {
                 "0x3E5c63644E683549055b9Be8653de26E0B4CD36E"
             ],
             "232": [
-                "0x1727c2c531cf966f902E5927b98490fDFb3b2b70"
+                "0x1727c2c531cf966f902E5927b98490fDFb3b2b70",
+                "0x3E5c63644E683549055b9Be8653de26E0B4CD36E",
+                "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA"
             ],
             "239": [
                 "0xfb1bffC9d739B8D520DaF37dF666da4C687191EA",
@@ -5515,7 +5523,9 @@ safe_deployments = {
                 "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761"
             ],
             "232": [
-                "0x0dFcccB95225ffB03c6FBB2559B530C2B7C8A912"
+                "0x0dFcccB95225ffB03c6FBB2559B530C2B7C8A912",
+                "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
+                "0x998739BFdAAdde7C933B942a68053933098f9EDa"
             ],
             "239": [
                 "0x998739BFdAAdde7C933B942a68053933098f9EDa",
@@ -6784,7 +6794,9 @@ safe_deployments = {
                 "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D"
             ],
             "232": [
-                "0xf220D3b4DFb23C4ade8C88E526C1353AbAcbC38F"
+                "0xf220D3b4DFb23C4ade8C88E526C1353AbAcbC38F",
+                "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+                "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B"
             ],
             "239": [
                 "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",
@@ -8053,7 +8065,9 @@ safe_deployments = {
                 "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2"
             ],
             "232": [
-                "0xDAec33641865E4651fB43181C6DB6f7232Ee91c2"
+                "0xDAec33641865E4651fB43181C6DB6f7232Ee91c2",
+                "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
+                "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC"
             ],
             "239": [
                 "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
@@ -9322,7 +9336,9 @@ safe_deployments = {
                 "0xA65387F16B013cf2Af4605Ad8aA5ec25a2cbA3a2"
             ],
             "232": [
-                "0x357147caf9C0cCa67DfA0CF5369318d8193c8407"
+                "0x357147caf9C0cCa67DfA0CF5369318d8193c8407",
+                "0xA65387F16B013cf2Af4605Ad8aA5ec25a2cbA3a2",
+                "0x98FFBBF51bb33A056B08ddf711f289936AafF717"
             ],
             "239": [
                 "0x98FFBBF51bb33A056B08ddf711f289936AafF717",
@@ -10591,7 +10607,9 @@ safe_deployments = {
                 "0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da"
             ],
             "232": [
-                "0x4191E2e12E8BC5002424CE0c51f9947b02675a44"
+                "0x4191E2e12E8BC5002424CE0c51f9947b02675a44",
+                "0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da",
+                "0x727a77a074D1E6c4530e814F89E618a3298FC044"
             ],
             "239": [
                 "0x727a77a074D1E6c4530e814F89E618a3298FC044",
@@ -22346,6 +22364,9 @@ safe_deployments = {
             "1": [
                 "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4"
             ],
+            "1337": [
+                "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4"
+            ],
             "1995": [
                 "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4"
             ],
@@ -22368,6 +22389,9 @@ safe_deployments = {
                 "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4"
             ],
             "88817": [
+                "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4"
+            ],
+            "843843": [
                 "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4"
             ],
             "11155111": [
@@ -22378,6 +22402,9 @@ safe_deployments = {
             "1": [
                 "0x2Ef5ECfbea521449E4De05EDB1ce63B75eDA90B4"
             ],
+            "1337": [
+                "0x2Ef5ECfbea521449E4De05EDB1ce63B75eDA90B4"
+            ],
             "1995": [
                 "0x2Ef5ECfbea521449E4De05EDB1ce63B75eDA90B4"
             ],
@@ -22400,6 +22427,9 @@ safe_deployments = {
                 "0x2Ef5ECfbea521449E4De05EDB1ce63B75eDA90B4"
             ],
             "88817": [
+                "0x2Ef5ECfbea521449E4De05EDB1ce63B75eDA90B4"
+            ],
+            "843843": [
                 "0x2Ef5ECfbea521449E4De05EDB1ce63B75eDA90B4"
             ],
             "11155111": [
@@ -22410,6 +22440,9 @@ safe_deployments = {
             "1": [
                 "0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3"
             ],
+            "1337": [
+                "0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3"
+            ],
             "1995": [
                 "0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3"
             ],
@@ -22432,6 +22465,9 @@ safe_deployments = {
                 "0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3"
             ],
             "88817": [
+                "0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3"
+            ],
+            "843843": [
                 "0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3"
             ],
             "11155111": [
@@ -22442,6 +22478,9 @@ safe_deployments = {
             "1": [
                 "0x218543288004CD07832472D464648173c77D7eB7"
             ],
+            "1337": [
+                "0x218543288004CD07832472D464648173c77D7eB7"
+            ],
             "1995": [
                 "0x218543288004CD07832472D464648173c77D7eB7"
             ],
@@ -22464,6 +22503,9 @@ safe_deployments = {
                 "0x218543288004CD07832472D464648173c77D7eB7"
             ],
             "88817": [
+                "0x218543288004CD07832472D464648173c77D7eB7"
+            ],
+            "843843": [
                 "0x218543288004CD07832472D464648173c77D7eB7"
             ],
             "11155111": [
@@ -22474,6 +22516,9 @@ safe_deployments = {
             "1": [
                 "0xA83c336B20401Af773B6219BA5027174338D1836"
             ],
+            "1337": [
+                "0xA83c336B20401Af773B6219BA5027174338D1836"
+            ],
             "1995": [
                 "0xA83c336B20401Af773B6219BA5027174338D1836"
             ],
@@ -22496,6 +22541,9 @@ safe_deployments = {
                 "0xA83c336B20401Af773B6219BA5027174338D1836"
             ],
             "88817": [
+                "0xA83c336B20401Af773B6219BA5027174338D1836"
+            ],
+            "843843": [
                 "0xA83c336B20401Af773B6219BA5027174338D1836"
             ],
             "11155111": [
@@ -22506,6 +22554,9 @@ safe_deployments = {
             "1": [
                 "0xFf51A5898e281Db6DfC7855790607438dF2ca44b"
             ],
+            "1337": [
+                "0xFf51A5898e281Db6DfC7855790607438dF2ca44b"
+            ],
             "1995": [
                 "0xFf51A5898e281Db6DfC7855790607438dF2ca44b"
             ],
@@ -22528,6 +22579,9 @@ safe_deployments = {
                 "0xFf51A5898e281Db6DfC7855790607438dF2ca44b"
             ],
             "88817": [
+                "0xFf51A5898e281Db6DfC7855790607438dF2ca44b"
+            ],
+            "843843": [
                 "0xFf51A5898e281Db6DfC7855790607438dF2ca44b"
             ],
             "11155111": [
@@ -22538,6 +22592,9 @@ safe_deployments = {
             "1": [
                 "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"
             ],
+            "1337": [
+                "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"
+            ],
             "1995": [
                 "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"
             ],
@@ -22560,6 +22617,9 @@ safe_deployments = {
                 "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"
             ],
             "88817": [
+                "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"
+            ],
+            "843843": [
                 "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"
             ],
             "11155111": [
@@ -22570,6 +22630,9 @@ safe_deployments = {
             "1": [
                 "0x6439e7ABD8Bb915A5263094784C5CF561c4172AC"
             ],
+            "1337": [
+                "0x6439e7ABD8Bb915A5263094784C5CF561c4172AC"
+            ],
             "1995": [
                 "0x6439e7ABD8Bb915A5263094784C5CF561c4172AC"
             ],
@@ -22592,6 +22655,9 @@ safe_deployments = {
                 "0x6439e7ABD8Bb915A5263094784C5CF561c4172AC"
             ],
             "88817": [
+                "0x6439e7ABD8Bb915A5263094784C5CF561c4172AC"
+            ],
+            "843843": [
                 "0x6439e7ABD8Bb915A5263094784C5CF561c4172AC"
             ],
             "11155111": [
@@ -22602,6 +22668,9 @@ safe_deployments = {
             "1": [
                 "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
             ],
+            "1337": [
+                "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
+            ],
             "1995": [
                 "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
             ],
@@ -22624,6 +22693,9 @@ safe_deployments = {
                 "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
             ],
             "88817": [
+                "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
+            ],
+            "843843": [
                 "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
             ],
             "11155111": [
@@ -22634,6 +22706,9 @@ safe_deployments = {
             "1": [
                 "0x900C7589200010D6C6eCaaE5B06EBe653bc2D82a"
             ],
+            "1337": [
+                "0x900C7589200010D6C6eCaaE5B06EBe653bc2D82a"
+            ],
             "1995": [
                 "0x900C7589200010D6C6eCaaE5B06EBe653bc2D82a"
             ],
@@ -22656,6 +22731,9 @@ safe_deployments = {
                 "0x900C7589200010D6C6eCaaE5B06EBe653bc2D82a"
             ],
             "88817": [
+                "0x900C7589200010D6C6eCaaE5B06EBe653bc2D82a"
+            ],
+            "843843": [
                 "0x900C7589200010D6C6eCaaE5B06EBe653bc2D82a"
             ],
             "11155111": [
@@ -22666,6 +22744,9 @@ safe_deployments = {
             "1": [
                 "0x4FfeF8222648872B3dE295Ba1e49110E61f5b5aa"
             ],
+            "1337": [
+                "0x4FfeF8222648872B3dE295Ba1e49110E61f5b5aa"
+            ],
             "1995": [
                 "0x4FfeF8222648872B3dE295Ba1e49110E61f5b5aa"
             ],
@@ -22688,6 +22769,9 @@ safe_deployments = {
                 "0x4FfeF8222648872B3dE295Ba1e49110E61f5b5aa"
             ],
             "88817": [
+                "0x4FfeF8222648872B3dE295Ba1e49110E61f5b5aa"
+            ],
+            "843843": [
                 "0x4FfeF8222648872B3dE295Ba1e49110E61f5b5aa"
             ],
             "11155111": [
@@ -22698,6 +22782,9 @@ safe_deployments = {
             "1": [
                 "0x07EfA797c55B5DdE3698d876b277aBb6B893654C"
             ],
+            "1337": [
+                "0x07EfA797c55B5DdE3698d876b277aBb6B893654C"
+            ],
             "1995": [
                 "0x07EfA797c55B5DdE3698d876b277aBb6B893654C"
             ],
@@ -22720,6 +22807,9 @@ safe_deployments = {
                 "0x07EfA797c55B5DdE3698d876b277aBb6B893654C"
             ],
             "88817": [
+                "0x07EfA797c55B5DdE3698d876b277aBb6B893654C"
+            ],
+            "843843": [
                 "0x07EfA797c55B5DdE3698d876b277aBb6B893654C"
             ],
             "11155111": [
@@ -22730,6 +22820,9 @@ safe_deployments = {
             "1": [
                 "0x54e86d004d71a8D2112ec75FaCE57D730b0433F3"
             ],
+            "1337": [
+                "0x54e86d004d71a8D2112ec75FaCE57D730b0433F3"
+            ],
             "1995": [
                 "0x54e86d004d71a8D2112ec75FaCE57D730b0433F3"
             ],
@@ -22752,6 +22845,9 @@ safe_deployments = {
                 "0x54e86d004d71a8D2112ec75FaCE57D730b0433F3"
             ],
             "88817": [
+                "0x54e86d004d71a8D2112ec75FaCE57D730b0433F3"
+            ],
+            "843843": [
                 "0x54e86d004d71a8D2112ec75FaCE57D730b0433F3"
             ],
             "11155111": [

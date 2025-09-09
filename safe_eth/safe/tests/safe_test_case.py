@@ -250,7 +250,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         :param kwargs:
         :return: Deploy last available Safe
         """
-        return self.deploy_test_safe_v1_4_1(*args, **kwargs)
+        return self.deploy_test_safe_v1_5_0(*args, **kwargs)
 
     def _deploy_test_safe(
         self,

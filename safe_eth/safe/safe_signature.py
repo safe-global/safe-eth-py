@@ -88,13 +88,11 @@ class SafeSignature(ABC):
         cls,
         signatures: EthereumBytes,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: Optional[EthereumBytes] = None,
         ignore_trailing: bool = True,
     ) -> List["SafeSignature"]:
         """
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_hash: Signed hash for the Safe (message or transaction)
-        :param safe_hash_preimage: ``safe_hash`` preimage for EIP1271 validation
         :param ignore_trailing: Ignore trailing data on the signature. Some libraries pad it and add some zeroes at
             the end
         :return: List of SafeSignatures decoded
@@ -135,7 +133,6 @@ class SafeSignature(ABC):
                 safe_signature = SafeSignatureContract(
                     signature,
                     safe_hash,
-                    safe_hash_preimage or safe_hash,
                     contract_signature,
                 )
             elif signature_type == SafeSignatureType.APPROVED_HASH:
@@ -212,24 +209,20 @@ class SafeSignature(ABC):
 
 
 class SafeSignatureContract(SafeSignature):
-    EIP1271_MAGIC_VALUE = HexBytes(0x20C13B0B)
-    EIP1271_MAGIC_VALUE_UPDATED = HexBytes(0x1626BA7E)
+    EIP1271_MAGIC_VALUE = HexBytes(0x1626BA7E)
 
     def __init__(
         self,
         signature: EthereumBytes,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: EthereumBytes,
         contract_signature: EthereumBytes,
     ):
         """
         :param signature:
         :param safe_hash: Signed hash for the Safe (message or transaction)
-        :param safe_hash_preimage: ``safe_hash`` preimage for EIP1271 validation
         :param contract_signature:
         """
         super().__init__(signature, safe_hash)
-        self.safe_hash_preimage = HexBytes(safe_hash_preimage)
         self.contract_signature = HexBytes(contract_signature)
 
     @classmethod
@@ -237,13 +230,12 @@ class SafeSignatureContract(SafeSignature):
         cls,
         safe_owner: ChecksumAddress,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: EthereumBytes,
         contract_signature: EthereumBytes,
     ) -> "SafeSignatureContract":
         signature = signature_to_bytes(
             0, int.from_bytes(HexBytes(safe_owner), byteorder="big"), 65
         )
-        return cls(signature, safe_hash, safe_hash_preimage, contract_signature)
+        return cls(signature, safe_hash, contract_signature)
 
     @property
     def owner(self) -> ChecksumAddress:
@@ -288,10 +280,9 @@ class SafeSignatureContract(SafeSignature):
         )
         try:
             return is_valid_signature_fn(
-                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
+                self.safe_hash, bytes(self.contract_signature)
             ).call() in (
                 self.EIP1271_MAGIC_VALUE,
-                self.EIP1271_MAGIC_VALUE_UPDATED,
             )
         except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
             # Error using `pending` block identifier or contract does not exist

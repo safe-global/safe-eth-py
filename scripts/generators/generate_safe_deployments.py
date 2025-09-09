@@ -10,7 +10,8 @@ from git import Repo
 logging.basicConfig(level=logging.INFO)
 
 SAFE_DEPLOYMENTS_URL = "https://github.com/safe-global/safe-deployments.git"
-SAFE_DEPLOYMENTS_VERSION = "main"  # safe-deployments tag/branch
+# TODO: Use main branch
+SAFE_DEPLOYMENTS_VERSION = "feature/add-network-1337"  # safe-deployments tag/branch
 SAFE_DEPLOYMENTS_REPO_DIR = "safe-deployments"  # temporary folder to clone the repo
 SAFE_DEPLOYMENTS_FOLDER = (
     SAFE_DEPLOYMENTS_REPO_DIR + "/src/assets"

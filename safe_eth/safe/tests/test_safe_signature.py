@@ -37,7 +37,7 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
             "0x00000000000000000000000005c85ab5b09eb8a55020d72daf6091e04e264af900000000000000000000000"
             "0000000000000000000000000000000000000000000"
         )
-        safe_signature = SafeSignatureContract(signature, safe_tx_hash, b"", b"")
+        safe_signature = SafeSignatureContract(signature, safe_tx_hash, b"")
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(
             safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE
@@ -258,7 +258,6 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_signature_contract_1 = SafeSignatureContract.from_values(
             safe_owner_1.address,
             safe_tx_hash,
-            safe_tx_hash_preimage,
             safe_owner_1_eoa_signature,
         )
 
@@ -271,7 +270,6 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_signature_contract_2 = SafeSignatureContract.from_values(
             safe_owner_2.address,
             safe_tx_hash,
-            safe_tx_hash_preimage,
             safe_owner_2_eoa_1_signature,
         )
 
