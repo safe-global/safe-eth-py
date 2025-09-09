@@ -394,6 +394,9 @@ def get_proxy_1_3_0_deployed_bytecode() -> bytes:
 def get_proxy_1_4_1_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface("Proxy_V1_4_1.json")["deployedBytecode"])
 
+@cache
+def get_proxy_1_5_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_5_0.json")["deployedBytecode"])
 
 @cache
 def get_paying_proxy_deployed_bytecode() -> bytes:

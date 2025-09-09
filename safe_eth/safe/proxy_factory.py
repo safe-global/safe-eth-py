@@ -22,6 +22,7 @@ from safe_eth.eth.contracts import (
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
     get_proxy_factory_V1_4_1_contract,
+    get_proxy_factory_V1_5_0_contract
 )
 from safe_eth.eth.utils import (
     compare_byte_code,
@@ -41,6 +42,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             "1.1.1": ProxyFactoryV111,
             "1.3.0": ProxyFactoryV130,
             "1.4.1": ProxyFactoryV141,
+            "1.5.0": ProxyFactoryV150,
         }
         instance_class = versions[version]
         instance = super().__new__(instance_class)  # type: ignore[type-abstract]
@@ -106,6 +108,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
 
         deployed_proxy_code = self.w3.eth.get_code(address)
         proxy_code_fns = (
+            get_proxy_1_5_0_deployed_bytecode,
             get_proxy_1_4_1_deployed_bytecode,
             get_proxy_1_3_0_deployed_bytecode,
             get_proxy_1_1_1_deployed_bytecode,
@@ -300,3 +303,7 @@ class ProxyFactoryV141(ProxyFactory):
         :return:
         """
         raise NotImplementedError("Deprecated, use `deploy_proxy_contract_with_nonce`")
+
+class ProxyFactoryV150(ProxyFactory):
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_proxy_factory_V1_5_0_contract
