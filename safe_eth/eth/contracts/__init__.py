@@ -65,7 +65,7 @@ contracts = {
     "proxy_factory_V1_1_1": "ProxyFactory_V1_1_1.json",
     "proxy_factory_V1_3_0": "ProxyFactory_V1_3_0.json",
     "proxy_factory_V1_4_1": "ProxyFactory_V1_4_1.json",
-    "proxy_factory_V1_5_0": "SafeProxyFactory_V1_5_0.json",
+    "proxy_factory_V1_5_0": "ProxyFactory_V1_5_0.json",
     "safe_V0_0_1": "GnosisSafe_V0_0_1.json",
     "safe_V1_0_0": "GnosisSafe_V1_0_0.json",
     "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
