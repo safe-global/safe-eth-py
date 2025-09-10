@@ -116,6 +116,7 @@ class BlockscoutClient:
         EthereumNetwork.ETHEREAL_TESTNET: "https://explorer-ethereal-testnet.t.conduit.xyz/api/v2/",
         EthereumNetwork.ENI_MAINNET: "https://scan.eniac.network/api/v2",
         EthereumNetwork.VANA: "https://vanascan.io/api/v2/",
+        EthereumNetwork.PAIX_DEVELOPMENT_NETWORK: "https://blockscout.ppaix.com/api/v2",
     }
 
     def __init__(
