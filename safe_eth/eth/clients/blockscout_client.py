@@ -117,6 +117,7 @@ class BlockscoutClient:
         EthereumNetwork.ENI_MAINNET: "https://scan.eniac.network/api/v2",
         EthereumNetwork.VANA: "https://vanascan.io/api/v2/",
         EthereumNetwork.PAIX_DEVELOPMENT_NETWORK: "https://blockscout.ppaix.com/api/v2",
+        EthereumNetwork.INCENTIV_TESTNET: "https://explorer-testnet.incentiv.io/api/v2",
     }
 
     def __init__(
