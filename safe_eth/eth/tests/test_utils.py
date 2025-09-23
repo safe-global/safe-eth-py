@@ -43,8 +43,9 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
             deployer_account.address, block_identifier="pending"
         )
         tx = proxy_factory_contract.constructor().build_transaction(
-            {"nonce": nonce, "from": deployer_account.address}
+            {"from": deployer_account.address}
         )
+        tx["nonce"] = nonce
         signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -59,12 +60,8 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         master_copy = proxy_factory_contract.address
         tx = proxy_factory_contract.functions.createProxyWithNonce(
             master_copy, initializer, salt_nonce
-        ).build_transaction(
-            {
-                "nonce": nonce + 1,
-                "from": deployer_account.address,
-            }
-        )
+        ).build_transaction({"from": deployer_account.address})
+        tx["nonce"] = nonce + 1
         signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
