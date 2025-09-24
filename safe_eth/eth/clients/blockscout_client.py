@@ -120,6 +120,7 @@ class BlockscoutClient:
         EthereumNetwork.INCENTIV_TESTNET: "https://explorer-testnet.incentiv.io/api/v2",
         EthereumNetwork.AUTONOMYS_CHRONOS_TESTNET: "https://explorer.auto-evm.chronos.autonomys.xyz/api/v2/",
         EthereumNetwork.BOB: "https://explorer-bob-mainnet-0.t.conduit.xyz/api/v2/",
+        EthereumNetwork.MODE: "https://explorer-mode-mainnet-0.t.conduit.xyz/api/v2/",
     }
 
     def __init__(
