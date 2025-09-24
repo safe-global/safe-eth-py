@@ -121,6 +121,7 @@ class BlockscoutClient:
         EthereumNetwork.AUTONOMYS_CHRONOS_TESTNET: "https://explorer.auto-evm.chronos.autonomys.xyz/api/v2/",
         EthereumNetwork.BOB: "https://explorer-bob-mainnet-0.t.conduit.xyz/api/v2/",
         EthereumNetwork.MODE: "https://explorer-mode-mainnet-0.t.conduit.xyz/api/v2/",
+        EthereumNetwork.CITREA_TESTNET: "https://explorer.testnet.citrea.xyz/api/v2/",
     }
 
     def __init__(
