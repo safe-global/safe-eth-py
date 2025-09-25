@@ -7,4 +7,4 @@ pytest-django==4.11.1
 pytest-env==1.1.5
 pytest-rerunfailures==15.1
 pytest-sugar==1.1.1
-types-requests==2.32.4.20250809
+types-requests==2.32.4.20250913
