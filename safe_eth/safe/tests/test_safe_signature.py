@@ -184,16 +184,13 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
     def test_contract_signature_for_message(self):
         account = Account.create()
         safe_owner = self.deploy_test_safe(owners=[account.address])
-        safe = self.deploy_test_safe(owners=[safe_owner.address])
 
-        safe_address = safe.address
         message = "Testing EIP191 message signing"
         message_hash = defunct_hash_message(text=message)
         safe_owner_message_hash = safe_owner.get_message_hash(message_hash)
         safe_owner_signature = account.unsafe_sign_hash(safe_owner_message_hash)[
             "signature"
         ]
-        safe_parent_message_hash = safe.get_message_hash(message_hash)
 
         # Build EIP1271 signature v=0 r=safe v=dynamic_part dynamic_part=size+owner_signature
         signature_1271 = (
@@ -204,7 +201,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )
 
         safe_signatures = SafeSignature.parse_signature(
-            signature_1271, safe_parent_message_hash, message_hash
+            signature_1271, message_hash
         )
         self.assertEqual(len(safe_signatures), 1)
         self.assertTrue(safe_signatures[0].is_valid(self.ethereum_client))
