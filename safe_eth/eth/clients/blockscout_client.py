@@ -122,6 +122,7 @@ class BlockscoutClient:
         EthereumNetwork.BOB: "https://explorer-bob-mainnet-0.t.conduit.xyz/api/v2/",
         EthereumNetwork.MODE: "https://explorer-mode-mainnet-0.t.conduit.xyz/api/v2/",
         EthereumNetwork.CITREA_TESTNET: "https://explorer.testnet.citrea.xyz/api/v2/",
+        EthereumNetwork.VANA_MOKSHA_TESTNET: "https://moksha.vanascan.io/api/v2/",
     }
 
     def __init__(
