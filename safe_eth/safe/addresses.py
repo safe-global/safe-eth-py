@@ -2033,6 +2033,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.VANA_MOKSHA_TESTNET: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 49109, "1.3.0"),  # v1.3.0
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 49107, "1.3.0+L2"),  # v1.3.0+L2
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 652256, "1.4.1"),  # v1.4.1
     ],
     EthereumNetwork.CONNEXT_SEPOLIA: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 6526, "1.3.0"),  # v1.3.0
