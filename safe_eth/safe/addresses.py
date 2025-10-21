@@ -371,6 +371,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.BOBA_NETWORK: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 170908, "1.3.0+L2"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 170910, "1.3.0"),
+        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 22304927, "1.3.0"),  # v1.3.0
     ],
     EthereumNetwork.AURORA_MAINNET: [
         (
