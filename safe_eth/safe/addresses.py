@@ -569,6 +569,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             10266344,
             "1.3.0+L2",
         ),  # v1.3.0+L2
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 12116031, "1.4.1"),  # v1.4.1
     ],
     EthereumNetwork.CROSSBELL: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 28314790, "1.3.0+L2"),
