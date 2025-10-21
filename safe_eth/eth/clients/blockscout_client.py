@@ -128,6 +128,7 @@ class BlockscoutClient:
         EthereumNetwork.SAGA: "https://api-sagaevm-5464-1.sagaexplorer.io/api/v2/",
         EthereumNetwork.GRAVITY_ALPHA_MAINNET: "https://explorer-gravity-mainnet-0.t.conduit.xyz/api/v2/",
         EthereumNetwork.GRAVITY_ALPHA_TESTNET_SEPOLIA: "https://explorer-gravity-alpha-testnet-sepolia-3ggx92odhy.t.conduit.xyz/api/v2/",
+        EthereumNetwork.ASTAR: "https://astar.blockscout.com/api/v2/",
     }
 
     def __init__(
