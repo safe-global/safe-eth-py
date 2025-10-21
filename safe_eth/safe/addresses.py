@@ -2997,6 +2997,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ),  # v1.3.0+L2
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 96, "1.4.1"),  # v1.4.1
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 95, "1.4.1+L2"),  # v1.4.1+L2
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 66231348, "1.3.0"),  # v1.3.0
     ],
     EthereumNetwork.GRAVITY_ALPHA_TESTNET_SEPOLIA: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 10827, "1.3.0"),  # v1.3.0
