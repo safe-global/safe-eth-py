@@ -133,6 +133,7 @@ class BlockscoutClient:
         EthereumNetwork.ETHERLINK_TESTNET: "https://testnet.explorer.etherlink.com/api/v2/",
         EthereumNetwork.EDU_CHAIN_TESTNET: "https://edu-chain-testnet.blockscout.com/api/v2/",
         EthereumNetwork.LINEA_SEPOLIA: "https://api-explorer.sepolia.linea.build/api/v2/",
+        EthereumNetwork.ZETACHAIN_MAINNET: "https://zetascan.com/api/v2/",
     }
 
     def __init__(
