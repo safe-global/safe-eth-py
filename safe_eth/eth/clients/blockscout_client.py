@@ -131,6 +131,7 @@ class BlockscoutClient:
         EthereumNetwork.ASTAR: "https://astar.blockscout.com/api/v2/",
         EthereumNetwork.AUTONOMYS_MAINNET: "https://explorer.auto-evm.mainnet.autonomys.xyz/api/v2/",
         EthereumNetwork.ETHERLINK_TESTNET: "https://testnet.explorer.etherlink.com/api/v2/",
+        EthereumNetwork.EDU_CHAIN_TESTNET: "https://edu-chain-testnet.blockscout.com/api/v2/",
     }
 
     def __init__(
