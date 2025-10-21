@@ -125,6 +125,7 @@ class BlockscoutClient:
         EthereumNetwork.VANA_MOKSHA_TESTNET: "https://moksha.vanascan.io/api/v2/",
         EthereumNetwork.MINT_MAINNET: "https://explorer-mint-mainnet-0.t.conduit.xyz/api/v2/",
         EthereumNetwork.SAGA: "https://api-sagaevm-5464-1.sagaexplorer.io/api/v2/",
+        EthereumNetwork.GRAVITY_ALPHA_MAINNET: "https://explorer-gravity-mainnet-0.t.conduit.xyz/api/v2/",
     }
 
     def __init__(
