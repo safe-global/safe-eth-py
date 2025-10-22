@@ -32,6 +32,7 @@ trace_transaction_mocks = {
         {
             "action": {
                 "from": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+                "creationMethod": "create2",
                 "gas": 4619079,
                 "value": 0,
                 "init": HexBytes(
