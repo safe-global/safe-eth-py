@@ -2840,6 +2840,7 @@ trace_block_13191781_mock = [
     {
         "action": {
             "from": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
+            "creationMethod": "create",
             "gas": 450467,
             "value": 0,
             "init": HexBytes(
@@ -2919,6 +2920,7 @@ trace_block_13191781_mock = [
     {
         "action": {
             "from": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
+            "creationMethod": "create",
             "gas": 450467,
             "value": 0,
             "init": HexBytes(
@@ -12669,6 +12671,7 @@ trace_block_15630274_mock = [
     {
         "action": {
             "from": "0xFfa397285Ce46FB78C588a9e993286AaC68c37cD",
+            "creationMethod": "create2",
             "gas": 104430,
             "init": HexBytes(
                 "0x3d602d80600a3d3981f3363d3d373d3d3d363d73059ffafdc6ef594230de44f824e2bd0a51ca5ded5af43d82803e903d91602b57fd5bf3"
