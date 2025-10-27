@@ -4,7 +4,7 @@ faker==37.6.0
 mypy==1.18.2
 pytest==8.4.2
 pytest-django==4.11.1
-pytest-env==1.1.5
+pytest-env==1.2.0
 pytest-rerunfailures==16.1
 pytest-sugar==1.1.1
 types-requests==2.32.4.20250913
