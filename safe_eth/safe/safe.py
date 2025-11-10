@@ -88,7 +88,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     )
 
     def __new__(
-        cls, address: ChecksumAddress, ethereum_client: EthereumClient, *args, **kwargs
+        cls,
+        address: ChecksumAddress,
+        ethereum_client: EthereumClient,
+        version: Optional[str] = None,
+        *args,
+        **kwargs,
     ) -> "Safe":
         """
         Hacky factory for Safe
@@ -109,16 +114,16 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             "1.3.0": SafeV130,
             "1.4.1": SafeV141,
         }
-        default_version = SafeV141
+        default_version = "1.4.1"
 
-        version: Optional[str]
-        try:
-            contract = get_safe_contract(ethereum_client.w3, address=address)
-            version = contract.functions.VERSION().call(block_identifier="latest")
-        except (Web3Exception, ValueError):
-            version = None  # Cannot detect the version
+        if version is None:
+            try:
+                contract = get_safe_contract(ethereum_client.w3, address=address)
+                version = contract.functions.VERSION().call(block_identifier="latest")
+            except (Web3Exception, ValueError):
+                version = default_version  # Cannot detect the version
 
-        instance_class = versions.get(version or "", default_version)
+        instance_class = versions.get(version, versions[default_version])
         instance = super().__new__(instance_class)
         return instance
 
