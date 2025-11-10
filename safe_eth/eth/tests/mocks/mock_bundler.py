@@ -396,12 +396,16 @@ supported_entrypoint_mock: Dict[str, Any] = {
 }
 
 
-user_operation_with_valid_dates_hash_mock = HexBytes(
+user_operation_with_valid_dates_hash_mock_v6 = HexBytes(
     "0xdab376e240f65500714fbf103e644dc15709189addcf71f16d5e1d2831d75073"
 )
 
+user_operation_with_valid_dates_hash_mock_v7 = HexBytes(
+    "0xa211b58fdc93a715137452296a5cef7c477e9cc8cf7243a081549f015f5fc302"
+)
+
 # It contains `valid_after` and `valid_until` values set in the signature
-user_operation_with_valid_dates_mock = {
+user_operation_with_valid_dates_mock_v6 = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
@@ -425,13 +429,39 @@ user_operation_with_valid_dates_mock = {
     },
 }
 
+user_operation_with_valid_dates_mock_v7 = {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "userOperation": {
+            "sender": "0x2D098Fe43aa31DD52855dE4f3697931ee68F1013",
+            "nonce": "0x558",
+            "callData": "0x541d63c80000000000000000000000002d098fe43aa31dd52855de4f3697931ee68f10130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "callGasLimit": "0x7e0d",
+            "verificationGasLimit": "0x34d6e",
+            "preVerificationGas": "0xe3f8",
+            "maxFeePerGas": "0xee6b2820",
+            "maxPriorityFeePerGas": "0xee6b2800",
+            "signature": "0x000000000000000000000000db7a3d451235ecb19b08512b1101eae5b484449f1acb531a584ff1abe8fd027e299790483293dc9ebc89328c685bcfd9c685a94a760e3517dfce643342ea89951c",
+            "paymaster": "0x8b1f6cb5d062aa2Ce8d581942bbb960420d875BA",
+            "paymasterVerificationGasLimit": "0xea60",
+            "paymasterPostOpGasLimit": "0xfde8",
+            "paymasterData": "0x0200000069111a1f7e76acb1bc72ae4e7326df8f7845917ffba9a5b9f266f773badd2183e3f8b04403d4deb52dd49994bf508b15e631ba4c535e2b0f2e440b233a0d938c93277c991c",
+        },
+        "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+        "blockNumber": "0x926b2b",
+        "blockHash": "0xd0b9c3f13e3552fffcffe76b757b3073722c3a2a1307c696f249efe7083a8166",
+        "transactionHash": "0x876deab46c332d0c4b1a4ad71c70653a6151996e80b584cc8d7ffcdb4a414521",
+    },
+}
+
 
 # v0.7.0 UserOperation
 user_operation_v07_chain_id = 11155111
-user_operation_v07_hash = HexBytes(
+user_operation_v07_hash_1 = HexBytes(
     "0xc8e745161cb3523539bae0e5ed7fa7812dd812bf39030bb73378e792c1ee6576"
 )
-user_operation_v07_mock = {
+user_operation_v07_mock_1 = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
@@ -452,5 +482,34 @@ user_operation_v07_mock = {
         "blockNumber": "0x581c8f",
         "blockHash": "0x36477d9ffb259cd2dd695c524ad32d6a92c9e11e0693191e1de30d358828fcf8",
         "transactionHash": "0xe4c96ce576cbd9228c645e31d64a38a56e8c9b57b4e00882f6517fd73e7c183f",
+    },
+}
+
+user_operation_v07_hash_2 = HexBytes(
+    "0x65d257820c8af724bac3bd60c860c006c8229a8668e91cb789df4f530f07c772"
+)
+user_operation_v07_mock_2 = {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "userOperation": {
+            "sender": "0xEeD18F4C547A43A480f81e5f1Ea5b768ceC6116b",
+            "nonce": "0x8104e3ad430ea6d354d013a6789fdfc71e671c4300000000000000000002",
+            "callData": "0xe9ae5c53000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000034000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000005af3107a4000000000000000000000000000",
+            "callGasLimit": "0x4623",
+            "verificationGasLimit": "0x16471",
+            "preVerificationGas": "0xc5a9",
+            "maxFeePerGas": "0x10c8e1",
+            "maxPriorityFeePerGas": "0x10c8d6",
+            "signature": "0x9893021c49f67b84c22d1418aa4a52e69af809da0ad4254f31125ecc287c68b067e0eb2d1fede84596a8235795cad3a0c922436212055771507e9b70ce871e961b",
+            "paymaster": "0x777777777777AeC03fd955926DbF81597e66834C",
+            "paymasterVerificationGasLimit": "0x8a8e",
+            "paymasterPostOpGasLimit": "0x1",
+            "paymasterData": "0x01000069111cce000000000000c3c9da14a54e9b6ebc3cd44bb656ff82b02e38784a77f534288b415a9e3eb63800b86311cc93143b90ce35a24875c40ae0ff9278fdcae5c6c9c3fc994a5c1a2c1c",
+        },
+        "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+        "blockNumber": "0x926b41",
+        "blockHash": "0x6b286e0e6d7d79ab655c226320e330f1f4f0df323f51d9b909e33c6c3b85e1d9",
+        "transactionHash": "0x7ad449bba569a482ae6cc3517f361068f4b40815411d34ae1dd4fa705391b2e1",
     },
 }

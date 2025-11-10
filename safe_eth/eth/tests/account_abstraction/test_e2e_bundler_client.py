@@ -14,7 +14,8 @@ from ..mocks.mock_bundler import (
     user_operation_mock,
     user_operation_receipt_mock,
     user_operation_v07_chain_id,
-    user_operation_v07_hash,
+    user_operation_v07_hash_1,
+    user_operation_v07_hash_2,
 )
 
 
@@ -52,17 +53,23 @@ class TestE2EBundlerClient(TestCase):
         """
         Test UserOperation v0.7
         """
-        user_operation_hash = to_0x_hex_str(user_operation_v07_hash)
-        user_operation = self.bundler.get_user_operation_by_hash(user_operation_hash)
-        self.assertIsInstance(user_operation, UserOperationV07)
-        self.assertEqual(
-            to_0x_hex_str(
-                user_operation.calculate_user_operation_hash(
-                    user_operation_v07_chain_id
-                )
-            ),
-            user_operation_hash,
-        )
+        for user_operation_v07_hash in [
+            user_operation_v07_hash_1,
+            user_operation_v07_hash_2,
+        ]:
+            user_operation_hash = to_0x_hex_str(user_operation_v07_hash)
+            user_operation = self.bundler.get_user_operation_by_hash(
+                user_operation_hash
+            )
+            self.assertIsInstance(user_operation, UserOperationV07)
+            self.assertEqual(
+                to_0x_hex_str(
+                    user_operation.calculate_user_operation_hash(
+                        user_operation_v07_chain_id
+                    )
+                ),
+                user_operation_hash,
+            )
 
     @pytest.mark.xfail(reason="Unexpected and not documented changes on bundler")
     def test_get_user_operation_receipt(self):
