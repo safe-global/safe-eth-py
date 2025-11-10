@@ -87,8 +87,6 @@ class UserOperation:
                 HexBytes(user_operation_hash),
                 ChecksumAddress(user_operation["sender"]),
                 int(user_operation["nonce"], 16),
-                ChecksumAddress(user_operation["factory"]),
-                HexBytes(user_operation["factoryData"]),
                 HexBytes(user_operation["callData"]),
                 int(user_operation["callGasLimit"], 16),
                 int(user_operation["verificationGasLimit"], 16),
@@ -97,6 +95,12 @@ class UserOperation:
                 int(user_operation["maxFeePerGas"], 16),
                 HexBytes(user_operation["signature"]),
                 ChecksumAddress(user_operation_response["entryPoint"]),
+                ChecksumAddress(user_operation["factory"])
+                if "factory" in user_operation
+                else None,
+                HexBytes(user_operation["factoryData"])
+                if "factoryData" in user_operation
+                else None,
                 paymaster_verification_gas_limit,
                 paymaster_post_op_gas_limit,
                 paymaster,
@@ -168,8 +172,6 @@ class UserOperationV07:
     user_operation_hash: bytes
     sender: ChecksumAddress
     nonce: int
-    factory: ChecksumAddress
-    factory_data: bytes
     call_data: bytes
     call_gas_limit: int
     verification_gas_limit: int
@@ -178,11 +180,23 @@ class UserOperationV07:
     max_fee_per_gas: int
     signature: bytes
     entry_point: ChecksumAddress
+    factory: Optional[ChecksumAddress] = None
+    factory_data: Optional[bytes] = None
     paymaster_verification_gas_limit: Optional[int] = None
     paymaster_post_op_gas_limit: Optional[int] = None
     paymaster: Optional[bytes] = None
     paymaster_data: Optional[bytes] = None
     metadata: Optional[UserOperationMetadata] = None
+
+    def init_code_v7(self) -> bytes:
+        """
+        Returns the raw init_code bytes (factory address + factory_data).
+        For v0.7, this is the concatenation of factory and factory_data.
+        """
+        if self.factory is not None and self.factory_data is not None:
+            return HexBytes(self.factory) + self.factory_data
+        else:
+            return b""
 
     @property
     def account_gas_limits(self) -> bytes:
@@ -219,7 +233,7 @@ class UserOperationV07:
         )
 
     def calculate_user_operation_hash(self, chain_id: int) -> bytes:
-        hash_init_code = fast_keccak(HexBytes(self.factory) + self.factory_data)
+        hash_init_code = fast_keccak(self.init_code_v7())
         hash_call_data = fast_keccak(self.call_data)
         hash_paymaster_and_data = fast_keccak(self.paymaster_and_data)
         user_operation_encoded = abi_encode(
