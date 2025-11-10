@@ -2,7 +2,7 @@ import dataclasses
 import datetime
 import logging
 from functools import cache, cached_property
-from typing import Optional
+from typing import Optional, Union
 from zoneinfo import ZoneInfo
 
 from eth_abi import encode as abi_encode
@@ -11,6 +11,7 @@ from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 
 from safe_eth.eth.account_abstraction import UserOperation
+from safe_eth.eth.account_abstraction.user_operation import UserOperationV07
 from safe_eth.eth.utils import fast_keccak
 
 logger = logging.getLogger(__name__)
@@ -62,11 +63,18 @@ class SafeOperation:
     safe_operation_hash: Optional[bytes] = None
 
     @classmethod
-    def from_user_operation(cls, user_operation: UserOperation):
+    def from_user_operation(
+        cls, user_operation: Union[UserOperation, UserOperationV07]
+    ):
+        if hasattr(user_operation, "init_code"):
+            init_code_hash = fast_keccak(user_operation.init_code)
+        else:
+            init_code_hash = fast_keccak(user_operation.init_code_v7())
+
         return cls(
             user_operation.sender,
             user_operation.nonce,
-            fast_keccak(user_operation.init_code),
+            init_code_hash,
             fast_keccak(user_operation.call_data),
             user_operation.call_gas_limit,
             user_operation.verification_gas_limit,
