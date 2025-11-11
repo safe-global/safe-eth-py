@@ -17,6 +17,7 @@ from safe_eth.eth.ethereum_client import TxSpeed
 
 from ..eth.utils import fast_keccak
 from ..util.util import to_0x_hex_str
+from .enums import SafeOperationLike
 from .exceptions import (
     CouldNotFinishInitialization,
     CouldNotPayGasWithEther,
@@ -49,7 +50,7 @@ class SafeTx:
         to: Optional[ChecksumAddress],
         value: int,
         data: bytes,
-        operation: int,
+        operation: SafeOperationLike,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
@@ -66,7 +67,7 @@ class SafeTx:
         :param to:
         :param value:
         :param data:
-        :param operation:
+        :param operation: Safe operation (``SafeOperationEnum`` or matching integer value)
         :param safe_tx_gas:
         :param base_gas:
         :param gas_price:
