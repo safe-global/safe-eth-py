@@ -136,6 +136,7 @@ class BlockscoutClient:
         EthereumNetwork.ZETACHAIN_MAINNET: "https://zetascan.com/api/v2/",
         EthereumNetwork.ETHEREAL_TESTNET: "https://explorer-ethereal-testnet-0.t.conduit.xyz/api/v2",
         EthereumNetwork.ZETACHAIN_TESTNET: "https://testnet.zetascan.com/api/v2/",
+        EthereumNetwork.ETHERLINK_SHADOWNET_TESTNET: "https://shadownet.explorer.etherlink.com/api/v2",
     }
 
     def __init__(
