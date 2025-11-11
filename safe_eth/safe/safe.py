@@ -47,7 +47,7 @@ from safe_eth.eth.utils import (
 
 from ..util.util import to_0x_hex_str
 from .addresses import SAFE_SIMULATE_TX_ACCESSOR_ADDRESS
-from .enums import SafeOperationEnum
+from .enums import SafeOperationEnum, SafeOperationLike
 from .exceptions import CannotEstimateGas, CannotRetrieveSafeInfoException
 from .safe_creator import SafeCreator
 from .safe_tx import SafeTx
@@ -86,6 +86,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
+    _DEFAULT_VERSION = "1.4.1"
 
     def __new__(
         cls,
@@ -96,17 +97,30 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         **kwargs,
     ) -> "Safe":
         """
-        Hacky factory for Safe
+        Factory that picks the concrete Safe implementation.
 
-        :param address:
-        :param ethereum_client:
-        :param kwargs:
+        :param address: Safe proxy address
+        :param ethereum_client: Client wrapper used to interact with the node
+        :param version: Optional Safe semantic version; if provided the RPC lookup is skipped
+        :param args: Extra args forwarded to the concrete Safe class
+        :param kwargs: Extra kwargs forwarded to the concrete Safe class
+        :return: Instance of the concrete Safe subclass that matches the provided/detected version
         """
         assert fast_is_checksum_address(address), "%s is not a valid address" % address
         if cls is not Safe:
             return super().__new__(cls, *args, **kwargs)
 
-        versions: Dict[str, Type[Safe]] = {
+        resolved_version = cls._resolve_version(address, ethereum_client, version)
+        instance_class = cls._version_class_map().get(
+            resolved_version or "", cls._default_version_class()
+        )
+        instance = super().__new__(instance_class)
+        return instance
+
+    @classmethod
+    def _version_class_map(cls) -> Dict[str, Type["Safe"]]:
+        """Return the mapping between Safe semantic versions and Python classes."""
+        return {
             "0.0.1": SafeV001,
             "1.0.0": SafeV100,
             "1.1.1": SafeV111,
@@ -114,25 +128,113 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             "1.3.0": SafeV130,
             "1.4.1": SafeV141,
         }
-        default_version = "1.4.1"
 
-        if version is None:
-            try:
-                contract = get_safe_contract(ethereum_client.w3, address=address)
-                version = contract.functions.VERSION().call(block_identifier="latest")
-            except (Web3Exception, ValueError):
-                version = default_version  # Cannot detect the version
+    @classmethod
+    def _default_version(cls) -> str:
+        return cls._DEFAULT_VERSION
 
-        instance_class = versions.get(version, versions[default_version])
-        instance = super().__new__(instance_class)
-        return instance
+    @classmethod
+    def _default_version_class(cls) -> Type["Safe"]:
+        """Default Safe implementation used when VERSION() cannot be detected on-chain."""
+        version = cls._default_version()
+        return cls._version_class_map()[version]
+
+    @classmethod
+    def _resolve_version(
+        cls,
+        address: ChecksumAddress,
+        ethereum_client: EthereumClient,
+        version: Optional[str] = None,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> str:
+        """
+        Helper to consolidate the precedence rules for selecting the Safe version.
+
+        :param address: Safe proxy address
+        :param ethereum_client: Client used to query ``VERSION()``
+        :param version: Optional hint supplied by the caller
+        :param block_identifier: Optional block identifier for the version lookup
+        :return: Resolved semantic version string
+        """
+        return (
+            version
+            or cls.detect_version(
+                address, ethereum_client, block_identifier=block_identifier
+            )
+            or cls._default_version()
+        )
+
+    @classmethod
+    def available_versions(cls) -> List[str]:
+        """
+        Helpful utility for tooling that needs to know which Safe versions are bundled.
+
+        :return: List of semantic versions, sorted ascending.
+        """
+        return sorted(cls._version_class_map().keys())
+
+    @classmethod
+    def from_version(
+        cls,
+        version: str,
+        address: ChecksumAddress,
+        ethereum_client: EthereumClient,
+        *args,
+        **kwargs,
+    ) -> "Safe":
+        """
+        Build a Safe without querying the chain for VERSION(). Existing call sites keep working but
+        integrators that already know the version can bypass the RPC lookup.
+
+        :param version: Semantic version to instantiate
+        :param address: Safe proxy address
+        :param ethereum_client: Client wrapper used to interact with the node
+        :param args: Extra args forwarded to the concrete Safe class
+        :param kwargs: Extra kwargs forwarded to the concrete Safe class
+        :return: Instance of the requested Safe subclass
+        """
+        if version not in cls._version_class_map():
+            raise ValueError(f"Unsupported Safe version '{version}'")
+        forwarded_kwargs = dict(kwargs)
+        forwarded_kwargs.setdefault("version", version)
+        return cls(address, ethereum_client, *args, **forwarded_kwargs)
+
+    @classmethod
+    def detect_version(
+        cls,
+        address: ChecksumAddress,
+        ethereum_client: EthereumClient,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> Optional[str]:
+        """
+        Return the Safe semantic version reported by the contract. None is returned if the read fails.
+
+        :param address: Safe proxy address
+        :param ethereum_client: Client wrapper used to interact with the node
+        :param block_identifier: Optional block identifier for the call
+        :return: Semantic version string or ``None`` if it cannot be detected
+        """
+        try:
+            contract = get_safe_contract(ethereum_client.w3, address=address)
+            return contract.functions.VERSION().call(
+                block_identifier=block_identifier or "latest"
+            )
+        except (Web3Exception, ValueError):
+            return None
 
     def __init__(
         self,
         address: ChecksumAddress,
         ethereum_client: EthereumClient,
         simulate_tx_accessor_address: Optional[ChecksumAddress] = None,
+        version: Optional[str] = None,
     ):
+        """
+        :param address: Safe proxy address
+        :param ethereum_client: Client wrapper used to interact with the node
+        :param simulate_tx_accessor_address: Optional override for SimulateTxAccessor address
+        :param version: Unused compatibility parameter retained for subclasses
+        """
         self._simulate_tx_accessor_address = simulate_tx_accessor_address
         super().__init__(address, ethereum_client)
 
@@ -152,6 +254,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     @property
     def simulate_tx_accessor_address(self) -> ChecksumAddress:
+        """
+        Address of the SimulateTxAccessor contract. Can be overridden via SAFE_SIMULATE_TX_ACCESSOR_ADDRESS env var.
+        """
         if self._simulate_tx_accessor_address:
             return self._simulate_tx_accessor_address
         return ChecksumAddress(
@@ -250,7 +355,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         to: ChecksumAddress,
         value: int,
         data: bytes,
-        operation: int,
+        operation: SafeOperationLike,
         gas_token: ChecksumAddress,
         estimated_tx_gas: int,
     ) -> int:
@@ -335,7 +440,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         to: ChecksumAddress,
         value: int,
         data: bytes,
-        operation: int,
+        operation: SafeOperationLike,
         gas_limit: Optional[int] = None,
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> int:
@@ -442,7 +547,11 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             ) from exc
 
     def estimate_tx_gas_by_trying(
-        self, to: ChecksumAddress, value: int, data: Union[bytes, str], operation: int
+        self,
+        to: ChecksumAddress,
+        value: int,
+        data: Union[bytes, str],
+        operation: SafeOperationLike,
     ) -> int:
         """
         Try to get an estimation with Safe's `requiredTxGas`. If estimation is successful, try to set a gas limit and
@@ -497,7 +606,11 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         return gas_estimated
 
     def estimate_tx_gas(
-        self, to: ChecksumAddress, value: int, data: bytes, operation: int
+        self,
+        to: ChecksumAddress,
+        value: int,
+        data: bytes,
+        operation: SafeOperationLike,
     ) -> int:
         """
         Estimate tx gas. Use `requiredTxGas` on the Safe contract and fallbacks to `eth_estimateGas` if that method
@@ -764,7 +877,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     def retrieve_is_hash_approved(
         self,
-        owner: str,
+        owner: ChecksumAddress,
         safe_hash: bytes,
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> bool:
@@ -785,7 +898,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         )
 
     def retrieve_is_owner(
-        self, owner: str, block_identifier: Optional[BlockIdentifier] = "latest"
+        self,
+        owner: ChecksumAddress,
+        block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> bool:
         return self.contract.functions.isOwner(owner).call(
             block_identifier=block_identifier or "latest"
@@ -800,7 +915,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     def retrieve_owners(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
-    ) -> List[str]:
+    ) -> List[ChecksumAddress]:
         return self.contract.functions.getOwners().call(
             block_identifier=block_identifier or "latest"
         )
@@ -817,7 +932,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         to: ChecksumAddress,
         value: int,
         data: bytes,
-        operation: int = SafeOperationEnum.CALL.value,
+        operation: SafeOperationLike = SafeOperationEnum.CALL.value,
         safe_tx_gas: int = 0,
         base_gas: int = 0,
         gas_price: int = 0,
@@ -833,7 +948,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param to: Destination address of Safe transaction
         :param value: Ether value of Safe transaction
         :param data: Data payload of Safe transaction
-        :param operation: Operation type of Safe transaction
+        :param operation: Operation type (``SafeOperationEnum`` or matching integer value)
         :param safe_tx_gas: Gas that should be used for the Safe transaction
         :param base_gas: Gas costs for that are independent of the transaction execution
             (e.g. base transaction fee, signature check, payment of the refund)
@@ -870,7 +985,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         to: ChecksumAddress,
         value: int,
         data: bytes,
-        operation: int,
+        operation: SafeOperationLike,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
@@ -888,7 +1003,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param to:
         :param value:
         :param data:
-        :param operation:
+        :param operation: Operation type (``SafeOperationEnum`` or matching integer value)
         :param safe_tx_gas:
         :param base_gas:
         :param gas_price:
@@ -1060,7 +1175,7 @@ class SafeV141(Safe):
         to: ChecksumAddress,
         value: int,
         data: bytes,
-        operation: int,
+        operation: SafeOperationLike,
         gas_limit: Optional[int] = None,
         block_identifier: Optional[BlockIdentifier] = "latest",
     ) -> int:
