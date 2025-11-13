@@ -1,4 +1,4 @@
-django==5.2.7
+django==5.2.8
 django-filter==25.2
 djangorestframework==3.16.1
 hexbytes==1.3.1
