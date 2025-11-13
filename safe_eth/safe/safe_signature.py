@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import IntEnum
 from logging import getLogger
 from typing import (
     Any,
@@ -51,14 +51,14 @@ class CannotCheckEIP1271ContractSignature(SafeSignatureException):
     pass
 
 
-class SafeSignatureType(Enum):
+class SafeSignatureType(IntEnum):
     CONTRACT_SIGNATURE = 0
     APPROVED_HASH = 1
     EOA = 2
     ETH_SIGN = 3
 
     @staticmethod
-    def from_v(v: int):
+    def from_v(v: int) -> "SafeSignatureType":
         if v == 0:
             return SafeSignatureType.CONTRACT_SIGNATURE
         elif v == 1:
