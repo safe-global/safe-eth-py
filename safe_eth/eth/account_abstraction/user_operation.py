@@ -188,15 +188,14 @@ class UserOperationV07:
     paymaster_data: Optional[bytes] = None
     metadata: Optional[UserOperationMetadata] = None
 
-    def init_code_v7(self) -> bytes:
+    @property
+    def init_code(self) -> bytes:
         """
-        Returns the raw init_code bytes (factory address + factory_data).
-        For v0.7, this is the concatenation of factory and factory_data.
+        :return: 0.7 init_code bytes: factory address + factory_data.
         """
-        if self.factory is not None and self.factory_data is not None:
+        if self.factory and self.factory_data:
             return HexBytes(self.factory) + self.factory_data
-        else:
-            return b""
+        return b""
 
     @property
     def account_gas_limits(self) -> bytes:
@@ -233,7 +232,7 @@ class UserOperationV07:
         )
 
     def calculate_user_operation_hash(self, chain_id: int) -> bytes:
-        hash_init_code = fast_keccak(self.init_code_v7())
+        hash_init_code = fast_keccak(self.init_code)
         hash_call_data = fast_keccak(self.call_data)
         hash_paymaster_and_data = fast_keccak(self.paymaster_and_data)
         user_operation_encoded = abi_encode(

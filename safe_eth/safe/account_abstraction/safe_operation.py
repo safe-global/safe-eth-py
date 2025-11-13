@@ -66,15 +66,10 @@ class SafeOperation:
     def from_user_operation(
         cls, user_operation: Union[UserOperation, UserOperationV07]
     ):
-        if hasattr(user_operation, "init_code"):
-            init_code_hash = fast_keccak(user_operation.init_code)
-        else:
-            init_code_hash = fast_keccak(user_operation.init_code_v7())
-
         return cls(
             user_operation.sender,
             user_operation.nonce,
-            init_code_hash,
+            fast_keccak(user_operation.init_code),
             fast_keccak(user_operation.call_data),
             user_operation.call_gas_limit,
             user_operation.verification_gas_limit,
