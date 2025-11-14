@@ -4663,6 +4663,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.HPP_MAINNET: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 13691),  # v1.4.1
     ],
+    EthereumNetwork.HPP_SEPOLIA: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2868),  # v1.4.1
+    ],
 }
 
 
