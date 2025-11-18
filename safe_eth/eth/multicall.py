@@ -336,6 +336,7 @@ class Multicall(ContractBase):
         EthereumNetwork.INK_SEPOLIA: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.PLUME_MAINNET: "0xcA11bde05977b3631167028862bE2a173976CA11",
         EthereumNetwork.STATUS_NETWORK_SEPOLIA: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        EthereumNetwork.LENS: "0xf220D3b4DFb23C4ade8C88E526C1353AbAcbC38F",
     }
 
     def __init__(
