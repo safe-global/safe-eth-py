@@ -3,6 +3,7 @@
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
 https://github.com/safe-global/safe-deployments/tree/main/src/assets
 
+Safe V1.5.0: 0xFf51A5898e281Db6DfC7855790607438dF2ca44b
 Safe V1.4.1: 0x41675C099F32341bf84BFc5382aF534df5C7461a
 GnosisSafe V1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
 GnosisSafe V1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
@@ -10,12 +11,14 @@ GnosisSafe V1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
 GnosisSafe V1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
 
 Factories
+SafeProxyFactory V1.5.0: 0x14F2982D601c9458F93bd70B218933A6f8165e7b
 SafeProxyFactory V1.4.1: 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67
 ProxyFactory V1.3.0: 0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2
 ProxyFactory V1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
 ProxyFactory V1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
 
 FallbackHandler
+CompatibilityFallBackHandler V1.5.0: 0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4
 CompatibilityFallBackHandler V1.4.1: 0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99
 CompatibilityFallBackHandler V1.3.0: 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4
 
@@ -46,6 +49,7 @@ current_module = sys.modules[__name__]
 contracts = {
     "compatibility_fallback_handler_V1_3_0": "CompatibilityFallbackHandler_V1_3_0.json",
     "compatibility_fallback_handler_V1_4_1": "CompatibilityFallbackHandler_V1_4_1.json",
+    "compatibility_fallback_handler_V1_5_0": "CompatibilityFallbackHandler_V1_5_0.json",
     "cpk_factory": "CPKFactory.json",
     "delegate_constructor_proxy": "DelegateConstructorProxy.json",
     "erc1155": "ERC1155.json",
@@ -61,13 +65,16 @@ contracts = {
     "proxy_factory_V1_1_1": "ProxyFactory_V1_1_1.json",
     "proxy_factory_V1_3_0": "ProxyFactory_V1_3_0.json",
     "proxy_factory_V1_4_1": "ProxyFactory_V1_4_1.json",
+    "proxy_factory_V1_5_0": "ProxyFactory_V1_5_0.json",
     "safe_V0_0_1": "GnosisSafe_V0_0_1.json",
     "safe_V1_0_0": "GnosisSafe_V1_0_0.json",
     "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
     "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
     "safe_V1_4_1": "Safe_V1_4_1.json",
+    "safe_V1_5_0": "Safe_V1_5_0.json",
     "safe_to_l2_migration": "SafeToL2Migration.json",
     "simulate_tx_accessor_V1_4_1": "SimulateTxAccessor_V1_4_1.json",
+    "simulate_tx_accessor_V1_5_0": "SimulateTxAccessor_V1_5_0.json",
     "sign_message_lib": "SignMessageLib.json",
     "uniswap_exchange": "uniswap_exchange.json",
     "uniswap_factory": "uniswap_factory.json",
@@ -130,7 +137,7 @@ def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Co
     :param address:
     :return: Latest available Safe Contract
     """
-    return get_safe_V1_4_1_contract(w3, address=address)
+    return get_safe_V1_5_0_contract(w3, address=address)
 
 
 def get_safe_V0_0_1_contract(
@@ -159,6 +166,10 @@ def get_safe_V1_4_1_contract(w3: Web3, address: Optional[str] = None) -> Contrac
     raise NotImplementedError
 
 
+def get_safe_V1_5_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    raise NotImplementedError
+
+
 def get_compatibility_fallback_handler_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
@@ -167,7 +178,7 @@ def get_compatibility_fallback_handler_contract(
     :param address: Usually a Safe address
     :return: Latest available Compatibility Fallback handler contract
     """
-    return get_compatibility_fallback_handler_V1_4_1_contract(w3, address=address)
+    return get_compatibility_fallback_handler_V1_5_0_contract(w3, address=address)
 
 
 def get_compatibility_fallback_handler_V1_3_0_contract(
@@ -177,6 +188,12 @@ def get_compatibility_fallback_handler_V1_3_0_contract(
 
 
 def get_compatibility_fallback_handler_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_compatibility_fallback_handler_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
@@ -240,13 +257,15 @@ def get_paying_proxy_contract(
     raise NotImplementedError
 
 
-def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_proxy_factory_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     """
     :param w3:
     :param address:
     :return: Latest available Safe Proxy Factory
     """
-    return get_proxy_factory_V1_4_1_contract(w3, address=address)
+    return get_proxy_factory_V1_5_0_contract(w3, address=address)
 
 
 def get_proxy_factory_V1_0_0_contract(
@@ -273,11 +292,23 @@ def get_proxy_factory_V1_4_1_contract(
     raise NotImplementedError
 
 
+def get_proxy_factory_V1_5_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
 def get_proxy_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
     raise NotImplementedError
 
 
 def get_simulate_tx_accessor_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_simulate_tx_accessor_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
@@ -360,6 +391,11 @@ def get_proxy_1_3_0_deployed_bytecode() -> bytes:
 @cache
 def get_proxy_1_4_1_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface("Proxy_V1_4_1.json")["deployedBytecode"])
+
+
+@cache
+def get_proxy_1_5_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_5_0.json")["deployedBytecode"])
 
 
 @cache
