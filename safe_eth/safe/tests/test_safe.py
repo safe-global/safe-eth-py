@@ -17,7 +17,7 @@ from ..exceptions import (
     CouldNotPayGasWithToken,
     InvalidInternalTx,
 )
-from ..safe import Safe, SafeV100, SafeV111, SafeV130, SafeV141
+from ..safe import Safe, SafeV100, SafeV111, SafeV130, SafeV141, SafeV150
 from ..signatures import signature_to_bytes, signatures_to_bytes
 from .safe_test_case import SafeTestCaseMixin
 
@@ -30,7 +30,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         """
         :return: Last Safe Contract available
         """
-        return self.safe_contract_V1_4_1
+        return self.safe_contract_V1_5_0
 
     def deploy_test_safe(self, *args, **kwargs):
         """
@@ -38,7 +38,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         :param kwargs:
         :return: Deployed Safe Contract with the last version available
         """
-        return super().deploy_test_safe_v1_4_1(*args, **kwargs)
+        return super().deploy_test_safe_v1_5_0(*args, **kwargs)
 
     def test_create(self):
         owners = [self.ethereum_test_account.address]
@@ -67,18 +67,18 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
     def test_inherit_safe(self):
         address = Account.create().address
-        safe = SafeV141(address, self.ethereum_client)
+        safe = SafeV150(address, self.ethereum_client)
         self.assertEqual(safe.address, address)
-        self.assertEqual(safe.get_version(), "1.4.1")
+        self.assertEqual(safe.get_version(), "1.5.0")
         self.assertEqual(safe.chain_id, 1337)
 
-        class CustomSafeV141(SafeV141):
+        class CustomSafeV150(SafeV150):
             def get_version(self):
-                return "1.4.1-custom"
+                return "1.5.0-custom"
 
-        inherited_safe = CustomSafeV141(address, self.ethereum_client)
+        inherited_safe = CustomSafeV150(address, self.ethereum_client)
         self.assertEqual(inherited_safe.address, address)
-        self.assertEqual(inherited_safe.get_version(), "1.4.1-custom")
+        self.assertEqual(inherited_safe.get_version(), "1.5.0-custom")
         self.assertEqual(inherited_safe.chain_id, 1337)
 
     def test_check_funds_for_tx_gas(self):
@@ -637,6 +637,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertTrue(isinstance(safe_v1_3_0, SafeV130))
         safe_v1_4_1 = self.deploy_test_safe_v1_4_1(owners=owners, threshold=threshold)
         self.assertTrue(isinstance(safe_v1_4_1, SafeV141))
+        safe_v1_5_0 = self.deploy_test_safe_v1_5_0(owners=owners, threshold=threshold)
+        self.assertTrue(isinstance(safe_v1_5_0, SafeV150))
 
     def test_retrieve_modules_new(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])
@@ -673,7 +675,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
 
     def test_retrieve_modules_unitialized_safe(self):
         """
-        Unitialized Safes from V1.4.1 will revert
+        Unitialized Safes from V1.5.0 will revert
         """
 
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
