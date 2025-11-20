@@ -11,8 +11,10 @@ from safe_eth.eth.tests.mocks.mock_bundler import (
     safe_4337_safe_operation_hash_mock,
     safe_4337_user_operation_hash_mock,
     user_operation_mock,
-    user_operation_with_valid_dates_hash_mock,
-    user_operation_with_valid_dates_mock,
+    user_operation_with_valid_dates_hash_mock_v6,
+    user_operation_with_valid_dates_hash_mock_v7,
+    user_operation_with_valid_dates_mock_v6,
+    user_operation_with_valid_dates_mock_v7,
 )
 
 from ...account_abstraction import SafeOperation
@@ -70,11 +72,11 @@ class TestSafeOperation(TestCase):
         self.assertIsNone(safe_operation.valid_after_as_datetime)
         self.assertIsNone(safe_operation.valid_until_as_datetime)
 
-    def test_datetime_parse(self):
+    def test_datetime_parse_v6(self):
         safe_operation = SafeOperation.from_user_operation(
             UserOperation.from_bundler_response(
-                user_operation_with_valid_dates_hash_mock,
-                user_operation_with_valid_dates_mock["result"],
+                user_operation_with_valid_dates_hash_mock_v6,
+                user_operation_with_valid_dates_mock_v6["result"],
             )
         )
 
@@ -92,6 +94,28 @@ class TestSafeOperation(TestCase):
                 2024, 3, 20, 4, 20, 24, tzinfo=zoneinfo.ZoneInfo(key="UTC")
             ),
         )
+
+        # Test invalid value cannot be parsed as datetime
+        invalid_safe_operation = dataclasses.replace(
+            safe_operation,
+            valid_after=5555555555555555555555,
+            valid_until=666666666666666666666,
+        )
+        self.assertIsNone(invalid_safe_operation.valid_after_as_datetime)
+        self.assertIsNone(invalid_safe_operation.valid_until_as_datetime)
+
+    def test_datetime_parse_v7(self):
+        safe_operation = SafeOperation.from_user_operation(
+            UserOperation.from_bundler_response(
+                user_operation_with_valid_dates_hash_mock_v7,
+                user_operation_with_valid_dates_mock_v7["result"],
+            )
+        )
+
+        self.assertEqual(safe_operation.valid_after, 0)
+        self.assertEqual(safe_operation.valid_after_as_datetime, None)
+        self.assertEqual(safe_operation.valid_until, 0)
+        self.assertEqual(safe_operation.valid_until_as_datetime, None)
 
         # Test invalid value cannot be parsed as datetime
         invalid_safe_operation = dataclasses.replace(
