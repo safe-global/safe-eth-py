@@ -1,5 +1,5 @@
 import secrets
-from abc import ABCMeta
+from abc import ABC, ABCMeta
 from functools import cache
 from typing import Callable, Optional
 
@@ -18,10 +18,12 @@ from safe_eth.eth.contracts import (
     get_proxy_1_1_1_mainnet_deployed_bytecode,
     get_proxy_1_3_0_deployed_bytecode,
     get_proxy_1_4_1_deployed_bytecode,
+    get_proxy_1_5_0_deployed_bytecode,
     get_proxy_factory_V1_0_0_contract,
     get_proxy_factory_V1_1_1_contract,
     get_proxy_factory_V1_3_0_contract,
     get_proxy_factory_V1_4_1_contract,
+    get_proxy_factory_V1_5_0_contract,
 )
 from safe_eth.eth.utils import (
     compare_byte_code,
@@ -32,7 +34,7 @@ from safe_eth.eth.utils import (
 
 
 class ProxyFactory(ContractBase, metaclass=ABCMeta):
-    def __new__(cls, *args, version: str = "1.4.1", **kwargs) -> "ProxyFactory":
+    def __new__(cls, *args, version: str = "1.5.0", **kwargs) -> "ProxyFactory":
         if cls is not ProxyFactory:
             return super().__new__(cls)
 
@@ -41,6 +43,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             "1.1.1": ProxyFactoryV111,
             "1.3.0": ProxyFactoryV130,
             "1.4.1": ProxyFactoryV141,
+            "1.5.0": ProxyFactoryV150,
         }
         instance_class = versions[version]
         instance = super().__new__(instance_class)  # type: ignore[type-abstract]
@@ -106,6 +109,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
 
         deployed_proxy_code = self.w3.eth.get_code(address)
         proxy_code_fns = (
+            get_proxy_1_5_0_deployed_bytecode,
             get_proxy_1_4_1_deployed_bytecode,
             get_proxy_1_3_0_deployed_bytecode,
             get_proxy_1_1_1_deployed_bytecode,
@@ -270,10 +274,7 @@ class ProxyFactoryV130(ProxyFactory):
         return get_proxy_factory_V1_3_0_contract
 
 
-class ProxyFactoryV141(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
-        return get_proxy_factory_V1_4_1_contract
-
+class ProxyFactoryLegacyAdapter(ProxyFactory, ABC):
     @cache
     def get_proxy_runtime_code(self) -> bytes:
         """
@@ -300,3 +301,13 @@ class ProxyFactoryV141(ProxyFactory):
         :return:
         """
         raise NotImplementedError("Deprecated, use `deploy_proxy_contract_with_nonce`")
+
+
+class ProxyFactoryV141(ProxyFactoryLegacyAdapter):
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_proxy_factory_V1_4_1_contract
+
+
+class ProxyFactoryV150(ProxyFactoryLegacyAdapter):
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_proxy_factory_V1_5_0_contract
