@@ -28,6 +28,7 @@ from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError
 from safe_eth.eth import EthereumClient
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
+    get_compatibility_fallback_handler_V1_4_1_contract,
     get_safe_contract,
 )
 from safe_eth.eth.utils import fast_to_checksum_address
@@ -414,26 +415,44 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             raise ValueError(
                 "ethereum_client is required to validate contract signature"
             )
-        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
-            ethereum_client.w3, self.owner
+        is_valid_signature_functions = (
+            (
+                get_compatibility_fallback_handler_contract,
+                "isValidSignature(bytes32,bytes)",
+            ),
+            (
+                get_compatibility_fallback_handler_V1_4_1_contract,
+                "isValidSignature(bytes,bytes)",
+            ),
         )
-        is_valid_signature_fn = (
-            compatibility_fallback_handler.get_function_by_signature(
-                "isValidSignature(bytes32,bytes)"
+
+        for (
+            compatibility_fallback_handler_getter,
+            function_signature,
+        ) in is_valid_signature_functions:
+            handler = compatibility_fallback_handler_getter(
+                ethereum_client.w3, self.owner
             )
-        )
-        try:
-            return is_valid_signature_fn(
-                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-            ).call() in (
-                self.EIP1271_MAGIC_VALUE,
-                self.EIP1271_MAGIC_VALUE_UPDATED,
+            is_valid_signature_fn = handler.get_function_by_signature(
+                function_signature
             )
-        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
-            # Error using `pending` block identifier or contract does not exist
-            logger.warning(
-                "Cannot check EIP1271 signature from contract %s", self.owner
-            )
+
+            try:
+                result = is_valid_signature_fn(
+                    bytes(self.safe_hash_preimage), bytes(self.contract_signature)
+                ).call()
+            except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
+                logger.warning(
+                    "Cannot check EIP1271 with %s on contract %s: %s",
+                    function_signature,
+                    self.owner,
+                    exc,
+                )
+                continue
+
+            if result in (self.EIP1271_MAGIC_VALUE, self.EIP1271_MAGIC_VALUE_UPDATED):
+                return True
+
         return False
 
 
@@ -495,26 +514,41 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
     ) -> bool:
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
-        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
-            cast(Any, web3), self.owner
+        is_valid_signature_functions = (
+            (
+                get_compatibility_fallback_handler_contract,
+                "isValidSignature(bytes32,bytes)",
+            ),
+            (
+                get_compatibility_fallback_handler_V1_4_1_contract,
+                "isValidSignature(bytes,bytes)",
+            ),
         )
-        is_valid_signature_fn = (
-            compatibility_fallback_handler.get_function_by_signature(
-                "isValidSignature(bytes32,bytes)"
+
+        for (
+            compatibility_fallback_handler_getter,
+            function_signature,
+        ) in is_valid_signature_functions:
+            handler = compatibility_fallback_handler_getter(cast(Any, web3), self.owner)
+            is_valid_signature_fn = handler.get_function_by_signature(
+                function_signature
             )
-        )
-        try:
-            result = await is_valid_signature_fn(
-                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-            ).call()
-            return result in (
-                self.EIP1271_MAGIC_VALUE,
-                self.EIP1271_MAGIC_VALUE_UPDATED,
-            )
-        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
-            logger.warning(
-                "Cannot check EIP1271 signature from contract %s", self.owner
-            )
+
+            try:
+                result = await is_valid_signature_fn(
+                    bytes(self.safe_hash_preimage), bytes(self.contract_signature)
+                ).call()
+            except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
+                logger.warning(
+                    "Cannot check EIP1271 with %s on contract %s: %s",
+                    function_signature,
+                    self.owner,
+                    exc,
+                )
+                continue
+
+            if result in (self.EIP1271_MAGIC_VALUE, self.EIP1271_MAGIC_VALUE_UPDATED):
+                return True
         return False
 
 

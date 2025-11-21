@@ -113,6 +113,42 @@ def setup_safe_contract_signature_case(test_case: "SafeTestCaseMixin"):
     }
 
 
+def setup_safe_contract_signature_case_v1_1_1(test_case: "SafeTestCaseMixin"):
+    """
+    Setup for deprecated signature tests using Safe v1.1.1.
+
+    Uses signMessage() which was deprecated in Safe v1.3.0 in favor of SignMessageLib,
+    and uses getMessageHash() directly from the Safe contract instead of from the
+    CompatibilityFallbackHandler (isValidSignature(bytes,bytes) was deprecated in v1.5.0).
+    """
+    owner = test_case.ethereum_test_account
+    safe = test_case.deploy_test_safe_v1_1_1(
+        owners=[owner.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
+    )
+    safe_contract = safe.contract
+    safe_tx_hash = fast_keccak_text("test")
+    signature_r = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
+    signature_s = HexBytes(
+        "41".rjust(64, "0")
+    )  # Position of end of signature 0x41 == 65
+    signature_v = HexBytes("00")
+    contract_signature = HexBytes(
+        "0" * 64
+    )  # First 32 bytes signature size, in this case 0
+    signature = signature_r + signature_s + signature_v + contract_signature
+
+    return {
+        "owner": owner,
+        "safe": safe,
+        "safe_contract": safe_contract,
+        "safe_tx_hash": safe_tx_hash,
+        "signature": signature,
+        "signature_r": signature_r,
+        "signature_s": signature_s,
+        "signature_v": signature_v,
+    }
+
+
 class AsyncSignatureTestMixin:
     async_w3: AsyncWeb3
 
@@ -368,11 +404,71 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         self.assertEqual(safe_tx.call(), 1)
         safe_tx.execute(self.ethereum_test_account.key)
 
+    def test_contract_signature_deprecated(self):
+        """
+        Deprecated approach using signMessage() which was deprecated in Safe v1.3.0
+        in favor of SignMessageLib, and getMessageHash() from the Safe contract
+        instead of CompatibilityFallbackHandler (isValidSignature(bytes,bytes) was
+        deprecated in v1.5.0).
+        """
+        fixture = setup_safe_contract_signature_case_v1_1_1(self)
+        owner_1 = fixture["owner"]
+        safe = fixture["safe"]
+        safe_contract = fixture["safe_contract"]
+        safe_tx_hash = fixture["safe_tx_hash"]
+        signature = fixture["signature"]
+        signature_r = fixture["signature_r"]
+        signature_s = fixture["signature_s"]
+        signature_v = fixture["signature_v"]
+
+        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
+        self.assertIsInstance(safe_signature, SafeSignatureContract)
+        self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
+
+        # Check with previously signedMessage
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
+            {"from": safe.address}
+        )
+        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
+        safe_tx.sign(owner_1.key)
+        safe_tx.execute(owner_1.key)
+
+        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
+        self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
+        self.assertIsInstance(safe_signature, SafeSignatureContract)
+
+        # Check with crafted signature
+        safe_tx_hash_2 = fast_keccak_text("test2")
+        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash_2)[0]
+        self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
+
+        safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
+            safe_tx_hash_2
+        ).call()
+        contract_signature = owner_1.unsafe_sign_hash(safe_tx_hash_2_message_hash)[
+            "signature"
+        ]
+
+        encoded_contract_signature_with_offset = encode_abi(
+            ["bytes"], [contract_signature]
+        )
+        # {32 bytes - offset for the length}{32 bytes - length = 65 bytes}{65 bytes - content}
+        self.assertEqual(len(encoded_contract_signature_with_offset), 160)
+        # Safe dynamic part does not use the offset
+        encoded_contract_signature = encoded_contract_signature_with_offset[32:]
+        crafted_signature = (
+            signature_r + signature_s + signature_v + encoded_contract_signature
+        )
+        safe_signature = SafeSignature.parse_signature(
+            crafted_signature, safe_tx_hash_2
+        )[0]
+        self.assertEqual(contract_signature, safe_signature.contract_signature)
+        self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
+
     def test_contract_signature(self):
         fixture = setup_safe_contract_signature_case(self)
         owner_1 = fixture["owner"]
         safe = fixture["safe"]
-        safe_contract = fixture["safe_contract"]
         safe_tx_hash = fixture["safe_tx_hash"]
         signature = fixture["signature"]
         signature_r = fixture["signature_r"]
@@ -435,6 +531,88 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )[0]
         self.assertEqual(contract_signature, safe_signature.contract_signature)
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
+
+    def test_contract_multiple_signatures_deprecated(self):
+        """
+        Test decode of multiple `CONTRACT_SIGNATURE` together
+
+        Deprecated approach using signMessage() which was deprecated in Safe v1.3.0
+        in favor of SignMessageLib, and getMessageHash() from the Safe contract
+        instead of CompatibilityFallbackHandler (isValidSignature(bytes,bytes) was
+        deprecated in v1.5.0).
+        """
+        owner_1 = self.ethereum_test_account
+        safe = self.deploy_test_safe_v1_1_1(
+            owners=[owner_1.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
+        )
+        safe_contract = safe.contract
+        safe_tx_hash = fast_keccak_text("test")
+
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
+            {"from": safe.address}
+        )
+        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
+        safe_tx.sign(owner_1.key)
+        safe_tx.execute(owner_1.key)
+
+        # Check multiple signatures. In this case we reuse signatures for the same owner, it won't make sense
+        # in real life
+        signature_r_1 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
+        signature_s_1 = HexBytes(
+            "82".rjust(64, "0")
+        )  # Position of end of signature `0x82 == (65 * 2)`
+        signature_v_1 = HexBytes("00")
+        contract_signature_1 = b""
+        encoded_contract_signature_1 = encode_abi(["bytes"], [contract_signature_1])[
+            32:
+        ]  # It will {32 bytes offset}{32 bytes size}, we don't need offset
+
+        signature_r_2 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
+        signature_s_2 = HexBytes(
+            "a2".rjust(64, "0")
+        )  # Position of end of signature `0xa2 == (65 * 2) + 32`
+        signature_v_2 = HexBytes("00")
+        safe_tx_hash_message_hash = safe_contract.functions.getMessageHash(
+            safe_tx_hash
+        ).call()
+        contract_signature_2 = owner_1.unsafe_sign_hash(safe_tx_hash_message_hash)[
+            "signature"
+        ]
+        encoded_contract_signature_2 = encode_abi(["bytes"], [contract_signature_2])[
+            32:
+        ]  # It will {32 bytes offset}{32 bytes size}, we don't need offset
+
+        signature = (
+            signature_r_1
+            + signature_s_1
+            + signature_v_1
+            + signature_r_2
+            + signature_s_2
+            + signature_v_2
+            + encoded_contract_signature_1
+            + encoded_contract_signature_2
+        )
+
+        count = 0
+        for safe_signature, contract_signature in zip(
+            SafeSignature.parse_signature(signature, safe_tx_hash),
+            [contract_signature_1, contract_signature_2],
+        ):
+            self.assertEqual(safe_signature.contract_signature, contract_signature)
+            self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
+            self.assertEqual(
+                safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE
+            )
+            # Test exported signature
+            exported_signature = SafeSignature.parse_signature(
+                safe_signature.export_signature(), safe_tx_hash
+            )[0]
+            self.assertEqual(
+                exported_signature.contract_signature, safe_signature.contract_signature
+            )
+            self.assertTrue(exported_signature.is_valid(self.ethereum_client, None))
+            count += 1
+        self.assertEqual(count, 2)
 
     def test_contract_multiple_signatures(self):
         """
@@ -657,11 +835,68 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         self.assertEqual(len(safe_signatures), 1)
         self.assertTrue(self._is_valid_async(safe_signatures[0]))
 
+    def test_contract_signature_deprecated(self):
+        """
+        Deprecated approach using signMessage() which was deprecated in Safe v1.3.0
+        in favor of SignMessageLib, and getMessageHash() from the Safe contract
+        instead of CompatibilityFallbackHandler (isValidSignature(bytes,bytes) was
+        deprecated in v1.5.0).
+        """
+        fixture = setup_safe_contract_signature_case_v1_1_1(self)
+        owner = fixture["owner"]
+        safe = fixture["safe"]
+        safe_contract = fixture["safe_contract"]
+        safe_tx_hash = fixture["safe_tx_hash"]
+        signature = fixture["signature"]
+        signature_r = fixture["signature_r"]
+        signature_s = fixture["signature_s"]
+        signature_v = fixture["signature_v"]
+
+        safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash)[0]
+        self.assertIsInstance(safe_signature, SafeSignatureContractAsync)
+        self.assertFalse(self._is_valid_async(safe_signature, None))
+
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
+            {"from": safe.address}
+        )
+        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
+        safe_tx.sign(owner.key)
+        safe_tx.execute(owner.key)
+
+        safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash)[0]
+        self.assertTrue(self._is_valid_async(safe_signature, None))
+        self.assertIsInstance(safe_signature, SafeSignatureContractAsync)
+
+        safe_tx_hash_2 = fast_keccak_text("test2")
+        safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash_2)[
+            0
+        ]
+        self.assertFalse(self._is_valid_async(safe_signature, None))
+
+        safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
+            safe_tx_hash_2
+        ).call()
+        contract_signature = owner.unsafe_sign_hash(safe_tx_hash_2_message_hash)[
+            "signature"
+        ]
+
+        encoded_contract_signature_with_offset = encode_abi(
+            ["bytes"], [contract_signature]
+        )
+        encoded_contract_signature = encoded_contract_signature_with_offset[32:]
+        crafted_signature = (
+            signature_r + signature_s + signature_v + encoded_contract_signature
+        )
+        safe_signature = SafeSignatureAsync.parse_signature(
+            crafted_signature, safe_tx_hash_2
+        )[0]
+        self.assertEqual(contract_signature, safe_signature.contract_signature)
+        self.assertTrue(self._is_valid_async(safe_signature, None))
+
     def test_contract_signature(self):
         fixture = setup_safe_contract_signature_case(self)
         owner = fixture["owner"]
         safe = fixture["safe"]
-        safe_contract = fixture["safe_contract"]
         safe_tx_hash = fixture["safe_tx_hash"]
         signature = fixture["signature"]
         signature_r = fixture["signature_r"]
@@ -722,7 +957,85 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         self.assertEqual(contract_signature, safe_signature.contract_signature)
         self.assertTrue(self._is_valid_async(safe_signature, None))
 
+    def test_contract_multiple_signatures_deprecated(self):
+        """
+        Test decode of multiple `CONTRACT_SIGNATURE` together
+
+        Deprecated approach using signMessage() which was deprecated in Safe v1.3.0
+        in favor of SignMessageLib, and getMessageHash() from the Safe contract
+        instead of CompatibilityFallbackHandler (isValidSignature(bytes,bytes) was
+        deprecated in v1.5.0).
+        """
+        owner = self.ethereum_test_account
+        safe = self.deploy_test_safe_v1_1_1(
+            owners=[owner.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
+        )
+        safe_contract = safe.contract
+        safe_tx_hash = fast_keccak_text("test")
+
+        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
+            {"from": safe.address}
+        )
+        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
+        safe_tx.sign(owner.key)
+        safe_tx.execute(owner.key)
+
+        signature_r_1 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
+        signature_s_1 = HexBytes("82".rjust(64, "0"))
+        signature_v_1 = HexBytes("00")
+        contract_signature_1 = b""
+        encoded_contract_signature_1 = encode_abi(["bytes"], [contract_signature_1])[
+            32:
+        ]
+
+        signature_r_2 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
+        signature_s_2 = HexBytes("a2".rjust(64, "0"))
+        signature_v_2 = HexBytes("00")
+        safe_tx_hash_message_hash = safe_contract.functions.getMessageHash(
+            safe_tx_hash
+        ).call()
+        contract_signature_2 = owner.unsafe_sign_hash(safe_tx_hash_message_hash)[
+            "signature"
+        ]
+        encoded_contract_signature_2 = encode_abi(["bytes"], [contract_signature_2])[
+            32:
+        ]
+
+        signature = (
+            signature_r_1
+            + signature_s_1
+            + signature_v_1
+            + signature_r_2
+            + signature_s_2
+            + signature_v_2
+            + encoded_contract_signature_1
+            + encoded_contract_signature_2
+        )
+
+        count = 0
+        for safe_signature, contract_signature in zip(
+            SafeSignatureAsync.parse_signature(signature, safe_tx_hash),
+            [contract_signature_1, contract_signature_2],
+        ):
+            self.assertEqual(safe_signature.contract_signature, contract_signature)
+            self.assertTrue(self._is_valid_async(safe_signature, None))
+            self.assertEqual(
+                safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE
+            )
+            exported_signature = SafeSignatureAsync.parse_signature(
+                safe_signature.export_signature(), safe_tx_hash
+            )[0]
+            self.assertEqual(
+                exported_signature.contract_signature, safe_signature.contract_signature
+            )
+            self.assertTrue(self._is_valid_async(exported_signature, None))
+            count += 1
+        self.assertEqual(count, 2)
+
     def test_contract_multiple_signatures(self):
+        """
+        Test decode of multiple `CONTRACT_SIGNATURE` together
+        """
         owner = self.ethereum_test_account
         safe = self.deploy_test_safe_v1_3_0(
             owners=[owner.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
