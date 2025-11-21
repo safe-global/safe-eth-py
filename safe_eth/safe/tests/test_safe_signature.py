@@ -11,9 +11,14 @@ from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
 from web3 import AsyncHTTPProvider, AsyncWeb3, Web3
 
-from safe_eth.eth.utils import fast_keccak, fast_keccak_text
+from safe_eth.eth.utils import fast_keccak, fast_keccak_text, get_empty_tx_params
 
+from ...eth.contracts import (
+    get_compatibility_fallback_handler_contract,
+    get_sign_message_lib_contract,
+)
 from ...eth.tests.ethereum_test_case import EthereumTestCaseMixin
+from .. import SafeOperationEnum
 from ..safe_signature import (
     SafeSignature,
     SafeSignatureApprovedHash,
@@ -81,7 +86,7 @@ def build_eip1271_signature_for_message(test_case: "SafeTestCaseMixin"):
 
 def setup_safe_contract_signature_case(test_case: "SafeTestCaseMixin"):
     owner = test_case.ethereum_test_account
-    safe = test_case.deploy_test_safe_v1_1_1(
+    safe = test_case.deploy_test_safe_v1_3_0(
         owners=[owner.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
     )
     safe_contract = safe.contract
@@ -319,7 +324,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx_hash_preimage = safe_tx.safe_tx_hash_preimage
         safe_tx_hash = safe_tx.safe_tx_hash
 
-        safe_owner_1_message_hash = safe_owner_1.get_message_hash(safe_tx_hash_preimage)
+        safe_owner_1_message_hash = safe_owner_1.get_message_hash(safe_tx_hash)
         safe_owner_1_eoa_1_signature = safe_owner_1_eoa_1.unsafe_sign_hash(
             safe_owner_1_message_hash
         )["signature"]
@@ -332,7 +337,6 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             else safe_owner_1_eoa_2_signature + safe_owner_1_eoa_1_signature
         )
 
-        # Build EIP1271 signature v=0 r=safe v=dynamic_part dynamic_part=size+owner_signature
         safe_signature_contract_1 = SafeSignatureContract.from_values(
             safe_owner_1.address,
             safe_tx_hash,
@@ -340,7 +344,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             safe_owner_1_eoa_signature,
         )
 
-        safe_owner_2_message_hash = safe_owner_2.get_message_hash(safe_tx_hash_preimage)
+        safe_owner_2_message_hash = safe_owner_2.get_message_hash(safe_tx_hash)
         safe_owner_2_eoa_1_signature = safe_owner_2_eoa_1.unsafe_sign_hash(
             safe_owner_2_message_hash
         )["signature"]
@@ -380,10 +384,18 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
         # Check with previously signedMessage
-        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
-            {"from": safe.address}
+        sign_message_lib_address = self.deploy_sign_message_lib()
+        sign_message_contract = get_sign_message_lib_contract(self.w3, safe.address)
+
+        sign_message_data = sign_message_contract.functions.signMessage(
+            safe_tx_hash
+        ).build_transaction(get_empty_tx_params())["data"]
+        safe_tx = safe.build_multisig_tx(
+            sign_message_lib_address,
+            0,
+            sign_message_data,
+            SafeOperationEnum.DELEGATE_CALL.value,
         )
-        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner_1.key)
         safe_tx.execute(owner_1.key)
 
@@ -396,9 +408,14 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash_2)[0]
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
-        safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
-            safe_tx_hash_2
-        ).call()
+        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
+            self.w3, safe.address
+        )
+        safe_tx_hash_2_message_hash = (
+            compatibility_fallback_handler.functions.getMessageHash(
+                safe_tx_hash_2
+            ).call()
+        )
         contract_signature = owner_1.unsafe_sign_hash(safe_tx_hash_2_message_hash)[
             "signature"
         ]
@@ -424,16 +441,23 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         Test decode of multiple `CONTRACT_SIGNATURE` together
         """
         owner_1 = self.ethereum_test_account
-        safe = self.deploy_test_safe_v1_1_1(
+        safe = self.deploy_test_safe_v1_3_0(
             owners=[owner_1.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
         )
-        safe_contract = safe.contract
         safe_tx_hash = fast_keccak_text("test")
 
-        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
-            {"from": safe.address}
+        sign_message_lib_address = self.deploy_sign_message_lib()
+        sign_message_contract = get_sign_message_lib_contract(self.w3, safe.address)
+
+        sign_message_data = sign_message_contract.functions.signMessage(
+            safe_tx_hash
+        ).build_transaction(get_empty_tx_params())["data"]
+        safe_tx = safe.build_multisig_tx(
+            sign_message_lib_address,
+            0,
+            sign_message_data,
+            SafeOperationEnum.DELEGATE_CALL.value,
         )
-        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner_1.key)
         safe_tx.execute(owner_1.key)
 
@@ -454,9 +478,12 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             "a2".rjust(64, "0")
         )  # Position of end of signature `0xa2 == (65 * 2) + 32`
         signature_v_2 = HexBytes("00")
-        safe_tx_hash_message_hash = safe_contract.functions.getMessageHash(
-            safe_tx_hash
-        ).call()
+        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
+            self.w3, safe.address
+        )
+        safe_tx_hash_message_hash = (
+            compatibility_fallback_handler.functions.getMessageHash(safe_tx_hash).call()
+        )
         contract_signature_2 = owner_1.unsafe_sign_hash(safe_tx_hash_message_hash)[
             "signature"
         ]
@@ -645,10 +672,18 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         self.assertIsInstance(safe_signature, SafeSignatureContractAsync)
         self.assertFalse(self._is_valid_async(safe_signature, None))
 
-        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
-            {"from": safe.address}
+        sign_message_lib_address = self.deploy_sign_message_lib()
+        sign_message_contract = get_sign_message_lib_contract(self.w3, safe.address)
+
+        sign_message_data = sign_message_contract.functions.signMessage(
+            safe_tx_hash
+        ).build_transaction(get_empty_tx_params())["data"]
+        safe_tx = safe.build_multisig_tx(
+            sign_message_lib_address,
+            0,
+            sign_message_data,
+            SafeOperationEnum.DELEGATE_CALL.value,
         )
-        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner.key)
         safe_tx.execute(owner.key)
 
@@ -662,9 +697,14 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         ]
         self.assertFalse(self._is_valid_async(safe_signature, None))
 
-        safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
-            safe_tx_hash_2
-        ).call()
+        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
+            self.w3, safe.address
+        )
+        safe_tx_hash_2_message_hash = (
+            compatibility_fallback_handler.functions.getMessageHash(
+                safe_tx_hash_2
+            ).call()
+        )
         contract_signature = owner.unsafe_sign_hash(safe_tx_hash_2_message_hash)[
             "signature"
         ]
@@ -684,16 +724,23 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
 
     def test_contract_multiple_signatures(self):
         owner = self.ethereum_test_account
-        safe = self.deploy_test_safe_v1_1_1(
+        safe = self.deploy_test_safe_v1_3_0(
             owners=[owner.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
         )
-        safe_contract = safe.contract
         safe_tx_hash = fast_keccak_text("test")
 
-        tx = safe_contract.functions.signMessage(safe_tx_hash).build_transaction(
-            {"from": safe.address}
+        sign_message_lib_address = self.deploy_sign_message_lib()
+        sign_message_contract = get_sign_message_lib_contract(self.w3, safe.address)
+
+        sign_message_data = sign_message_contract.functions.signMessage(
+            safe_tx_hash
+        ).build_transaction(get_empty_tx_params())["data"]
+        safe_tx = safe.build_multisig_tx(
+            sign_message_lib_address,
+            0,
+            sign_message_data,
+            SafeOperationEnum.DELEGATE_CALL.value,
         )
-        safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner.key)
         safe_tx.execute(owner.key)
 
@@ -708,9 +755,12 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         signature_r_2 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s_2 = HexBytes("a2".rjust(64, "0"))
         signature_v_2 = HexBytes("00")
-        safe_tx_hash_message_hash = safe_contract.functions.getMessageHash(
-            safe_tx_hash
-        ).call()
+        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
+            self.w3, safe.address
+        )
+        safe_tx_hash_message_hash = (
+            compatibility_fallback_handler.functions.getMessageHash(safe_tx_hash).call()
+        )
         contract_signature_2 = owner.unsafe_sign_hash(safe_tx_hash_message_hash)[
             "signature"
         ]
