@@ -139,6 +139,7 @@ class BlockscoutClient:
         EthereumNetwork.ETHERLINK_SHADOWNET_TESTNET: "https://shadownet.explorer.etherlink.com/api/v2",
         EthereumNetwork.HPP_MAINNET: "https://explorer.hpp.io/api/v2",
         EthereumNetwork.HPP_SEPOLIA: "https://sepolia-explorer.hpp.io/api/v2",
+        EthereumNetwork.MORPH_HOODI: "https://explorer-api-hoodi.morphl2.io/api/v2",
     }
 
     def __init__(
