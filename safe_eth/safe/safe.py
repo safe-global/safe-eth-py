@@ -1,7 +1,7 @@
 import dataclasses
 import math
 import os
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from functools import cached_property
 from logging import getLogger
 from typing import Any, Callable, Dict, List, Optional, Type, Union
@@ -27,14 +27,17 @@ from safe_eth.eth import EthereumClient, EthereumTxSent
 from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from safe_eth.eth.contracts import (
     ContractBase,
-    get_compatibility_fallback_handler_contract,
+    get_compatibility_fallback_handler_V1_4_1_contract,
+    get_compatibility_fallback_handler_V1_5_0_contract,
     get_safe_contract,
     get_safe_V0_0_1_contract,
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_safe_V1_5_0_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
+    get_simulate_tx_accessor_V1_5_0_contract,
 )
 from safe_eth.eth.proxies import MinimalProxy, SafeProxy, StandardProxy
 from safe_eth.eth.typing import EthereumData
@@ -86,7 +89,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
-    _DEFAULT_VERSION = "1.4.1"
+    _DEFAULT_VERSION = "1.5.0"
 
     def __new__(
         cls,
@@ -127,6 +130,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             "1.2.0": SafeV120,
             "1.3.0": SafeV130,
             "1.4.1": SafeV141,
+            "1.5.0": SafeV150,
         }
 
     @classmethod
@@ -1163,12 +1167,14 @@ class SafeV130(Safe):
         return get_safe_V1_3_0_contract
 
 
-class SafeV141(Safe):
-    def get_version(self) -> str:
-        return "1.4.1"
+class SafeLegacyAdapter(Safe, ABC):
+    @abstractmethod
+    def _get_simulate_tx_accessor(self) -> Contract:
+        raise NotImplementedError
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
-        return get_safe_V1_4_1_contract
+    @abstractmethod
+    def _get_simulator(self) -> Contract:
+        raise NotImplementedError
 
     def estimate_tx_gas_with_safe(
         self,
@@ -1190,12 +1196,9 @@ class SafeV141(Safe):
         :param block_identifier:
         :return:
         """
-        accessor = get_simulate_tx_accessor_V1_4_1_contract(
-            self.w3, address=self.simulate_tx_accessor_address
-        )
-        simulator = get_compatibility_fallback_handler_contract(
-            self.w3, address=self.address
-        )
+        accessor = self._get_simulate_tx_accessor()
+        simulator = self._get_simulator()
+
         simulation_data = accessor.functions.simulate(
             to, value, data, operation
         ).build_transaction(get_empty_tx_params())["data"]
@@ -1227,3 +1230,43 @@ class SafeV141(Safe):
             raise CannotEstimateGas(
                 f"Cannot estimate gas using SimulateTxAccessor {e} - {decoded_revert}"
             )
+
+
+class SafeV141(SafeLegacyAdapter):
+    def get_version(self) -> str:
+        return "1.4.1"
+
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_safe_V1_4_1_contract
+
+    def _get_simulate_tx_accessor(self) -> Contract:
+        return get_simulate_tx_accessor_V1_4_1_contract(
+            self.w3,
+            address=self.simulate_tx_accessor_address,
+        )
+
+    def _get_simulator(self) -> Contract:
+        return get_compatibility_fallback_handler_V1_4_1_contract(
+            self.w3,
+            address=self.address,
+        )
+
+
+class SafeV150(SafeLegacyAdapter):
+    def get_version(self) -> str:
+        return "1.5.0"
+
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_safe_V1_5_0_contract
+
+    def _get_simulate_tx_accessor(self) -> Contract:
+        return get_simulate_tx_accessor_V1_5_0_contract(
+            self.w3,
+            address=self.simulate_tx_accessor_address,
+        )
+
+    def _get_simulator(self) -> Contract:
+        return get_compatibility_fallback_handler_V1_5_0_contract(
+            self.w3,
+            address=self.address,
+        )

@@ -37,12 +37,12 @@ class TestAddresses(TestCase):
 
     def test_get_default_addresses_with_version(self):
         all_defaults_with_version = get_default_addresses_with_version()
-        self.assertEqual(len(all_defaults_with_version), 60)
+        self.assertEqual(len(all_defaults_with_version), 73)
         default_singletons = get_default_addresses_with_version(
             safe_singleton_contract_names
         )
-        self.assertEqual(len(default_singletons), 13)
+        self.assertEqual(len(default_singletons), 15)
         default_singletons = get_default_addresses_with_version(
             safe_proxy_factory_contract_names
         )
-        self.assertEqual(len(default_singletons), 7)
+        self.assertEqual(len(default_singletons), 8)

@@ -48,17 +48,8 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
             safe_message_hash,
         )
 
-        # Use deprecated isValidSignature method (receives bytes)
-        signature = owner.unsafe_sign_hash(safe_message_hash)
-        is_valid_bytes_fn = compatibility_contract.get_function_by_signature(
-            "isValidSignature(bytes,bytes)"
-        )
-        self.assertEqual(
-            is_valid_bytes_fn(message.encode(), signature.signature).call(),
-            bytes.fromhex(self.EIP1271_MAGIC_VALUE),
-        )
-
         # Use new isValidSignature method (receives bytes32 == hash of the message)
+        # isValidSignature method (receives bytes) was finally deprecated in version 1.5.0
         # Message needs to be hashed first
         message_hash = fast_keccak_text(message)
         safe_message_hash = safe.get_message_hash(message_hash)
