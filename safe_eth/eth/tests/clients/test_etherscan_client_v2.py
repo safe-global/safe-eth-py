@@ -21,7 +21,7 @@ class TestEtherscanClientV2(TestCase):
 
         return EtherscanClientV2(network, api_key=etherscan_api_key)
 
-    @pytest.mark.flaky(reruns=5)
+    @pytest.mark.flaky(reruns=5, delay=2)
     def test_etherscan_get_abi(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
@@ -45,7 +45,7 @@ class TestEtherscanClientV2(TestCase):
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
 
-    @pytest.mark.flaky(reruns=5)
+    @pytest.mark.flaky(reruns=5, delay=2)
     def test_etherscan_get_contract_metadata(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
@@ -61,7 +61,7 @@ class TestEtherscanClientV2(TestCase):
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
 
-    @pytest.mark.flaky(reruns=5)
+    @pytest.mark.flaky(reruns=5, delay=2)
     def test_is_supported_network(self):
         try:
             self.assertTrue(
@@ -69,6 +69,16 @@ class TestEtherscanClientV2(TestCase):
             )
             self.assertFalse(
                 EtherscanClientV2.is_supported_network(EthereumNetwork.UNKNOWN)
+            )
+        except EtherscanRateLimitError:
+            self.skipTest("Etherscan rate limit reached")
+
+    @pytest.mark.flaky(reruns=5, delay=2)
+    def test_get_base_url(self):
+        try:
+            self.assertEqual(
+                EtherscanClientV2(EthereumNetwork.POLYGON).get_base_url(),
+                "https://polygonscan.com/",
             )
         except EtherscanRateLimitError:
             self.skipTest("Etherscan rate limit reached")
@@ -84,7 +94,7 @@ class TestAsyncEtherscanClientV2(unittest.IsolatedAsyncioTestCase):
 
         return AsyncEtherscanClientV2(network, api_key=etherscan_api_key)
 
-    @pytest.mark.flaky(reruns=5)
+    @pytest.mark.flaky(reruns=5, delay=2)
     async def test_async_etherscan_get_abi(self):
         try:
             etherscan_api = self.get_etherscan_api(EthereumNetwork.MAINNET)
