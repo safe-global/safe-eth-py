@@ -8,8 +8,10 @@ from ..mocks.mock_bundler import (
     safe_4337_chain_id_mock,
     safe_4337_user_operation_hash_mock,
     user_operation_mock,
-    user_operation_v07_hash,
-    user_operation_v07_mock,
+    user_operation_v07_hash_1,
+    user_operation_v07_hash_2,
+    user_operation_v07_mock_1,
+    user_operation_v07_mock_2,
 )
 
 
@@ -26,12 +28,30 @@ class TestUserOperation(TestCase):
         )
 
     def test_calculate_user_operation_hash_V07(self):
-        user_operation_hash = user_operation_v07_hash
-        user_operation = UserOperation.from_bundler_response(
-            to_0x_hex_str(user_operation_hash), user_operation_v07_mock["result"]
-        )
-        self.assertIsInstance(user_operation, UserOperationV07)
-        self.assertEqual(
-            user_operation.calculate_user_operation_hash(safe_4337_chain_id_mock),
-            user_operation_hash,
-        )
+        for (
+            user_operation_v07_hash,
+            user_operation_v07_mock,
+            user_operation_v07_chain_id,
+        ) in [
+            (
+                user_operation_v07_hash_1,
+                user_operation_v07_mock_1,
+                safe_4337_chain_id_mock,
+            ),
+            (
+                user_operation_v07_hash_2,
+                user_operation_v07_mock_2,
+                safe_4337_chain_id_mock,
+            ),
+        ]:
+            user_operation_hash = user_operation_v07_hash
+            user_operation = UserOperation.from_bundler_response(
+                to_0x_hex_str(user_operation_hash), user_operation_v07_mock["result"]
+            )
+            self.assertIsInstance(user_operation, UserOperationV07)
+            self.assertEqual(
+                user_operation.calculate_user_operation_hash(
+                    user_operation_v07_chain_id
+                ),
+                user_operation_hash,
+            )

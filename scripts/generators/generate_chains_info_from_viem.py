@@ -14,14 +14,10 @@ LOCAL_REPO_DIR = "sources"
 
 # Viem regex patterns
 VIEM_ATTR_ID = "id"
-VIEM_ATTR_URL = "url"
-VIEM_ATTR_API_URL = "api_url"
 VIEM_ATTR_MULTICALL_ADDRESS = "multicall_address"
 
 VIEM_SEARCH_PATTERNS = {
     VIEM_ATTR_ID: re.compile(r"id\s*:\s*([\d_]+)"),
-    VIEM_ATTR_URL: re.compile(r"url\s*:\s*[\'\"]([^\'\"]+)[\'\"]"),
-    VIEM_ATTR_API_URL: re.compile(r"apiUrl\s*:\s*[\'\"]([^\'\"]+)[\'\"]"),
     VIEM_ATTR_MULTICALL_ADDRESS: re.compile(
         r"multicall3\s*:\s*{\s*address\s*:\s*[\'\"]([^\'\"]+)[\'\"]"
     ),
@@ -257,30 +253,6 @@ def process_chains() -> None:
         chain_name = get_chain_enum_name(chain_id)
         if chain_name:
             chain_enum_name = upsert_chain_id(chain_id, chain_name)
-
-            if chain_info.get(VIEM_ATTR_URL) and chain_info.get(VIEM_ATTR_API_URL):
-                chain_explorer_url = chain_info[VIEM_ATTR_URL]
-                chain_explorer_api_url = chain_info[VIEM_ATTR_API_URL]
-                is_valid_api_url = validate_api_url(chain_explorer_api_url)
-                if is_valid_api_url:
-                    upsert_chain_info_enum_based(
-                        chain_enum_name,
-                        chain_explorer_url,
-                        "safe_eth/eth/clients/etherscan_client.py",
-                        CONFIG_ENUM_ATTR_NETWORK_WITH_URL,
-                    )
-                    base_api_url = (
-                        chain_explorer_api_url[: -len("/api")]
-                        if chain_explorer_api_url.endswith("/api")
-                        else chain_explorer_api_url
-                    )
-                    upsert_chain_info_enum_based(
-                        chain_enum_name,
-                        base_api_url,
-                        "safe_eth/eth/clients/etherscan_client.py",
-                        CONFIG_ENUM_ATTR_NETWORK_WITH_API_URL,
-                    )
-
             if chain_info.get(VIEM_ATTR_MULTICALL_ADDRESS):
                 upsert_chain_info_enum_based(
                     chain_enum_name,
