@@ -84,7 +84,7 @@ def build_eip1271_signature_for_message(test_case: "SafeTestCaseMixin"):
     return signature_1271, safe_parent_message_hash, message_hash
 
 
-def setup_safe_contract_signature_case(test_case: "SafeTestCaseMixin"):
+def setup_safe_contract_signature_case_v_1_3_0(test_case: "SafeTestCaseMixin"):
     owner = test_case.ethereum_test_account
     safe = test_case.deploy_test_safe_v1_3_0(
         owners=[owner.address], initial_funding_wei=Web3.to_wei(0.01, "ether")
@@ -466,7 +466,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
 
     def test_contract_signature(self):
-        fixture = setup_safe_contract_signature_case(self)
+        fixture = setup_safe_contract_signature_case_v_1_3_0(self)
         owner_1 = fixture["owner"]
         safe = fixture["safe"]
         safe_tx_hash = fixture["safe_tx_hash"]
@@ -894,7 +894,7 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         self.assertTrue(self._is_valid_async(safe_signature, None))
 
     def test_contract_signature(self):
-        fixture = setup_safe_contract_signature_case(self)
+        fixture = setup_safe_contract_signature_case_v_1_3_0(self)
         owner = fixture["owner"]
         safe = fixture["safe"]
         safe_tx_hash = fixture["safe_tx_hash"]

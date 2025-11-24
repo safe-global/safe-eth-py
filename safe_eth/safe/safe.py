@@ -1167,7 +1167,12 @@ class SafeV130(Safe):
         return get_safe_V1_3_0_contract
 
 
-class SafeLegacyAdapter(Safe, ABC):
+class SafeCompatibilityAdapter(Safe, ABC):
+    """
+    Adapter for Safe contracts v1.4.1 and later.
+    Overrides some methods to handle API changes in newer contract versions.
+    """
+
     @abstractmethod
     def _get_simulate_tx_accessor(self) -> Contract:
         raise NotImplementedError
@@ -1232,7 +1237,7 @@ class SafeLegacyAdapter(Safe, ABC):
             )
 
 
-class SafeV141(SafeLegacyAdapter):
+class SafeV141(SafeCompatibilityAdapter):
     def get_version(self) -> str:
         return "1.4.1"
 
@@ -1252,7 +1257,7 @@ class SafeV141(SafeLegacyAdapter):
         )
 
 
-class SafeV150(SafeLegacyAdapter):
+class SafeV150(SafeCompatibilityAdapter):
     def get_version(self) -> str:
         return "1.5.0"
 

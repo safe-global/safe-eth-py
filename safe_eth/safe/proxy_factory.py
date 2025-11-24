@@ -274,7 +274,12 @@ class ProxyFactoryV130(ProxyFactory):
         return get_proxy_factory_V1_3_0_contract
 
 
-class ProxyFactoryLegacyAdapter(ProxyFactory, ABC):
+class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
+    """
+    Adapter for Safe Proxy Factory contracts v1.4.1 and later.
+    Overrides some methods to handle API changes in newer contract versions.
+    """
+
     @cache
     def get_proxy_runtime_code(self) -> bytes:
         """
@@ -303,11 +308,11 @@ class ProxyFactoryLegacyAdapter(ProxyFactory, ABC):
         raise NotImplementedError("Deprecated, use `deploy_proxy_contract_with_nonce`")
 
 
-class ProxyFactoryV141(ProxyFactoryLegacyAdapter):
+class ProxyFactoryV141(ProxyFactoryCompatibilityAdapter):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_4_1_contract
 
 
-class ProxyFactoryV150(ProxyFactoryLegacyAdapter):
+class ProxyFactoryV150(ProxyFactoryCompatibilityAdapter):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_5_0_contract
