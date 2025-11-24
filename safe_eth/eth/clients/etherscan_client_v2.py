@@ -127,6 +127,16 @@ class EtherscanClientV2:
             item.get("chainid") == str(network.value) for item in supported_networks
         )
 
+    def get_base_url(self) -> Optional[str]:
+        """
+        :param network: The Ethereum network to check.
+        :return: Base url for the current network
+        """
+        for network in self.get_supported_networks():
+            if network.get("chainid") == str(self.network.value):
+                return network.get("blockexplorer")
+        return None
+
     @staticmethod
     def _process_contract_metadata(
         contract_data: Dict[str, Any]
