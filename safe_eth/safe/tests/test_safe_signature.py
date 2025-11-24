@@ -69,12 +69,11 @@ def build_eip1271_signature_for_message(test_case: "SafeTestCaseMixin"):
 
     message = "Testing EIP191 message signing"
     message_hash = defunct_hash_message(text=message)
-    safe_owner_message_hash = safe_owner.get_message_hash(message_hash)
+    safe_parent_message_hash = safe.get_message_hash(message_hash)
+    safe_owner_message_hash = safe_owner.get_message_hash(safe_parent_message_hash)
     safe_owner_signature = account.unsafe_sign_hash(safe_owner_message_hash)[
         "signature"
     ]
-    safe_parent_message_hash = safe.get_message_hash(message_hash)
-
     signature_1271 = (
         signature_to_bytes(
             0, int.from_bytes(HexBytes(safe_owner.address), byteorder="big"), 65

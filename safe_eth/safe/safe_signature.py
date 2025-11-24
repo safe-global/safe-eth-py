@@ -406,51 +406,80 @@ class SafeSignatureEOAMixin(SafeSignatureBase):
 
 
 class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
+    def _check_eip1271(
+        self,
+        ethereum_client: EthereumClient,
+        handler_getter,
+        function_signature: str,
+        data: bytes,
+        signature: bytes,
+    ) -> bool:
+        """
+        Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
+
+        :param ethereum_client: EthereumClient instance.
+        :param handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
+        :param function_signature: The ABI function signature to call.
+        :param data: The data or hash to be validated, depending on the Safe version.
+        :param signature: The contract signature payload to validate.
+        :return: True on successful validation; otherwise False.
+        """
+        handler = handler_getter(ethereum_client.w3, self.owner)
+        is_valid_signature_fn = handler.get_function_by_signature(function_signature)
+
+        try:
+            result = is_valid_signature_fn(data, signature).call()
+        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
+            logger.warning(
+                "Cannot check EIP1271 with %s on contract %s: %s",
+                function_signature,
+                self.owner,
+                exc,
+            )
+            return False
+
+        return result in (
+            self.EIP1271_MAGIC_VALUE,
+            self.EIP1271_MAGIC_VALUE_UPDATED,
+        )
+
     def is_valid(
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
     ) -> bool:
+        """
+        Validate the signature using the appropriate EIP-1271 path.
+        First tries the updated method (bytes32,bytes).
+        Falls back to the legacy method (bytes,bytes).
+
+        :param ethereum_client: EthereumClient instance
+        :param safe_address: Optional Safe EthereumAddress instance.
+        """
         if ethereum_client is None:
             raise ValueError(
                 "ethereum_client is required to validate contract signature"
             )
-        is_valid_signature_functions = (
+
+        for handler_getter, function_signature, data in (
             (
                 get_compatibility_fallback_handler_contract,
                 "isValidSignature(bytes32,bytes)",
+                bytes(self.safe_hash),
             ),
             (
                 get_compatibility_fallback_handler_V1_4_1_contract,
                 "isValidSignature(bytes,bytes)",
+                bytes(self.safe_hash_preimage),
             ),
-        )
-
-        for (
-            compatibility_fallback_handler_getter,
-            function_signature,
-        ) in is_valid_signature_functions:
-            handler = compatibility_fallback_handler_getter(
-                ethereum_client.w3, self.owner
-            )
-            is_valid_signature_fn = handler.get_function_by_signature(
-                function_signature
-            )
-
-            try:
-                result = is_valid_signature_fn(
-                    bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-                ).call()
-            except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
-                logger.warning(
-                    "Cannot check EIP1271 with %s on contract %s: %s",
-                    function_signature,
-                    self.owner,
-                    exc,
-                )
-                continue
-
-            if result in (self.EIP1271_MAGIC_VALUE, self.EIP1271_MAGIC_VALUE_UPDATED):
+        ):
+            if self._check_eip1271(
+                ethereum_client,
+                handler_getter,
+                function_signature,
+                data,
+                bytes(self.contract_signature),
+            ):
                 return True
 
         return False
@@ -507,48 +536,80 @@ class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
 
 
 class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync):
+    async def _check_eip1271(
+        self,
+        web3: AsyncWeb3,
+        handler_getter,
+        function_signature: str,
+        data: bytes,
+        signature: bytes,
+    ) -> bool:
+        """
+        Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
+
+        :param web3: AsyncWeb3 instance
+        :param handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
+        :param function_signature: The ABI function signature to call
+        :param data: The data or hash to be validated, depending on the Safe version.
+        :param signature: The contract signature payload to validate.
+        :return: True on successful validation; otherwise False.
+        """
+        handler = handler_getter(web3, self.owner)
+        is_valid_signature_fn = handler.get_function_by_signature(function_signature)
+
+        try:
+            result = await is_valid_signature_fn(data, signature).call()
+        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
+            logger.warning(
+                "Cannot check EIP1271 with %s on contract %s: %s",
+                function_signature,
+                self.owner,
+                exc,
+            )
+            return False
+
+        return result in (
+            self.EIP1271_MAGIC_VALUE,
+            self.EIP1271_MAGIC_VALUE_UPDATED,
+        )
+
     async def is_valid(
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
     ) -> bool:
+        """
+        Validate the signature using the appropriate EIP-1271 path.
+        First tries the updated method (bytes32,bytes).
+        Falls back to the legacy method (bytes,bytes).
+
+        :param web3: Optional EthereumClient instance.
+        :param safe_address: Optional Safe EthereumAddress instance.
+        """
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
-        is_valid_signature_functions = (
+
+        for handler_getter, function_signature, data in (
             (
                 get_compatibility_fallback_handler_contract,
                 "isValidSignature(bytes32,bytes)",
+                bytes(self.safe_hash),
             ),
             (
                 get_compatibility_fallback_handler_V1_4_1_contract,
                 "isValidSignature(bytes,bytes)",
+                bytes(self.safe_hash_preimage),
             ),
-        )
-
-        for (
-            compatibility_fallback_handler_getter,
-            function_signature,
-        ) in is_valid_signature_functions:
-            handler = compatibility_fallback_handler_getter(cast(Any, web3), self.owner)
-            is_valid_signature_fn = handler.get_function_by_signature(
-                function_signature
-            )
-
-            try:
-                result = await is_valid_signature_fn(
-                    bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-                ).call()
-            except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
-                logger.warning(
-                    "Cannot check EIP1271 with %s on contract %s: %s",
-                    function_signature,
-                    self.owner,
-                    exc,
-                )
-                continue
-
-            if result in (self.EIP1271_MAGIC_VALUE, self.EIP1271_MAGIC_VALUE_UPDATED):
+        ):
+            if await self._check_eip1271(
+                web3,
+                handler_getter,
+                function_signature,
+                data,
+                bytes(self.contract_signature),
+            ):
                 return True
+
         return False
 
 
