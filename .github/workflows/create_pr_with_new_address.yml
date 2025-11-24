@@ -10,7 +10,7 @@ jobs:
     if: contains(github.event.issue.labels.*.name, 'add-new-address') && startsWith(github.event.comment.body, '/')
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Check if comment is "/execute" by repo owner
       id: check-comment
