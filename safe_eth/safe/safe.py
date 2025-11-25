@@ -62,13 +62,14 @@ logger = getLogger(__name__)
 class SafeInfo:
     address: ChecksumAddress
     fallback_handler: ChecksumAddress
-    guard: ChecksumAddress
+    transaction_guard: ChecksumAddress
     master_copy: ChecksumAddress
     modules: List[ChecksumAddress]
     nonce: int
     owners: List[ChecksumAddress]
     threshold: int
     version: str
+    module_guard: ChecksumAddress = NULL_ADDRESS
 
 
 class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
@@ -81,8 +82,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         0x6C9A6C4A39284E37ED1CF53D337577D14212A4870FB976A4366C693B939918D5
     )
     # keccak256("guard_manager.guard.address")
-    GUARD_STORAGE_SLOT = (
+    TRANSACTION_GUARD_STORAGE_SLOT = (
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
+    )
+    # keccak256("module_manager.module_guard.address")
+    MODULE_GUARD_STORAGE_SLOT = (
+        0xB104E0B93118902C651344349B610029D694CFDEC91C589C91EBAFBCD0289947
     )
 
     # keccak256("SafeMessage(bytes message)");
@@ -719,7 +724,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 raise CannotRetrieveSafeInfoException(self.address)
 
             fallback_handler = self.retrieve_fallback_handler()
-            guard = self.retrieve_guard()  # Guard was implemented in v1.1.1
+            transaction_guard = (
+                self.retrieve_transaction_guard()
+            )  # Transaction guard was implemented in v1.1.1
+            module_guard = (
+                self.retrieve_module_guard()
+            )  # Module guard was implemented in v1.5.0
 
             # From v1.1.1:
             # - `getModulesPaginated` is available
@@ -761,13 +771,14 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return SafeInfo(
                 self.address,
                 fallback_handler,
-                guard,
+                transaction_guard,
                 master_copy,
                 modules if modules else [],
                 nonce,
                 owners,
                 threshold,
                 version,
+                module_guard,
             )
         except (Web3Exception, ValueError) as e:
             raise CannotRetrieveSafeInfoException(self.address) from e
@@ -795,11 +806,40 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         else:
             return NULL_ADDRESS
 
-    def retrieve_guard(
+    def retrieve_transaction_guard(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> ChecksumAddress:
+        """
+        Retrieve the transaction guard address from storage.
+        Transaction guard (previously just "guard") was implemented in v1.1.1.
+
+        :param block_identifier:
+        :return: Transaction guard address or NULL_ADDRESS if not set
+        """
         address = self.ethereum_client.w3.eth.get_storage_at(
-            self.address, self.GUARD_STORAGE_SLOT, block_identifier=block_identifier
+            self.address,
+            self.TRANSACTION_GUARD_STORAGE_SLOT,
+            block_identifier=block_identifier,
+        )[-20:].rjust(20, b"\0")
+        if len(address) == 20:
+            return fast_bytes_to_checksum_address(address)
+        else:
+            return NULL_ADDRESS
+
+    def retrieve_module_guard(
+        self, block_identifier: Optional[BlockIdentifier] = "latest"
+    ) -> ChecksumAddress:
+        """
+        Retrieve the module guard address from storage.
+        Module guard was introduced in Safe v1.5.0.
+
+        :param block_identifier:
+        :return: Module guard address or NULL_ADDRESS if not set
+        """
+        address = self.ethereum_client.w3.eth.get_storage_at(
+            self.address,
+            self.MODULE_GUARD_STORAGE_SLOT,
+            block_identifier=block_identifier,
         )[-20:].rjust(20, b"\0")
         if len(address) == 20:
             return fast_bytes_to_checksum_address(address)

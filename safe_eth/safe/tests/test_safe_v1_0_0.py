@@ -32,11 +32,16 @@ class TestSafeV100(BaseTestSafe):
         safe = self.deploy_test_safe()
         self.assertEqual(safe.retrieve_fallback_handler(), NULL_ADDRESS)
 
-    def test_retrieve_guard(self):
-        # Test guard must be empty in Safes < v1.2.0
+    def test_retrieve_transaction_guard(self):
+        # Transaction guard (setGuard) was introduced in v1.1.1, must be empty in v1.0.0
         safe = self.deploy_test_safe()
-        self.assertEqual(safe.retrieve_guard(), NULL_ADDRESS)
+        self.assertEqual(safe.retrieve_transaction_guard(), NULL_ADDRESS)
         self.assertLess(Version(safe.retrieve_version()), Version("1.3.0"))
+
+    def test_retrieve_module_guard(self):
+        # Module guard (setModuleGuard) was introduced in v1.5.0, must be empty in v1.0.0
+        safe = self.deploy_test_safe()
+        self.assertEqual(safe.retrieve_module_guard(), NULL_ADDRESS)
 
     def test_retrieve_modules(self):
         safe = self.deploy_test_safe(owners=[self.ethereum_test_account.address])

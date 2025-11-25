@@ -574,12 +574,12 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         safe = self.deploy_test_safe(fallback_handler=random_fallback_handler)
         self.assertEqual(safe.retrieve_fallback_handler(), random_fallback_handler)
 
-    def test_retrieve_guard(self):
+    def test_retrieve_transaction_guard(self):
         owner_account = Account.create()
         safe = self.deploy_test_safe(owners=[owner_account.address])
-        self.assertEqual(safe.retrieve_guard(), NULL_ADDRESS)
+        self.assertEqual(safe.retrieve_transaction_guard(), NULL_ADDRESS)
 
-        guard_address = self.deploy_example_guard()
+        guard_address = self.deploy_example_transaction_guard()
         set_guard_data = HexBytes(
             safe.contract.functions.setGuard(guard_address).build_transaction(
                 get_empty_tx_params()
@@ -588,7 +588,26 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         set_guard_tx = safe.build_multisig_tx(safe.address, 0, set_guard_data)
         set_guard_tx.sign(owner_account.key)
         set_guard_tx.execute(self.ethereum_test_account.key)
-        self.assertEqual(safe.retrieve_guard(), guard_address)
+        self.assertEqual(safe.retrieve_transaction_guard(), guard_address)
+
+    def test_retrieve_module_guard(self):
+        owner_account = Account.create()
+        safe = self.deploy_test_safe(owners=[owner_account.address])
+        self.assertEqual(safe.retrieve_module_guard(), NULL_ADDRESS)
+
+        # Deploy a module guard (different from transaction guard)
+        module_guard_address = self.deploy_example_module_guard()
+        set_module_guard_data = HexBytes(
+            safe.contract.functions.setModuleGuard(
+                module_guard_address
+            ).build_transaction(get_empty_tx_params())["data"]
+        )
+        set_module_guard_tx = safe.build_multisig_tx(
+            safe.address, 0, set_module_guard_data
+        )
+        set_module_guard_tx.sign(owner_account.key)
+        set_module_guard_tx.execute(self.ethereum_test_account.key)
+        self.assertEqual(safe.retrieve_module_guard(), module_guard_address)
 
     def test_retrieve_info(self):
         owners = [Account.create().address for _ in range(2)]
@@ -620,6 +639,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertCountEqual(safe_info.owners, owners)
         self.assertEqual(safe_info.threshold, threshold)
         self.assertEqual(safe_info.modules, [])
+        self.assertEqual(safe_info.transaction_guard, NULL_ADDRESS)
+        self.assertEqual(safe_info.module_guard, NULL_ADDRESS)
 
         invalid_address = Account.create().address
         invalid_safe = Safe(invalid_address, self.ethereum_client)
