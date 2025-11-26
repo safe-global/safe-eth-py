@@ -206,7 +206,7 @@ class MultiSend:
                 "%s proxy factory address not valid" % address
             )
         elif ethereum_client:
-            # Try to detect MultiSend address if not provided
+            # Try to detect MultiSend address if not provided (<V1.4.1)
             for multi_send_address in multi_send_addresses:
                 multi_send_address_checksum = ChecksumAddress(
                     HexAddress(HexStr(multi_send_address))

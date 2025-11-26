@@ -76,7 +76,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         "simulate_tx_accessor_V1_4_1": SafeV141.deploy_simulate_tx_accessor,
         "simulate_tx_accessor_V1_5_0": SafeV150.deploy_simulate_tx_accessor,
         "proxy_factory": ProxyFactoryV150.deploy_contract,
-        "multi_send": MultiSend.deploy_contract,
+        "multi_send_V1_5_0": MultiSend.deploy_contract,
     }
 
     contract_addresses: Dict[str, ChecksumAddress] = {}
@@ -158,7 +158,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             cls.proxy_factory_contract.address, cls.ethereum_client
         )
         cls.multi_send_contract = get_multi_send_contract(
-            cls.w3, cls.contract_addresses["multi_send"]
+            cls.w3, cls.contract_addresses["multi_send_V1_5_0"]
         )
         cls.multi_send = MultiSend(
             cls.ethereum_client, address=cls.multi_send_contract.address
@@ -179,7 +179,9 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             settings.SAFE_DEFAULT_CALLBACK_HANDLER = cls.contract_addresses[
                 "compatibility_fallback_handler_V1_5_0"
             ]
-            settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses["multi_send"]
+            settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses[
+                "multi_send_V1_5_0"
+            ]
             settings.SAFE_PROXY_FACTORY_ADDRESS = cls.contract_addresses[
                 "proxy_factory"
             ]

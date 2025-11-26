@@ -25,8 +25,10 @@ ExtensibleFallbackHandler V1.5.0: 0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3
 
 Libraries
 CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
-MultiSend: 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
-MultiSendCallOnly: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
+MultiSend V1.5.0: 0x218543288004CD07832472D464648173c77D7eB7
+MultiSend V1.4.1: 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
+MultiSendCallOnly V1.5.0: 0xA83c336B20401Af773B6219BA5027174338D1836
+MultiSendCallOnly V1.4.1: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
 SimulateTxAccessor: 0x3d4BA2E0884aa488718476ca2FB8Efc291A46199
 SignMessageLib: 0xd53cd0aB83D845Ac265BE939c57F53AD838012c9
 SafeToL2Migration: 0xfF83F6335d8930cBad1c0D439A841f01888D9f69
@@ -59,8 +61,10 @@ contracts = {
     "erc721": "ERC721.json",
     "example_erc20": "ERC20TestToken.json",
     "kyber_network_proxy": "kyber_network_proxy.json",
-    "multi_send": "MultiSend.json",
-    "multi_send_call_only": "MultiSendCallOnly.json",
+    "multi_send_V1_4_1": "MultiSend_V1_4_1.json",
+    "multi_send_V1_5_0": "MultiSend_V1_5_0.json",
+    "multi_send_call_only_V1_4_1": "MultiSendCallOnly_V1_4_1.json",
+    "multi_send_call_only_V1_5_0": "MultiSendCallOnly_V1_4_1.json",
     "paying_proxy": "PayingProxy.json",
     "proxy": "Proxy_V1_1_1.json",
     "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",
@@ -261,10 +265,34 @@ def get_delegate_constructor_proxy_contract(
 def get_multi_send_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
+    return get_multi_send_V1_5_0_contract(w3, address=address)
+
+
+def get_multi_send_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_multi_send_V1_5_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     raise NotImplementedError
 
 
 def get_multi_send_call_only_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    return get_multi_send_call_only_V1_5_0_contract(w3, address=address)
+
+
+def get_multi_send_call_only_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_multi_send_call_only_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
