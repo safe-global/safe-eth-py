@@ -3,6 +3,7 @@ from enum import IntEnum
 from logging import getLogger
 from typing import (
     Any,
+    Callable,
     ClassVar,
     List,
     Optional,
@@ -22,7 +23,8 @@ from eth_account.messages import defunct_hash_message
 from eth_typing import BlockIdentifier, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from typing_extensions import Self
-from web3 import AsyncWeb3
+from web3 import AsyncWeb3, Web3
+from web3.contract import Contract
 from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError
 
 from safe_eth.eth import EthereumClient
@@ -409,7 +411,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
     def _check_eip1271(
         self,
         ethereum_client: EthereumClient,
-        handler_getter,
+        fallback_handler_getter: Callable[[Web3, Optional[ChecksumAddress]], Contract],
         function_signature: str,
         data: bytes,
         signature: bytes,
@@ -418,14 +420,16 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
 
         :param ethereum_client: EthereumClient instance.
-        :param handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
+        :param fallback_handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
         :param function_signature: The ABI function signature to call.
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
         :return: True on successful validation; otherwise False.
         """
-        handler = handler_getter(ethereum_client.w3, self.owner)
-        is_valid_signature_fn = handler.get_function_by_signature(function_signature)
+        fallback_handler = fallback_handler_getter(ethereum_client.w3, self.owner)
+        is_valid_signature_fn = fallback_handler.get_function_by_signature(
+            function_signature
+        )
 
         try:
             result = is_valid_signature_fn(data, signature).call()
@@ -461,7 +465,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
                 "ethereum_client is required to validate contract signature"
             )
 
-        for handler_getter, function_signature, data in (
+        for fallback_handler_getter, function_signature, data in (
             (
                 get_compatibility_fallback_handler_contract,
                 "isValidSignature(bytes32,bytes)",
@@ -475,7 +479,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         ):
             if self._check_eip1271(
                 ethereum_client,
-                handler_getter,
+                fallback_handler_getter,
                 function_signature,
                 data,
                 bytes(self.contract_signature),
@@ -539,7 +543,9 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
     async def _check_eip1271(
         self,
         web3: AsyncWeb3,
-        handler_getter,
+        fallback_handler_getter: Callable[
+            [Web3 | AsyncWeb3, ChecksumAddress | None], Contract
+        ],
         function_signature: str,
         data: bytes,
         signature: bytes,
@@ -548,14 +554,16 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
 
         :param web3: AsyncWeb3 instance
-        :param handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
+        :param fallback_handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
         :param function_signature: The ABI function signature to call
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
         :return: True on successful validation; otherwise False.
         """
-        handler = handler_getter(web3, self.owner)
-        is_valid_signature_fn = handler.get_function_by_signature(function_signature)
+        fallback_handler = fallback_handler_getter(web3, self.owner)
+        is_valid_signature_fn = fallback_handler.get_function_by_signature(
+            function_signature
+        )
 
         try:
             result = await is_valid_signature_fn(data, signature).call()
@@ -589,7 +597,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
 
-        for handler_getter, function_signature, data in (
+        for fallback_handler_getter, function_signature, data in (
             (
                 get_compatibility_fallback_handler_contract,
                 "isValidSignature(bytes32,bytes)",
@@ -603,7 +611,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         ):
             if await self._check_eip1271(
                 web3,
-                handler_getter,
+                fallback_handler_getter,
                 function_signature,
                 data,
                 bytes(self.contract_signature),

@@ -42,7 +42,7 @@ from typing import Any, Callable, Dict, Optional, Type, Union
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3 import Web3
+from web3 import AsyncWeb3, Web3
 from web3.contract import Contract
 
 from .abis.multicall import multicall_v3_abi, multicall_v3_bytecode
@@ -177,7 +177,7 @@ def get_safe_V1_5_0_contract(w3: Web3, address: Optional[str] = None) -> Contrac
 
 
 def get_compatibility_fallback_handler_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     """
     :param w3:
@@ -188,19 +188,19 @@ def get_compatibility_fallback_handler_contract(
 
 
 def get_compatibility_fallback_handler_V1_3_0_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
 
 
 def get_compatibility_fallback_handler_V1_4_1_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
 
 
 def get_compatibility_fallback_handler_V1_5_0_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
 
