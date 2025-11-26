@@ -12,6 +12,7 @@ from web3.types import Wei
 from safe_eth.eth.constants import NULL_ADDRESS, SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
+    get_extensible_fallback_handler_contract,
     get_multi_send_contract,
     get_proxy_factory_contract,
     get_safe_V1_0_0_contract,
@@ -36,6 +37,7 @@ from ..compatibility_fallback_handler import (
     CompatibilityFallbackHandlerV141,
     CompatibilityFallbackHandlerV150,
 )
+from ..extensible_fallback_handler import ExtensibleFallbackHandlerV150
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141, SafeV150
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     compatibility_fallback_handler_V1_5_0: Contract
     compatibility_fallback_handler_V1_4_1: Contract
     compatibility_fallback_handler_V1_3_0: Contract
+    extensible_fallback_handler_V1_5_0: Contract
     multi_send: MultiSend
     multi_send_contract: Contract
     proxy_factory: ProxyFactory
@@ -69,6 +72,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         "compatibility_fallback_handler_V1_3_0": CompatibilityFallbackHandlerV130.deploy_contract,
         "compatibility_fallback_handler_V1_4_1": CompatibilityFallbackHandlerV141.deploy_contract,
         "compatibility_fallback_handler_V1_5_0": CompatibilityFallbackHandlerV150.deploy_contract,
+        "extensible_fallback_handler_V1_5_0": ExtensibleFallbackHandlerV150.deploy_contract,
         "simulate_tx_accessor_V1_4_1": SafeV141.deploy_simulate_tx_accessor,
         "simulate_tx_accessor_V1_5_0": SafeV150.deploy_simulate_tx_accessor,
         "proxy_factory": ProxyFactoryV150.deploy_contract,
@@ -116,6 +120,11 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         cls.compatibility_fallback_handler_V1_3_0 = (
             get_compatibility_fallback_handler_contract(
                 cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_3_0"]
+            )
+        )
+        cls.extensible_fallback_handler_V1_5_0 = (
+            get_extensible_fallback_handler_contract(
+                cls.w3, cls.contract_addresses["extensible_fallback_handler_V1_5_0"]
             )
         )
         cls.simulate_tx_accessor_V1_5_0 = get_simulate_tx_accessor_V1_5_0_contract(

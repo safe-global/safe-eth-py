@@ -21,6 +21,7 @@ FallbackHandler
 CompatibilityFallBackHandler V1.5.0: 0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4
 CompatibilityFallBackHandler V1.4.1: 0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99
 CompatibilityFallBackHandler V1.3.0: 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4
+ExtensibleFallbackHandler V1.5.0: 0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3
 
 Libraries
 CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
@@ -51,6 +52,7 @@ contracts = {
     "compatibility_fallback_handler_V1_4_1": "CompatibilityFallbackHandler_V1_4_1.json",
     "compatibility_fallback_handler_V1_5_0": "CompatibilityFallbackHandler_V1_5_0.json",
     "cpk_factory": "CPKFactory.json",
+    "extensible_fallback_handler_V1_5_0": "ExtensibleFallbackHandler_V1_5_0.json",
     "delegate_constructor_proxy": "DelegateConstructorProxy.json",
     "erc1155": "ERC1155.json",
     "erc20": "ERC20.json",
@@ -194,6 +196,23 @@ def get_compatibility_fallback_handler_V1_4_1_contract(
 
 
 def get_compatibility_fallback_handler_V1_5_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_extensible_fallback_handler_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    """
+    :param w3:
+    :param address: Usually a Safe address
+    :return: Latest available Extensible Fallback handler contract
+    """
+    return get_extensible_fallback_handler_V1_5_0_contract(w3, address=address)
+
+
+def get_extensible_fallback_handler_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
