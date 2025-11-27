@@ -69,7 +69,7 @@ class SafeInfo:
     owners: List[ChecksumAddress]
     threshold: int
     version: str
-    module_guard: ChecksumAddress = NULL_ADDRESS
+    module_guard: ChecksumAddress
 
 
 class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
