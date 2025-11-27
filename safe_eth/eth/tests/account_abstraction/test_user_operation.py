@@ -10,8 +10,10 @@ from ..mocks.mock_bundler import (
     user_operation_mock,
     user_operation_v07_hash_1,
     user_operation_v07_hash_2,
+    user_operation_v07_hash_v150,
     user_operation_v07_mock_1,
     user_operation_v07_mock_2,
+    user_operation_v07_mock_v150,
 )
 
 
@@ -41,6 +43,11 @@ class TestUserOperation(TestCase):
             (
                 user_operation_v07_hash_2,
                 user_operation_v07_mock_2,
+                safe_4337_chain_id_mock,
+            ),
+            (
+                user_operation_v07_hash_v150,
+                user_operation_v07_mock_v150,
                 safe_4337_chain_id_mock,
             ),
         ]:

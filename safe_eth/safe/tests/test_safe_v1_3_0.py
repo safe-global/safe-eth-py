@@ -1,3 +1,4 @@
+from ...eth.constants import NULL_ADDRESS
 from .. import Safe
 from .test_safe import TestSafe as BaseTestSafe  # So it's not run twice by pytest
 
@@ -12,6 +13,11 @@ class TestSafeV130(BaseTestSafe):
 
     def deploy_test_safe(self, *args, **kwargs):
         return self.deploy_test_safe_v1_3_0(*args, **kwargs)
+
+    def test_retrieve_module_guard(self):
+        # Module guard (setModuleGuard) was introduced in v1.5.0, must be empty in v1.3.0
+        safe = self.deploy_test_safe()
+        self.assertEqual(safe.retrieve_module_guard(), NULL_ADDRESS)
 
     def test_retrieve_modules_unitialized_safe(self):
         """

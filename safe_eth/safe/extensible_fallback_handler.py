@@ -9,27 +9,23 @@ from web3.contract.contract import Contract
 from safe_eth.eth import EthereumClient, EthereumTxSent
 from safe_eth.eth.contracts import (
     ContractBase,
-    get_compatibility_fallback_handler_V1_3_0_contract,
-    get_compatibility_fallback_handler_V1_4_1_contract,
-    get_compatibility_fallback_handler_V1_5_0_contract,
+    get_extensible_fallback_handler_V1_5_0_contract,
 )
 from safe_eth.eth.utils import get_empty_tx_params
 
 
-class CompatibilityFallbackHandler(ContractBase, metaclass=ABCMeta):
+class ExtensibleFallbackHandler(ContractBase, metaclass=ABCMeta):
     def __new__(
         cls, *args, version: str = "1.5.0", **kwargs
-    ) -> "CompatibilityFallbackHandler":
-        if cls is not CompatibilityFallbackHandler:
+    ) -> "ExtensibleFallbackHandler":
+        if cls is not ExtensibleFallbackHandler:
             return super().__new__(cls)
 
         versions = {
-            "1.3.0": CompatibilityFallbackHandlerV130,
-            "1.4.1": CompatibilityFallbackHandlerV141,
-            "1.5.0": CompatibilityFallbackHandlerV150,
+            "1.5.0": ExtensibleFallbackHandlerV150,
         }
         instance_class = versions[version]
-        instance = super().__new__(instance_class)  # type: ignore[type-abstract]
+        instance = super().__new__(instance_class)
         return instance
 
     @classmethod
@@ -37,7 +33,7 @@ class CompatibilityFallbackHandler(ContractBase, metaclass=ABCMeta):
         cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
     ) -> EthereumTxSent:
         """
-        Deploy Proxy Factory contract
+        Deploy Extensible Fallback Handler contract
 
         :param ethereum_client:
         :param deployer_account: Ethereum Account
@@ -53,16 +49,6 @@ class CompatibilityFallbackHandler(ContractBase, metaclass=ABCMeta):
         )
 
 
-class CompatibilityFallbackHandlerV130(CompatibilityFallbackHandler):
+class ExtensibleFallbackHandlerV150(ExtensibleFallbackHandler):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
-        return get_compatibility_fallback_handler_V1_3_0_contract
-
-
-class CompatibilityFallbackHandlerV141(CompatibilityFallbackHandler):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
-        return get_compatibility_fallback_handler_V1_4_1_contract
-
-
-class CompatibilityFallbackHandlerV150(CompatibilityFallbackHandler):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
-        return get_compatibility_fallback_handler_V1_5_0_contract
+        return get_extensible_fallback_handler_V1_5_0_contract

@@ -250,7 +250,7 @@ def validate_etherscan_client_urls(
 
 
 def validate_version(version: str) -> None:
-    if version not in ["1.3.0", "1.3.0+L2", "1.4.1", "1.4.1+L2"]:
+    if version not in ["1.3.0", "1.3.0+L2", "1.4.1", "1.4.1+L2", "1.5.0", "1.5.0+L2"]:
         ERRORS.append(f"Version {version} is not valid.")
         return None
 
@@ -275,6 +275,8 @@ def validate_master_copy_address_by_version(address: str, version: str) -> None:
         ],
         "1.4.1": ["0x41675C099F32341bf84BFc5382aF534df5C7461a"],
         "1.4.1+L2": ["0x29fcB43b46531BcA003ddC8FCB67FFE91900C762"],
+        "1.5.0": ["0xFf51A5898e281Db6DfC7855790607438dF2ca44b"],
+        "1.5.0+L2": ["0xEdd160fEBBD92E350D4D398fb636302fccd67C7e"],
     }
 
     if version not in valid_versions_master_copy.keys():
@@ -302,6 +304,8 @@ def validate_proxy_address_by_version(address: str, version: str) -> None:
         ],
         "1.4.1": ["0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67"],
         "1.4.1+L2": ["0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67"],
+        "1.5.0": ["0x14F2982D601c9458F93bd70B218933A6f8165e7b"],
+        "1.5.0+L2": ["0x14F2982D601c9458F93bd70B218933A6f8165e7b"],
     }
 
     if version not in valid_versions_proxy.keys():

@@ -3,6 +3,7 @@ from enum import IntEnum
 from logging import getLogger
 from typing import (
     Any,
+    Callable,
     ClassVar,
     List,
     Optional,
@@ -22,12 +23,14 @@ from eth_account.messages import defunct_hash_message
 from eth_typing import BlockIdentifier, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from typing_extensions import Self
-from web3 import AsyncWeb3
+from web3 import AsyncWeb3, Web3
+from web3.contract import Contract
 from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError
 
 from safe_eth.eth import EthereumClient
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
+    get_compatibility_fallback_handler_V1_4_1_contract,
     get_safe_contract,
 )
 from safe_eth.eth.utils import fast_to_checksum_address
@@ -405,35 +408,84 @@ class SafeSignatureEOAMixin(SafeSignatureBase):
 
 
 class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
+    def _check_eip1271(
+        self,
+        ethereum_client: EthereumClient,
+        fallback_handler_getter: Callable[[Web3, Optional[ChecksumAddress]], Contract],
+        function_signature: str,
+        data: bytes,
+        signature: bytes,
+    ) -> bool:
+        """
+        Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
+
+        :param ethereum_client: EthereumClient instance.
+        :param fallback_handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
+        :param function_signature: The ABI function signature to call.
+        :param data: The data or hash to be validated, depending on the Safe version.
+        :param signature: The contract signature payload to validate.
+        :return: True on successful validation; otherwise False.
+        """
+        fallback_handler = fallback_handler_getter(ethereum_client.w3, self.owner)
+        is_valid_signature_fn = fallback_handler.get_function_by_signature(
+            function_signature
+        )
+
+        try:
+            result = is_valid_signature_fn(data, signature).call()
+        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
+            logger.warning(
+                "Cannot check EIP1271 with %s on contract %s: %s",
+                function_signature,
+                self.owner,
+                exc,
+            )
+            return False
+
+        return result in (
+            self.EIP1271_MAGIC_VALUE,
+            self.EIP1271_MAGIC_VALUE_UPDATED,
+        )
+
     def is_valid(
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
     ) -> bool:
+        """
+        Validate the signature using the appropriate EIP-1271 path.
+        First tries the updated method (bytes32,bytes).
+        Falls back to the legacy method (bytes,bytes).
+
+        :param ethereum_client: EthereumClient instance
+        :param safe_address: Optional Safe EthereumAddress instance.
+        """
         if ethereum_client is None:
             raise ValueError(
                 "ethereum_client is required to validate contract signature"
             )
-        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
-            ethereum_client.w3, self.owner
-        )
-        is_valid_signature_fn = (
-            compatibility_fallback_handler.get_function_by_signature(
-                "isValidSignature(bytes,bytes)"
-            )
-        )
-        try:
-            return is_valid_signature_fn(
-                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-            ).call() in (
-                self.EIP1271_MAGIC_VALUE,
-                self.EIP1271_MAGIC_VALUE_UPDATED,
-            )
-        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
-            # Error using `pending` block identifier or contract does not exist
-            logger.warning(
-                "Cannot check EIP1271 signature from contract %s", self.owner
-            )
+
+        for fallback_handler_getter, function_signature, data in (
+            (
+                get_compatibility_fallback_handler_contract,
+                "isValidSignature(bytes32,bytes)",
+                bytes(self.safe_hash),
+            ),
+            (
+                get_compatibility_fallback_handler_V1_4_1_contract,
+                "isValidSignature(bytes,bytes)",
+                bytes(self.safe_hash_preimage),
+            ),
+        ):
+            if self._check_eip1271(
+                ethereum_client,
+                fallback_handler_getter,
+                function_signature,
+                data,
+                bytes(self.contract_signature),
+            ):
+                return True
+
         return False
 
 
@@ -488,33 +540,84 @@ class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
 
 
 class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync):
+    async def _check_eip1271(
+        self,
+        web3: AsyncWeb3,
+        fallback_handler_getter: Callable[
+            [Web3 | AsyncWeb3, ChecksumAddress | None], Contract
+        ],
+        function_signature: str,
+        data: bytes,
+        signature: bytes,
+    ) -> bool:
+        """
+        Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
+
+        :param web3: AsyncWeb3 instance
+        :param fallback_handler_getter: A function that returns the appropriate CompatibilityFallbackHandler contract for the current Safe.
+        :param function_signature: The ABI function signature to call
+        :param data: The data or hash to be validated, depending on the Safe version.
+        :param signature: The contract signature payload to validate.
+        :return: True on successful validation; otherwise False.
+        """
+        fallback_handler = fallback_handler_getter(web3, self.owner)
+        is_valid_signature_fn = fallback_handler.get_function_by_signature(
+            function_signature
+        )
+
+        try:
+            result = await is_valid_signature_fn(data, signature).call()
+        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
+            logger.warning(
+                "Cannot check EIP1271 with %s on contract %s: %s",
+                function_signature,
+                self.owner,
+                exc,
+            )
+            return False
+
+        return result in (
+            self.EIP1271_MAGIC_VALUE,
+            self.EIP1271_MAGIC_VALUE_UPDATED,
+        )
+
     async def is_valid(
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
     ) -> bool:
+        """
+        Validate the signature using the appropriate EIP-1271 path.
+        First tries the updated method (bytes32,bytes).
+        Falls back to the legacy method (bytes,bytes).
+
+        :param web3: Optional EthereumClient instance.
+        :param safe_address: Optional Safe EthereumAddress instance.
+        """
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
-        compatibility_fallback_handler = get_compatibility_fallback_handler_contract(
-            cast(Any, web3), self.owner
-        )
-        is_valid_signature_fn = (
-            compatibility_fallback_handler.get_function_by_signature(
-                "isValidSignature(bytes,bytes)"
-            )
-        )
-        try:
-            result = await is_valid_signature_fn(
-                bytes(self.safe_hash_preimage), bytes(self.contract_signature)
-            ).call()
-            return result in (
-                self.EIP1271_MAGIC_VALUE,
-                self.EIP1271_MAGIC_VALUE_UPDATED,
-            )
-        except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError):
-            logger.warning(
-                "Cannot check EIP1271 signature from contract %s", self.owner
-            )
+
+        for fallback_handler_getter, function_signature, data in (
+            (
+                get_compatibility_fallback_handler_contract,
+                "isValidSignature(bytes32,bytes)",
+                bytes(self.safe_hash),
+            ),
+            (
+                get_compatibility_fallback_handler_V1_4_1_contract,
+                "isValidSignature(bytes,bytes)",
+                bytes(self.safe_hash_preimage),
+            ),
+        ):
+            if await self._check_eip1271(
+                web3,
+                fallback_handler_getter,
+                function_signature,
+                data,
+                bytes(self.contract_signature),
+            ):
+                return True
+
         return False
 
 

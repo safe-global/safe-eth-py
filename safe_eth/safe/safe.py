@@ -1,7 +1,7 @@
 import dataclasses
 import math
 import os
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from functools import cached_property
 from logging import getLogger
 from typing import Any, Callable, Dict, List, Optional, Type, Union
@@ -27,14 +27,17 @@ from safe_eth.eth import EthereumClient, EthereumTxSent
 from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS, SENTINEL_ADDRESS
 from safe_eth.eth.contracts import (
     ContractBase,
-    get_compatibility_fallback_handler_contract,
+    get_compatibility_fallback_handler_V1_4_1_contract,
+    get_compatibility_fallback_handler_V1_5_0_contract,
     get_safe_contract,
     get_safe_V0_0_1_contract,
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_safe_V1_5_0_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
+    get_simulate_tx_accessor_V1_5_0_contract,
 )
 from safe_eth.eth.proxies import MinimalProxy, SafeProxy, StandardProxy
 from safe_eth.eth.typing import EthereumData
@@ -59,13 +62,14 @@ logger = getLogger(__name__)
 class SafeInfo:
     address: ChecksumAddress
     fallback_handler: ChecksumAddress
-    guard: ChecksumAddress
+    transaction_guard: ChecksumAddress
     master_copy: ChecksumAddress
     modules: List[ChecksumAddress]
     nonce: int
     owners: List[ChecksumAddress]
     threshold: int
     version: str
+    module_guard: ChecksumAddress
 
 
 class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
@@ -78,15 +82,19 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         0x6C9A6C4A39284E37ED1CF53D337577D14212A4870FB976A4366C693B939918D5
     )
     # keccak256("guard_manager.guard.address")
-    GUARD_STORAGE_SLOT = (
+    TRANSACTION_GUARD_STORAGE_SLOT = (
         0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
+    )
+    # keccak256("module_manager.module_guard.address")
+    MODULE_GUARD_STORAGE_SLOT = (
+        0xB104E0B93118902C651344349B610029D694CFDEC91C589C91EBAFBCD0289947
     )
 
     # keccak256("SafeMessage(bytes message)");
     SAFE_MESSAGE_TYPEHASH = bytes.fromhex(
         "60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca"
     )
-    _DEFAULT_VERSION = "1.4.1"
+    _DEFAULT_VERSION = "1.5.0"
 
     def __new__(
         cls,
@@ -127,6 +135,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             "1.2.0": SafeV120,
             "1.3.0": SafeV130,
             "1.4.1": SafeV141,
+            "1.5.0": SafeV150,
         }
 
     @classmethod
@@ -715,7 +724,12 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 raise CannotRetrieveSafeInfoException(self.address)
 
             fallback_handler = self.retrieve_fallback_handler()
-            guard = self.retrieve_guard()  # Guard was implemented in v1.1.1
+            transaction_guard = (
+                self.retrieve_transaction_guard()
+            )  # Transaction guard was implemented in v1.1.1
+            module_guard = (
+                self.retrieve_module_guard()
+            )  # Module guard was implemented in v1.5.0
 
             # From v1.1.1:
             # - `getModulesPaginated` is available
@@ -757,13 +771,14 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return SafeInfo(
                 self.address,
                 fallback_handler,
-                guard,
+                transaction_guard,
                 master_copy,
                 modules if modules else [],
                 nonce,
                 owners,
                 threshold,
                 version,
+                module_guard,
             )
         except (Web3Exception, ValueError) as e:
             raise CannotRetrieveSafeInfoException(self.address) from e
@@ -791,11 +806,40 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         else:
             return NULL_ADDRESS
 
-    def retrieve_guard(
+    def retrieve_transaction_guard(
         self, block_identifier: Optional[BlockIdentifier] = "latest"
     ) -> ChecksumAddress:
+        """
+        Retrieve the transaction guard address from storage.
+        Transaction guard (previously just "guard") was implemented in v1.1.1.
+
+        :param block_identifier:
+        :return: Transaction guard address or NULL_ADDRESS if not set
+        """
         address = self.ethereum_client.w3.eth.get_storage_at(
-            self.address, self.GUARD_STORAGE_SLOT, block_identifier=block_identifier
+            self.address,
+            self.TRANSACTION_GUARD_STORAGE_SLOT,
+            block_identifier=block_identifier,
+        )[-20:].rjust(20, b"\0")
+        if len(address) == 20:
+            return fast_bytes_to_checksum_address(address)
+        else:
+            return NULL_ADDRESS
+
+    def retrieve_module_guard(
+        self, block_identifier: Optional[BlockIdentifier] = "latest"
+    ) -> ChecksumAddress:
+        """
+        Retrieve the module guard address from storage.
+        Module guard was introduced in Safe v1.5.0.
+
+        :param block_identifier:
+        :return: Module guard address or NULL_ADDRESS if not set
+        """
+        address = self.ethereum_client.w3.eth.get_storage_at(
+            self.address,
+            self.MODULE_GUARD_STORAGE_SLOT,
+            block_identifier=block_identifier,
         )[-20:].rjust(20, b"\0")
         if len(address) == 20:
             return fast_bytes_to_checksum_address(address)
@@ -1163,12 +1207,19 @@ class SafeV130(Safe):
         return get_safe_V1_3_0_contract
 
 
-class SafeV141(Safe):
-    def get_version(self) -> str:
-        return "1.4.1"
+class SafeCompatibilityAdapter(Safe, ABC):
+    """
+    Adapter for Safe contracts v1.4.1 and later.
+    Overrides some methods to handle API changes in newer contract versions.
+    """
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
-        return get_safe_V1_4_1_contract
+    @abstractmethod
+    def _get_simulate_tx_accessor(self) -> Contract:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _get_simulator(self) -> Contract:
+        raise NotImplementedError
 
     def estimate_tx_gas_with_safe(
         self,
@@ -1190,12 +1241,9 @@ class SafeV141(Safe):
         :param block_identifier:
         :return:
         """
-        accessor = get_simulate_tx_accessor_V1_4_1_contract(
-            self.w3, address=self.simulate_tx_accessor_address
-        )
-        simulator = get_compatibility_fallback_handler_contract(
-            self.w3, address=self.address
-        )
+        accessor = self._get_simulate_tx_accessor()
+        simulator = self._get_simulator()
+
         simulation_data = accessor.functions.simulate(
             to, value, data, operation
         ).build_transaction(get_empty_tx_params())["data"]
@@ -1227,3 +1275,43 @@ class SafeV141(Safe):
             raise CannotEstimateGas(
                 f"Cannot estimate gas using SimulateTxAccessor {e} - {decoded_revert}"
             )
+
+
+class SafeV141(SafeCompatibilityAdapter):
+    def get_version(self) -> str:
+        return "1.4.1"
+
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_safe_V1_4_1_contract
+
+    def _get_simulate_tx_accessor(self) -> Contract:
+        return get_simulate_tx_accessor_V1_4_1_contract(
+            self.w3,
+            address=self.simulate_tx_accessor_address,
+        )
+
+    def _get_simulator(self) -> Contract:
+        return get_compatibility_fallback_handler_V1_4_1_contract(
+            self.w3,
+            address=self.address,
+        )
+
+
+class SafeV150(SafeCompatibilityAdapter):
+    def get_version(self) -> str:
+        return "1.5.0"
+
+    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+        return get_safe_V1_5_0_contract
+
+    def _get_simulate_tx_accessor(self) -> Contract:
+        return get_simulate_tx_accessor_V1_5_0_contract(
+            self.w3,
+            address=self.simulate_tx_accessor_address,
+        )
+
+    def _get_simulator(self) -> Contract:
+        return get_compatibility_fallback_handler_V1_5_0_contract(
+            self.w3,
+            address=self.address,
+        )

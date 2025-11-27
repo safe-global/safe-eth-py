@@ -12,14 +12,17 @@ from web3.types import Wei
 from safe_eth.eth.constants import NULL_ADDRESS, SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
+    get_extensible_fallback_handler_contract,
     get_multi_send_contract,
     get_proxy_factory_contract,
     get_safe_V1_0_0_contract,
     get_safe_V1_1_1_contract,
     get_safe_V1_3_0_contract,
     get_safe_V1_4_1_contract,
+    get_safe_V1_5_0_contract,
     get_sign_message_lib_contract,
     get_simulate_tx_accessor_V1_4_1_contract,
+    get_simulate_tx_accessor_V1_5_0_contract,
 )
 from safe_eth.eth.exceptions import ContractAlreadyDeployed
 from safe_eth.eth.tests.ethereum_test_case import EthereumTestCaseMixin
@@ -27,24 +30,29 @@ from safe_eth.eth.tests.utils import send_tx
 from safe_eth.eth.utils import get_empty_tx_params
 from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSend
-from safe_eth.safe.proxy_factory import ProxyFactory, ProxyFactoryV141
+from safe_eth.safe.proxy_factory import ProxyFactory, ProxyFactoryV150
 
 from ..compatibility_fallback_handler import (
     CompatibilityFallbackHandlerV130,
     CompatibilityFallbackHandlerV141,
+    CompatibilityFallbackHandlerV150,
 )
-from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141
+from ..extensible_fallback_handler import ExtensibleFallbackHandlerV150
+from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141, SafeV150
 
 logger = logging.getLogger(__name__)
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
+    compatibility_fallback_handler_V1_5_0: Contract
     compatibility_fallback_handler_V1_4_1: Contract
     compatibility_fallback_handler_V1_3_0: Contract
+    extensible_fallback_handler_V1_5_0: Contract
     multi_send: MultiSend
     multi_send_contract: Contract
     proxy_factory: ProxyFactory
     proxy_factory_contract: Contract
+    safe_contract_V1_5_0: Contract
     safe_contract_V1_4_1: Contract
     safe_contract_V0_0_1: Contract
     safe_contract_V1_0_0: Contract
@@ -52,6 +60,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     safe_contract_V1_3_0: Contract
     safe_contract_address: ChecksumAddress
     simulate_tx_accessor_V1_4_1: Contract
+    simulate_tx_accessor_V1_5_0: Contract
 
     contract_deployers = {
         "safe_V0_0_1": SafeV001.deploy_contract,
@@ -59,11 +68,15 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         "safe_V1_1_1": SafeV111.deploy_contract,
         "safe_V1_3_0": SafeV130.deploy_contract,
         "safe_V1_4_1": SafeV141.deploy_contract,
+        "safe_V1_5_0": SafeV150.deploy_contract,
         "compatibility_fallback_handler_V1_3_0": CompatibilityFallbackHandlerV130.deploy_contract,
         "compatibility_fallback_handler_V1_4_1": CompatibilityFallbackHandlerV141.deploy_contract,
-        "simulate_tx_accessor_V1_4_1": Safe.deploy_simulate_tx_accessor,
-        "proxy_factory": ProxyFactoryV141.deploy_contract,
-        "multi_send": MultiSend.deploy_contract,
+        "compatibility_fallback_handler_V1_5_0": CompatibilityFallbackHandlerV150.deploy_contract,
+        "extensible_fallback_handler_V1_5_0": ExtensibleFallbackHandlerV150.deploy_contract,
+        "simulate_tx_accessor_V1_4_1": SafeV141.deploy_simulate_tx_accessor,
+        "simulate_tx_accessor_V1_5_0": SafeV150.deploy_simulate_tx_accessor,
+        "proxy_factory": ProxyFactoryV150.deploy_contract,
+        "multi_send_V1_5_0": MultiSend.deploy_contract,
     }
 
     contract_addresses: Dict[str, ChecksumAddress] = {}
@@ -73,7 +86,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         """
         :return: Last Safe Contract available
         """
-        return self.safe_contract_V1_4_1
+        return self.safe_contract_V1_5_0
 
     @classmethod
     def setUpClass(cls):
@@ -94,6 +107,11 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         cls.configure_django_settings()
         cls.configure_envvars()
 
+        cls.compatibility_fallback_handler_V1_5_0 = (
+            get_compatibility_fallback_handler_contract(
+                cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_5_0"]
+            )
+        )
         cls.compatibility_fallback_handler_V1_4_1 = (
             get_compatibility_fallback_handler_contract(
                 cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_4_1"]
@@ -104,8 +122,19 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
                 cls.w3, cls.contract_addresses["compatibility_fallback_handler_V1_3_0"]
             )
         )
+        cls.extensible_fallback_handler_V1_5_0 = (
+            get_extensible_fallback_handler_contract(
+                cls.w3, cls.contract_addresses["extensible_fallback_handler_V1_5_0"]
+            )
+        )
+        cls.simulate_tx_accessor_V1_5_0 = get_simulate_tx_accessor_V1_5_0_contract(
+            cls.w3, cls.contract_addresses["simulate_tx_accessor_V1_5_0"]
+        )
         cls.simulate_tx_accessor_V1_4_1 = get_simulate_tx_accessor_V1_4_1_contract(
             cls.w3, cls.contract_addresses["simulate_tx_accessor_V1_4_1"]
+        )
+        cls.safe_contract_V1_5_0 = get_safe_V1_5_0_contract(
+            cls.w3, cls.contract_addresses["safe_V1_5_0"]
         )
         cls.safe_contract_V1_4_1 = get_safe_V1_4_1_contract(
             cls.w3, cls.contract_addresses["safe_V1_4_1"]
@@ -129,7 +158,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             cls.proxy_factory_contract.address, cls.ethereum_client
         )
         cls.multi_send_contract = get_multi_send_contract(
-            cls.w3, cls.contract_addresses["multi_send"]
+            cls.w3, cls.contract_addresses["multi_send_V1_5_0"]
         )
         cls.multi_send = MultiSend(
             cls.ethereum_client, address=cls.multi_send_contract.address
@@ -146,11 +175,13 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         try:
             from django.conf import settings
 
-            settings.SAFE_CONTRACT_ADDRESS = cls.contract_addresses["safe_V1_4_1"]
+            settings.SAFE_CONTRACT_ADDRESS = cls.contract_addresses["safe_V1_5_0"]
             settings.SAFE_DEFAULT_CALLBACK_HANDLER = cls.contract_addresses[
-                "compatibility_fallback_handler_V1_4_1"
+                "compatibility_fallback_handler_V1_5_0"
             ]
-            settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses["multi_send"]
+            settings.SAFE_MULTISEND_ADDRESS = cls.contract_addresses[
+                "multi_send_V1_5_0"
+            ]
             settings.SAFE_PROXY_FACTORY_ADDRESS = cls.contract_addresses[
                 "proxy_factory"
             ]
@@ -169,11 +200,15 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             settings.SAFE_V1_4_1_CONTRACT_ADDRESS = cls.contract_addresses[
                 "safe_V1_4_1"
             ]
+            settings.SAFE_V1_5_0_CONTRACT_ADDRESS = cls.contract_addresses[
+                "safe_V1_5_0"
+            ]
             settings.SAFE_SIMULATE_TX_ACCESSOR = cls.contract_addresses[
-                "simulate_tx_accessor_V1_4_1"
+                "simulate_tx_accessor_V1_5_0"
             ]
             settings.SAFE_VALID_CONTRACT_ADDRESSES = {
                 settings.SAFE_CONTRACT_ADDRESS,
+                settings.SAFE_V1_4_1_CONTRACT_ADDRESS,
                 settings.SAFE_V1_3_0_CONTRACT_ADDRESS,
                 settings.SAFE_V1_1_1_CONTRACT_ADDRESS,
                 settings.SAFE_V1_0_0_CONTRACT_ADDRESS,
@@ -236,7 +271,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         :param kwargs:
         :return: Deploy last available Safe
         """
-        return self.deploy_test_safe_v1_4_1(*args, **kwargs)
+        return self.deploy_test_safe_v1_5_0(*args, **kwargs)
 
     def _deploy_test_safe(
         self,
@@ -280,7 +315,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         fallback_handler: Optional[ChecksumAddress] = None,
     ) -> Safe:
         """
-        Internal method to deploy Safes from 1.1.1 to 1.4.1, as setup method didn't change
+        Internal method to deploy Safes from 1.1.1 to 1.5.0, as setup method didn't change
 
         :param master_copy_version:
         :param master_copy_address:
@@ -293,7 +328,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         """
 
         fallback_handler = (
-            fallback_handler or self.compatibility_fallback_handler_V1_4_1.address
+            fallback_handler or self.compatibility_fallback_handler_V1_5_0.address
         )
         owners = (
             owners
@@ -308,7 +343,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         payment = 0
         payment_receiver = NULL_ADDRESS
         initializer = HexBytes(
-            self.safe_contract_V1_4_1.functions.setup(
+            self.safe_contract_V1_5_0.functions.setup(
                 owners,
                 threshold,
                 to,
@@ -331,6 +366,35 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         self.assertCountEqual(safe.retrieve_owners(), owners)
 
         return safe
+
+    def deploy_test_safe_v1_5_0(
+        self,
+        number_owners: int = 3,
+        threshold: Optional[int] = None,
+        owners: Optional[List[ChecksumAddress]] = None,
+        initial_funding_wei: int = 0,
+        fallback_handler: Optional[ChecksumAddress] = None,
+    ) -> Safe:
+        """
+        Deploy a Safe v1.5.0
+
+        :param number_owners:
+        :param threshold:
+        :param owners:
+        :param initial_funding_wei:
+        :param fallback_handler:
+        :return:
+        """
+        return self._deploy_new_test_safe(
+            "1.5.0",
+            self.safe_contract_V1_5_0.address,
+            number_owners=number_owners,
+            threshold=threshold,
+            owners=owners,
+            initial_funding_wei=initial_funding_wei,
+            fallback_handler=fallback_handler
+            or self.compatibility_fallback_handler_V1_5_0.address,
+        )
 
     def deploy_test_safe_v1_4_1(
         self,
@@ -444,7 +508,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
 
         return safe
 
-    def deploy_example_guard(self) -> Optional[ChecksumAddress]:
+    def deploy_example_transaction_guard(self) -> Optional[ChecksumAddress]:
         """
         :return: An example DebugTransactionGuard (from safe contracts v1.4.1) supporting IERC165
         """
@@ -456,6 +520,41 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         )
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         assert tx_receipt["status"] == 1, "Problem deploying example guard"
+        return tx_receipt["contractAddress"]
+
+    def deploy_example_module_guard(self) -> Optional[ChecksumAddress]:
+        """
+        :return: An example DelegateCallTransactionGuard that implements both ITransactionGuard and IModuleGuard
+        This guard supports both transaction guard and module guard interfaces with ERC165 support.
+
+        From safe-smart-account v1.5.0 examples/guards/DelegateCallTransactionGuard.sol
+        Compiled with solc 0.7.6
+
+        The guard allows delegate calls only to a specified target address.
+        For testing, we use NULL_ADDRESS as the target (allows all targets).
+        """
+        # DelegateCallTransactionGuard bytecode (compiled with solc 0.7.6)
+        # Constructor takes one address parameter (target)
+        bytecode = "0x60a060405234801561001057600080fd5b506040516109913803806109918339818101604052602081101561003357600080fd5b81019080805190602001909291905050508073ffffffffffffffffffffffffffffffffffffffff1660808173ffffffffffffffffffffffffffffffffffffffff1660601b815250505060805160601c6108ee6100a3600039806105de528061062852806107e752506108ee6000f3fe608060405234801561001057600080fd5b50600436106100665760003560e01c806301ffc9a714610069578063250d6a91146100cc5780632acc37aa14610100578063728c29721461013a57806375f0bb5214610260578063932713681461046857610067565b5b005b6100b46004803603602081101561007f57600080fd5b8101908080357bffffffffffffffffffffffffffffffffffffffffffffffffffffffff191690602001909291905050506104a2565b60405180821515815260200191505060405180910390f35b6100d46105dc565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6101386004803603604081101561011657600080fd5b8101908080359060200190929190803515159060200190929190505050610600565b005b61024a600480360360a081101561015057600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001909291908035906020019064010000000081111561019757600080fd5b8201836020820111156101a957600080fd5b803590602001918460018302840111640100000000831117156101cb57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290803560ff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610604565b6040518082815260200191505060405180910390f35b610466600480360361016081101561027757600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190803590602001906401000000008111156102be57600080fd5b8201836020820111156102d057600080fd5b803590602001918460018302840111640100000000831117156102f257600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290803560ff169060200190929190803590602001909291908035906020019092919080359060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001906401000000008111156103c057600080fd5b8201836020820111156103d257600080fd5b803590602001918460018302840111640100000000831117156103f457600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506107c5565b005b6104a06004803603604081101561047e57600080fd5b81019080803590602001909291908035151590602001909291905050506108b4565b005b60007fe6d7a83a000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916827bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916148061056d57507f58401ed8000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916827bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916145b806105d557507f01ffc9a7000000000000000000000000000000000000000000000000000000007bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916827bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916145b9050919050565b7f000000000000000000000000000000000000000000000000000000000000000081565b5050565b600060018081111561061257fe5b83600181111561061e57fe5b14158061067657507f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff168673ffffffffffffffffffffffffffffffffffffffff16145b6106e8576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260178152602001807f546869732063616c6c206973207265737472696374656400000000000000000081525060200191505060405180910390fd5b8585858585604051602001808673ffffffffffffffffffffffffffffffffffffffff1660601b815260140185815260200184805190602001908083835b602083106107485780518252602082019150602081019050602083039250610725565b6001836020036101000a03801982511681845116808217855250505050505090500183600181111561077657fe5b60f81b81526001018273ffffffffffffffffffffffffffffffffffffffff1660601b81526014019550505050505060405160208183030381529060405280519060200120905095945050505050565b6001808111156107d157fe5b8860018111156107dd57fe5b14158061083557507f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff168b73ffffffffffffffffffffffffffffffffffffffff16145b6108a7576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260178152602001807f546869732063616c6c206973207265737472696374656400000000000000000081525060200191505060405180910390fd5b5050505050505050505050565b505056fea2646970667358221220a51abd16563e9e56357c855ea40af8c28fdcad2c399b5492e1ca81391adb125f64736f6c63430007060033"
+
+        # ABI for constructor (takes address parameter)
+        abi = [
+            {
+                "inputs": [
+                    {"internalType": "address", "name": "target", "type": "address"}
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor",
+            }
+        ]
+
+        guard_contract = self.w3.eth.contract(abi=abi, bytecode=bytecode)
+        # Use NULL_ADDRESS as target (allows all delegate calls for testing)
+        tx_hash = guard_contract.constructor(NULL_ADDRESS).transact(
+            {"from": self.w3.eth.accounts[0]}
+        )
+        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        assert tx_receipt["status"] == 1, "Problem deploying example module guard"
         return tx_receipt["contractAddress"]
 
     def deploy_sign_message_lib(self) -> Optional[ChecksumAddress]:

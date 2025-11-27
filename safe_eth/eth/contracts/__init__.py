@@ -3,6 +3,7 @@
 Safe Addresses. Should be the same for every chain except for the ones with `chainId` protection. Check:
 https://github.com/safe-global/safe-deployments/tree/main/src/assets
 
+Safe V1.5.0: 0xFf51A5898e281Db6DfC7855790607438dF2ca44b
 Safe V1.4.1: 0x41675C099F32341bf84BFc5382aF534df5C7461a
 GnosisSafe V1.3.0: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552
 GnosisSafe V1.1.1: 0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F
@@ -10,19 +11,24 @@ GnosisSafe V1.1.0: 0xaE32496491b53841efb51829d6f886387708F99B
 GnosisSafe V1.0.0: 0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A
 
 Factories
+SafeProxyFactory V1.5.0: 0x14F2982D601c9458F93bd70B218933A6f8165e7b
 SafeProxyFactory V1.4.1: 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67
 ProxyFactory V1.3.0: 0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2
 ProxyFactory V1.1.0: 0x50e55Af101C777bA7A1d560a774A82eF002ced9F
 ProxyFactory V1.0.0: 0x12302fE9c02ff50939BaAaaf415fc226C078613C
 
 FallbackHandler
+CompatibilityFallBackHandler V1.5.0: 0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4
 CompatibilityFallBackHandler V1.4.1: 0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99
 CompatibilityFallBackHandler V1.3.0: 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4
+ExtensibleFallbackHandler V1.5.0: 0x85a8ca358D388530ad0fB95D0cb89Dd44Fc242c3
 
 Libraries
 CreateAndAddModules: 0x1a56aE690ab0818aF5cA349b7D21f1d7e76a3d36
-MultiSend: 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
-MultiSendCallOnly: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
+MultiSend V1.5.0: 0x218543288004CD07832472D464648173c77D7eB7
+MultiSend V1.4.1: 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
+MultiSendCallOnly V1.5.0: 0xA83c336B20401Af773B6219BA5027174338D1836
+MultiSendCallOnly V1.4.1: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
 SimulateTxAccessor: 0x3d4BA2E0884aa488718476ca2FB8Efc291A46199
 SignMessageLib: 0xd53cd0aB83D845Ac265BE939c57F53AD838012c9
 SafeToL2Migration: 0xfF83F6335d8930cBad1c0D439A841f01888D9f69
@@ -36,7 +42,7 @@ from typing import Any, Callable, Dict, Optional, Type, Union
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3 import Web3
+from web3 import AsyncWeb3, Web3
 from web3.contract import Contract
 
 from .abis.multicall import multicall_v3_abi, multicall_v3_bytecode
@@ -46,28 +52,35 @@ current_module = sys.modules[__name__]
 contracts = {
     "compatibility_fallback_handler_V1_3_0": "CompatibilityFallbackHandler_V1_3_0.json",
     "compatibility_fallback_handler_V1_4_1": "CompatibilityFallbackHandler_V1_4_1.json",
+    "compatibility_fallback_handler_V1_5_0": "CompatibilityFallbackHandler_V1_5_0.json",
     "cpk_factory": "CPKFactory.json",
+    "extensible_fallback_handler_V1_5_0": "ExtensibleFallbackHandler_V1_5_0.json",
     "delegate_constructor_proxy": "DelegateConstructorProxy.json",
     "erc1155": "ERC1155.json",
     "erc20": "ERC20.json",
     "erc721": "ERC721.json",
     "example_erc20": "ERC20TestToken.json",
     "kyber_network_proxy": "kyber_network_proxy.json",
-    "multi_send": "MultiSend.json",
-    "multi_send_call_only": "MultiSendCallOnly.json",
+    "multi_send_V1_4_1": "MultiSend_V1_4_1.json",
+    "multi_send_V1_5_0": "MultiSend_V1_5_0.json",
+    "multi_send_call_only_V1_4_1": "MultiSendCallOnly_V1_4_1.json",
+    "multi_send_call_only_V1_5_0": "MultiSendCallOnly_V1_4_1.json",
     "paying_proxy": "PayingProxy.json",
     "proxy": "Proxy_V1_1_1.json",
     "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",
     "proxy_factory_V1_1_1": "ProxyFactory_V1_1_1.json",
     "proxy_factory_V1_3_0": "ProxyFactory_V1_3_0.json",
     "proxy_factory_V1_4_1": "ProxyFactory_V1_4_1.json",
+    "proxy_factory_V1_5_0": "ProxyFactory_V1_5_0.json",
     "safe_V0_0_1": "GnosisSafe_V0_0_1.json",
     "safe_V1_0_0": "GnosisSafe_V1_0_0.json",
     "safe_V1_1_1": "GnosisSafe_V1_1_1.json",
     "safe_V1_3_0": "GnosisSafe_V1_3_0.json",
     "safe_V1_4_1": "Safe_V1_4_1.json",
+    "safe_V1_5_0": "Safe_V1_5_0.json",
     "safe_to_l2_migration": "SafeToL2Migration.json",
     "simulate_tx_accessor_V1_4_1": "SimulateTxAccessor_V1_4_1.json",
+    "simulate_tx_accessor_V1_5_0": "SimulateTxAccessor_V1_5_0.json",
     "sign_message_lib": "SignMessageLib.json",
     "uniswap_exchange": "uniswap_exchange.json",
     "uniswap_factory": "uniswap_factory.json",
@@ -130,7 +143,7 @@ def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Co
     :param address:
     :return: Latest available Safe Contract
     """
-    return get_safe_V1_4_1_contract(w3, address=address)
+    return get_safe_V1_5_0_contract(w3, address=address)
 
 
 def get_safe_V0_0_1_contract(
@@ -159,24 +172,51 @@ def get_safe_V1_4_1_contract(w3: Web3, address: Optional[str] = None) -> Contrac
     raise NotImplementedError
 
 
+def get_safe_V1_5_0_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+    raise NotImplementedError
+
+
 def get_compatibility_fallback_handler_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     """
     :param w3:
     :param address: Usually a Safe address
     :return: Latest available Compatibility Fallback handler contract
     """
-    return get_compatibility_fallback_handler_V1_4_1_contract(w3, address=address)
+    return get_compatibility_fallback_handler_V1_5_0_contract(w3, address=address)
 
 
 def get_compatibility_fallback_handler_V1_3_0_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
 
 
 def get_compatibility_fallback_handler_V1_4_1_contract(
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_compatibility_fallback_handler_V1_5_0_contract(
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_extensible_fallback_handler_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    """
+    :param w3:
+    :param address: Usually a Safe address
+    :return: Latest available Extensible Fallback handler contract
+    """
+    return get_extensible_fallback_handler_V1_5_0_contract(w3, address=address)
+
+
+def get_extensible_fallback_handler_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
@@ -225,10 +265,34 @@ def get_delegate_constructor_proxy_contract(
 def get_multi_send_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
+    return get_multi_send_V1_5_0_contract(w3, address=address)
+
+
+def get_multi_send_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_multi_send_V1_5_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     raise NotImplementedError
 
 
 def get_multi_send_call_only_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    return get_multi_send_call_only_V1_5_0_contract(w3, address=address)
+
+
+def get_multi_send_call_only_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_multi_send_call_only_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
@@ -240,13 +304,15 @@ def get_paying_proxy_contract(
     raise NotImplementedError
 
 
-def get_proxy_factory_contract(w3: Web3, address: Optional[str] = None) -> Contract:
+def get_proxy_factory_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     """
     :param w3:
     :param address:
     :return: Latest available Safe Proxy Factory
     """
-    return get_proxy_factory_V1_4_1_contract(w3, address=address)
+    return get_proxy_factory_V1_5_0_contract(w3, address=address)
 
 
 def get_proxy_factory_V1_0_0_contract(
@@ -273,11 +339,23 @@ def get_proxy_factory_V1_4_1_contract(
     raise NotImplementedError
 
 
+def get_proxy_factory_V1_5_0_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
 def get_proxy_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
     raise NotImplementedError
 
 
 def get_simulate_tx_accessor_V1_4_1_contract(
+    w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    raise NotImplementedError
+
+
+def get_simulate_tx_accessor_V1_5_0_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
@@ -360,6 +438,11 @@ def get_proxy_1_3_0_deployed_bytecode() -> bytes:
 @cache
 def get_proxy_1_4_1_deployed_bytecode() -> bytes:
     return HexBytes(load_contract_interface("Proxy_V1_4_1.json")["deployedBytecode"])
+
+
+@cache
+def get_proxy_1_5_0_deployed_bytecode() -> bytes:
+    return HexBytes(load_contract_interface("Proxy_V1_5_0.json")["deployedBytecode"])
 
 
 @cache
