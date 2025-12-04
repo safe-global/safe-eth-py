@@ -85,12 +85,16 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         """
         return self.contract.functions.proxyRuntimeCode().call()
 
-    def get_deploy_function(self, chain_specific: bool) -> ContractFunction:
+    def get_deploy_function(self, chain_specific: bool, is_l2: bool = False) -> ContractFunction:
         if chain_specific:
             raise NotImplementedError(
                 f"createChainSpecificProxyWithNonce is not supported in {self.__class__.__name__}"
             )
 
+        if is_l2:
+            raise NotImplementedError(
+                f"createProxyWithNonceL2 is not supported in {self.__class__.__name__}"
+            )
         return self.contract.functions.createProxyWithNonce
 
     def check_proxy_code(self, address: ChecksumAddress) -> bool:
@@ -235,6 +239,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         gas_price: Optional[int] = None,
         nonce: Optional[int] = None,
         chain_specific: bool = False,
+        is_l2: bool = False,
     ) -> EthereumTxSent:
         """
         Deploy proxy contract via Proxy Factory using `createProxyWithNonce` (CREATE2 opcode)
@@ -247,10 +252,11 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         :param gas_price: Gas Price
         :param nonce: Nonce
         :param chain_specific: Calculate chain specific address (to prevent same address in other chains)
+        :param is_l2: L2 deployment function
         :return: EthereumTxSent
         """
 
-        function = self.get_deploy_function(chain_specific)
+        function = self.get_deploy_function(chain_specific, is_l2)
         salt_nonce = salt_nonce if salt_nonce is not None else secrets.randbits(256)
         create_proxy_fn = function(master_copy, initializer, salt_nonce)
 
@@ -290,7 +296,7 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
             "Deprecated, only creation code is available using `get_proxy_creation_code`"
         )
 
-    def get_deploy_function(self, chain_specific: bool) -> ContractFunction:
+    def get_deploy_function(self, chain_specific: bool, _is_l2: bool = False) -> ContractFunction:
         return (
             self.contract.functions.createChainSpecificProxyWithNonce
             if chain_specific
@@ -316,3 +322,13 @@ class ProxyFactoryV141(ProxyFactoryCompatibilityAdapter):
 class ProxyFactoryV150(ProxyFactoryCompatibilityAdapter):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_5_0_contract
+
+    def get_deploy_function(self, chain_specific: bool, is_l2: bool = False) -> ContractFunction:
+        if chain_specific and is_l2:
+            return self.contract.functions.createChainSpecificProxyWithNonceL2
+        elif not chain_specific and is_l2:
+            return self.contract.functions.createProxyWithNonceL2
+        elif chain_specific and not is_l2:
+            return self.contract.functions.createChainSpecificProxyWithNonce
+        else:
+            return self.contract.functions.createProxyWithNonce
