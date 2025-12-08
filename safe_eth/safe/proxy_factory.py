@@ -344,15 +344,6 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
             "Deprecated, only creation code is available using `get_proxy_creation_code`"
         )
 
-    def get_deploy_function(
-        self, chain_specific: bool, _is_l2: bool = False
-    ) -> ContractFunction:
-        return (
-            self.contract.functions.createChainSpecificProxyWithNonce
-            if chain_specific
-            else super().get_deploy_function(chain_specific)
-        )
-
     def deploy_proxy_contract(self, *args, **kwargs):
         """
         .. deprecated:: ``createProxy`` function was deprecated in v1.4.1, use ``deploy_proxy_contract_with_nonce``
@@ -365,6 +356,19 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
 
 
 class ProxyFactoryV141(ProxyFactoryCompatibilityAdapter):
+    def get_deploy_function(
+        self, chain_specific: bool, is_l2: bool = False
+    ) -> ContractFunction:
+        if is_l2:
+            raise NotImplementedError(
+                "createProxyWithNonceL2 or createChainSpecificProxyWithNonceL2 is not supported in ProxyFactoryV141"
+            )
+        return (
+            self.contract.functions.createChainSpecificProxyWithNonce
+            if chain_specific
+            else super().get_deploy_function(chain_specific)
+        )
+
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_4_1_contract
 

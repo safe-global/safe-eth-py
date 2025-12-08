@@ -30,7 +30,7 @@ from safe_eth.eth.tests.utils import send_tx
 from safe_eth.eth.utils import get_empty_tx_params
 from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSend
-from safe_eth.safe.proxy_factory import ProxyFactory, ProxyFactoryV150, ProxyFactoryV141
+from safe_eth.safe.proxy_factory import ProxyFactory, ProxyFactoryV141, ProxyFactoryV150
 
 from ..compatibility_fallback_handler import (
     CompatibilityFallbackHandlerV130,
@@ -158,7 +158,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         )
         cls.proxy_factory = ProxyFactory(
             cls.proxy_factory_contract.address, cls.ethereum_client
-        )    
+        )
         cls.proxy_factory_contract_V_1_4_1 = get_proxy_factory_contract(
             cls.w3, cls.contract_addresses["proxy_factory_V1_4_1"]
         )
