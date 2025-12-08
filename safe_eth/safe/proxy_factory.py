@@ -31,6 +31,7 @@ from safe_eth.eth.utils import (
     get_empty_tx_params,
     mk_contract_address_2,
 )
+from safe_eth.safe.safe_deployments import default_safe_deployments
 
 
 class ProxyFactory(ContractBase, metaclass=ABCMeta):
@@ -85,7 +86,9 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         """
         return self.contract.functions.proxyRuntimeCode().call()
 
-    def get_deploy_function(self, chain_specific: bool, is_l2: bool = False) -> ContractFunction:
+    def get_deploy_function(
+        self, chain_specific: bool, is_l2: bool = False
+    ) -> ContractFunction:
         if chain_specific:
             raise NotImplementedError(
                 f"createChainSpecificProxyWithNonce is not supported in {self.__class__.__name__}"
@@ -264,6 +267,51 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             deployer_account, create_proxy_fn, gas=gas, gas_price=gas_price, nonce=nonce
         )
 
+    @classmethod
+    def from_address(
+        cls, factory_address: ChecksumAddress, ethereum_client: EthereumClient
+    ) -> "ProxyFactory":
+        """
+        Create a ProxyFactory instance from a deployed factory address.
+        Automatically detects the correct version based on the address.
+
+        :param factory_address: The address of the deployed ProxyFactory contract
+        :param ethereum_client: Ethereum client instance
+        :return: ProxyFactory instance of the appropriate version (e.g., ProxyFactoryV141, ProxyFactoryV150)
+        :raises ValueError: If factory address is not found in safe_deployments
+        """
+        # Detect version from deployed address
+        detected_version = cls.detect_version_from_address(factory_address)
+
+        # Use the existing __new__ pattern to instantiate correct subclass
+        return cls(factory_address, ethereum_client, version=detected_version)
+
+    @staticmethod
+    def detect_version_from_address(factory_address: ChecksumAddress) -> str:
+        """
+        Detect ProxyFactory version from a deployed address.
+
+        :param factory_address: The address of the ProxyFactory contract
+        :return: Version string (e.g., "1.5.0")
+        :raises ValueError: If factory address is not found in safe_deployments
+        """
+        for version in ("1.5.0", "1.4.1", "1.3.0", "1.1.1", "1.0.0"):
+            if version not in default_safe_deployments:
+                continue
+
+            deployment_data = default_safe_deployments[version]
+            if "SafeProxyFactory" not in deployment_data:
+                continue
+
+            factory_addresses = deployment_data["SafeProxyFactory"]
+            if factory_address in factory_addresses:
+                return version
+
+        raise ValueError(
+            f"Unknown ProxyFactory address: {factory_address}. "
+            "Factory address is not registered in safe_deployments."
+        )
+
 
 class ProxyFactoryV100(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
@@ -296,7 +344,9 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
             "Deprecated, only creation code is available using `get_proxy_creation_code`"
         )
 
-    def get_deploy_function(self, chain_specific: bool, _is_l2: bool = False) -> ContractFunction:
+    def get_deploy_function(
+        self, chain_specific: bool, _is_l2: bool = False
+    ) -> ContractFunction:
         return (
             self.contract.functions.createChainSpecificProxyWithNonce
             if chain_specific
@@ -323,7 +373,9 @@ class ProxyFactoryV150(ProxyFactoryCompatibilityAdapter):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_5_0_contract
 
-    def get_deploy_function(self, chain_specific: bool, is_l2: bool = False) -> ContractFunction:
+    def get_deploy_function(
+        self, chain_specific: bool, is_l2: bool = False
+    ) -> ContractFunction:
         if chain_specific and is_l2:
             return self.contract.functions.createChainSpecificProxyWithNonceL2
         elif not chain_specific and is_l2:
