@@ -35,20 +35,58 @@ from safe_eth.safe.safe_deployments import default_safe_deployments
 
 
 class ProxyFactory(ContractBase, metaclass=ABCMeta):
+    # Mapping of Safe version strings to their corresponding ProxyFactory implementation classes
+    _VERSION_MAPPING: dict[str, type["ProxyFactory"]] = {}
+
     def __new__(cls, *args, version: str = "1.5.0", **kwargs) -> "ProxyFactory":
         if cls is not ProxyFactory:
             return super().__new__(cls)
 
-        versions = {
-            "1.0.0": ProxyFactoryV100,
-            "1.1.1": ProxyFactoryV111,
-            "1.3.0": ProxyFactoryV130,
-            "1.4.1": ProxyFactoryV141,
-            "1.5.0": ProxyFactoryV150,
-        }
-        instance_class = versions[version]
-        instance = super().__new__(instance_class)  # type: ignore[type-abstract]
+        instance_class = cls._VERSION_MAPPING[version]
+        instance = super().__new__(instance_class)
         return instance
+
+    @classmethod
+    def from_address(
+        cls, factory_address: ChecksumAddress, ethereum_client: EthereumClient
+    ) -> "ProxyFactory":
+        """
+        Create a ProxyFactory instance from a deployed factory address.
+        Automatically detects the correct version based on the address.
+
+        :param factory_address: The address of the deployed ProxyFactory contract
+        :param ethereum_client: Ethereum client instance
+        :return: ProxyFactory instance of the appropriate version (e.g., ProxyFactoryV141, ProxyFactoryV150)
+        :raises ValueError: If factory address is not found in safe_deployments
+        """
+        # Detect version from deployed address
+        detected_version = cls.detect_version_from_address(factory_address)
+
+        # Create instance through the version-specific subclass
+        version_class = cls._VERSION_MAPPING[detected_version]
+        return version_class(factory_address, ethereum_client)
+
+    @staticmethod
+    def detect_version_from_address(factory_address: ChecksumAddress) -> str:
+        """
+        Detect ProxyFactory version from a deployed address.
+
+        :param factory_address: The address of the ProxyFactory contract
+        :return: Version string (e.g., "1.5.0")
+        :raises ValueError: If factory address is not found in safe_deployments
+        """
+        for version in default_safe_deployments.keys():
+            deployment_data = default_safe_deployments[version]
+
+            # Check all possible factory key names
+            for key in ("SafeProxyFactory", "ProxyFactory", "GnosisSafeProxyFactory"):
+                if factory_address in deployment_data.get(key, []):
+                    return version
+
+        raise ValueError(
+            f"Unknown ProxyFactory address: {factory_address}. "
+            "Factory address is not registered in safe_deployments."
+        )
 
     @classmethod
     def deploy_contract(
@@ -267,47 +305,6 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             deployer_account, create_proxy_fn, gas=gas, gas_price=gas_price, nonce=nonce
         )
 
-    @classmethod
-    def from_address(
-        cls, factory_address: ChecksumAddress, ethereum_client: EthereumClient
-    ) -> "ProxyFactory":
-        """
-        Create a ProxyFactory instance from a deployed factory address.
-        Automatically detects the correct version based on the address.
-
-        :param factory_address: The address of the deployed ProxyFactory contract
-        :param ethereum_client: Ethereum client instance
-        :return: ProxyFactory instance of the appropriate version (e.g., ProxyFactoryV141, ProxyFactoryV150)
-        :raises ValueError: If factory address is not found in safe_deployments
-        """
-        # Detect version from deployed address
-        detected_version = cls.detect_version_from_address(factory_address)
-
-        # Use the existing __new__ pattern to instantiate correct subclass
-        return cls(factory_address, ethereum_client, version=detected_version)
-
-    @staticmethod
-    def detect_version_from_address(factory_address: ChecksumAddress) -> str:
-        """
-        Detect ProxyFactory version from a deployed address.
-
-        :param factory_address: The address of the ProxyFactory contract
-        :return: Version string (e.g., "1.5.0")
-        :raises ValueError: If factory address is not found in safe_deployments
-        """
-        for version in default_safe_deployments.keys():
-            deployment_data = default_safe_deployments[version]
-
-            # Check all possible factory key names
-            for key in ("SafeProxyFactory", "ProxyFactory", "GnosisSafeProxyFactory"):
-                if factory_address in deployment_data.get(key, []):
-                    return version
-
-        raise ValueError(
-            f"Unknown ProxyFactory address: {factory_address}. "
-            "Factory address is not registered in safe_deployments."
-        )
-
 
 class ProxyFactoryV100(ProxyFactory):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
@@ -384,3 +381,13 @@ class ProxyFactoryV150(ProxyFactoryCompatibilityAdapter):
             return self.contract.functions.createChainSpecificProxyWithNonce
         else:
             return self.contract.functions.createProxyWithNonce
+
+
+# Populate version mapping after all subclasses are defined
+ProxyFactory._VERSION_MAPPING = {
+    "1.0.0": ProxyFactoryV100,
+    "1.1.1": ProxyFactoryV111,
+    "1.3.0": ProxyFactoryV130,
+    "1.4.1": ProxyFactoryV141,
+    "1.5.0": ProxyFactoryV150,
+}

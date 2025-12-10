@@ -251,3 +251,15 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         with self.assertRaises(ValueError) as context:
             ProxyFactory.from_address(unknown_address, self.ethereum_client)
         self.assertIn("Unknown ProxyFactory address", str(context.exception))
+
+        # Calling from_address on a subclass should still return the correct version
+        # When called on ProxyFactoryV150 with a v1.0.0 address, should return ProxyFactoryV100
+        proxy_factory_from_subclass = ProxyFactoryV150.from_address(
+            v100_address, self.ethereum_client
+        )
+        self.assertIsInstance(
+            proxy_factory_from_subclass,
+            ProxyFactoryV100,
+            "from_address called on subclass should return correct version, not calling class",
+        )
+        self.assertNotIsInstance(proxy_factory_from_subclass, ProxyFactoryV150)
