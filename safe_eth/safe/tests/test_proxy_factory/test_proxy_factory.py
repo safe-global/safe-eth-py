@@ -10,6 +10,8 @@ from safe_eth.eth.contracts import (
     get_proxy_1_0_0_deployed_bytecode,
     get_proxy_1_1_1_deployed_bytecode,
     get_proxy_1_3_0_deployed_bytecode,
+    get_proxy_1_4_1_deployed_bytecode,
+    get_proxy_1_5_0_deployed_bytecode,
 )
 from safe_eth.eth.exceptions import ContractAlreadyDeployed
 from safe_eth.eth.tests.utils import just_test_if_mainnet_node
@@ -20,6 +22,8 @@ from safe_eth.safe.proxy_factory import (
     ProxyFactoryV100,
     ProxyFactoryV111,
     ProxyFactoryV130,
+    ProxyFactoryV141,
+    ProxyFactoryV150,
 )
 from safe_eth.safe.tests.safe_test_case import SafeTestCaseMixin
 from safe_eth.safe.tests.utils import generate_salt_nonce
@@ -54,6 +58,8 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
             ("1.0.0", ProxyFactoryV100, get_proxy_1_0_0_deployed_bytecode),
             ("1.1.1", ProxyFactoryV111, get_proxy_1_1_1_deployed_bytecode),
             ("1.3.0", ProxyFactoryV130, get_proxy_1_3_0_deployed_bytecode),
+            ("1.4.1", ProxyFactoryV141, get_proxy_1_4_1_deployed_bytecode),
+            ("1.5.0", ProxyFactoryV150, get_proxy_1_5_0_deployed_bytecode),
         ]
         for version, ProxyFactoryVersion, get_proxy_deployed_bytecode_fn in versions:
             with self.subTest(version=version):
@@ -194,3 +200,54 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
     def test_get_proxy_runtime_code(self):
         with self.assertRaises(NotImplementedError):
             self.proxy_factory.get_proxy_runtime_code()
+
+    def test_from_address(self):
+        # Test v1.0.0
+        v100_address = "0x12302fE9c02ff50939BaAaaf415fc226C078613C"
+        proxy_factory_v100 = ProxyFactory.from_address(
+            v100_address, self.ethereum_client
+        )
+        self.assertIsInstance(proxy_factory_v100, ProxyFactoryV100)
+        self.assertEqual(proxy_factory_v100.address, v100_address)
+
+        # Test v1.1.1
+        v111_address = "0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B"
+        proxy_factory_v111 = ProxyFactory.from_address(
+            v111_address, self.ethereum_client
+        )
+        self.assertIsInstance(proxy_factory_v111, ProxyFactoryV111)
+        self.assertEqual(proxy_factory_v111.address, v111_address)
+
+        """Test the classmethod that creates ProxyFactory from deployed address."""
+        # Test v1.3.0
+        v130_address = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2"
+        proxy_factory_v130 = ProxyFactory.from_address(
+            v130_address, self.ethereum_client
+        )
+        self.assertIsInstance(proxy_factory_v130, ProxyFactoryV130)
+        self.assertEqual(proxy_factory_v130.address, v130_address)
+        self.assertEqual(proxy_factory_v130.ethereum_client, self.ethereum_client)
+
+        # Test v1.4.1
+        v141_address = "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67"
+        proxy_factory_v141 = ProxyFactory.from_address(
+            v141_address, self.ethereum_client
+        )
+        self.assertIsInstance(proxy_factory_v141, ProxyFactoryV141)
+        self.assertEqual(proxy_factory_v141.address, v141_address)
+        self.assertEqual(proxy_factory_v141.ethereum_client, self.ethereum_client)
+
+        # Test v1.5.0
+        v150_address = "0x14F2982D601c9458F93bd70B218933A6f8165e7b"
+        proxy_factory_v150 = ProxyFactory.from_address(
+            v150_address, self.ethereum_client
+        )
+        self.assertIsInstance(proxy_factory_v150, ProxyFactoryV150)
+        self.assertEqual(proxy_factory_v150.address, v150_address)
+        self.assertEqual(proxy_factory_v150.ethereum_client, self.ethereum_client)
+
+        # Test with unknown address - should raise ValueError
+        unknown_address = "0x0000000000000000000000000000000000000001"
+        with self.assertRaises(ValueError) as context:
+            ProxyFactory.from_address(unknown_address, self.ethereum_client)
+        self.assertIn("Unknown ProxyFactory address", str(context.exception))
