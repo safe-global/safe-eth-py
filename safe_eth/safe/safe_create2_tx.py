@@ -12,11 +12,7 @@ from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from safe_eth.eth.contracts import (
     get_proxy_factory_contract,
     get_safe_contract,
-    get_safe_V1_0_0_contract,
-    get_safe_V1_1_1_contract,
-    get_safe_V1_3_0_contract,
-    get_safe_V1_4_1_contract,
-    get_safe_V1_5_0_contract,
+    get_safe_contract_by_version,
 )
 from safe_eth.eth.utils import (
     fast_is_checksum_address,
@@ -56,14 +52,6 @@ class SafeCreate2TxBuilder:
     Helper to create Safes using Safe's Proxy Factory with CREATE2
     """
 
-    MASTER_COPY_VERSION_WITH_CONTRACT = {
-        "1.5.0": get_safe_V1_5_0_contract,
-        "1.4.1": get_safe_V1_4_1_contract,
-        "1.3.0": get_safe_V1_3_0_contract,
-        "1.1.1": get_safe_V1_1_1_contract,
-        "1.0.0": get_safe_V1_0_0_contract,
-    }
-
     def __init__(
         self,
         w3: Web3,
@@ -86,13 +74,10 @@ class SafeCreate2TxBuilder:
         self.safe_version = (
             get_safe_contract(w3, master_copy_address).functions.VERSION().call()
         )
-        master_copy_contract_fn = self.MASTER_COPY_VERSION_WITH_CONTRACT.get(
-            self.safe_version
-        )
-        if not master_copy_contract_fn:
-            raise ValueError("Safe version must be 1.5.0, 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
 
-        self.master_copy_contract = master_copy_contract_fn(w3, master_copy_address)
+        self.master_copy_contract = get_safe_contract_by_version(
+            self.safe_version, w3, master_copy_address
+        )
 
         self.proxy_factory_contract = get_proxy_factory_contract(
             w3, proxy_factory_address

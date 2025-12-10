@@ -159,7 +159,6 @@ def get_safe_contract_by_version(
     :raises ValueError: If version is not supported
     """
     version_to_contract_fn = {
-        "0.0.1": get_safe_V0_0_1_contract,
         "1.0.0": get_safe_V1_0_0_contract,
         "1.1.1": get_safe_V1_1_1_contract,
         "1.3.0": get_safe_V1_3_0_contract,
@@ -168,10 +167,7 @@ def get_safe_contract_by_version(
     }
 
     if version not in version_to_contract_fn:
-        raise ValueError(
-            f"Unsupported Safe version: {version}. "
-            f"Supported versions: {', '.join(version_to_contract_fn.keys())}"
-        )
+        raise ValueError("Safe version must be 1.5.0, 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
 
     return version_to_contract_fn[version](w3, address)
 
