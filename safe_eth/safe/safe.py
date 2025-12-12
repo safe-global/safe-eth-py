@@ -62,7 +62,7 @@ logger = getLogger(__name__)
 class SafeInfo:
     address: ChecksumAddress
     fallback_handler: ChecksumAddress
-    transaction_guard: ChecksumAddress
+    guard: ChecksumAddress
     master_copy: ChecksumAddress
     modules: List[ChecksumAddress]
     nonce: int
@@ -724,7 +724,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 raise CannotRetrieveSafeInfoException(self.address)
 
             fallback_handler = self.retrieve_fallback_handler()
-            transaction_guard = (
+            guard = (
                 self.retrieve_transaction_guard()
             )  # Transaction guard was implemented in v1.1.1
             module_guard = (
@@ -771,7 +771,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return SafeInfo(
                 self.address,
                 fallback_handler,
-                transaction_guard,
+                guard,
                 master_copy,
                 modules if modules else [],
                 nonce,

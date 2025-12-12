@@ -31,23 +31,66 @@ from safe_eth.eth.utils import (
     get_empty_tx_params,
     mk_contract_address_2,
 )
+from safe_eth.safe.safe_deployments import default_safe_deployments
 
 
 class ProxyFactory(ContractBase, metaclass=ABCMeta):
+    # Mapping of Safe version strings to their corresponding ProxyFactory implementation classes
+    _VERSION_MAPPING: dict[str, type["ProxyFactory"]] = {}
+
     def __new__(cls, *args, version: str = "1.5.0", **kwargs) -> "ProxyFactory":
         if cls is not ProxyFactory:
             return super().__new__(cls)
 
-        versions = {
-            "1.0.0": ProxyFactoryV100,
-            "1.1.1": ProxyFactoryV111,
-            "1.3.0": ProxyFactoryV130,
-            "1.4.1": ProxyFactoryV141,
-            "1.5.0": ProxyFactoryV150,
-        }
-        instance_class = versions[version]
-        instance = super().__new__(instance_class)  # type: ignore[type-abstract]
+        instance_class = cls._VERSION_MAPPING[version]
+        instance = super().__new__(instance_class)
         return instance
+
+    @classmethod
+    def from_address(
+        cls, factory_address: ChecksumAddress, ethereum_client: EthereumClient
+    ) -> "ProxyFactory":
+        """
+        Create a ProxyFactory instance from a deployed factory address.
+        Automatically detects the correct version based on the address.
+
+        :param factory_address: The address of the deployed ProxyFactory contract
+        :param ethereum_client: Ethereum client instance
+        :return: ProxyFactory instance of the appropriate version (e.g., ProxyFactoryV141, ProxyFactoryV150)
+        :raises ValueError: If factory address is not found in safe_deployments
+        """
+        # Detect version from deployed address
+        detected_version = cls.detect_version_from_address(factory_address)
+
+        # Create instance through the version-specific subclass
+        version_class = cls._VERSION_MAPPING[detected_version]
+        return version_class(factory_address, ethereum_client)
+
+    @staticmethod
+    def detect_version_from_address(factory_address: ChecksumAddress) -> str:
+        """
+        Detect ProxyFactory version from a deployed address.
+
+        :param factory_address: The address of the ProxyFactory contract
+        :return: Version string (e.g., "1.5.0")
+        :raises ValueError: If factory address is not found in safe_deployments
+        """
+        for version, deployment_data in default_safe_deployments.items():
+            # Check all possible factory key names
+            for proxy_factory_contract_name in (
+                "SafeProxyFactory",
+                "ProxyFactory",
+                "GnosisSafeProxyFactory",
+            ):
+                if factory_address in deployment_data.get(
+                    proxy_factory_contract_name, []
+                ):
+                    return version
+
+        raise ValueError(
+            f"Unknown ProxyFactory address: {factory_address}. "
+            "Factory address is not registered in safe_deployments."
+        )
 
     @classmethod
     def deploy_contract(
@@ -85,12 +128,18 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         """
         return self.contract.functions.proxyRuntimeCode().call()
 
-    def get_deploy_function(self, chain_specific: bool) -> ContractFunction:
+    def get_deploy_function(
+        self, chain_specific: bool, is_l2: bool = False
+    ) -> ContractFunction:
         if chain_specific:
             raise NotImplementedError(
                 f"createChainSpecificProxyWithNonce is not supported in {self.__class__.__name__}"
             )
 
+        if is_l2:
+            raise NotImplementedError(
+                f"createProxyWithNonceL2 is not supported in {self.__class__.__name__}"
+            )
         return self.contract.functions.createProxyWithNonce
 
     def check_proxy_code(self, address: ChecksumAddress) -> bool:
@@ -235,6 +284,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         gas_price: Optional[int] = None,
         nonce: Optional[int] = None,
         chain_specific: bool = False,
+        is_l2: bool = False,
     ) -> EthereumTxSent:
         """
         Deploy proxy contract via Proxy Factory using `createProxyWithNonce` (CREATE2 opcode)
@@ -247,10 +297,11 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         :param gas_price: Gas Price
         :param nonce: Nonce
         :param chain_specific: Calculate chain specific address (to prevent same address in other chains)
+        :param is_l2: L2 deployment function
         :return: EthereumTxSent
         """
 
-        function = self.get_deploy_function(chain_specific)
+        function = self.get_deploy_function(chain_specific, is_l2)
         salt_nonce = salt_nonce if salt_nonce is not None else secrets.randbits(256)
         create_proxy_fn = function(master_copy, initializer, salt_nonce)
 
@@ -290,13 +341,6 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
             "Deprecated, only creation code is available using `get_proxy_creation_code`"
         )
 
-    def get_deploy_function(self, chain_specific: bool) -> ContractFunction:
-        return (
-            self.contract.functions.createChainSpecificProxyWithNonce
-            if chain_specific
-            else super().get_deploy_function(chain_specific)
-        )
-
     def deploy_proxy_contract(self, *args, **kwargs):
         """
         .. deprecated:: ``createProxy`` function was deprecated in v1.4.1, use ``deploy_proxy_contract_with_nonce``
@@ -309,6 +353,19 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
 
 
 class ProxyFactoryV141(ProxyFactoryCompatibilityAdapter):
+    def get_deploy_function(
+        self, chain_specific: bool, is_l2: bool = False
+    ) -> ContractFunction:
+        if is_l2:
+            raise NotImplementedError(
+                "createProxyWithNonceL2 or createChainSpecificProxyWithNonceL2 is not supported in ProxyFactoryV141"
+            )
+        return (
+            self.contract.functions.createChainSpecificProxyWithNonce
+            if chain_specific
+            else super().get_deploy_function(chain_specific)
+        )
+
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_4_1_contract
 
@@ -316,3 +373,25 @@ class ProxyFactoryV141(ProxyFactoryCompatibilityAdapter):
 class ProxyFactoryV150(ProxyFactoryCompatibilityAdapter):
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_proxy_factory_V1_5_0_contract
+
+    def get_deploy_function(
+        self, chain_specific: bool, is_l2: bool = False
+    ) -> ContractFunction:
+        if chain_specific and is_l2:
+            return self.contract.functions.createChainSpecificProxyWithNonceL2
+        elif not chain_specific and is_l2:
+            return self.contract.functions.createProxyWithNonceL2
+        elif chain_specific and not is_l2:
+            return self.contract.functions.createChainSpecificProxyWithNonce
+        else:
+            return self.contract.functions.createProxyWithNonce
+
+
+# Populate version mapping after all subclasses are defined
+ProxyFactory._VERSION_MAPPING = {
+    "1.0.0": ProxyFactoryV100,
+    "1.1.1": ProxyFactoryV111,
+    "1.3.0": ProxyFactoryV130,
+    "1.4.1": ProxyFactoryV141,
+    "1.5.0": ProxyFactoryV150,
+}

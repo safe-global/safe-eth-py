@@ -146,6 +146,32 @@ def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Co
     return get_safe_V1_5_0_contract(w3, address=address)
 
 
+def get_safe_contract_by_version(
+    version: str, w3: Web3, address: Optional[ChecksumAddress] = None
+) -> Contract:
+    """
+    Get Safe contract instance for a specific version.
+
+    :param version: Version string (e.g., "1.5.0", "1.4.1")
+    :param w3: Web3 instance
+    :param address: Optional contract address
+    :return: Safe contract instance
+    :raises ValueError: If version is not supported
+    """
+    version_to_contract_fn = {
+        "1.0.0": get_safe_V1_0_0_contract,
+        "1.1.1": get_safe_V1_1_1_contract,
+        "1.3.0": get_safe_V1_3_0_contract,
+        "1.4.1": get_safe_V1_4_1_contract,
+        "1.5.0": get_safe_V1_5_0_contract,
+    }
+
+    if version not in version_to_contract_fn:
+        raise ValueError("Safe version must be 1.5.0, 1.4.1, 1.3.0, 1.1.1 or 1.0.0")
+
+    return version_to_contract_fn[version](w3, address)
+
+
 def get_safe_V0_0_1_contract(
     w3: Web3, address: Optional[ChecksumAddress] = None
 ) -> Contract:

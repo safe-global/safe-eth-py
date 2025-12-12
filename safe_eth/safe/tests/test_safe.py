@@ -639,7 +639,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertCountEqual(safe_info.owners, owners)
         self.assertEqual(safe_info.threshold, threshold)
         self.assertEqual(safe_info.modules, [])
-        self.assertEqual(safe_info.transaction_guard, NULL_ADDRESS)
+        self.assertEqual(safe_info.guard, NULL_ADDRESS)
         self.assertEqual(safe_info.module_guard, NULL_ADDRESS)
 
         invalid_address = Account.create().address
