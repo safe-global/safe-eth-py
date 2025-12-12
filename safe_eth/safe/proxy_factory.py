@@ -75,12 +75,11 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         :return: Version string (e.g., "1.5.0")
         :raises ValueError: If factory address is not found in safe_deployments
         """
-        for version in default_safe_deployments.keys():
-            deployment_data = default_safe_deployments[version]
+        for version, deployment_data in default_safe_deployments.items():
 
             # Check all possible factory key names
-            for key in ("SafeProxyFactory", "ProxyFactory", "GnosisSafeProxyFactory"):
-                if factory_address in deployment_data.get(key, []):
+            for proxy_factory_contract_name in ("SafeProxyFactory", "ProxyFactory", "GnosisSafeProxyFactory"):
+                if factory_address in deployment_data.get(proxy_factory_contract_name, []):
                     return version
 
         raise ValueError(
