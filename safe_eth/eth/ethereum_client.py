@@ -1272,6 +1272,10 @@ class EthereumClient:
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
 
+    def __del__(self):
+        if getattr(self, "http_session", None):
+            self.http_session.close()
+
     def raw_batch_request(
         self, payload: Sequence[Dict[str, Any]], batch_size: Optional[int] = None
     ) -> Iterable[Union[Optional[Dict[str, Any]], List[Dict[str, Any]]]]:
