@@ -21,7 +21,7 @@ jobs:
           const comment = context.payload.comment.body;
           const teamMembers = await github.rest.teams.listMembersInOrg({
             org: 'safe-global',
-            team_slug: 'revenue',
+            team_slug: 'platform',
           });
           const isMember = context.payload.sender.type === 'User' && teamMembers.data.some(member => member.login === context.payload.sender.login);
           if (comment.trim() === '/execute' && isMember) {
@@ -129,21 +129,31 @@ jobs:
 
     - name: Run pre-commit
       if: steps.check-comment.outputs.result == 'true'
+      env:
+        ISSUE_INPUTS: ${{ steps.get-issue-inputs.outputs.result }}
       run: |
-        issue_inputs='${{ steps.get-issue-inputs.outputs.result }}'
-        chain_id=$(echo "$issue_inputs" | jq -r '.chainId')
-        version=$(echo "$issue_inputs" | jq -r '.version')
+        set -euo pipefail
+
+        chain_id="$(printf '%s' "$ISSUE_INPUTS" | jq -r '.chainId')"
+        [[ "$chain_id" =~ ^[0-9]+$ ]] || {
+          exit 1
+        }
+        version="$(printf '%s' "$ISSUE_INPUTS" | jq -r '.version')"
+        [[ "$version" =~ ^1\.(3\.0|4\.1|5\.0)$ ]] || {
+          exit 1
+        }
         branch_name="add-new-chain-${chain_id}-${version}-addresses"
         git pull origin main
         git fetch
-        git checkout -b $branch_name origin/$branch_name
+        git checkout -b "$branch_name" "origin/$branch_name"
 
         pre-commit run --all-files || true
 
         if [[ $(git status --porcelain) ]]; then
           git add .
           git commit -m "Apply linter fixes"
-          git pull & git push
+          git pull --rebase
+          git push
         else
           echo "No changes to commit."
         fi
