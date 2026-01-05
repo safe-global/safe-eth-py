@@ -91,8 +91,8 @@ class UserOperation:
                 int(user_operation["callGasLimit"], 16),
                 int(user_operation["verificationGasLimit"], 16),
                 int(user_operation["preVerificationGas"], 16),
-                int(user_operation["maxPriorityFeePerGas"], 16),
                 int(user_operation["maxFeePerGas"], 16),
+                int(user_operation["maxPriorityFeePerGas"], 16),
                 HexBytes(user_operation["signature"]),
                 ChecksumAddress(user_operation_response["entryPoint"]),
                 ChecksumAddress(user_operation["factory"])
@@ -176,8 +176,8 @@ class UserOperationV07:
     call_gas_limit: int
     verification_gas_limit: int
     pre_verification_gas: int
-    max_priority_fee_per_gas: int
     max_fee_per_gas: int
+    max_priority_fee_per_gas: int
     signature: bytes
     entry_point: ChecksumAddress
     factory: Optional[ChecksumAddress] = None
