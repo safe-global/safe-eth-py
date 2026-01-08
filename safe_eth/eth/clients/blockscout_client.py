@@ -141,6 +141,7 @@ class BlockscoutClient:
         EthereumNetwork.HPP_SEPOLIA: "https://sepolia-explorer.hpp.io/api/v2/",
         EthereumNetwork.MORPH_HOODI: "https://explorer-api-hoodi.morphl2.io/api/v2/",
         EthereumNetwork.DOGEOS_CHIKYŪ_TESTNET: "https://blockscout.testnet.dogeos.com/api/v2/",
+        EthereumNetwork.ALPEN_TESTNET_II: "https://explorer.pectra-testnet.alpenlabs.io/api/v2",
     }
 
     def __init__(
