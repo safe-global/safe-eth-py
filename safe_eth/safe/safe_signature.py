@@ -30,6 +30,7 @@ from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError
 from safe_eth.eth import EthereumClient
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
+    get_compatibility_fallback_handler_V1_3_0_contract,
     get_compatibility_fallback_handler_V1_4_1_contract,
     get_safe_contract,
 )
@@ -122,6 +123,7 @@ class SafeSignatureBase(ABC):
         signatures: EthereumBytes,
         safe_hash: EthereumBytes,
         safe_hash_preimage: Optional[EthereumBytes] = None,
+        message: Optional[EthereumBytes] = None,
         ignore_trailing: bool = True,
     ) -> List[TSafeSignature]:
         """
@@ -171,6 +173,7 @@ class SafeSignatureBase(ABC):
                         signature,
                         safe_hash,
                         safe_hash_preimage or safe_hash,
+                        message,
                         contract_signature,
                     ),
                 )
@@ -320,11 +323,13 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         signature: EthereumBytes,
         safe_hash: EthereumBytes,
         safe_hash_preimage: EthereumBytes,
+        message: EthereumBytes,
         contract_signature: EthereumBytes,
     ):
         super().__init__(signature, safe_hash)
         self.safe_hash_preimage: HexBytes = HexBytes(safe_hash_preimage)
         self.contract_signature: HexBytes = HexBytes(contract_signature)
+        self.message: HexBytes = HexBytes(message)
 
     @classmethod
     def from_values(
@@ -333,11 +338,14 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         safe_hash: EthereumBytes,
         safe_hash_preimage: EthereumBytes,
         contract_signature: EthereumBytes,
+        message: EthereumBytes,
     ) -> Self:
         signature = signature_to_bytes(
             0, int.from_bytes(HexBytes(safe_owner), byteorder="big"), 65
         )
-        return cls(signature, safe_hash, safe_hash_preimage, contract_signature)
+        return cls(
+            signature, safe_hash, safe_hash_preimage, contract_signature, message
+        )
 
     @property
     def owner(self) -> ChecksumAddress:
@@ -475,6 +483,11 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
                 get_compatibility_fallback_handler_V1_4_1_contract,
                 "isValidSignature(bytes,bytes)",
                 bytes(self.safe_hash_preimage),
+            ),
+            (
+                get_compatibility_fallback_handler_V1_3_0_contract,
+                "isValidSignature(bytes,bytes)",
+                bytes(self.message),
             ),
         ):
             if self._check_eip1271(
