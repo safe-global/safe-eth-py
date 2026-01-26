@@ -178,7 +178,7 @@ class AsyncSignatureTestMixin:
 class TestSafeSignature(EthereumTestCaseMixin, TestCase):
     def test_contract_signature(self):
         owner, safe_tx_hash, signature = _contract_signature_sample()
-        safe_signature = SafeSignatureContract(signature, safe_tx_hash, b"", b"")
+        safe_signature = SafeSignatureContract(signature, safe_tx_hash, b"", b"", b"")
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(
             safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE
@@ -704,7 +704,9 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
 class TestSafeSignatureAsync(AsyncSignatureTestMixin, EthereumTestCaseMixin, TestCase):
     def test_contract_signature(self):
         owner, safe_tx_hash, signature = _contract_signature_sample()
-        safe_signature = SafeSignatureContractAsync(signature, safe_tx_hash, b"", b"")
+        safe_signature = SafeSignatureContractAsync(
+            signature, safe_tx_hash, b"", b"", b""
+        )
         self.assertEqual(safe_signature.owner, owner)
         self.assertEqual(
             safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE

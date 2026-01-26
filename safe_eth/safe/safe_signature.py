@@ -323,13 +323,14 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         signature: EthereumBytes,
         safe_hash: EthereumBytes,
         safe_hash_preimage: EthereumBytes,
-        message: EthereumBytes,
+        message: EthereumBytes | None,
         contract_signature: EthereumBytes,
     ):
         super().__init__(signature, safe_hash)
         self.safe_hash_preimage: HexBytes = HexBytes(safe_hash_preimage)
         self.contract_signature: HexBytes = HexBytes(contract_signature)
-        self.message: HexBytes = HexBytes(message)
+        if message is not None:
+            self.message: HexBytes = HexBytes(message)
 
     @classmethod
     def from_values(
@@ -338,13 +339,13 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         safe_hash: EthereumBytes,
         safe_hash_preimage: EthereumBytes,
         contract_signature: EthereumBytes,
-        message: EthereumBytes,
+        message: Optional[EthereumBytes] = None,
     ) -> Self:
         signature = signature_to_bytes(
             0, int.from_bytes(HexBytes(safe_owner), byteorder="big"), 65
         )
         return cls(
-            signature, safe_hash, safe_hash_preimage, contract_signature, message
+            signature, safe_hash, safe_hash_preimage, message, contract_signature
         )
 
     @property
@@ -473,7 +474,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
                 "ethereum_client is required to validate contract signature"
             )
 
-        for fallback_handler_getter, function_signature, data in (
+        handlers_to_check = [
             (
                 get_compatibility_fallback_handler_contract,
                 "isValidSignature(bytes32,bytes)",
@@ -484,12 +485,19 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
                 "isValidSignature(bytes,bytes)",
                 bytes(self.safe_hash_preimage),
             ),
-            (
-                get_compatibility_fallback_handler_V1_3_0_contract,
-                "isValidSignature(bytes,bytes)",
-                bytes(self.message),
-            ),
-        ):
+        ]
+
+        # Only add V1_3_0 handler if message is defined. This approach enables signature verification for Safe v1.3.0 without introducing any breaking changes in the code.
+        if hasattr(self, "message") and self.message is not None:
+            handlers_to_check.append(
+                (
+                    get_compatibility_fallback_handler_V1_3_0_contract,
+                    "isValidSignature(bytes,bytes)",
+                    bytes(self.message),
+                )
+            )
+
+        for fallback_handler_getter, function_signature, data in handlers_to_check:
             if self._check_eip1271(
                 ethereum_client,
                 fallback_handler_getter,
@@ -610,7 +618,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
 
-        for fallback_handler_getter, function_signature, data in (
+        handlers_to_check = [
             (
                 get_compatibility_fallback_handler_contract,
                 "isValidSignature(bytes32,bytes)",
@@ -621,7 +629,19 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
                 "isValidSignature(bytes,bytes)",
                 bytes(self.safe_hash_preimage),
             ),
-        ):
+        ]
+
+        # Only add V1_3_0 handler if message is defined
+        if hasattr(self, "message") and self.message is not None:
+            handlers_to_check.append(
+                (
+                    get_compatibility_fallback_handler_V1_3_0_contract,
+                    "isValidSignature(bytes,bytes)",
+                    bytes(self.message),
+                )
+            )
+
+        for fallback_handler_getter, function_signature, data in handlers_to_check:
             if await self._check_eip1271(
                 web3,
                 fallback_handler_getter,
