@@ -54,6 +54,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.WORLD_CHAIN: "wc",
         EthereumNetwork.X_LAYER_MAINNET: "okb",
         EthereumNetwork.ZKSYNC_MAINNET: "zksync",
+        EthereumNetwork.PLASMA_MAINNET: "plasma",
     }
     TRANSACTION_SERVICE_BASE_URL = "https://api.safe.global/tx-service"
 
