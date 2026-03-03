@@ -113,6 +113,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x2CB0ebc503dE87CFD8f0eCEED8197bF7850184ae", 12529466, "1.1.1+Circles"),
         ("0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A", 19560130, "1.0.0"),
         ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 41687624, "1.5.0"),  # v1.5.0
+        ("0xEdd160fEBBD92E350D4D398fb636302fccd67C7e", 42671288, "1.5.0+L2"),  # v1.5.0+L2
     ],
     EthereumNetwork.ENERGY_WEB_CHAIN: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 12028662, "1.3.0+L2"),
