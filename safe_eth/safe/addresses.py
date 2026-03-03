@@ -17,6 +17,12 @@ SAFE_SIMULATE_TX_ACCESSOR_ADDRESS: ChecksumAddress = ChecksumAddress(
 
 MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.MAINNET: [
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            22838494,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 22838493, "1.5.0"),  # v1.5.0
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 17486982, "1.4.1+L2"),
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 17487000, "1.4.1"),
         (
@@ -3490,6 +3496,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.MAINNET: [
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 22774977),  # v1.5.0
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 17440707),  # v1.4.1
         (
             "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
