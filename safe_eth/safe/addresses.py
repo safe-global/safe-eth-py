@@ -112,6 +112,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F", 10045292, "1.1.1"),
         ("0x2CB0ebc503dE87CFD8f0eCEED8197bF7850184ae", 12529466, "1.1.1+Circles"),
         ("0xb6029EA3B2c51D09a50B53CA8012FeEB05bDa35A", 19560130, "1.0.0"),
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 41687624, "1.5.0"),  # v1.5.0
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            42671288,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.ENERGY_WEB_CHAIN: [
         ("0x3E5c63644E683549055b9Be8653de26E0B4CD36E", 12028662, "1.3.0+L2"),
@@ -3529,6 +3535,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ),  # v1.3.0 default singleton address
         ("0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B", 10045327),  # v1.1.1
         ("0x12302fE9c02ff50939BaAaaf415fc226C078613C", 17677119),  # v1.0.0
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 41687620),  # v1.5.0
     ],
     EthereumNetwork.ENERGY_WEB_CHAIN: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 12028652),  # v1.3.0
