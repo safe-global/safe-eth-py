@@ -3531,6 +3531,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ),  # v1.3.0 default singleton address
         ("0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B", 10045327),  # v1.1.1
         ("0x12302fE9c02ff50939BaAaaf415fc226C078613C", 17677119),  # v1.0.0
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 41687620), # v1.5.0
     ],
     EthereumNetwork.ENERGY_WEB_CHAIN: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 12028652),  # v1.3.0
