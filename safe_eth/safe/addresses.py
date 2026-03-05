@@ -3492,6 +3492,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 1032, "1.4.1"),  # v1.4.1
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 1039, "1.4.1+L2"),  # v1.4.1+L2
     ],
+    EthereumNetwork.PHAROS_MAINNET: [
+        ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 321827, "1.3.0"),  # v1.3.0
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
