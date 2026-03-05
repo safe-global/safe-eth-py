@@ -10,7 +10,7 @@ Usage
 
 Arguments
 ---------
-    --rpc-url       (required) JSON-RPC HTTP endpoint, e.g. https://rpc.moderato.tempo.xyz
+    --rpc-url       (required) JSON-RPC HTTP endpoint, e.g. https://eth.drpc.org
     --start-block   (optional) Lower bound for binary search. Defaults to 0.
     --end-block     (optional) Upper bound for binary search. Defaults to the latest block.
     ADDRESS         One or more contract addresses to look up.
@@ -18,11 +18,11 @@ Arguments
 Examples
 --------
     # Single contract
-    python scripts/find_deployment.py --rpc-url https://rpc.moderato.tempo.xyz \
+    python scripts/find_deployment.py --rpc-url https://eth.drpc.org \
         0x14F2982D601c9458F93bd70B218933A6f8165e7b
 
     # Multiple contracts with a narrowed search window
-    python scripts/find_deployment.py --rpc-url https://rpc.moderato.tempo.xyz \
+    python scripts/find_deployment.py --rpc-url https://eth.drpc.org \
         --start-block 100000 \
         0x14F2982D601c9458F93bd70B218933A6f8165e7b \
         0xFf51A5898e281Db6DfC7855790607438dF2ca44b \
