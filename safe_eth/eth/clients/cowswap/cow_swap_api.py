@@ -208,12 +208,11 @@ class CowSwapAPI:
         assert bool(order_ui) ^ bool(
             owner
         ), "order_ui or owner must be provided, but not both"
-        url = self.base_url + "/api/v1/trades/?"
+        url = self.base_url + "/api/v1/trades?"
         if order_ui:
             url += f"orderUid={order_ui}"
         elif owner:
             url += f"owner={owner}"
-
         r = self.http_session.get(url, timeout=self.request_timeout)
         if r.ok:
             return cast(List[TradeResponse], r.json())
