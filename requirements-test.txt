@@ -1,6 +1,6 @@
 -r requirements.txt
 coverage==7.13.4
-faker==40.1.2
+faker==40.8.0
 mypy==1.19.1
 pytest==9.0.2
 pytest-benchmark==5.2.3
