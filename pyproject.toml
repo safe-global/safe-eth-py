@@ -53,6 +53,7 @@ django = [
     "django-filter>=2",
     "django>=2",
     "djangorestframework>=2",
+    "psycopg[binary,pool]>=3",
 ]
 
 [project.urls]

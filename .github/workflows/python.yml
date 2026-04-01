@@ -63,9 +63,12 @@ jobs:
         enable-cache: true
         cache-dependency-glob: "uv.lock"
     - name: Install dependencies
-      run: uv sync --group dev --frozen
+      run: uv sync --group dev --all-extras --frozen
     - name: Run tests and coverage
-      run: uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10
+      run: |
+        uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10
+        uv run coverage combine
+        uv run coverage lcov -o coverage.lcov
       env:
         SOURCE_FOLDER: safe_eth
         DJANGO_SETTINGS_MODULE: config.settings.test
@@ -76,13 +79,24 @@ jobs:
         ENS_CLIENT_API_KEY: ${{ secrets.ENS_CLIENT_API_KEY }}
         SAFE_TRANSACTION_SERVICE_API_KEY: ${{ secrets.SAFE_TRANSACTION_SERVICE_API_KEY }}
     - name: Send results to coveralls
-      # Ignore coveralls issues
       continue-on-error: true
-      run: uv run coveralls --service=github
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Required for coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        file: coverage.lcov
+        flag-name: run-${{ matrix.python-version }}
+        parallel: true
     - name: Test packaging
       run: uv build
+
+  finish:
+    needs: test-app
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true
 
   publish:
     runs-on: ubuntu-latest
