@@ -3,6 +3,7 @@ Contains information about Safe contract addresses deployed in every chain
 
 Every entry contains a tuple with address, deployment block number and version
 """
+
 from typing import Dict, List, Tuple, Union
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
@@ -5014,7 +5015,7 @@ safe_proxy_factory_contract_names = [
 
 
 def get_default_addresses_with_version(
-    filter_contract_names: Union[List, None] = None
+    filter_contract_names: Union[List, None] = None,
 ) -> List[Tuple[ChecksumAddress, str]]:
     """
     Get the default addresses and versions from contract names.

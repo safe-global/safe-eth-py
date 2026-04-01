@@ -116,7 +116,7 @@ def _load_json_file(path) -> Dict[str, Any]:
 
 
 def generate_contract_fn(
-    contract: Dict[str, Any]
+    contract: Dict[str, Any],
 ) -> Callable[[Web3, Optional[ChecksumAddress]], Union[Type[Contract], Contract]]:
     """
     Dynamically generate a function to build a Web3 Contract for the provided contract ABI

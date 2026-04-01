@@ -75,7 +75,7 @@ class BundlerClient:
 
     @staticmethod
     def _parse_user_operation_receipt(
-        user_operation_receipt: Dict[str, Any]
+        user_operation_receipt: Dict[str, Any],
     ) -> UserOperationReceipt:
         return UserOperationReceipt(
             HexBytes(user_operation_receipt["userOpHash"]),

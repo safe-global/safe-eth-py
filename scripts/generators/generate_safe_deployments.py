@@ -86,12 +86,12 @@ def generate_safe_deployments_py():
     """
 
     # Store the version with list of addresses
-    safe_deployments: Dict[
-        str, Dict[str, Dict[str, List[str]]]
-    ] = {}  # Version -> Contract name -> ChainId -> List of addresses
-    default_safe_addresses: Dict[
-        str, Dict[str, List[str]]
-    ] = {}  # Version -> Contract name -> List of addresses
+    safe_deployments: Dict[str, Dict[str, Dict[str, List[str]]]] = (
+        {}
+    )  # Version -> Contract name -> ChainId -> List of addresses
+    default_safe_addresses: Dict[str, Dict[str, List[str]]] = (
+        {}
+    )  # Version -> Contract name -> List of addresses
     # Clone repo
     with get_safe_deployments() as repo:
         logging.info(

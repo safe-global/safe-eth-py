@@ -312,9 +312,9 @@ class SafeTx:
         try:
             success = self.w3_tx.call(
                 parameters,
-                block_identifier=block_identifier
-                if block_identifier is not None
-                else "latest",
+                block_identifier=(
+                    block_identifier if block_identifier is not None else "latest"
+                ),
             )
 
             if not success:
@@ -383,9 +383,9 @@ class SafeTx:
         else:
             tx_parameters = {
                 "from": sender_account.address,
-                "gasPrice": Wei(tx_gas_price)
-                if tx_gas_price
-                else self.w3.eth.gas_price,
+                "gasPrice": (
+                    Wei(tx_gas_price) if tx_gas_price else self.w3.eth.gas_price
+                ),
             }
 
         if tx_gas:

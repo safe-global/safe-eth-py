@@ -904,7 +904,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
         for _ in range(max_modules_to_retrieve // pagination):
             # If we use a `while True` loop a custom coded Safe could get us into an infinite loop
-            (modules, next_module) = contract.functions.getModulesPaginated(
+            modules, next_module = contract.functions.getModulesPaginated(
                 next_module, pagination
             ).call(block_identifier=block_identifier)
 
@@ -1257,7 +1257,7 @@ class SafeCompatibilityAdapter(Safe, ABC):
             raise CannotEstimateGas(f"Reverted call using SimulateTxAccessor {e}")
         try:
             # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
-            (estimate, success, return_data) = eth_abi.decode(
+            estimate, success, return_data = eth_abi.decode(
                 ["uint256", "bool", "bytes"], accessible_data
             )
             if not success:
