@@ -67,7 +67,6 @@ jobs:
     - name: Run tests and coverage
       run: |
         uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10
-        uv run coverage combine
         uv run coverage lcov -o coverage.lcov
       env:
         SOURCE_FOLDER: safe_eth

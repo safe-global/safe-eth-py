@@ -77,7 +77,6 @@ check = "mypy --install-types --non-interactive {args:safe_eth}"
 include = ["safe_eth/*"]
 # source_pkgs = ["safe_eth", "tests"]
 branch = true
-parallel = true
 omit = [
   "*__init__.py*",
   "*tests*",
