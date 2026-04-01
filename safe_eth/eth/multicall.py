@@ -2,6 +2,7 @@
 MultiCall Smart Contract API
 https://github.com/mds1/multicall
 """
+
 import logging
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence, Tuple
@@ -569,9 +570,12 @@ class Multicall(ContractBase):
         return [
             MulticallDecodedResult(
                 multicall_result.success,
-                self._decode_data(output_type, multicall_result.return_data)
-                if multicall_result.success and multicall_result.return_data is not None
-                else multicall_result.return_data,
+                (
+                    self._decode_data(output_type, multicall_result.return_data)
+                    if multicall_result.success
+                    and multicall_result.return_data is not None
+                    else multicall_result.return_data
+                ),
             )
             for output_type, multicall_result in zip(output_types, results)
         ]
@@ -605,9 +609,12 @@ class Multicall(ContractBase):
         return [
             MulticallDecodedResult(
                 multicall_result.success,
-                self._decode_data(output_type, multicall_result.return_data)
-                if multicall_result.success and multicall_result.return_data is not None
-                else multicall_result.return_data,
+                (
+                    self._decode_data(output_type, multicall_result.return_data)
+                    if multicall_result.success
+                    and multicall_result.return_data is not None
+                    else multicall_result.return_data
+                ),
             )
             for output_type, multicall_result in zip(output_types, results)
         ]

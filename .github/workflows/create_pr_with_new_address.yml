@@ -103,17 +103,18 @@ jobs:
 
             return extractedInfo;
 
-    - name: Setup Python
+    - name: Install uv
       if: steps.check-comment.outputs.result == 'true'
-      uses: actions/setup-python@v6
+      uses: astral-sh/setup-uv@v6
       with:
-        python-version: '3.12'
+        python-version: '3.13'
 
     - name: Install dependencies
       if: steps.check-comment.outputs.result == 'true'
       run: |
-        pip install -U PyGithub safe-eth-py@git+https://github.com/safe-global/safe-eth-py@main pre-commit -r requirements-test.txt
-        pre-commit install
+        uv sync --group dev --frozen
+        uv pip install "PyGithub" "safe-eth-py @ git+https://github.com/safe-global/safe-eth-py@main"
+        uv run pre-commit install
 
     - name: Process Issue and Create PR
       if: steps.check-comment.outputs.result == 'true'
@@ -123,7 +124,7 @@ jobs:
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
         GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
       run: |
-        python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
 
     - uses: fregante/setup-git-user@v2
 
@@ -147,7 +148,7 @@ jobs:
         git fetch
         git checkout -b "$branch_name" "origin/$branch_name"
 
-        pre-commit run --all-files || true
+        uv run pre-commit run --all-files || true
 
         if [[ $(git status --porcelain) ]]; then
           git add .

@@ -95,12 +95,16 @@ class UserOperation:
                 int(user_operation["maxPriorityFeePerGas"], 16),
                 HexBytes(user_operation["signature"]),
                 ChecksumAddress(user_operation_response["entryPoint"]),
-                ChecksumAddress(user_operation["factory"])
-                if "factory" in user_operation
-                else None,
-                HexBytes(user_operation["factoryData"])
-                if "factoryData" in user_operation
-                else None,
+                (
+                    ChecksumAddress(user_operation["factory"])
+                    if "factory" in user_operation
+                    else None
+                ),
+                (
+                    HexBytes(user_operation["factoryData"])
+                    if "factoryData" in user_operation
+                    else None
+                ),
                 paymaster_verification_gas_limit,
                 paymaster_post_op_gas_limit,
                 paymaster,

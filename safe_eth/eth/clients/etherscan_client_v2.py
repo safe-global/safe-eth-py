@@ -139,7 +139,7 @@ class EtherscanClientV2:
 
     @staticmethod
     def _process_contract_metadata(
-        contract_data: Dict[str, Any]
+        contract_data: Dict[str, Any],
     ) -> Optional[ContractMetadata]:
         contract_name = contract_data["ContractName"]
         contract_abi = contract_data["ABI"]

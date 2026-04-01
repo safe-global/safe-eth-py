@@ -198,9 +198,9 @@ def upsert_chain_info_enum_based(
             None,
         )
         if existing_entry_index is not None:
-            url_lines[
-                existing_entry_index
-            ] = f'        EthereumNetwork.{chain_enum_name}: "{info_to_update}",'
+            url_lines[existing_entry_index] = (
+                f'        EthereumNetwork.{chain_enum_name}: "{info_to_update}",'
+            )
             print(
                 f"Updated entry {config_enum_name} EthereumNetwork.{chain_enum_name} with '{info_to_update}'."
             )

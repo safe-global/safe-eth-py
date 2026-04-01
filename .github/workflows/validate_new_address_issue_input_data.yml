@@ -57,21 +57,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
 
-    - name: Setup Python
-      uses: actions/setup-python@v6
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
       with:
-        python-version: '3.12'
-
-    - name: Install dependencies
-      run: |
-        grep -E "web3" requirements.txt | xargs pip install safe-eth-py@git+https://github.com/safe-global/safe-eth-py@main validators tldextract
+        python-version: '3.13'
 
     - name: Validate input data
       id: validate-input-data
       env:
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
       run: |
-        python .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
+        uv run .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
 
     - name: Add comment to issue
       uses: actions/github-script@v8
