@@ -4,6 +4,14 @@ Composes message for a comment in the ticket with the result of the validation. 
 composes a list of errors.
 """
 
+# /// script
+# dependencies = [
+#   "safe-eth-py @ git+https://github.com/safe-global/safe-eth-py@main",
+#   "tldextract",
+#   "validators",
+# ]
+# ///
+
 import json
 import os
 import re
