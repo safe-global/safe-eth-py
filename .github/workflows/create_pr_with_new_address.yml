@@ -113,8 +113,7 @@ jobs:
       if: steps.check-comment.outputs.result == 'true'
       run: |
         uv sync --group dev --frozen
-        uv pip install "PyGithub" "safe-eth-py @ git+https://github.com/safe-global/safe-eth-py@main" "mypy"
-        uv run pre-commit install
+        uv pip install "PyGithub" "safe-eth-py @ git+https://github.com/safe-global/safe-eth-py@main"
 
     - name: Process Issue and Create PR
       if: steps.check-comment.outputs.result == 'true'
