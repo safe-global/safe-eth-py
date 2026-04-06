@@ -454,7 +454,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 ]
             )
             if token_reserves is not None:
-                (reserves_1, reserves_2, _) = token_reserves
+                reserves_1, reserves_2, _ = token_reserves
             else:
                 reserves_1, reserves_2 = 0.0, 0.0
 
