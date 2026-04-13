@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Get issue inputs
       id: get-issue-inputs
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -70,7 +70,7 @@ jobs:
         uv run .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
 
     - name: Add comment to issue
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         COMMENT_OUTPUT: ${{ steps.validate-input-data.outputs.comment_message }}
       with:
