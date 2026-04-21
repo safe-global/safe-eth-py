@@ -25,8 +25,8 @@ def get_empty_tx_params() -> TxParams:
 
 
 @lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 512)))
-def _keccak_256(value: bytes) -> keccak_256:
-    return keccak_256(value)
+def _keccak_256(value: bytes) -> bytes:
+    return keccak_256(value).digest()
 
 
 def fast_keccak(value: bytes) -> Hash32:
@@ -36,7 +36,7 @@ def fast_keccak(value: bytes) -> Hash32:
     :param value:
     :return: Keccak256 used by ethereum as `HexBytes`
     """
-    return Hash32(HexBytes(_keccak_256(value).digest()))
+    return Hash32(HexBytes(_keccak_256(value)))
 
 
 def fast_keccak_text(value: str) -> Hash32:
@@ -57,7 +57,7 @@ def fast_keccak_hex(value: bytes) -> HexStr:
     :param value:
     :return: Keccak256 used by ethereum as a hex string (not 0x prefixed)
     """
-    return HexStr(_keccak_256(value).hexdigest())
+    return HexStr(_keccak_256(value).hex())
 
 
 def _build_checksum_address(
