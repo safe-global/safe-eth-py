@@ -124,7 +124,7 @@ sections = [
 
 [dependency-groups]
 dev = [
-    "coverage==7.13.4",
+    "coverage==7.13.5",
     "coveralls",
     "faker==40.1.2",
     "flake8",
