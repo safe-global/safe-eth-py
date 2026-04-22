@@ -135,7 +135,7 @@ dev = [
     "isort",
     "mypy==1.19.1",
     "pre-commit",
-    "pytest==9.0.2",
+    "pytest==9.0.3",
     "pytest-benchmark==5.2.3",
     "pytest-django==4.11.1",
     "pytest-env==1.2.0",
