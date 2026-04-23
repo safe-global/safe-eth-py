@@ -39,7 +39,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.GNOSIS_CHIADO_TESTNET: "chi",
         EthereumNetwork.HEMI_NETWORK: "hemi",
         EthereumNetwork.INK: "ink",
-        EthereumNetwork.KATANA_MAINNET: "katana",
+        EthereumNetwork.KATANA: "katana",
         EthereumNetwork.LENS: "lens",
         EthereumNetwork.LINEA: "linea",
         EthereumNetwork.MAINNET: "eth",
