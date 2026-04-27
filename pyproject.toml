@@ -143,7 +143,7 @@ dev = [
     "pytest-sugar==1.1.1",
     "sphinx",
     "sphinx-rtd-theme",
-    "types-requests==2.32.4.20260107",
+    "types-requests==2.33.0.20260408",
 ]
 
 [tool.uv]
