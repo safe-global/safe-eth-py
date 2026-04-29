@@ -3586,6 +3586,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             24009034,
             "1.5.0+L2",
         ),  # v1.5.0+L2
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 1796991, "1.4.1"),  # v1.4.1
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            9138678,
+            "1.4.1+L2",
+        ),  # v1.4.1+L2
     ],
 }
 
@@ -5083,6 +5089,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.CELO_SEPOLIA_TESTNET: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 24008942),  # v1.3.0
         ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 2343467),  # v1.5.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 1796984),  # v1.4.1
     ],
 }
 
