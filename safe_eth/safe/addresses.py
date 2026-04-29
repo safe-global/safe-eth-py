@@ -5078,6 +5078,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.CELO_SEPOLIA_TESTNET: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 24008942),  # v1.3.0
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 2343467), # v1.5.0
     ],
 }
 
