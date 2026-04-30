@@ -146,6 +146,9 @@ def upsert_explorer_client_url(
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
 
+    # Normalize URL: always add trailing slash so "api/v2" and "api/v2/" are treated identically
+    client_url = client_url.rstrip("/") + "/"
+
     match = re.search(
         config_enum_name + r" = \{\n(.+?)(\n\s*}.*)", content, re.MULTILINE | re.DOTALL
     )
@@ -157,13 +160,13 @@ def upsert_explorer_client_url(
             (
                 line
                 for line in url_lines
-                if re.search(f'EthereumNetwork.{chain_enum_name}: "{client_url}"', line)
+                if re.search(f'EthereumNetwork.{chain_enum_name}:', line)
             ),
             None,
         )
 
         if existing_entry:
-            print(f"Entry with URL '{client_url}' already exists.")
+            print(f"Entry for EthereumNetwork.{chain_enum_name} already exists.")
         else:
             new_entry = f'        EthereumNetwork.{chain_enum_name}: "{client_url}",'
             url_lines.append(new_entry)
