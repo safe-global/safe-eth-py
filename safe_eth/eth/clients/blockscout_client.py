@@ -147,7 +147,7 @@ class BlockscoutClient:
         EthereumNetwork.DOGEOS_CHIKYŪ_TESTNET: "https://blockscout.testnet.dogeos.com/api/v2/",
         EthereumNetwork.ALPEN_TESTNET_II: "https://explorer.testnet.alpenlabs.io/api/v2/",
         EthereumNetwork.TAIKO_HOODI: "https://blockscoutapi.hoodi.taiko.xyz/api/v2/",
-        EthereumNetwork.ADI_CHAIN: "https://explorer-bls.adifoundation.ai/api/v2",
+        EthereumNetwork.ADI_CHAIN: "https://explorer-bls.adifoundation.ai/api/v2/",
     }
 
     def __init__(
