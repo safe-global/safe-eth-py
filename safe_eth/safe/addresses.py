@@ -701,6 +701,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             2087040,
             "1.3.0",
         ),  # Safe singleton address
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 8538341, "1.5.0"),  # v1.5.0
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            8538343,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.TENET_TESTNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 885391, "1.3.0+L2"),
@@ -3961,6 +3967,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
             2086864,
         ),  # v1.3.0  Default singleton address
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 8518405),  # v1.5.0
     ],
     EthereumNetwork.TENET_TESTNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 885379),  # v1.3.0
