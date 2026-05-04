@@ -146,7 +146,7 @@ def upsert_explorer_client_url(
     file = repo.get_contents(file_path, ref=branch_name)
     content = file.decoded_content.decode("utf-8")
 
-    # Normalize URL: always add trailing slash so "api/v2" and "api/v2/" are treated identically
+    # Normalize URL: always add trailing slash so "api/v2" and "api/v2/" are equivalent
     client_url = client_url.rstrip("/") + "/"
 
     match = re.search(
@@ -160,7 +160,7 @@ def upsert_explorer_client_url(
             (
                 line
                 for line in url_lines
-                if re.search(f'EthereumNetwork.{chain_enum_name}:', line)
+                if re.search(f"EthereumNetwork.{chain_enum_name}:", line)
             ),
             None,
         )
