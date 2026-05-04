@@ -57,13 +57,13 @@ class CowswapOracle(PriceOracle):
         token_address_2_checksum = ChecksumAddress(HexAddress(HexStr(token_address_2)))
         token_1_decimals = get_decimals(token_address_1_checksum, self.ethereum_client)
         try:
-            result: Union[
-                AmountResponse, ErrorResponse
-            ] = self.api.get_estimated_amount(
-                token_address_1_checksum,
-                token_address_2_checksum,
-                OrderKind.SELL,
-                10**token_1_decimals,
+            result: Union[AmountResponse, ErrorResponse] = (
+                self.api.get_estimated_amount(
+                    token_address_1_checksum,
+                    token_address_2_checksum,
+                    OrderKind.SELL,
+                    10**token_1_decimals,
+                )
             )
             if "buyAmount" in result and "sellAmount" in result:
                 result = cast(AmountResponse, result)

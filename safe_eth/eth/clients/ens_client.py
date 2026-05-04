@@ -70,9 +70,7 @@ class EnsClient:
                         labelName
                     }
                 }
-                """.replace(
-            "domain_hash", domain_hash_str
-        )
+                """.replace("domain_hash", domain_hash_str)
         try:
             response = self.request_session.post(
                 self.config.url,
@@ -152,9 +150,7 @@ class EnsClient:
               }
             }
           }
-        }""".replace(
-            "account_id", account.lower()
-        )
+        }""".replace("account_id", account.lower())
         try:
             response = self.request_session.post(
                 self.config.url,

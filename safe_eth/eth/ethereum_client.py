@@ -270,9 +270,11 @@ class BatchCallManager(EthereumClientManager):
                     "method": "eth_call",
                     "params": [
                         query_params,
-                        hex(block_identifier)
-                        if isinstance(block_identifier, int)
-                        else block_identifier,
+                        (
+                            hex(block_identifier)
+                            if isinstance(block_identifier, int)
+                            else block_identifier
+                        ),
                     ],
                     "id": i,
                 }
@@ -920,9 +922,11 @@ class Erc721Manager(EthereumClientManager):
         :return: List of owner addresses, `None` if not found
         """
         return [
-            ChecksumAddress(HexAddress(HexStr(owner)))
-            if isinstance(owner, str)
-            else None
+            (
+                ChecksumAddress(HexAddress(HexStr(owner)))
+                if isinstance(owner, str)
+                else None
+            )
             for owner in self.ethereum_client.batch_call(
                 [
                     get_erc721_contract(
@@ -1060,9 +1064,11 @@ class TracingManager(EthereumClientManager):
                 "jsonrpc": "2.0",
                 "method": "trace_block",
                 "params": [
-                    hex(block_identifier)
-                    if isinstance(block_identifier, int)
-                    else block_identifier
+                    (
+                        hex(block_identifier)
+                        if isinstance(block_identifier, int)
+                        else block_identifier
+                    )
                 ],
             }
             for i, block_identifier in enumerate(block_identifiers)
@@ -1805,9 +1811,11 @@ class EthereumClient:
             {
                 "id": i,
                 "jsonrpc": "2.0",
-                "method": "eth_getBlockByNumber"
-                if isinstance(block_identifier, int)
-                else "eth_getBlockByHash",
+                "method": (
+                    "eth_getBlockByNumber"
+                    if isinstance(block_identifier, int)
+                    else "eth_getBlockByHash"
+                ),
                 "params": [
                     self._parse_block_identifier(block_identifier),
                     full_transactions,

@@ -184,7 +184,7 @@ class UniswapV3Oracle(PriceOracle):
                 ]
             )
             if pool_contract_balance is not None:
-                (sqrt_price_x96, _, _, _, _, _, _) = pool_contract_balance
+                sqrt_price_x96, _, _, _, _, _, _ = pool_contract_balance
             else:
                 sqrt_price_x96 = 0
 

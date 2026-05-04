@@ -31,6 +31,8 @@ class BlockscoutClient:
         EthereumNetwork.BOB_SEPOLIA: "https://bob-sepolia.explorer.gobob.xyz/api/v2/",
         EthereumNetwork.BITROCK_TESTNET: "https://testnetscan.bit-rock.io/api/v2/",
         EthereumNetwork.CONNEXT_SEPOLIA: "https://scan.testnet.everclear.org/api/v2/",
+        EthereumNetwork.CELO_MAINNET: "https://celo.blockscout.com/api/v2/",
+        EthereumNetwork.CREDITCOIN: "https://creditcoin.blockscout.com/api/v2/",
         EthereumNetwork.DODOCHAIN_TESTNET: "https://testnet-scan.dodochain.com/api/v2/",
         EthereumNetwork.EVERCLEAR_MAINNET: "https://scan.everclear.org/api/v2/",
         EthereumNetwork.EVMOS: "https://evm.evmos.org/api/v2/",
@@ -49,6 +51,7 @@ class BlockscoutClient:
         EthereumNetwork.HASHKEY_CHAIN: "https://explorer.hsk.xyz/api/v2/",
         EthereumNetwork.HASHKEY_CHAIN_TESTNET: "https://hashkeychain-testnet-explorer.alt.technology/api/v2/",
         EthereumNetwork.IOTA_EVM: "https://iota-evm.blockscout.com/api/v2/",
+        EthereumNetwork.INK: "https://explorer.inkonchain.com/api/v2/",
         EthereumNetwork.INK_SEPOLIA: "https://explorer-sepolia.inkonchain.com/api/v2/",
         EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org/api/v2/",
         EthereumNetwork.JAPAN_OPEN_CHAIN_TESTNET: "https://explorer.testnet.japanopenchain.org/api/v2/",
@@ -65,6 +68,7 @@ class BlockscoutClient:
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz/api/v2/",
         EthereumNetwork.MANTLE_TESTNET: "https://explorer.testnet.mantle.xyz/api/v2/",
         EthereumNetwork.MANTA_PACIFIC_MAINNET: "https://pacific-explorer.manta.network/api/v2/",
+        EthereumNetwork.MEGAETH_MAINNET: "https://megaeth.blockscout.com/api/v2/",
         EthereumNetwork.METER_MAINNET: "https://scan.meter.io/api/v2/",
         EthereumNetwork.METER_TESTNET: "https://scan-warringstakes.meter.io/api/v2/",
         EthereumNetwork.MODE: "https://explorer.mode.network/api/v2/",
@@ -143,7 +147,8 @@ class BlockscoutClient:
         EthereumNetwork.DOGEOS_CHIKYŪ_TESTNET: "https://blockscout.testnet.dogeos.com/api/v2/",
         EthereumNetwork.ALPEN_TESTNET_II: "https://explorer.testnet.alpenlabs.io/api/v2/",
         EthereumNetwork.TAIKO_HOODI: "https://blockscoutapi.hoodi.taiko.xyz/api/v2/",
-        EthereumNetwork.ADI_CHAIN: "https://explorer-bls.adifoundation.ai/api/v2",
+        EthereumNetwork.ADI_CHAIN: "https://explorer-bls.adifoundation.ai/api/v2/",
+        EthereumNetwork.LITVM_LITEFORGE_TESTNET: "https://liteforge.explorer.caldera.xyz/api/v2/",
     }
 
     def __init__(
@@ -174,7 +179,7 @@ class BlockscoutClient:
 
     @staticmethod
     def _process_contract_metadata(
-        contract_data: dict[str, Any]
+        contract_data: dict[str, Any],
     ) -> Optional[ContractMetadata]:
         """
         Return a ContractMetadata from BlockScout response

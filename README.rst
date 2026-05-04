@@ -15,10 +15,10 @@ Safe-eth-py includes a set of libraries to work with Ethereum and relevant Ether
 Quick start
 -----------
 
-Just run ``pip install safe-eth-py`` or add it to your **requirements.txt**
+Just run ``uv add safe-eth-py``
 
 If you want django ethereum utils (models, serializers, filters...) you need to run
-``pip install safe-eth-py[django]``
+``uv add safe-eth-py[django]``
 
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
@@ -30,9 +30,8 @@ Clone the repo, then to set it up:
 
 .. code-block:: bash
 
-    python -m venv venv
-    source venv/bin/activate
-    pip install -r requirements-dev.txt
+    uv sync --group dev --frozen
+    source .venv/bin/activate
     pre-commit install -f
 
 Add new address for new chains

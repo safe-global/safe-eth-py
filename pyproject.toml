@@ -53,6 +53,7 @@ django = [
     "django-filter>=2",
     "django>=2",
     "djangorestframework>=2",
+    "psycopg[binary,pool]>=3",
 ]
 
 [project.urls]
@@ -76,7 +77,6 @@ check = "mypy --install-types --non-interactive {args:safe_eth}"
 include = ["safe_eth/*"]
 # source_pkgs = ["safe_eth", "tests"]
 branch = true
-parallel = true
 omit = [
   "*__init__.py*",
   "*tests*",
@@ -121,6 +121,35 @@ sections = [
     "FIRSTPARTY",
     "LOCALFOLDER",
 ]
+
+[dependency-groups]
+dev = [
+    "coverage==7.13.5",
+    "coveralls",
+    "faker==40.1.2",
+    "flake8",
+    "gitpython",
+    "hatch",
+    "ipdb",
+    "ipython",
+    "isort",
+    "mypy==1.19.1",
+    "pre-commit",
+    "pytest==9.0.3",
+    "pytest-benchmark==5.2.3",
+    "pytest-django==4.12.0",
+    "pytest-env==1.6.0",
+    "pytest-rerunfailures==16.1",
+    "pytest-sugar==1.1.1",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "types-requests==2.32.4.20260107",
+]
+
+[tool.uv]
+# Reject packages published less than 7 days ago to avoid supply-chain attacks
+exclude-newer = "7 days"
+compile-bytecode = true
 
 [tool.mypy]
 python_version = "3.13"
