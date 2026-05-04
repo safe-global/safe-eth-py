@@ -38,6 +38,7 @@ Examples
 import argparse
 import asyncio
 import time
+import warnings
 
 import httpx
 
@@ -48,12 +49,30 @@ SINGLETON_FACTORY = "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7"
 START_BLOCK = 0
 END_BLOCK = "latest"
 
+# Shared httpx client for all RPC calls. Created once inside ``main_async`` (an
+# AsyncClient must be created and closed within a running event loop) and reused
+# across every concurrent ``find_deployment`` task so connections are pooled
+# instead of being torn down between requests.
 _client: httpx.AsyncClient | None = None
+
+# Serializes the rate-limiter check below. Without it, two coroutines could
+# read ``_last_rpc_time`` simultaneously, each compute a zero wait, and both
+# fire — exceeding ``MAX_RPS``.
 _rate_lock = asyncio.Lock()
+
+# Monotonic timestamp of the most recently dispatched RPC. Used to space
+# requests at least ``1 / MAX_RPS`` seconds apart so we don't get throttled
+# by the upstream JSON-RPC endpoint.
 _last_rpc_time = 0.0
 
 
 async def rpc(method: str, params: list, rpc_url: str):
+    """Send a single JSON-RPC call and return the ``result`` field.
+
+    Globally rate-limited to ``MAX_RPS`` requests per second across all
+    concurrent callers. Raises ``RuntimeError`` if the response contains
+    a JSON-RPC ``error``.
+    """
     global _last_rpc_time
     assert _client is not None, "rpc() called before client was configured"
     async with _rate_lock:
@@ -73,11 +92,13 @@ async def rpc(method: str, params: list, rpc_url: str):
 
 
 async def has_code(address: str, block: int, rpc_url: str) -> bool:
+    """Return True if ``address`` has non-empty bytecode at ``block``."""
     code = await rpc("eth_getCode", [address, hex(block)], rpc_url)
     return len(code) > 2  # "0x" means no code
 
 
 async def get_latest_block(rpc_url: str) -> int:
+    """Return the latest block number known to the RPC endpoint."""
     return int(await rpc("eth_blockNumber", [], rpc_url), 16)
 
 
@@ -126,6 +147,12 @@ async def find_deployment(
     start_block: int = START_BLOCK,
     end_block: int | str = END_BLOCK,
 ) -> tuple[int, list[str]]:
+    """Locate the deployment block and candidate deployment tx hashes for ``address``.
+
+    Resolves ``end_block`` (``"latest"`` or numeric), verifies the contract
+    actually exists at that block (raises ``ValueError`` if not), binary-searches
+    for the deployment block, and returns ``(block, [tx_hash, ...])``.
+    """
     resolved_end: int = (
         await get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
     )
@@ -137,6 +164,7 @@ async def find_deployment(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments (see module docstring for the full usage)."""
     parser = argparse.ArgumentParser(
         description="Find the deployment block and transaction(s) for a contract."
     )
@@ -165,6 +193,7 @@ def parse_args() -> argparse.Namespace:
 
 
 async def main_async() -> None:
+    """Run ``find_deployment`` for every CLI-supplied address concurrently and print results."""
     global _client
     args = parse_args()
     end_block = args.end_block if args.end_block is not None else END_BLOCK
@@ -189,18 +218,24 @@ async def main_async() -> None:
             raise result
         else:
             block, txs = result
-            print(f"  Deployed at block:       {block}")
-            print(f"  Possible transaction(s): {txs}")
             if block == args.start_block and args.start_block > 0:
-                print(
-                    f"  Warning: result equals --start-block ({args.start_block}); "
-                    f"the actual deployment may be earlier. "
-                    f"Re-run with a lower --start-block to confirm."
+                # Binary search couldn't prove a deployment block: code already
+                # existed at start_block, so the real deployment is somewhere in
+                # [0, start_block] and reporting this block would be misleading.
+                warnings.warn(
+                    f"Code already present at --start-block ({args.start_block}) "
+                    f"for {address}; true deployment is at or before this block "
+                    f"but cannot be determined from the given range. "
+                    f"Re-run with a lower --start-block to find the actual deployment."
                 )
+            else:
+                print(f"  Deployed at block:       {block}")
+                print(f"  Possible transaction(s): {txs}")
         print()
 
 
 def main() -> None:
+    """Synchronous entry point used by the script's ``__main__`` guard."""
     asyncio.run(main_async())
 
 
