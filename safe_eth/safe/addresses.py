@@ -5125,6 +5125,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 1796984),  # v1.4.1
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 24008977),  # v1.3.0
     ],
+    EthereumNetwork.LITVM_LITEFORGE_TESTNET: [
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2720843),  # v1.4.1
+    ],
 }
 
 
