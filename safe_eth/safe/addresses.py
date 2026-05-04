@@ -3087,6 +3087,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         ),  # v1.3.0+L2
         ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 18299920, "1.5.0"),  # v1.5.0
+        ("0xEdd160fEBBD92E350D4D398fb636302fccd67C7e", 18299933, "1.5.0+L2"),  # v1.5.0+L2
     ],
     EthereumNetwork.PHAROS_TESTNET: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 18710950, "1.3.0"),  # v1.3.0
