@@ -76,7 +76,13 @@ def find_deployment_block(
     start_block: int = START_BLOCK,
     end_block: int | str = END_BLOCK,
 ) -> int:
-    """Binary search for the first block where the contract code exists."""
+    """Binary search for the first block at-or-after ``start_block`` where code exists.
+
+    If code already exists at ``start_block``, returns ``start_block`` — the true
+    deployment block may be earlier and is not searched for.
+    """
+    if has_code(address, start_block, rpc_url):
+        return start_block
     lo = start_block
     hi: int = get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
     while lo < hi:
@@ -161,6 +167,12 @@ def main():
             )
             print(f"  Deployed at block:       {block}")
             print(f"  Possible transaction(s): {txs}")
+            if block == args.start_block and args.start_block > 0:
+                print(
+                    f"  Warning: result equals --start-block ({args.start_block}); "
+                    f"the actual deployment may be earlier. "
+                    f"Re-run with a lower --start-block to confirm."
+                )
         except ValueError as e:
             print(f"  Error: {e}")
         print()
