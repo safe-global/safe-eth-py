@@ -1,3 +1,9 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "httpx>=0.27",
+# ]
+# ///
 """Find the deployment block and transaction hash for Safe contracts.
 
 Uses binary search on eth_getCode to locate the first block where contract
@@ -6,7 +12,7 @@ singleton factory (SINGLETON_FACTORY) as deployment candidates.
 
 Usage
 -----
-    python find_deployment.py --rpc-url <RPC_URL> [--start-block N] [--end-block N] <ADDRESS> [ADDRESS ...]
+    uv run scripts/find_deployment.py --rpc-url <RPC_URL> [--start-block N] [--end-block N] <ADDRESS> [ADDRESS ...]
 
 Arguments
 ---------
@@ -18,11 +24,11 @@ Arguments
 Examples
 --------
     # Single contract
-    python scripts/find_deployment.py --rpc-url https://eth.drpc.org \
+    uv run scripts/find_deployment.py --rpc-url https://eth.drpc.org \
         0x14F2982D601c9458F93bd70B218933A6f8165e7b
 
     # Multiple contracts with a narrowed search window
-    python scripts/find_deployment.py --rpc-url https://eth.drpc.org \
+    uv run scripts/find_deployment.py --rpc-url https://eth.drpc.org \
         --start-block 100000 \
         0x14F2982D601c9458F93bd70B218933A6f8165e7b \
         0xFf51A5898e281Db6DfC7855790607438dF2ca44b \
@@ -30,9 +36,10 @@ Examples
 """
 
 import argparse
+import asyncio
 import time
 
-import requests
+import httpx
 
 MAX_RPS = 100  # max requests per second
 
@@ -41,36 +48,40 @@ SINGLETON_FACTORY = "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7"
 START_BLOCK = 0
 END_BLOCK = "latest"
 
+_client: httpx.AsyncClient | None = None
+_rate_lock = asyncio.Lock()
 _last_rpc_time = 0.0
 
 
-def rpc(method: str, params: list, rpc_url: str):
+async def rpc(method: str, params: list, rpc_url: str):
     global _last_rpc_time
-    wait = (1.0 / MAX_RPS) - (time.monotonic() - _last_rpc_time)
-    if wait > 0:
-        time.sleep(wait)
-    response = requests.post(
+    assert _client is not None, "rpc() called before client was configured"
+    async with _rate_lock:
+        wait = (1.0 / MAX_RPS) - (time.monotonic() - _last_rpc_time)
+        if wait > 0:
+            await asyncio.sleep(wait)
+        _last_rpc_time = time.monotonic()
+    response = await _client.post(
         rpc_url,
         json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params},
         timeout=10,
     )
-    _last_rpc_time = time.monotonic()
     result = response.json()
     if "error" in result:
         raise RuntimeError(f"RPC error: {result['error']}")
     return result["result"]
 
 
-def has_code(address: str, block: int, rpc_url: str) -> bool:
-    code = rpc("eth_getCode", [address, hex(block)], rpc_url)
+async def has_code(address: str, block: int, rpc_url: str) -> bool:
+    code = await rpc("eth_getCode", [address, hex(block)], rpc_url)
     return len(code) > 2  # "0x" means no code
 
 
-def get_latest_block(rpc_url: str) -> int:
-    return int(rpc("eth_blockNumber", [], rpc_url), 16)
+async def get_latest_block(rpc_url: str) -> int:
+    return int(await rpc("eth_blockNumber", [], rpc_url), 16)
 
 
-def find_deployment_block(
+async def find_deployment_block(
     address: str,
     rpc_url: str,
     start_block: int = START_BLOCK,
@@ -81,27 +92,27 @@ def find_deployment_block(
     If code already exists at ``start_block``, returns ``start_block`` — the true
     deployment block may be earlier and is not searched for.
     """
-    if has_code(address, start_block, rpc_url):
-        return start_block
     lo = start_block
-    hi: int = get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
+    hi: int = (
+        await get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
+    )
     while lo < hi:
         mid = (lo + hi) // 2
-        if has_code(address, mid, rpc_url):
+        if await has_code(address, mid, rpc_url):
             hi = mid
         else:
             lo = mid + 1
     return lo
 
 
-def find_possible_deployment_txs(
+async def find_possible_deployment_txs(
     address: str, block_num: int, rpc_url: str
 ) -> list[str]:
     """Return all tx hashes in the block that could have deployed the contract.
 
     Only considers transactions sent to SINGLETON_FACTORY.
     """
-    block = rpc("eth_getBlockByNumber", [hex(block_num), True], rpc_url)
+    block = await rpc("eth_getBlockByNumber", [hex(block_num), True], rpc_url)
     candidates = []
     for tx in block["transactions"]:
         if (tx.get("to") or "").lower() == SINGLETON_FACTORY.lower():
@@ -109,19 +120,19 @@ def find_possible_deployment_txs(
     return candidates
 
 
-def find_deployment(
+async def find_deployment(
     address: str,
     rpc_url: str,
     start_block: int = START_BLOCK,
     end_block: int | str = END_BLOCK,
 ) -> tuple[int, list[str]]:
     resolved_end: int = (
-        get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
+        await get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
     )
-    if not has_code(address, resolved_end, rpc_url):
+    if not await has_code(address, resolved_end, rpc_url):
         raise ValueError(f"No code found at {address} at block {resolved_end}")
-    block = find_deployment_block(address, rpc_url, start_block, resolved_end)
-    txs = find_possible_deployment_txs(address, block, rpc_url)
+    block = await find_deployment_block(address, rpc_url, start_block, resolved_end)
+    txs = await find_possible_deployment_txs(address, block, rpc_url)
     return block, txs
 
 
@@ -153,18 +164,31 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+async def main_async() -> None:
+    global _client
     args = parse_args()
     end_block = args.end_block if args.end_block is not None else END_BLOCK
     print(f"RPC: {args.rpc_url}")
     print(f"Start block: {args.start_block}, End block: {end_block}\n")
 
-    for address in args.contracts:
+    async with httpx.AsyncClient() as client:
+        _client = client
+        results = await asyncio.gather(
+            *(
+                find_deployment(address, args.rpc_url, args.start_block, end_block)
+                for address in args.contracts
+            ),
+            return_exceptions=True,
+        )
+
+    for address, result in zip(args.contracts, results):
         print(f"Contract: {address}")
-        try:
-            block, txs = find_deployment(
-                address, args.rpc_url, args.start_block, end_block
-            )
+        if isinstance(result, ValueError):
+            print(f"  Error: {result}")
+        elif isinstance(result, BaseException):
+            raise result
+        else:
+            block, txs = result
             print(f"  Deployed at block:       {block}")
             print(f"  Possible transaction(s): {txs}")
             if block == args.start_block and args.start_block > 0:
@@ -173,9 +197,11 @@ def main():
                     f"the actual deployment may be earlier. "
                     f"Re-run with a lower --start-block to confirm."
                 )
-        except ValueError as e:
-            print(f"  Error: {e}")
         print()
+
+
+def main() -> None:
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":

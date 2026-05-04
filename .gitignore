@@ -80,3 +80,5 @@ db.sqlite3
 
 # Scripts results
 scripts/generators/generate_chains_list/result.txt
+
+uv.lock
