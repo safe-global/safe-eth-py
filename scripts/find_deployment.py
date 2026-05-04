@@ -7,8 +7,8 @@
 """Find the deployment block and transaction hash for Safe contracts.
 
 Uses binary search on eth_getCode to locate the first block where contract
-bytecode is present, then scans that block for transactions sent to the Safe
-singleton factory (SINGLETON_FACTORY) as deployment candidates.
+bytecode is present, then scans that block for transactions sent to any of
+the known deployer factories (see ``FACTORIES``) as deployment candidates.
 
 Usage
 -----
@@ -44,7 +44,15 @@ import httpx
 
 MAX_RPS = 100  # max requests per second
 
-SINGLETON_FACTORY = "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7"
+# Factories that may have deployed a Safe contract.
+#   - Safe Singleton Factory: Safe-controlled CREATE2 deployer.
+#   - Arachnid Deterministic Deployment Proxy (https://github.com/Arachnid/deterministic-deployment-proxy).
+FACTORIES = frozenset(
+    {
+        "0x914d7fec6aac8cd542e72bca78b30650d45643d7",
+        "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+    }
+)
 
 START_BLOCK = 0
 END_BLOCK = "latest"
@@ -131,12 +139,12 @@ async def find_possible_deployment_txs(
 ) -> list[str]:
     """Return all tx hashes in the block that could have deployed the contract.
 
-    Only considers transactions sent to SINGLETON_FACTORY.
+    Only considers transactions sent to one of the known ``FACTORIES``.
     """
     block = await rpc("eth_getBlockByNumber", [hex(block_num), True], rpc_url)
     candidates = []
     for tx in block["transactions"]:
-        if (tx.get("to") or "").lower() == SINGLETON_FACTORY.lower():
+        if (tx.get("to") or "").lower() in FACTORIES:
             candidates.append(tx["hash"])
     return candidates
 
