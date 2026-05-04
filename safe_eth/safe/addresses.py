@@ -1990,6 +1990,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             14909880,
             "1.4.1+L2",
         ),  # v1.4.1+L2
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 23418206, "1.5.0"),  # v1.5.0
     ],
     EthereumNetwork.BERACHAIN_BARTIO: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 100431, "1.3.0"),  # v1.3.0
