@@ -5338,6 +5338,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.XAI_TESTNET_V2: [
         ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 14921370),  # v1.5.0
     ],
+    EthereumNetwork.FLOW_EVM_TESTNET: [
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 106722432),  # v1.5.0
+    ],
 }
 
 
