@@ -126,7 +126,7 @@ sections = [
 dev = [
     "coverage==7.13.5",
     "coveralls",
-    "faker==40.1.2",
+    "faker==40.15.0",
     "flake8",
     "gitpython",
     "hatch",
