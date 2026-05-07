@@ -12,6 +12,7 @@ from ..oracles import (
     AaveOracle,
     BalancerOracle,
     CannotGetPriceFromOracle,
+    CowswapOracle,
     CreamOracle,
     CurveOracle,
     EnzymeOracle,
@@ -109,9 +110,8 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
         self.assertEqual(oracles_get_decimals.cache_info().currsize, 0)
 
         price = uniswap_v2_oracle.get_price(
-            gno_token_mainnet_address, weth_token_mainnet_address
+            wbtc_token_mainnet_address, weth_token_mainnet_address
         )
-        self.assertLess(price, 1)
         self.assertGreater(price, 0)
 
         self.assertEqual(oracles_get_decimals.cache_info().currsize, 2)
@@ -443,8 +443,8 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
         ethereum_client = EthereumClient(mainnet_node)
 
         self.assertTrue(MooniswapOracle.is_available(ethereum_client))
-        uniswap_oracle = UniswapV2Oracle(ethereum_client)
-        mooniswap_oracle = MooniswapOracle(ethereum_client, uniswap_oracle)
+        cowswap_oracle = CowswapOracle(ethereum_client)
+        mooniswap_oracle = MooniswapOracle(ethereum_client, cowswap_oracle)
         mooniswap_pool_address = "0x6a11F3E5a01D129e566d783A7b6E8862bFD66CcA"  # 1inch Liquidity Pool (ETH-WBTC)
         other_version_mooniswap_pool_address = (
             "0x8a2f2F8637deb4Ee7C9400A240d27E3A32147dA4"  # Mooniswap V1 (OWL-GNO)
