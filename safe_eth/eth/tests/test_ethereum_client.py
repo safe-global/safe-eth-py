@@ -26,7 +26,7 @@ from ..ethereum_client import (
     TracingManager,
     get_auto_ethereum_client,
 )
-from ..exceptions import BatchCallException, InvalidERC20Info
+from ..exceptions import BatchCallException, InvalidERC20Info, NonceTooLow
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -1037,7 +1037,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         self.assertGreaterEqual(first_nonce, 0)
 
         # Will use the same nonce
-        with self.assertRaisesMessage(InvalidNonce, "correct nonce"):
+        with self.assertRaisesMessage(NonceTooLow, "nonce too low"):
             self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
 
         # With retry, everything should work
