@@ -110,7 +110,7 @@ async def get_latest_block(rpc_url: str) -> int:
     return int(await rpc("eth_blockNumber", [], rpc_url), 16)
 
 
-async def find_deployment_block(
+async def _find_deployment_block(
     address: str,
     rpc_url: str,
     start_block: int = START_BLOCK,
@@ -134,9 +134,7 @@ async def find_deployment_block(
     return lo
 
 
-async def find_possible_deployment_txs(
-    address: str, block_num: int, rpc_url: str
-) -> list[str]:
+async def find_possible_deployment_txs(block_num: int, rpc_url: str) -> list[str]:
     """Return all tx hashes in the block that could have deployed the contract.
 
     Only considers transactions sent to one of the known ``FACTORIES``.
@@ -161,14 +159,24 @@ async def find_deployment(
     actually exists at that block (raises ``ValueError`` if not), binary-searches
     for the deployment block, and returns ``(block, [tx_hash, ...])``.
     """
-    resolved_end: int = (
-        await get_latest_block(rpc_url) if end_block == "latest" else int(end_block)
-    )
+    latest = await get_latest_block(rpc_url)
+    resolved_end: int = latest if end_block == "latest" else int(end_block)
+    if resolved_end > latest:
+        raise ValueError(
+            f"end_block ({resolved_end}) is beyond the latest block ({latest})"
+        )
     if not await has_code(address, resolved_end, rpc_url):
         raise ValueError(f"No code found at {address} at block {resolved_end}")
-    block = await find_deployment_block(address, rpc_url, start_block, resolved_end)
-    txs = await find_possible_deployment_txs(address, block, rpc_url)
+    block = await _find_deployment_block(address, rpc_url, start_block, resolved_end)
+    txs = await find_possible_deployment_txs(block, rpc_url)
     return block, txs
+
+
+def _non_negative_int(value: str) -> int:
+    ivalue = int(value)
+    if ivalue < 0:
+        raise argparse.ArgumentTypeError(f"must be >= 0, got {ivalue}")
+    return ivalue
 
 
 def parse_args() -> argparse.Namespace:
@@ -179,14 +187,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rpc-url", required=True, help="JSON-RPC endpoint URL")
     parser.add_argument(
         "--start-block",
-        type=int,
+        type=_non_negative_int,
         default=START_BLOCK,
         metavar="N",
         help=f"Block to start search from (default: {START_BLOCK})",
     )
     parser.add_argument(
         "--end-block",
-        type=int,
+        type=_non_negative_int,
         default=None,
         metavar="N",
         help="Block to end search at (default: latest)",
@@ -197,7 +205,12 @@ def parse_args() -> argparse.Namespace:
         metavar="ADDRESS",
         help="Contract address(es) to look up",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.end_block is not None and args.end_block < args.start_block:
+        parser.error(
+            f"--end-block ({args.end_block}) must be >= --start-block ({args.start_block})"
+        )
+    return args
 
 
 async def main_async() -> None:
