@@ -205,7 +205,6 @@ async def main_async() -> None:
     global _client
     args = parse_args()
     end_block = args.end_block if args.end_block is not None else END_BLOCK
-    print(f"RPC: {args.rpc_url}")
     print(f"Start block: {args.start_block}, End block: {end_block}\n")
 
     async with httpx.AsyncClient() as client:
