@@ -100,7 +100,7 @@ class BlockscoutClient:
         EthereumNetwork.ZORA: "https://explorer.zora.energy/api/v2/",
         EthereumNetwork.ZORA_SEPOLIA_TESTNET: "https://sepolia.explorer.zora.energy/api/v2/",
         EthereumNetwork.EVM_ON_FLOW: "https://evm.flowscan.io/api/v2/",
-        EthereumNetwork.EVM_ON_FLOW_TESTNET: "https://evm-testnet.flowscan.io/api/v2/",
+        EthereumNetwork.FLOW_EVM_TESTNET: "https://evm-testnet.flowscan.io/api/v2/",
         EthereumNetwork.BIRDLAYER: "https://scan.birdlayer.xyz/api/v2/",
         EthereumNetwork.TAC_TURIN: "https://turin.explorer.tac.build/api/v2/",
         EthereumNetwork.ALEPH_ZERO: "https://evm-explorer-testnet.alephzero.org/api/v2/",

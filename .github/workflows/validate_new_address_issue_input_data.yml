@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Get issue inputs
       id: get-issue-inputs
-      uses: actions/github-script@v9
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
       with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -55,10 +55,10 @@ jobs:
             return extractedInfo;
 
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
     - name: Install uv
-      uses: astral-sh/setup-uv@v7
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       with:
         python-version: '3.13'
 
@@ -70,7 +70,7 @@ jobs:
         uv run .github/scripts/github_adding_addresses/validate_new_address_issue_input_data.py
 
     - name: Add comment to issue
-      uses: actions/github-script@v9
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
       env:
         COMMENT_OUTPUT: ${{ steps.validate-input-data.outputs.comment_message }}
       with:
