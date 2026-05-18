@@ -4,8 +4,13 @@ on:
   issues:
     types: [opened, edited]
 
+permissions: {}
+
 jobs:
   validate-issue-inputs:
+    permissions:
+      contents: read
+      issues: write
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'add-new-address')
     steps:
