@@ -4,8 +4,14 @@ on:
   issue_comment:
     types: [created]
 
+permissions: {}
+
 jobs:
   process-issue:
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'add-new-address') && startsWith(github.event.comment.body, '/')
     steps:
