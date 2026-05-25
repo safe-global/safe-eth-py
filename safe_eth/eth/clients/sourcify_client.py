@@ -35,8 +35,12 @@ class SourcifyClient:
     def __init__(
         self,
         network: EthereumNetwork = EthereumNetwork.MAINNET,
-        base_url_api: str = "https://sourcify.dev",
-        base_url_repo: str = "https://repo.sourcify.dev/",
+        base_url_api: str = os.environ.get(
+            "SOURCIFY_BASE_URL_API", "https://sourcify.dev"
+        ),
+        base_url_repo: str = os.environ.get(
+            "SOURCIFY_BASE_URL_REPO", "https://repo.sourcify.dev/"
+        ),
         request_timeout: int = int(
             os.environ.get("SOURCIFY_CLIENT_REQUEST_TIMEOUT", 10)
         ),
@@ -127,8 +131,12 @@ class AsyncSourcifyClient(SourcifyClient):
     def __init__(
         self,
         network: EthereumNetwork = EthereumNetwork.MAINNET,
-        base_url_api: str = "https://sourcify.dev",
-        base_url_repo: str = "https://repo.sourcify.dev/",
+        base_url_api: str = os.environ.get(
+            "SOURCIFY_BASE_URL_API", "https://sourcify.dev"
+        ),
+        base_url_repo: str = os.environ.get(
+            "SOURCIFY_BASE_URL_REPO", "https://repo.sourcify.dev/"
+        ),
         request_timeout: int = int(
             os.environ.get("SOURCIFY_CLIENT_REQUEST_TIMEOUT", 10)
         ),
