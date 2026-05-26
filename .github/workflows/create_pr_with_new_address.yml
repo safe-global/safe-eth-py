@@ -157,15 +157,14 @@ jobs:
         uv run pre-commit run --all-files || true
 
         if [[ $(git status --porcelain) ]]; then
-          while IFS= read -r file; do
-            sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${file}?ref=${branch_name}" --jq .sha)
-            gh api "repos/${GITHUB_REPOSITORY}/contents/${file}" \
-              --method PUT \
-              -f message="Apply linter fixes" \
-              -f content="$(base64 -w0 < "$file")" \
-              -f sha="$sha" \
-              -f branch="$branch_name"
-          done < <(git diff --name-only)
+          file=$(git diff --name-only)
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${file}?ref=${branch_name}" --jq .sha)
+          gh api "repos/${GITHUB_REPOSITORY}/contents/${file}" \
+            --method PUT \
+            -f message="Apply linter fixes" \
+            -f content="$(base64 -w0 < "$file")" \
+            -f sha="$sha" \
+            -f branch="$branch_name"
         else
           echo "No changes to commit."
         fi
