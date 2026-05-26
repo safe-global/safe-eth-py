@@ -325,7 +325,7 @@ def upsert_contract_address_proxy_factory(
                 + " already exists."
             )
         else:
-            new_entry = f'    ("{address}", {block_number}),  # v{version}\n    '
+            new_entry = f'    ("{address}", {block_number}), # v{version}\n    '
             updated_content = (
                 content[: match_network.start()]
                 + match_network.group(1)
