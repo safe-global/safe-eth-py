@@ -23,11 +23,13 @@ def commit_linter_fixes() -> None:
         print("No linter changes to commit.")
         return
 
+    print(f"Files to commit: {files}")
     parent = repo.get_branch(branch).commit
     blobs = []
     for f in files:
         with open(f) as fh:
             content = fh.read()
+        print(f"  {f}: {len(content)} bytes, {content.count(chr(10)) + 1} lines")
         if f.endswith(".py"):
             try:
                 ast.parse(content)
