@@ -2,6 +2,7 @@
 Commits linter fixes as a single verified commit via the GitHub API.
 """
 
+import ast
 import os
 import subprocess
 
@@ -26,7 +27,16 @@ def commit_linter_fixes() -> None:
     blobs = []
     for f in files:
         with open(f) as fh:
-            blobs.append(repo.create_git_blob(fh.read(), "utf-8"))
+            content = fh.read()
+        if f.endswith(".py"):
+            try:
+                ast.parse(content)
+            except SyntaxError as e:
+                raise ValueError(
+                    f"Pre-commit left {f} with invalid Python syntax: {e}. "
+                    "Aborting to prevent committing a corrupted file."
+                )
+        blobs.append(repo.create_git_blob(content, "utf-8"))
     tree = repo.create_git_tree(
         [InputGitTreeElement(f, "100644", "blob", b.sha) for f, b in zip(files, blobs)],
         parent.commit.tree,
