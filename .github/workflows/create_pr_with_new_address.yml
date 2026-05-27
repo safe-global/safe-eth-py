@@ -131,13 +131,11 @@ jobs:
       run: |
         uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
 
-    - uses: fregante/setup-git-user@024bc0b8e177d7e77203b48dab6fb45666854b35 # v2
-
     - name: Run pre-commit
       if: steps.check-comment.outputs.result == 'true'
+      id: run-pre-commit
       env:
         ISSUE_INPUTS: ${{ steps.get-issue-inputs.outputs.result }}
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         set -euo pipefail
 
@@ -150,6 +148,7 @@ jobs:
           exit 1
         }
         branch_name="add-new-chain-${chain_id}-${version}-addresses"
+        echo "branch_name=$branch_name" >> $GITHUB_OUTPUT
         git pull origin main
         git fetch
         git checkout -b "$branch_name" "origin/$branch_name"
@@ -157,17 +156,18 @@ jobs:
         uv run pre-commit run --all-files || true
 
         if [[ $(git status --porcelain) ]]; then
-          file=$(git diff --name-only)
-          sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${file}?ref=${branch_name}" --jq .sha)
-          gh api "repos/${GITHUB_REPOSITORY}/contents/${file}" \
-            --method PUT \
-            -f message="Apply linter fixes" \
-            -f content="$(base64 -w0 < "$file")" \
-            -f sha="$sha" \
-            -f branch="$branch_name"
+          echo "has_linter_changes=true" >> $GITHUB_OUTPUT
         else
-          echo "No changes to commit."
+          echo "has_linter_changes=false" >> $GITHUB_OUTPUT
         fi
+
+    - name: Commit linter fixes
+      if: steps.check-comment.outputs.result == 'true' && steps.run-pre-commit.outputs.has_linter_changes == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH_NAME: ${{ steps.run-pre-commit.outputs.branch_name }}
+      run: |
+        uv run python .github/scripts/github_adding_addresses/commit_linter_fixes.py
 
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'
