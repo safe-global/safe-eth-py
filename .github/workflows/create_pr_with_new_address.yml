@@ -124,7 +124,7 @@ jobs:
     - name: Process Issue and Create PR
       if: steps.check-comment.outputs.result == 'true'
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SAFE_ETH_PY }}
         ISSUE_NUMBER: ${{ github.event.issue.number }}
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
         GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
