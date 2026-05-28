@@ -372,6 +372,7 @@ def upsert_contract_address_proxy_factory(
 
 def execute_issue_changes() -> None:
     github_token = os.environ.get("GITHUB_TOKEN")
+    github_pr_token = os.environ.get("GITHUB_PAT")
     repository_name = os.environ.get("GITHUB_REPOSITORY_NAME")
     issue_number = int(os.environ.get("ISSUE_NUMBER"))
     issue_body_info = json.loads(os.environ.get("ISSUE_BODY_INFO"))
@@ -389,6 +390,7 @@ def execute_issue_changes() -> None:
     tx_hash_proxy = issue_body_info.get("txHashProxy")
 
     repo = get_github_repository(github_token, repository_name)
+    pr_repo = get_github_repository(github_pr_token, repository_name)
 
     chain_enum_name = get_chain_enum_name(chain_id)
     if not chain_enum_name:
@@ -464,7 +466,7 @@ def execute_issue_changes() -> None:
                 repo, branch_name, chain_enum_name, address_proxy, tx_block, version
             )
 
-    create_pr(repo, branch_name, chain_enum_name, version, issue_number)
+    create_pr(pr_repo, branch_name, chain_enum_name, version, issue_number)
 
 
 if __name__ == "__main__":
