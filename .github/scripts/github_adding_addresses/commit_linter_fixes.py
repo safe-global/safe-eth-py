@@ -12,7 +12,7 @@ def commit_linter_fixes() -> None:
     repo = Github(os.environ["GITHUB_TOKEN"]).get_repo(os.environ["GITHUB_REPOSITORY"])
     branch = os.environ["BRANCH_NAME"]
     files = (
-        subprocess.check_output(["git", "diff", "--name-only"])
+        subprocess.check_output(["git", "diff", "HEAD", "--name-only"])
         .decode()
         .strip()
         .split("\n")
@@ -28,7 +28,10 @@ def commit_linter_fixes() -> None:
         with open(f) as fh:
             blobs.append(repo.create_git_blob(fh.read(), "utf-8"))
     tree = repo.create_git_tree(
-        [InputGitTreeElement(f, "100644", "blob", b.sha) for f, b in zip(files, blobs)],
+        [
+            InputGitTreeElement(path=f, mode="100644", type="blob", sha=b.sha)
+            for f, b in zip(files, blobs)
+        ],
         parent.commit.tree,
     )
     commit = repo.create_git_commit("Apply linter fixes", tree, [parent.commit])
