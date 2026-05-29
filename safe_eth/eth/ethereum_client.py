@@ -465,6 +465,11 @@ class Erc20Manager(EthereumClientManager):
     # keccak('Transfer(address,address,uint256)')
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
+    # An indexed address topic is a 32-byte word left-padded with 12 zero bytes.
+    # If the high 12 bytes are non-zero, the topic is NOT an ABI-encoded address
+    # (some tokens emit non-standard Transfer signatures with an indexed uint256
+    # in place of an address — we must reject those, not silently truncate).
+    _ADDRESS_TOPIC_ZERO_PADDING = b"\x00" * 12
 
     def decode_logs(self, logs: Sequence[LogReceipt]):
         decoded_logs = []
@@ -505,6 +510,12 @@ class Erc20Manager(EthereumClientManager):
             # Non-standard Transfer(address indexed from, address to, uint256 value)
             # 2 topics (transfer topic + from). `to` and `value` come from data.
             data_bytes = HexBytes(data)
+            if topics[1][:12] != self._ADDRESS_TOPIC_ZERO_PADDING:
+                logger.warning(
+                    "Non-address topic in 2-topic Transfer event topics=%s",
+                    to_0x_hex_str(topics[1]),
+                )
+                return None
             try:
                 _from = fast_to_checksum_address(topics[1][-20:])
                 to, value = eth_abi.decode(["address", "uint256"], data_bytes)
@@ -521,6 +532,17 @@ class Erc20Manager(EthereumClientManager):
             # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
             # 3 topics (transfer topic + from + to)
             value_data = HexBytes(data)
+            if (
+                topics[1][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
+                or topics[2][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
+            ):
+                # Non-standard signature with an indexed non-address (e.g.
+                # `Transfer(address indexed, address, uint256 indexed)`) — reject.
+                logger.warning(
+                    "Non-address topic in 3-topic Transfer event topics=%s",
+                    [to_0x_hex_str(t) for t in topics[1:]],
+                )
+                return None
             try:
                 value = int.from_bytes(value_data[:32], "big")
                 _from = fast_to_checksum_address(topics[1][-20:])
@@ -536,6 +558,15 @@ class Erc20Manager(EthereumClientManager):
         elif topics_len == 4:
             # ERC721 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
             # 4 topics (transfer topic + from + to + tokenId)
+            if (
+                topics[1][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
+                or topics[2][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
+            ):
+                logger.warning(
+                    "Non-address topic in 4-topic Transfer event topics=%s",
+                    [to_0x_hex_str(t) for t in topics[1:]],
+                )
+                return None
             try:
                 _from = fast_to_checksum_address(topics[1][-20:])
                 to = fast_to_checksum_address(topics[2][-20:])
