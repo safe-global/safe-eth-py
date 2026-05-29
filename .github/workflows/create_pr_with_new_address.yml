@@ -121,16 +121,14 @@ jobs:
         uv sync --group dev --frozen
         uv pip install "PyGithub" "safe-eth-py @ git+https://github.com/safe-global/safe-eth-py@main"
 
-    - name: Process Issue and Create PR
+    - name: Process Issue
       if: steps.check-comment.outputs.result == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_PAT: ${{ secrets.TOKEN_GITHUB_SAFE_ETH_PY }}
-        ISSUE_NUMBER: ${{ github.event.issue.number }}
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
-        GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
+        GITHUB_REPOSITORY_NAME: ${{ github.repository }}
       run: |
-        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py --action apply-changes
 
     - name: Run pre-commit
       if: steps.check-comment.outputs.result == 'true'
@@ -168,7 +166,17 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH_NAME: ${{ steps.run-pre-commit.outputs.branch_name }}
       run: |
-        uv run python .github/scripts/github_adding_addresses/commit_linter_fixes.py
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py --action commit-linter-fixes
+
+    - name: Create PR
+      if: steps.check-comment.outputs.result == 'true'
+      env:
+        GITHUB_PAT: ${{ secrets.TOKEN_GITHUB_SAFE_ETH_PY }}
+        GITHUB_REPOSITORY_NAME: ${{ github.repository }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
+        ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
+      run: |
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py --action create-pr
 
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'
