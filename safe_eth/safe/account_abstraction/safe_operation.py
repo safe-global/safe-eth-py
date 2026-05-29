@@ -16,7 +16,7 @@ from safe_eth.eth.utils import fast_keccak
 
 logger = logging.getLogger(__name__)
 
-_domain_separator_cache = {}
+_domain_separator_cache: dict[tuple[int, ChecksumAddress], bytes] = {}
 
 
 @dataclasses.dataclass(eq=True, frozen=True)
