@@ -139,8 +139,8 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
             "logIndex": 5,
             "removed": False,
             "args": {
-                "from": "0x8683f9c4e856be65f8a38a3a768e8fd6de94d30a",
-                "to": "0xfd1017c3284a12ac33bc65df12d71721c85931e0",
+                "from": "0x8683f9c4E856bE65f8A38a3A768E8fd6de94D30A",
+                "to": "0xFd1017C3284A12ac33Bc65dF12D71721C85931e0",
                 "unknown": 1,
             },
         }

@@ -111,7 +111,7 @@ def tx_with_exception_handling(func):
     :param func:
     :return:
     """
-    error_with_exception: Dict[str, Type[Exception]] = {
+    error_with_exception_raw: Dict[str, Type[Exception]] = {
         "EIP-155": ChainIdIsRequired,
         "Transaction with the same hash was already imported": TransactionAlreadyImported,
         "replacement transaction underpriced": ReplacementTransactionUnderpriced,
@@ -143,6 +143,11 @@ def tx_with_exception_handling(func):
         # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L392
     }
 
+    # Pre-lowercase so we don't do it on every call
+    error_with_exception: Dict[str, Type[Exception]] = {
+        reason.lower(): exc for reason, exc in error_with_exception_raw.items()
+    }
+
     @wraps(func)
     def with_exception_handling(*args, **kwargs):
         try:
@@ -150,7 +155,7 @@ def tx_with_exception_handling(func):
         except (Web3Exception, ValueError) as exc:
             str_exc = str(exc).lower()
             for reason, custom_exception in error_with_exception.items():
-                if reason.lower() in str_exc:
+                if reason in str_exc:
                     raise custom_exception(str(exc)) from exc
             raise exc
 
@@ -196,7 +201,7 @@ def get_auto_ethereum_client() -> "EthereumClient":
         - `ETHEREUM_NODE_URL`: No default.
         - `ETHEREUM_RPC_TIMEOUT`: `10` by default.
         - `ETHEREUM_RPC_SLOW_TIMEOUT`: `60` by default.
-        - `ETHEREUM_RPC_RETRY_COUNT`: `60` by default.
+        - `ETHEREUM_RPC_RETRY_COUNT`: `1` by default.
         - `ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE`: `500` by default.
 
     :return: A configured singleton of EthereumClient
@@ -251,14 +256,15 @@ class BatchCallManager(EthereumClientManager):
         :return: List with the ABI decoded return values
         :raises: ValueError if raise_exception=True
         """
+        payloads = list(payloads)
         if not payloads:
             return []
 
         queries = []
         for i, payload in enumerate(payloads):
-            assert "data" in payload, "`data` not present"
-            assert "to" in payload, "`to` not present"
-            assert "output_type" in payload, "`output-type` not present"
+            for required_key in ("data", "to", "output_type"):
+                if required_key not in payload:
+                    raise ValueError(f"`{required_key}` not present in payload")
 
             query_params = {"to": payload["to"], "data": payload["data"]}  # Balance of
             if "from" in payload:
@@ -301,6 +307,17 @@ class BatchCallManager(EthereumClientManager):
                     results,
                 )
                 raise ValueError(f"Batch request error: {results}")
+
+            if len(results) != len(chunk):
+                logger.error(
+                    "Different number of results than payload requests were returned "
+                    "doing batch call custom with payload=%s result=%s",
+                    chunk,
+                    results,
+                )
+                raise ValueError(
+                    "Batch request error: Different number of results than payload requests were returned"
+                )
 
             all_results.extend(results)
 
@@ -362,7 +379,7 @@ class BatchCallManager(EthereumClientManager):
             return []
         payloads = []
         params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
-        for _, contract_function in enumerate(contract_functions):
+        for contract_function in contract_functions:
             if not contract_function.address:
                 raise ValueError(
                     f"Missing address for batch_call in `{contract_function.fn_name}`"
@@ -405,16 +422,23 @@ class BatchCallManager(EthereumClientManager):
         :return:
         """
 
-        assert contract_function, "Contract function is required"
+        if contract_function is None:
+            raise ValueError("Contract function is required")
 
         if not contract_addresses:
             return []
 
+        # Build transaction needs an `address` set, but we don't want to mutate
+        # the caller's contract_function — preserve and restore it.
+        original_address = contract_function.address
         contract_function.address = NULL_ADDRESS  # It's required by web3.py
-        params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
-        data = contract_function.build_transaction(params)["data"]
-        output_type = [output["type"] for output in contract_function.abi["outputs"]]
-        fn_name = contract_function.fn_name
+        try:
+            params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
+            data = contract_function.build_transaction(params)["data"]
+            output_type = [output["type"] for output in contract_function.abi["outputs"]]
+            fn_name = contract_function.fn_name
+        finally:
+            contract_function.address = original_address
 
         payloads = []
         for contract_address in contract_addresses:
@@ -456,66 +480,73 @@ class Erc20Manager(EthereumClientManager):
         self, data: EthereumData, topics: Sequence[bytes]
     ) -> Optional[Dict[str, Any]]:
         topics_len = len(topics)
-        if topics_len and topics[0] == self.TRANSFER_TOPIC:
-            if topics_len == 1:
-                # Not standard Transfer(address from, address to, uint256 unknown)
-                # 1 topic (transfer topic)
-                try:
-                    _from, to, unknown = eth_abi.decode(
-                        ["address", "address", "uint256"], HexBytes(data)
-                    )
-                    return {"from": _from, "to": to, "unknown": unknown}
-                except DecodingError:
-                    logger.warning(
-                        "Cannot decode Transfer event `address from, address to, uint256 unknown` from data=%s",
-                        data.hex() if isinstance(data, bytes) else data,
-                    )
-                    return None
-            elif topics_len == 3:
-                # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
-                # 3 topics (transfer topic + from + to)
-                value_data = HexBytes(data)
-                try:
-                    value = eth_abi.decode(["uint256"], value_data)[0]
-                except DecodingError:
-                    logger.warning(
-                        "Cannot decode Transfer event `uint256 value` from data=%s",
-                        to_0x_hex_str(value_data),
-                    )
-                    return None
-                from_to_data = b"".join(topics[1:])
-                try:
-                    _from, to = (
-                        fast_to_checksum_address(address)
-                        for address in eth_abi.decode(
-                            ["address", "address"], from_to_data
-                        )
-                    )
-                    return {"from": _from, "to": to, "value": value}
-                except DecodingError:
-                    logger.warning(
-                        "Cannot decode Transfer event `address from, address to` from topics=%s",
-                        to_0x_hex_str(from_to_data),
-                    )
-                    return None
-            elif topics_len == 4:
-                # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-                # 4 topics (transfer topic + from + to + tokenId)
-                from_to_token_id_data = b"".join(topics[1:])
-                try:
-                    _from, to, token_id = eth_abi.decode(
-                        ["address", "address", "uint256"], from_to_token_id_data
-                    )
-                    _from, to = [
-                        fast_to_checksum_address(address) for address in (_from, to)
-                    ]
-                    return {"from": _from, "to": to, "tokenId": token_id}
-                except DecodingError:
-                    logger.warning(
-                        "Cannot decode Transfer event `address from, address to` from topics=%s",
-                        to_0x_hex_str(from_to_token_id_data),
-                    )
-                    return None
+        if not topics_len or topics[0] != self.TRANSFER_TOPIC:
+            return None
+
+        if topics_len == 1:
+            # Not standard Transfer(address from, address to, uint256 unknown)
+            # 1 topic (transfer topic)
+            try:
+                _from, to, unknown = eth_abi.decode(
+                    ["address", "address", "uint256"], HexBytes(data)
+                )
+                return {
+                    "from": fast_to_checksum_address(_from),
+                    "to": fast_to_checksum_address(to),
+                    "unknown": unknown,
+                }
+            except (DecodingError, ValueError):
+                logger.warning(
+                    "Cannot decode Transfer event `address from, address to, uint256 unknown` from data=%s",
+                    data.hex() if isinstance(data, bytes) else data,
+                )
+                return None
+        elif topics_len == 2:
+            # Non-standard Transfer(address indexed from, address to, uint256 value)
+            # 2 topics (transfer topic + from). `to` and `value` come from data.
+            data_bytes = HexBytes(data)
+            try:
+                _from = fast_to_checksum_address(topics[1][-20:])
+                to, value = eth_abi.decode(["address", "uint256"], data_bytes)
+                to = fast_to_checksum_address(to)
+                return {"from": _from, "to": to, "value": value}
+            except (DecodingError, ValueError):
+                logger.warning(
+                    "Cannot decode non-standard Transfer event with 2 topics topics=%s data=%s",
+                    to_0x_hex_str(topics[1]),
+                    to_0x_hex_str(data_bytes),
+                )
+                return None
+        elif topics_len == 3:
+            # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
+            # 3 topics (transfer topic + from + to)
+            value_data = HexBytes(data)
+            try:
+                value = int.from_bytes(value_data[:32], "big")
+                _from = fast_to_checksum_address(topics[1][-20:])
+                to = fast_to_checksum_address(topics[2][-20:])
+                return {"from": _from, "to": to, "value": value}
+            except ValueError:
+                logger.warning(
+                    "Cannot decode Transfer event from topics=%s data=%s",
+                    [to_0x_hex_str(t) for t in topics[1:]],
+                    to_0x_hex_str(value_data),
+                )
+                return None
+        elif topics_len == 4:
+            # ERC721 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+            # 4 topics (transfer topic + from + to + tokenId)
+            try:
+                _from = fast_to_checksum_address(topics[1][-20:])
+                to = fast_to_checksum_address(topics[2][-20:])
+                token_id = int.from_bytes(topics[3], "big")
+                return {"from": _from, "to": to, "tokenId": token_id}
+            except ValueError:
+                logger.warning(
+                    "Cannot decode ERC721 Transfer event from topics=%s",
+                    [to_0x_hex_str(t) for t in topics[1:]],
+                )
+                return None
         return None
 
     def get_balance(
@@ -1338,7 +1369,9 @@ class EthereumClient:
                 )
 
             # Sorted due to Nodes like Erigon send back results out of order
-            for query, result in zip(payload, sorted(results, key=lambda x: x["id"])):
+            for query, result in zip(
+                payload_chunk, sorted(results, key=lambda x: x["id"])
+            ):
                 if "result" not in result:
                     message = (
                         f"Batch request problem with payload=`{query}` result={result}"
@@ -1406,7 +1439,7 @@ class EthereumClient:
             return False
 
     @cached_property
-    def multicall(self) -> "Multicall":  # type: ignore # noqa F821
+    def multicall(self) -> Optional["Multicall"]:  # type: ignore # noqa F821
         from .multicall import Multicall
 
         try:
@@ -1640,13 +1673,12 @@ class EthereumClient:
         if isinstance(data, str):
             data = HexBytes(data)
 
-        gas = 0
-        for byte in data:
-            if not byte:
-                gas += GAS_CALL_DATA_ZERO_BYTE
-            else:
-                gas += GAS_CALL_DATA_BYTE
-        return gas
+        zero_bytes = data.count(0)
+        non_zero_bytes = len(data) - zero_bytes
+        return (
+            zero_bytes * GAS_CALL_DATA_ZERO_BYTE
+            + non_zero_bytes * GAS_CALL_DATA_BYTE
+        )
 
     def estimate_fee_eip1559(
         self, tx_speed: TxSpeed = TxSpeed.NORMAL
@@ -1896,12 +1928,7 @@ class EthereumClient:
 
     @tx_with_exception_handling
     def send_raw_transaction(self, raw_transaction: EthereumData) -> HexBytes:
-        if isinstance(raw_transaction, bytes):
-            value_bytes = raw_transaction
-        else:
-            value_bytes = bytes.fromhex(
-                raw_transaction.replace("0x", "")
-            )  # Remove '0x' and convert
+        value_bytes = HexBytes(raw_transaction)
         return self.w3.eth.send_raw_transaction(value_bytes)
 
     def send_unsigned_transaction(
@@ -1982,6 +2009,7 @@ class EthereumClient:
                     address,
                     tx["nonce"],
                 )
+                number_errors -= 1
             except InvalidNonce as e:
                 if not retry or not number_errors:
                     raise e
