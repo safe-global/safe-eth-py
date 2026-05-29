@@ -45,7 +45,7 @@ class EthereumAddressBinaryField(models.Field):
         self, value: memoryview, expression, connection
     ) -> Optional[ChecksumAddress]:
         if value:
-            return fast_bytes_to_checksum_address(value)
+            return fast_bytes_to_checksum_address(bytes(value))
         return None
 
     def get_prep_value(self, value: ChecksumAddress) -> Optional[bytes]:
