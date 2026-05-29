@@ -3,13 +3,16 @@ Creates a PR with the necessary changes to add the new addresses.
 Verify and apply the necessary changes.
 """
 
+import argparse
 import json
 import os
+import pathlib
 import re
+import subprocess
 from typing import Optional
 
 import requests
-from github import Github
+from github import Github, InputGitTreeElement
 from github.GithubException import GithubException
 from github.Repository import Repository
 
@@ -372,9 +375,7 @@ def upsert_contract_address_proxy_factory(
 
 def execute_issue_changes() -> None:
     github_token = os.environ.get("GITHUB_TOKEN")
-    github_pr_token = os.environ.get("GITHUB_PAT")
     repository_name = os.environ.get("GITHUB_REPOSITORY_NAME")
-    issue_number = int(os.environ.get("ISSUE_NUMBER"))
     issue_body_info = json.loads(os.environ.get("ISSUE_BODY_INFO"))
     chain_id = int(issue_body_info.get("chainId"))
     version = issue_body_info.get("version")
@@ -390,7 +391,6 @@ def execute_issue_changes() -> None:
     tx_hash_proxy = issue_body_info.get("txHashProxy")
 
     repo = get_github_repository(github_token, repository_name)
-    pr_repo = get_github_repository(github_pr_token, repository_name)
 
     chain_enum_name = get_chain_enum_name(chain_id)
     if not chain_enum_name:
@@ -466,8 +466,71 @@ def execute_issue_changes() -> None:
                 repo, branch_name, chain_enum_name, address_proxy, tx_block, version
             )
 
+
+def commit_linter_fixes() -> None:
+    repo = Github(os.environ["GITHUB_TOKEN"]).get_repo(os.environ["GITHUB_REPOSITORY"])
+    branch = os.environ["BRANCH_NAME"]
+    files = (
+        subprocess.check_output(["git", "diff", "HEAD", "--name-only"])
+        .decode()
+        .strip()
+        .split("\n")
+    )
+
+    if not files or not files[0]:
+        print("No linter changes to commit.")
+        return
+
+    repo_root = pathlib.Path(".").resolve()
+    parent = repo.get_branch(branch).commit
+    blobs = []
+    for f in files:
+        abs_path = (repo_root / f).resolve()
+        abs_path.relative_to(repo_root)  # raises ValueError if path escapes repo
+        with open(abs_path) as fh:
+            blobs.append(repo.create_git_blob(fh.read(), "utf-8"))
+    tree = repo.create_git_tree(
+        [
+            InputGitTreeElement(path=f, mode="100644", type="blob", sha=b.sha)
+            for f, b in zip(files, blobs)
+        ],
+        parent.commit.tree,
+    )
+    commit = repo.create_git_commit("Apply linter fixes", tree, [parent.commit])
+    repo.get_git_ref(f"heads/{branch}").edit(commit.sha)
+    print(f"Committed linter fixes: {commit.sha}")
+
+
+def create_pr_action() -> None:
+    github_pr_token = os.environ.get("GITHUB_PAT")
+    repository_name = os.environ.get("GITHUB_REPOSITORY_NAME")
+    issue_number = int(os.environ.get("ISSUE_NUMBER"))
+    issue_body_info = json.loads(os.environ.get("ISSUE_BODY_INFO"))
+    chain_id = int(issue_body_info.get("chainId"))
+    version = issue_body_info.get("version")
+
+    chain_enum_name = get_chain_enum_name(chain_id)
+    if not chain_enum_name:
+        print("Could not resolve chain enum name, skipping PR creation.")
+        return
+
+    branch_name = f"add-new-chain-{chain_id}-{version}-addresses"
+    pr_repo = get_github_repository(github_pr_token, repository_name)
     create_pr(pr_repo, branch_name, chain_enum_name, version, issue_number)
 
 
 if __name__ == "__main__":
-    execute_issue_changes()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--action",
+        choices=["apply-changes", "commit-linter-fixes", "create-pr"],
+        default="apply-changes",
+    )
+    args = parser.parse_args()
+
+    if args.action == "apply-changes":
+        execute_issue_changes()
+    elif args.action == "commit-linter-fixes":
+        commit_linter_fixes()
+    elif args.action == "create-pr":
+        create_pr_action()
