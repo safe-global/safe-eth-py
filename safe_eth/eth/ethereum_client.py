@@ -465,11 +465,6 @@ class Erc20Manager(EthereumClientManager):
     # keccak('Transfer(address,address,uint256)')
     # ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
     TRANSFER_TOPIC = HexBytes(ERC20_721_TRANSFER_TOPIC)
-    # An indexed address topic is a 32-byte word left-padded with 12 zero bytes.
-    # If the high 12 bytes are non-zero, the topic is NOT an ABI-encoded address
-    # (some tokens emit non-standard Transfer signatures with an indexed uint256
-    # in place of an address — we must reject those, not silently truncate).
-    _ADDRESS_TOPIC_ZERO_PADDING = b"\x00" * 12
 
     def decode_logs(self, logs: Sequence[LogReceipt]):
         decoded_logs = []
@@ -485,99 +480,70 @@ class Erc20Manager(EthereumClientManager):
         self, data: EthereumData, topics: Sequence[bytes]
     ) -> Optional[Dict[str, Any]]:
         topics_len = len(topics)
-        if not topics_len or topics[0] != self.TRANSFER_TOPIC:
-            return None
-
-        if topics_len == 1:
-            # Not standard Transfer(address from, address to, uint256 unknown)
-            # 1 topic (transfer topic)
-            try:
-                _from, to, unknown = eth_abi.decode(
-                    ["address", "address", "uint256"], HexBytes(data)
-                )
-                return {
-                    "from": fast_to_checksum_address(_from),
-                    "to": fast_to_checksum_address(to),
-                    "unknown": unknown,
-                }
-            except (DecodingError, ValueError):
-                logger.warning(
-                    "Cannot decode Transfer event `address from, address to, uint256 unknown` from data=%s",
-                    data.hex() if isinstance(data, bytes) else data,
-                )
-                return None
-        elif topics_len == 2:
-            # Non-standard Transfer(address indexed from, address to, uint256 value)
-            # 2 topics (transfer topic + from). `to` and `value` come from data.
-            data_bytes = HexBytes(data)
-            if topics[1][:12] != self._ADDRESS_TOPIC_ZERO_PADDING:
-                logger.warning(
-                    "Non-address topic in 2-topic Transfer event topics=%s",
-                    to_0x_hex_str(topics[1]),
-                )
-                return None
-            try:
-                _from = fast_to_checksum_address(topics[1][-20:])
-                to, value = eth_abi.decode(["address", "uint256"], data_bytes)
-                to = fast_to_checksum_address(to)
-                return {"from": _from, "to": to, "value": value}
-            except (DecodingError, ValueError):
-                logger.warning(
-                    "Cannot decode non-standard Transfer event with 2 topics topics=%s data=%s",
-                    to_0x_hex_str(topics[1]),
-                    to_0x_hex_str(data_bytes),
-                )
-                return None
-        elif topics_len == 3:
-            # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
-            # 3 topics (transfer topic + from + to)
-            value_data = HexBytes(data)
-            if (
-                topics[1][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
-                or topics[2][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
-            ):
-                # Non-standard signature with an indexed non-address (e.g.
-                # `Transfer(address indexed, address, uint256 indexed)`) — reject.
-                logger.warning(
-                    "Non-address topic in 3-topic Transfer event topics=%s",
-                    [to_0x_hex_str(t) for t in topics[1:]],
-                )
-                return None
-            try:
-                value = int.from_bytes(value_data[:32], "big")
-                _from = fast_to_checksum_address(topics[1][-20:])
-                to = fast_to_checksum_address(topics[2][-20:])
-                return {"from": _from, "to": to, "value": value}
-            except ValueError:
-                logger.warning(
-                    "Cannot decode Transfer event from topics=%s data=%s",
-                    [to_0x_hex_str(t) for t in topics[1:]],
-                    to_0x_hex_str(value_data),
-                )
-                return None
-        elif topics_len == 4:
-            # ERC721 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-            # 4 topics (transfer topic + from + to + tokenId)
-            if (
-                topics[1][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
-                or topics[2][:12] != self._ADDRESS_TOPIC_ZERO_PADDING
-            ):
-                logger.warning(
-                    "Non-address topic in 4-topic Transfer event topics=%s",
-                    [to_0x_hex_str(t) for t in topics[1:]],
-                )
-                return None
-            try:
-                _from = fast_to_checksum_address(topics[1][-20:])
-                to = fast_to_checksum_address(topics[2][-20:])
-                token_id = int.from_bytes(topics[3], "big")
-                return {"from": _from, "to": to, "tokenId": token_id}
-            except ValueError:
-                logger.warning(
-                    "Cannot decode ERC721 Transfer event from topics=%s",
-                    [to_0x_hex_str(t) for t in topics[1:]],
-                )
-                return None
+        if topics_len and topics[0] == self.TRANSFER_TOPIC:
+            if topics_len == 1:
+                # Not standard Transfer(address from, address to, uint256 unknown)
+                # 1 topic (transfer topic)
+                try:
+                    _from, to, unknown = eth_abi.decode(
+                        ["address", "address", "uint256"], HexBytes(data)
+                    )
+                    return {
+                        "from": fast_to_checksum_address(_from),
+                        "to": fast_to_checksum_address(to),
+                        "unknown": unknown,
+                    }
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to, uint256 unknown` from data=%s",
+                        data.hex() if isinstance(data, bytes) else data,
+                    )
+                    return None
+            elif topics_len == 3:
+                # ERC20 Transfer(address indexed from, address indexed to, uint256 value)
+                # 3 topics (transfer topic + from + to)
+                value_data = HexBytes(data)
+                try:
+                    value = eth_abi.decode(["uint256"], value_data)[0]
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `uint256 value` from data=%s",
+                        to_0x_hex_str(value_data),
+                    )
+                    return None
+                from_to_data = b"".join(topics[1:])
+                try:
+                    _from, to = (
+                        fast_to_checksum_address(address)
+                        for address in eth_abi.decode(
+                            ["address", "address"], from_to_data
+                        )
+                    )
+                    return {"from": _from, "to": to, "value": value}
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to` from topics=%s",
+                        to_0x_hex_str(from_to_data),
+                    )
+                    return None
+            elif topics_len == 4:
+                # ERC712 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+                # 4 topics (transfer topic + from + to + tokenId)
+                from_to_token_id_data = b"".join(topics[1:])
+                try:
+                    _from, to, token_id = eth_abi.decode(
+                        ["address", "address", "uint256"], from_to_token_id_data
+                    )
+                    _from, to = [
+                        fast_to_checksum_address(address) for address in (_from, to)
+                    ]
+                    return {"from": _from, "to": to, "tokenId": token_id}
+                except DecodingError:
+                    logger.warning(
+                        "Cannot decode Transfer event `address from, address to` from topics=%s",
+                        to_0x_hex_str(from_to_token_id_data),
+                    )
+                    return None
         return None
 
     def get_balance(
