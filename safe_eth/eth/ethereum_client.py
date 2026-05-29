@@ -435,7 +435,9 @@ class BatchCallManager(EthereumClientManager):
         try:
             params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
             data = contract_function.build_transaction(params)["data"]
-            output_type = [output["type"] for output in contract_function.abi["outputs"]]
+            output_type = [
+                output["type"] for output in contract_function.abi["outputs"]
+            ]
             fn_name = contract_function.fn_name
         finally:
             contract_function.address = original_address
@@ -1673,8 +1675,7 @@ class EthereumClient:
         zero_bytes = data.count(0)
         non_zero_bytes = len(data) - zero_bytes
         return (
-            zero_bytes * GAS_CALL_DATA_ZERO_BYTE
-            + non_zero_bytes * GAS_CALL_DATA_BYTE
+            zero_bytes * GAS_CALL_DATA_ZERO_BYTE + non_zero_bytes * GAS_CALL_DATA_BYTE
         )
 
     def estimate_fee_eip1559(
