@@ -13,6 +13,8 @@ from .utils import get_decimals
 
 logger = logging.getLogger(__name__)
 
+EXPECTED_RATE_PRECISION = 1e18
+
 
 class KyberOracle(PriceOracle):
     """
@@ -84,7 +86,7 @@ class KyberOracle(PriceOracle):
                 token_address_1, token_address_2, int(token_unit)
             ).call()
 
-            price = expected_rate / 1e18
+            price = expected_rate / EXPECTED_RATE_PRECISION
 
             if price <= 0.0:
                 # Try again the opposite
@@ -94,7 +96,9 @@ class KyberOracle(PriceOracle):
                 ) = self.kyber_network_proxy_contract.functions.getExpectedRate(
                     token_address_2, token_address_1, int(token_unit)
                 ).call()
-                price = (1e18 / expected_rate) if expected_rate else 0
+                price = (
+                    (EXPECTED_RATE_PRECISION / expected_rate) if expected_rate else 0
+                )
 
             if price <= 0.0:
                 message = (
