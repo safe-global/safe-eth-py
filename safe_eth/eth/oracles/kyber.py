@@ -94,7 +94,7 @@ class KyberOracle(PriceOracle):
                 ) = self.kyber_network_proxy_contract.functions.getExpectedRate(
                     token_address_2, token_address_1, int(token_unit)
                 ).call()
-                price = (token_unit / expected_rate) if expected_rate else 0
+                price = (1e18 / expected_rate) if expected_rate else 0
 
             if price <= 0.0:
                 message = (

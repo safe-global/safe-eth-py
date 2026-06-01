@@ -471,7 +471,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             ):
                 try:
                     price = self.get_price(str(token_address))
-                    total_value = (reserves / 10**decimals_1) * price
+                    total_value = (reserves / 10**decimals) * price
                     return (total_value * 2) / (total_supply / 1e18)
                 except CannotGetPriceFromOracle:
                     continue
