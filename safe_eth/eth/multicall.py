@@ -10,7 +10,7 @@ from typing import Any, Callable, List, Optional, Sequence, Tuple
 import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.signers.local import LocalAccount
-from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress, HexAddress, HexStr
+from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress
 from hexbytes import HexBytes
 from web3 import Web3
 from web3._utils.abi import map_abi_data
@@ -22,7 +22,7 @@ from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from .contracts import ContractBase, get_multicall_v3_contract
 from .ethereum_client import EthereumTxSent
 from .exceptions import BatchCallFunctionFailed, ContractAlreadyDeployed
-from .utils import get_empty_tx_params
+from .utils import fast_to_checksum_address, get_empty_tx_params
 
 logger = logging.getLogger(__name__)
 
@@ -358,7 +358,7 @@ class Multicall(ContractBase):
         mainnet_address = self.ADDRESSES.get(EthereumNetwork.MAINNET)
         if not address and mainnet_address:
             # Try with Multicall V3 deterministic address
-            address = ChecksumAddress(HexAddress(HexStr(mainnet_address)))
+            address = fast_to_checksum_address(mainnet_address)
             if not ethereum_client.is_contract(address):
                 raise EthereumNetworkNotSupported(
                     "Multicall contract not available for %s", ethereum_network.name
@@ -367,7 +367,7 @@ class Multicall(ContractBase):
         if not address:
             raise ValueError("Contract address cannot be none")
 
-        super().__init__(ChecksumAddress(HexAddress(HexStr(address))), ethereum_client)
+        super().__init__(fast_to_checksum_address(address), ethereum_client)
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_multicall_v3_contract

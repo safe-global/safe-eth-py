@@ -64,7 +64,7 @@ contracts = {
     "multi_send_V1_4_1": "MultiSend_V1_4_1.json",
     "multi_send_V1_5_0": "MultiSend_V1_5_0.json",
     "multi_send_call_only_V1_4_1": "MultiSendCallOnly_V1_4_1.json",
-    "multi_send_call_only_V1_5_0": "MultiSendCallOnly_V1_4_1.json",
+    "multi_send_call_only_V1_5_0": "MultiSendCallOnly_V1_5_0.json",
     "paying_proxy": "PayingProxy.json",
     "proxy": "Proxy_V1_1_1.json",
     "proxy_factory_V1_0_0": "ProxyFactory_V1_0_0.json",

@@ -10,7 +10,7 @@ def validate_address(address: str):
         address_bytes = HexBytes(address)
         if len(address_bytes) != 20:
             raise ValueError
-    except ValueError:
+    except (TypeError, ValueError):
         raise ValidationError(
             "%(address)s is not a valid EthereumAddress",
             params={"address": address},
