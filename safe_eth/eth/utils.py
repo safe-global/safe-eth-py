@@ -106,6 +106,7 @@ def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAd
         if len(value) != 20:
             raise ValueError(
                 "Cannot convert %s to a checksum address, 20 bytes were expected"
+                % value.hex()
             )
 
     norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
@@ -123,6 +124,7 @@ def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
     if len(value) != 20:
         raise ValueError(
             "Cannot convert %s to a checksum address, 20 bytes were expected"
+            % bytes(value).hex()
         )
     norm_address = HexAddress(HexStr(bytes(value).hex()))
     return _fast_to_checksum_address(norm_address)
@@ -164,16 +166,27 @@ def decode_string_or_bytes32(data: bytes) -> str:
 
 def remove_swarm_metadata(code: bytes) -> bytes:
     """
-    Remove swarm metadata from Solidity bytecode
+    Remove CBOR-encoded metadata (Swarm `bzzr0`/`bzzr1` or IPFS) appended by
+    the Solidity compiler to the end of the bytecode.
+
+    Solidity appends a CBOR map followed by its 2-byte big-endian length, e.g.
+    ``0xa2 0x64 'ipfs' ... 0x64 'solc' ... <2-byte length>``. The trailing
+    length lets us strip the metadata regardless of the encoding version.
 
     :param code:
     :return: Code without metadata
     """
-    swarm = b"\xa1\x65bzzr0"
-    position = code.rfind(swarm)
-    if position == -1:
-        raise ValueError("Swarm metadata not found in code %s" % code.hex())
-    return code[:position]
+    if len(code) >= 2:
+        metadata_length = int.from_bytes(code[-2:], "big")
+        metadata_start = len(code) - 2 - metadata_length
+        # A valid metadata blob starts with a CBOR map header (0xa1/0xa2/0xa3)
+        if 0 < metadata_length <= len(code) - 2 and code[metadata_start] in (
+            0xA1,
+            0xA2,
+            0xA3,
+        ):
+            return code[:metadata_start]
+    raise ValueError("Metadata not found in code %s" % code.hex())
 
 
 def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
@@ -247,7 +260,8 @@ def bytes_to_float(value: Any) -> float:
     :return: The converted float value.
     :raises ValueError: If the value cannot be converted to float.
     """
-    assert value is not None, "Cannot convert None to float"
+    if value is None:
+        raise ValueError("Cannot convert None to float")
     if isinstance(value, (int, float)):
         return float(value)
     elif isinstance(value, bytes):
