@@ -204,7 +204,8 @@ class SafeSignatureBase(ABC):
         cls, safe_signatures: Sequence["SafeSignatureBase"]
     ) -> HexBytes:
         """
-        Takes a list of SafeSignature objects and exports them as a valid signature for the contract
+        Takes a list of SafeSignature objects and exports them as a valid EIP1271
+        signature for the contract
 
         :param safe_signatures:
         :return: Valid signature for the Safe contract
@@ -239,10 +240,10 @@ class SafeSignatureBase(ABC):
 
     def export_signature(self) -> HexBytes:
         """
-        Exports signature in a format that's valid individually. That's important for contract signatures, as it
-        will fix the offset
+        Exports this **single** signature in a format that's valid on its own. For contract signatures it fixes
+        the dynamic-data offset assuming the signature is isolated (``dynamic_offset = 65``).
 
-        :return:
+        :return: Standalone, single-signature blob
         """
         return self.signature
 
@@ -348,6 +349,13 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         return SafeSignatureType.CONTRACT_SIGNATURE
 
     def export_signature(self) -> HexBytes:
+        """
+        Exports this **single** signature in a format that's valid on its own. Fix
+        the dynamic-data offset assuming the signature is isolated (``dynamic_offset = 65``).
+
+        :return: Standalone, single-signature blob
+        """
+
         # encode_abi adds {32 bytes offset}{32 bytes size}. We don't need offset
         contract_signature_padded = encode_abi(["bytes"], [self.contract_signature])[
             32:
