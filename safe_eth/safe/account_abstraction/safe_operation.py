@@ -1,7 +1,7 @@
 import dataclasses
 import datetime
 import logging
-from functools import cache, cached_property
+from functools import cached_property
 from typing import Optional, Union
 from zoneinfo import ZoneInfo
 
@@ -153,7 +153,6 @@ class SafeOperation:
             )
         return _domain_separator_cache[key]
 
-    @cache
     def get_safe_operation_hash(
         self, chain_id: int, module_address: ChecksumAddress
     ) -> bytes:
