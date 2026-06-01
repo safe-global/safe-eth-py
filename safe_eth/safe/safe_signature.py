@@ -33,7 +33,12 @@ from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_V1_4_1_contract,
     get_safe_contract,
 )
-from safe_eth.eth.utils import fast_to_checksum_address
+from safe_eth.eth.utils import (
+    fast_bytes_to_checksum_address,
+    fast_keccak,
+    fast_to_checksum_address,
+)
+from safe_eth.safe import p256
 from safe_eth.safe.signatures import (
     get_signing_address,
     signature_split,
@@ -59,6 +64,7 @@ class SafeSignatureType(IntEnum):
     APPROVED_HASH = 1
     EOA = 2
     ETH_SIGN = 3
+    SECP256R1 = 4  # secp256r1 / passkey signature (Safe >= 1.5.0, RIP-7212/EIP-7951)
 
     @staticmethod
     def from_v(v: int) -> "SafeSignatureType":
@@ -66,6 +72,8 @@ class SafeSignatureType(IntEnum):
             return SafeSignatureType.CONTRACT_SIGNATURE
         elif v == 1:
             return SafeSignatureType.APPROVED_HASH
+        elif v == 2:
+            return SafeSignatureType.SECP256R1
         elif v > 30:
             return SafeSignatureType.ETH_SIGN
         else:
@@ -100,6 +108,7 @@ class SafeSignatureBase(ABC):
     approved_hash_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
     eoa_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
     eth_sign_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
+    p256_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
 
     def __init__(self, signature: EthereumBytes, safe_hash: EthereumBytes):
         """
@@ -174,6 +183,24 @@ class SafeSignatureBase(ABC):
                         contract_signature,
                     ),
                 )
+            elif signature_type == SafeSignatureType.SECP256R1:
+                # The data pointer `s` points to a fixed 128 bytes dynamic part:
+                # {32 bytes signature r}{32 bytes signature s}{32 bytes public key x}{32 bytes public key y}
+                # Unlike contract signatures, there's no length prefix as the size is fixed
+                if s < data_position:
+                    data_position = s
+                passkey_signature = signatures[
+                    s : s + SafeSignatureP256Mixin.PASSKEY_SIGNATURE_LENGTH
+                ]
+                safe_signature_cls = cls._get_p256_cls()
+                safe_signature = cast(
+                    TSafeSignature,
+                    cast(Type[Any], safe_signature_cls)(
+                        signature,
+                        safe_hash,
+                        passkey_signature,
+                    ),
+                )
             elif signature_type == SafeSignatureType.APPROVED_HASH:
                 safe_signature_cls = cls._get_approved_hash_cls()
                 safe_signature = cast(
@@ -215,6 +242,9 @@ class SafeSignatureBase(ABC):
         dynamic_part = b""
         dynamic_offset = len(safe_signatures) * 65
         contract_signature_cls = cls._get_contract_signature_cls()
+        # ``p256_cls`` is resolved lazily: only require it when a P256 signature is actually
+        # present, so subclasses that don't wire it up keep working for other signature types.
+        p256_cls = cls.p256_cls
 
         # Signatures must be sorted by owner
         for safe_signature in sorted(safe_signatures, key=lambda s: s.owner.lower()):
@@ -234,6 +264,16 @@ class SafeSignatureBase(ABC):
                 ]
                 dynamic_part += contract_signature
                 dynamic_offset += len(contract_signature)
+            elif p256_cls is not None and isinstance(safe_signature, p256_cls):
+                # The dynamic part is a fixed 128 bytes blob without a length prefix
+                passkey_signature = cast(
+                    "SafeSignatureP256Mixin", safe_signature
+                ).passkey_signature
+                signature += signature_to_bytes(
+                    safe_signature.v, safe_signature.r, dynamic_offset
+                )
+                dynamic_part += bytes(passkey_signature)
+                dynamic_offset += len(passkey_signature)
             else:
                 signature += safe_signature.export_signature()
         return HexBytes(signature + dynamic_part)
@@ -285,6 +325,10 @@ class SafeSignatureBase(ABC):
     @classmethod
     def _get_eth_sign_cls(cls) -> Type["SafeSignatureBase"]:
         return cls._ensure_class(cls.eth_sign_cls, "eth_sign_cls")
+
+    @classmethod
+    def _get_p256_cls(cls) -> Type["SafeSignatureBase"]:
+        return cls._ensure_class(cls.p256_cls, "p256_cls")
 
 
 class SafeSignature(SafeSignatureBase):
@@ -413,6 +457,117 @@ class SafeSignatureEOAMixin(SafeSignatureBase):
     @property
     def signature_type(self) -> SafeSignatureType:
         return SafeSignatureType.EOA
+
+
+class SafeSignatureP256Mixin(SafeSignatureBase):
+    """
+    ``secp256r1`` (NIST P-256) owner signature, a.k.a. *passkey* / WebAuthn signature,
+    supported by Safe ``>= 1.5.0`` via the RIP-7212 / EIP-7951 ``P256VERIFY`` precompile
+    (``v == 2``).
+
+    Like a contract signature, the static 65 bytes part encodes the owner address in ``r``
+    and a data pointer in ``s``. The pointer references a **fixed 128 bytes** dynamic part
+    (no length prefix), laid out as::
+
+        {32 bytes signature r}{32 bytes signature s}{32 bytes public key x}{32 bytes public key y}
+
+    The owner address is checked to be ``keccak256(public_key_x || public_key_y)[12:]`` and
+    the signature is verified off-chain against the ``safe_hash`` over the P-256 curve.
+    """
+
+    PASSKEY_SIGNATURE_LENGTH = 128
+
+    def __init__(
+        self,
+        signature: EthereumBytes,
+        safe_hash: EthereumBytes,
+        passkey_signature: EthereumBytes,
+    ):
+        """
+        :param signature: Static 65 bytes part ``r || s || v`` (``v == 2``)
+        :param safe_hash: Signed hash for the Safe (message or transaction)
+        :param passkey_signature: 128 bytes dynamic part
+            ``signature_r || signature_s || public_key_x || public_key_y``
+        """
+        super().__init__(signature, safe_hash)
+        self.passkey_signature: HexBytes = HexBytes(passkey_signature)
+
+    @classmethod
+    def from_values(
+        cls,
+        safe_owner: ChecksumAddress,
+        safe_hash: EthereumBytes,
+        passkey_signature: EthereumBytes,
+    ) -> Self:
+        signature = signature_to_bytes(
+            2, int.from_bytes(HexBytes(safe_owner), byteorder="big"), 65
+        )
+        return cls(signature, safe_hash, passkey_signature)
+
+    @property
+    def signature_r(self) -> int:
+        return int.from_bytes(self.passkey_signature[0:32], "big")
+
+    @property
+    def signature_s(self) -> int:
+        return int.from_bytes(self.passkey_signature[32:64], "big")
+
+    @property
+    def public_key_x(self) -> int:
+        return int.from_bytes(self.passkey_signature[64:96], "big")
+
+    @property
+    def public_key_y(self) -> int:
+        return int.from_bytes(self.passkey_signature[96:128], "big")
+
+    @property
+    def owner(self) -> ChecksumAddress:
+        # The owner address is encoded into `r`, just like for contract signatures
+        return uint_to_address(self.r)
+
+    @property
+    def signer_address(self) -> ChecksumAddress:
+        """
+        :return: Address derived from the public key, ``keccak256(public_key_x || public_key_y)[12:]``.
+            For a valid signature it must match :attr:`owner`
+        """
+        return fast_bytes_to_checksum_address(
+            fast_keccak(bytes(self.passkey_signature[64:128]))[-20:]
+        )
+
+    @property
+    def signature_type(self) -> SafeSignatureType:
+        return SafeSignatureType.SECP256R1
+
+    def export_signature(self) -> HexBytes:
+        """
+        Exports this **single** signature in a format that's valid on its own. Fix
+        the dynamic-data offset assuming the signature is isolated (``dynamic_offset = 65``).
+
+        :return: Standalone, single-signature blob
+        """
+        return HexBytes(
+            signature_to_bytes(self.v, self.r, 65) + bytes(self.passkey_signature)
+        )
+
+    def _is_valid(self) -> bool:
+        """
+        Off-chain validation, shared by the sync and async implementations. No RPC call is
+        needed as ``secp256r1`` signatures are self-contained.
+
+        :return: ``True`` if the public key matches the owner and the signature is valid
+        """
+        if len(self.passkey_signature) != self.PASSKEY_SIGNATURE_LENGTH:
+            return False
+        if self.signer_address != self.owner:
+            return False
+        return p256.verify(
+            int.from_bytes(self.safe_hash, "big"),
+            self.signature_r,
+            self.signature_s,
+            self.public_key_x,
+            self.public_key_y,
+        )
 
 
 class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
@@ -547,6 +702,15 @@ class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
         return True
 
 
+class SafeSignatureP256(SafeSignatureP256Mixin, SafeSignature):
+    def is_valid(
+        self,
+        ethereum_client: Optional[EthereumClient] = None,
+        safe_address: Optional[str] = None,
+    ) -> bool:
+        return self._is_valid()
+
+
 class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync):
     async def _check_eip1271(
         self,
@@ -679,12 +843,23 @@ class SafeSignatureEOAAsync(SafeSignatureEOAMixin, SafeSignatureAsync):
         return True
 
 
+class SafeSignatureP256Async(SafeSignatureP256Mixin, SafeSignatureAsync):
+    async def is_valid(
+        self,
+        web3: Optional[AsyncWeb3] = None,
+        safe_address: Optional[str] = None,
+    ) -> bool:
+        return self._is_valid()
+
+
 SafeSignature.contract_signature_cls = SafeSignatureContract
 SafeSignature.approved_hash_cls = SafeSignatureApprovedHash
 SafeSignature.eoa_cls = SafeSignatureEOA
 SafeSignature.eth_sign_cls = SafeSignatureEthSign
+SafeSignature.p256_cls = SafeSignatureP256
 
 SafeSignatureAsync.contract_signature_cls = SafeSignatureContractAsync
 SafeSignatureAsync.approved_hash_cls = SafeSignatureApprovedHashAsync
 SafeSignatureAsync.eoa_cls = SafeSignatureEOAAsync
 SafeSignatureAsync.eth_sign_cls = SafeSignatureEthSignAsync
+SafeSignatureAsync.p256_cls = SafeSignatureP256Async
