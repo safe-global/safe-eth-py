@@ -5,6 +5,7 @@ from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
 
 from safe_eth.eth.constants import NULL_ADDRESS
+from safe_eth.eth.utils import fast_to_checksum_address
 
 
 def signature_split(
@@ -58,6 +59,6 @@ def get_signing_address(signed_hash: bytes, v: int, r: int, s: int) -> str:
     """
     try:
         public_key = keys.ecdsa_recover(signed_hash, keys.Signature(vrs=(v - 27, r, s)))
-        return public_key.to_checksum_address()
+        return fast_to_checksum_address(public_key.to_canonical_address())
     except BadSignature:
         return NULL_ADDRESS
