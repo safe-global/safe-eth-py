@@ -5433,7 +5433,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.MIZUHIKI_TESTNET_AWAJI: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 638944),  # v1.3.0
-        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 647522), # v1.3.0
+        ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 647522),  # v1.3.0
     ],
 }
 
