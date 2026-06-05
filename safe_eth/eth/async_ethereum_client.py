@@ -589,11 +589,19 @@ class AsyncEthereumClient(EthereumClient):
         return session
 
     async def aclose(self) -> None:
-        """Close every open ``aiohttp`` session and the async providers."""
+        """
+        Close all ``aiohttp`` resources: the per-loop sessions used for raw batch
+        requests and the sessions owned by the ``AsyncHTTPProvider``s behind
+        ``async_w3``/``async_slow_w3`` (which any normal async web3 call opens).
+        """
         for session in list(self._async_http_sessions.values()):
             if not session.closed:
                 await session.close()
         self._async_http_sessions.clear()
+
+        # web3's AsyncHTTPProvider caches its own aiohttp session; disconnect() closes it
+        for provider in (self.async_w3_provider, self.async_w3_slow_provider):
+            await provider.disconnect()
 
     async def __aenter__(self) -> "AsyncEthereumClient":
         return self
