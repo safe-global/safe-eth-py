@@ -53,14 +53,13 @@ dev = [
     "coverage",
     "coveralls",
     "faker",
-    "flake8",
     "gitpython",
     "hatch",
     "ipdb",
     "ipython",
-    "isort",
     "mypy",
     "pre-commit",
+    "ruff",
     "pytest",
     "pytest-benchmark",
     "pytest-django",
@@ -132,21 +131,20 @@ packages = [
     "/safe_eth",
 ]
 
-[tool.isort]
-profile = "black"
-default_section = "THIRDPARTY"
-known_first_party = "safe_eth"
-known_safe_foundation = "py_eth_sig_utils"
-known_django = "django"
-sections = [
-    "FUTURE",
-    "STDLIB",
-    "DJANGO",
-    "THIRDPARTY",
-    "SAFE_FOUNDATION",
-    "FIRSTPARTY",
-    "LOCALFOLDER",
-]
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = [".tox", ".git", "*/migrations/*", "*/static/CACHE/*", "docs", "node_modules", "venv"]
+
+[tool.ruff.lint]
+extend-select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["safe_eth"]
+known-third-party = ["py_eth_sig_utils", "django", "fastapi", "pydantic"]
+combine-as-imports = true
+force-wrap-aliases = true
 
 [tool.uv]
 # Reject packages published less than 7 days ago to avoid supply-chain attacks
@@ -154,12 +152,13 @@ exclude-newer = "7 days"
 compile-bytecode = true
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.10"
 check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
+exclude = ["env", "docs", "config", ".github"]
 
 [tool.pytest_env]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
