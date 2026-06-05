@@ -24,7 +24,7 @@ def get_empty_tx_params() -> TxParams:
     }
 
 
-@lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 512)))
+@lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 1024)))
 def _keccak_256(value: bytes) -> keccak_256:
     return keccak_256(value)
 
@@ -89,7 +89,7 @@ def _build_checksum_address(
     )
 
 
-@lru_cache(maxsize=int(os.getenv("CACHE_CHECKSUM_ADDRESS", 1_000_000_000)))
+@lru_cache(maxsize=int(os.getenv("CACHE_CHECKSUM_ADDRESS", 500_000)))
 def _fast_to_checksum_address(address: HexAddress):
     address_hash = fast_keccak_hex(address.encode())
     return _build_checksum_address(address, address_hash)

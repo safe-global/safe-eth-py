@@ -253,7 +253,10 @@ class CowSwapAPI:
             buyTokenBalance="erc20",  # `erc20` or `internal`
         )
 
-        quote = self.get_quote(order, NULL_ADDRESS)
+        quote = self.get_quote(
+            order,
+            ChecksumAddress(HexAddress(HexStr(self.settlement_contract_address))),
+        )
         if "quote" in quote:
             result = cast(Dict[str, Any], quote)
             return {

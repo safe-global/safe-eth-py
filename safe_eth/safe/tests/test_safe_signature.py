@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import logging
 
 from django.test import TestCase
@@ -11,7 +12,12 @@ from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
 from web3 import AsyncHTTPProvider, AsyncWeb3, Web3
 
-from safe_eth.eth.utils import fast_keccak, fast_keccak_text, get_empty_tx_params
+from safe_eth.eth.utils import (
+    fast_bytes_to_checksum_address,
+    fast_keccak,
+    fast_keccak_text,
+    get_empty_tx_params,
+)
 
 from ...eth.contracts import (
     get_compatibility_fallback_handler_contract,
@@ -30,6 +36,8 @@ from ..safe_signature import (
     SafeSignatureEOAAsync,
     SafeSignatureEthSign,
     SafeSignatureEthSignAsync,
+    SafeSignatureP256,
+    SafeSignatureP256Async,
     SafeSignatureType,
 )
 from ..signatures import signature_to_bytes
@@ -312,6 +320,121 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
         safe_tx_hash = fast_keccak_text("Legoshi")
         for value in (b"", "", None):
             self.assertEqual(SafeSignature.parse_signature(value, safe_tx_hash), [])
+
+
+# secp256r1 / passkey vector built from RFC 6979 Appendix A.2.5 (NIST P-256, SHA-256),
+# message "sample". The Safe hash is the SHA-256 digest of "sample", which is fed directly
+# to the P256VERIFY precompile (no extra hashing).
+P256_PUBLIC_KEY_X = 0x60FED4BA255A9D31C961EB74C6356D68C049B8923B61FA6CE669622E60F29FB6
+P256_PUBLIC_KEY_Y = 0x7903FE1008B8BC99A41AE9E95628BC64F2F1B20C2D7E9F5177A3C294D4462299
+P256_SIGNATURE_R = 0xEFD48B2AACB6A8FD1140DD9CD45E81D69D2C877B56AAF991C34D0EA84EAF3716
+P256_SIGNATURE_S = 0xF7CB1C942D657C41D436C7A1B6E29F65F3E900DBB9AFF4064DC4AB2F843ACDA8
+P256_SAFE_HASH = HexBytes(hashlib.sha256(b"sample").digest())
+P256_PASSKEY_SIGNATURE = (
+    P256_SIGNATURE_R.to_bytes(32, "big")
+    + P256_SIGNATURE_S.to_bytes(32, "big")
+    + P256_PUBLIC_KEY_X.to_bytes(32, "big")
+    + P256_PUBLIC_KEY_Y.to_bytes(32, "big")
+)
+P256_OWNER = fast_bytes_to_checksum_address(
+    fast_keccak(
+        P256_PUBLIC_KEY_X.to_bytes(32, "big") + P256_PUBLIC_KEY_Y.to_bytes(32, "big")
+    )[-20:]
+)
+
+
+class TestSafeSignatureP256(TestCase):
+    def test_from_v(self):
+        self.assertEqual(SafeSignatureType.from_v(2), SafeSignatureType.SECP256R1)
+
+    def test_p256_signature(self):
+        safe_signature = SafeSignatureP256.from_values(
+            P256_OWNER, P256_SAFE_HASH, P256_PASSKEY_SIGNATURE
+        )
+        self.assertEqual(safe_signature.signature_type, SafeSignatureType.SECP256R1)
+        self.assertEqual(safe_signature.v, 2)
+        self.assertEqual(safe_signature.owner, P256_OWNER)
+        self.assertEqual(safe_signature.signer_address, P256_OWNER)
+        self.assertEqual(safe_signature.signature_r, P256_SIGNATURE_R)
+        self.assertEqual(safe_signature.signature_s, P256_SIGNATURE_S)
+        self.assertEqual(safe_signature.public_key_x, P256_PUBLIC_KEY_X)
+        self.assertEqual(safe_signature.public_key_y, P256_PUBLIC_KEY_Y)
+        self.assertTrue(safe_signature.is_valid())
+        self.assertTrue(str(safe_signature))  # Test __str__
+
+    def test_p256_signature_invalid_hash(self):
+        safe_signature = SafeSignatureP256.from_values(
+            P256_OWNER, fast_keccak_text("not-the-signed-hash"), P256_PASSKEY_SIGNATURE
+        )
+        self.assertFalse(safe_signature.is_valid())
+
+    def test_p256_signature_owner_mismatch(self):
+        # Owner that does not match `keccak256(public_key)[12:]`
+        wrong_owner = "0x" + "12" * 20
+        safe_signature = SafeSignatureP256.from_values(
+            wrong_owner, P256_SAFE_HASH, P256_PASSKEY_SIGNATURE
+        )
+        self.assertNotEqual(safe_signature.owner, safe_signature.signer_address)
+        self.assertFalse(safe_signature.is_valid())
+
+    def test_parse_signature(self):
+        safe_signature = SafeSignatureP256.from_values(
+            P256_OWNER, P256_SAFE_HASH, P256_PASSKEY_SIGNATURE
+        )
+        signatures = SafeSignature.export_signatures([safe_signature])
+        # 65 bytes static part + 128 bytes dynamic part
+        self.assertEqual(len(signatures), 65 + 128)
+
+        parsed_signatures = SafeSignature.parse_signature(signatures, P256_SAFE_HASH)
+        self.assertEqual(len(parsed_signatures), 1)
+        parsed = parsed_signatures[0]
+        self.assertIsInstance(parsed, SafeSignatureP256)
+        self.assertEqual(parsed.signature_type, SafeSignatureType.SECP256R1)
+        self.assertEqual(parsed.owner, P256_OWNER)
+        self.assertEqual(bytes(parsed.passkey_signature), P256_PASSKEY_SIGNATURE)
+        self.assertTrue(parsed.is_valid())
+
+    def test_export_signature_standalone(self):
+        safe_signature = SafeSignatureP256.from_values(
+            P256_OWNER, P256_SAFE_HASH, P256_PASSKEY_SIGNATURE
+        )
+        exported = safe_signature.export_signature()
+        parsed = SafeSignature.parse_signature(exported, P256_SAFE_HASH)[0]
+        self.assertEqual(parsed.owner, P256_OWNER)
+        self.assertTrue(parsed.is_valid())
+
+    def test_export_signatures_mixed(self):
+        # An EOA signer plus a passkey signer, both signing the same hash
+        account = Account.create()
+        eoa_signature = SafeSignatureEOA(
+            account.unsafe_sign_hash(P256_SAFE_HASH)["signature"], P256_SAFE_HASH
+        )
+        p256_signature = SafeSignatureP256.from_values(
+            P256_OWNER, P256_SAFE_HASH, P256_PASSKEY_SIGNATURE
+        )
+
+        signatures = SafeSignature.export_signatures([eoa_signature, p256_signature])
+        self.assertEqual(len(signatures), 2 * 65 + 128)
+
+        parsed_signatures = SafeSignature.parse_signature(signatures, P256_SAFE_HASH)
+        self.assertEqual(len(parsed_signatures), 2)
+        # Signers must be sorted ascending by owner
+        owners = [s.owner.lower() for s in parsed_signatures]
+        self.assertEqual(owners, sorted(owners))
+        self.assertTrue(all(s.is_valid() for s in parsed_signatures))
+
+    def test_p256_signature_async(self):
+        safe_signature = SafeSignatureP256Async.from_values(
+            P256_OWNER, P256_SAFE_HASH, P256_PASSKEY_SIGNATURE
+        )
+        self.assertEqual(safe_signature.signature_type, SafeSignatureType.SECP256R1)
+        self.assertTrue(asyncio.run(safe_signature.is_valid()))
+
+        parsed = SafeSignatureAsync.parse_signature(
+            SafeSignature.export_signatures([safe_signature]), P256_SAFE_HASH
+        )[0]
+        self.assertIsInstance(parsed, SafeSignatureP256Async)
+        self.assertTrue(asyncio.run(parsed.is_valid()))
 
 
 class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
