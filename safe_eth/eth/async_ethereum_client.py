@@ -292,7 +292,9 @@ class AsyncErc20Manager(Erc20Manager, AsyncEthereumClientManager):
         if gas:
             tx_options["gas"] = Wei(gas)
 
-        tx = await erc20.functions.transfer(to, amount).build_transaction(tx_options)
+        # erc20 is an async contract (built from async_w3); build_transaction is a
+        # coroutine at runtime, though the shared helper is typed for the sync Contract.
+        tx = await erc20.functions.transfer(to, amount).build_transaction(tx_options)  # type: ignore[misc]
         return await self.ethereum_client.async_send_unsigned_transaction(
             tx, private_key=private_key
         )
@@ -380,7 +382,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
                 )
             ],
         )
-        return trace_list_result_formatter(result)  # type: ignore[arg-type]
+        return trace_list_result_formatter(result)
 
     async def async_trace_blocks(
         self, block_identifiers: Sequence[BlockIdentifier]
@@ -394,13 +396,13 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
             ]
         )
         results = await self.ethereum_client.async_raw_batch_request(payload)
-        return [trace_list_result_formatter(block_traces) for block_traces in results]  # type: ignore[arg-type]
+        return [trace_list_result_formatter(block_traces) for block_traces in results]
 
     async def async_trace_transaction(self, tx_hash: EthereumHash) -> List[FilterTrace]:
         result = await self._async_trace_rpc(
             "trace_transaction", [to_0x_hex_str(HexBytes(tx_hash))]
         )
-        return trace_list_result_formatter(result)  # type: ignore[arg-type]
+        return trace_list_result_formatter(result)
 
     async def async_trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
@@ -414,7 +416,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
             ]
         )
         results = await self.ethereum_client.async_raw_batch_request(payload)
-        return [trace_list_result_formatter(tx_traces) for tx_traces in results]  # type: ignore[arg-type]
+        return [trace_list_result_formatter(tx_traces) for tx_traces in results]
 
     async def async_trace_filter(
         self,
@@ -438,7 +440,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
             from_block, to_block, from_address, to_address, after, count
         )
         result = await self._async_trace_rpc("trace_filter", [parameters])
-        return trace_list_result_formatter(result)  # type: ignore[arg-type]
+        return trace_list_result_formatter(result)
 
     async def async_get_previous_trace(
         self,
@@ -483,6 +485,12 @@ class AsyncEthereumClient(EthereumClient):
     running event loop, so the same instance works across loops (and is safe to
     create outside a running loop, e.g. in ``__init__``).
     """
+
+    # Narrow the manager types overridden in __init__ for the type checker
+    erc20: "AsyncErc20Manager"
+    erc721: "AsyncErc721Manager"
+    tracing: "AsyncTracingManager"
+    batch_call_manager: "AsyncBatchCallManager"
 
     def __init__(
         self,
@@ -975,11 +983,13 @@ class AsyncEthereumClient(EthereumClient):
                 if not retry or not number_errors:
                     raise e
                 current_nonce = tx["nonce"]
-                tx["nonce"] = max(
-                    current_nonce + 1,
-                    await self.async_get_nonce_for_account(
-                        address, block_identifier=block_identifier
-                    ),
+                tx["nonce"] = Nonce(
+                    max(
+                        current_nonce + 1,
+                        await self.async_get_nonce_for_account(
+                            address, block_identifier=block_identifier
+                        ),
+                    )
                 )
                 logger.error(
                     "Tx with nonce=%d was already sent for address=%s, retrying with nonce=%s",

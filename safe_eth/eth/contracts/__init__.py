@@ -260,12 +260,14 @@ def get_sign_message_lib_contract(
     raise NotImplementedError
 
 
-def get_erc20_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
+def get_erc20_contract(
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
+) -> Contract:
     raise NotImplementedError
 
 
 def get_erc721_contract(
-    w3: Web3, address: Optional[ChecksumAddress] = None
+    w3: Web3 | AsyncWeb3, address: Optional[ChecksumAddress] = None
 ) -> Contract:
     raise NotImplementedError
 
