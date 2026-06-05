@@ -39,6 +39,13 @@ from .mocks.mock_trace_filter import trace_filter_mock_1
 from .mocks.mock_trace_transaction import trace_transaction_mocks
 from .utils import just_test_if_mainnet_node
 
+# A `batch_call_same_function` result simulating a reverted call (raw bytes) plus a
+# valid balance. Shared by the sync and async `test_get_balances_with_failed_calls`.
+FAILED_BATCH_CALL_RESULT = [
+    b"\x08\xc3y\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x17Only the proxy can call\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+    5,
+]
+
 
 class TestERC20Module(EthereumTestCaseMixin, TestCase):
     def test_decode_transfer_log(self):
@@ -222,34 +229,41 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
             ],
         )
 
+    def _get_balances_with_failed_calls(self):
+        """
+        Shared body: when ``batch_call_same_function`` returns a reverted call (raw
+        bytes) for one token, its balance defaults to 0. The patch is applied by the
+        caller so that the sync and async suites can target their own batch method.
+        """
+        account_address = Account.create().address
+        value = 7
+        self.send_ether(account_address, value)
+        token_addresses = [
+            "0x57Ab1E02fEE23774580C119740129eAC7081e9D3",
+            "0x6810e776880C02933D47DB1b9fc05908e5386b96",
+        ]
+        self.assertCountEqual(
+            self.ethereum_client.erc20.get_balances(account_address, token_addresses),
+            [
+                {"token_address": None, "balance": value},
+                {
+                    "token_address": "0x57Ab1E02fEE23774580C119740129eAC7081e9D3",
+                    "balance": 0,
+                },
+                {
+                    "token_address": "0x6810e776880C02933D47DB1b9fc05908e5386b96",
+                    "balance": 5,
+                },
+            ],
+        )
+
+    def test_get_balances_with_failed_calls(self):
         with mock.patch.object(
             EthereumClient,
             "batch_call_same_function",
-            return_value=[
-                b"\x08\xc3y\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x17Only the proxy can call\x00\x00\x00\x00\x00\x00\x00\x00\x00",
-                5,
-            ],
+            return_value=FAILED_BATCH_CALL_RESULT,
         ):
-            token_addresses = [
-                "0x57Ab1E02fEE23774580C119740129eAC7081e9D3",
-                "0x6810e776880C02933D47DB1b9fc05908e5386b96",
-            ]
-            self.assertCountEqual(
-                self.ethereum_client.erc20.get_balances(
-                    account_address, token_addresses
-                ),
-                [
-                    {"token_address": None, "balance": value},
-                    {
-                        "token_address": "0x57Ab1E02fEE23774580C119740129eAC7081e9D3",
-                        "balance": 0,
-                    },
-                    {
-                        "token_address": "0x6810e776880C02933D47DB1b9fc05908e5386b96",
-                        "balance": 5,
-                    },
-                ],
-            )
+            self._get_balances_with_failed_calls()
 
     def test_get_total_transfer_history(self):
         amount = 50
@@ -908,11 +922,11 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.GANACHE
             )
-            self.ethereum_client.get_chain_id.cache_clear()
+            self.ethereum_client.clear_cache()
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.MAINNET
             )
-            self.ethereum_client.get_chain_id.cache_clear()
+            self.ethereum_client.clear_cache()
 
         with mock.patch.object(
             Eth, "chain_id", return_value=4, new_callable=mock.PropertyMock
@@ -920,7 +934,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.RINKEBY
             )
-            self.ethereum_client.get_chain_id.cache_clear()
+            self.ethereum_client.clear_cache()
 
         with mock.patch.object(
             Eth, "chain_id", return_value=4815162342, new_callable=mock.PropertyMock
@@ -928,7 +942,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.assertEqual(
                 self.ethereum_client.get_network(), EthereumNetwork.UNKNOWN
             )
-            self.ethereum_client.get_chain_id.cache_clear()
+            self.ethereum_client.clear_cache()
 
     def test_get_nonce(self):
         address = Account.create().address
