@@ -242,22 +242,25 @@ class MultiSend:
         if not encoded_multisend_txs:
             return []
 
-        encoded_multisend_txs = HexBytes(encoded_multisend_txs)
-        multisend_tx = MultiSendTx.from_bytes(encoded_multisend_txs)
-        multisend_tx_size = len(multisend_tx)
+        remaining_data = HexBytes(encoded_multisend_txs)
+        multisend_txs: List[MultiSendTx] = []
+        while remaining_data:
+            multisend_tx = MultiSendTx.from_bytes(remaining_data)
+            multisend_tx_size = len(multisend_tx)
 
-        assert (
-            multisend_tx_size > 0
-        ), "Multisend tx cannot be empty"  # This should never happen, just in case
-        if multisend_tx.old_encoding:
-            next_data_position = (
-                (multisend_tx.data_length + 0x1F) // 0x20 * 0x20
-            ) + 0xA0
-        else:
-            next_data_position = multisend_tx_size
-        remaining_data = encoded_multisend_txs[next_data_position:]
+            assert (
+                multisend_tx_size > 0
+            ), "Multisend tx cannot be empty"  # This should never happen, just in case
+            if multisend_tx.old_encoding:
+                next_data_position = (
+                    (multisend_tx.data_length + 0x1F) // 0x20 * 0x20
+                ) + 0xA0
+            else:
+                next_data_position = multisend_tx_size
+            multisend_txs.append(multisend_tx)
+            remaining_data = remaining_data[next_data_position:]
 
-        return [multisend_tx] + cls.from_bytes(remaining_data)
+        return multisend_txs
 
     @classmethod
     def from_transaction_data(
