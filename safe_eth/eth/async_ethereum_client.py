@@ -363,6 +363,26 @@ class AsyncErc721Manager(Erc721Manager, AsyncEthereumClientManager):
 
 
 class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
+    """
+    Async tracing manager.
+
+    ``AsyncWeb3`` has no ``tracing`` module, so every method here issues a **raw
+    JSON-RPC** request instead of going through web3's ``w3.tracing.*`` path. Two
+    consequences for callers:
+
+    - **Error type differs from the sync client.** A node error (e.g. the node not
+      supporting ``trace_filter``/``trace_*``) surfaces as a plain ``ValueError``
+      from the batch layer, not web3's ``Web3RPCError`` that the sync
+      ``TracingManager`` raises. Adjust ``except`` clauses accordingly when porting
+      sync code to async.
+    - **The web3 tracing middleware/request-munging is bypassed.** Results are
+      decoded with ``trace_list_result_formatter`` (same as the sync plural
+      ``trace_blocks``/``trace_transactions``), so the decoded shape is expected to
+      match, but this happy path is not exercised by the test suite (ganache does
+      not implement ``trace_*``). Verify against a trace-capable node
+      (Erigon / Geth ``debug``) before relying on async tracing in production.
+    """
+
     async def _async_trace_rpc(self, method: str, params: Sequence[Any]) -> Any:
         """Perform a single tracing JSON-RPC call (``AsyncWeb3`` has no ``tracing`` module)."""
         payload = build_jsonrpc_batch_payload([(method, params)])
@@ -428,13 +448,9 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
         count: Optional[int] = None,
     ) -> List[FilterTrace]:
         """
-        Async counterpart of :meth:`TracingManager.trace_filter`.
-
-        .. note::
-            Tracing is issued as a raw JSON-RPC call (``AsyncWeb3`` has no
-            ``tracing`` module). A node error (e.g. ``trace_filter`` unsupported)
-            therefore surfaces as a ``ValueError`` from the batch layer, not as
-            web3's ``Web3RPCError`` raised by the sync path.
+        Async counterpart of :meth:`TracingManager.trace_filter`. See the
+        :class:`AsyncTracingManager` docstring for the raw-JSON-RPC caveats
+        (``ValueError`` instead of ``Web3RPCError`` when the node rejects the call).
         """
         parameters = self._build_trace_filter_params(
             from_block, to_block, from_address, to_address, after, count
