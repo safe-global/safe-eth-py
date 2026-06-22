@@ -1,4 +1,5 @@
-name: 'CLA Assistant'
+# SPDX-License-Identifier: FSL-1.1-MIT
+name: "CLA Assistant"
 on:
   issue_comment:
     types: [created]
@@ -8,36 +9,25 @@ on:
 permissions: {}
 
 jobs:
-  CLAAssistant:
+  CLAssistant:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+      pull-requests: write
+      issues: write
     steps:
-      - name: 'CLA Assistant'
-        if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA') || github.event_name == 'pull_request_target'
-        # Beta Release
-        uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08 # v2.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # the below token should have repo scope and must be manually added by you in the repository's secret
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_ACCESS_TOKEN }}
+      - name: Checkout reusable workflows
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          path-to-signatures: 'signatures/version1/cla.json'
-          path-to-document: 'https://safe.global/cla' # e.g. a CLA or a DCO document
-          # branch should not be protected
-          branch: 'main'
-          # user names of users allowed to contribute without CLA
-          allowlist: moisses89,luarx,Uxio0,falvaradorodriguez,*bot # may need to update this expression if we add new bots
-
-          #below are the optional inputs - If the optional inputs are not given, then default values will be taken
-          # enter the remote organization name where the signatures should be stored (Default is storing the signatures in the same repository)
-          remote-organization-name: 'safe-global'
-          # enter the  remote repository name where the signatures should be stored (Default is storing the signatures in the same repository)
-          remote-repository-name: 'cla-signatures'
-          #create-file-commit-message: 'For example: Creating file for storing CLA Signatures'
-          #signed-commit-message: 'For example: $contributorName has signed the CLA in #$pullRequestNo'
-          #custom-notsigned-prcomment: 'pull request comment with Introductory message to ask new contributors to sign'
-          #custom-pr-sign-comment: 'The signature to be committed in order to sign the CLA'
-          #custom-allsigned-prcomment: 'pull request comment when all contributors has signed, defaults to **CLA Assistant Lite bot** All Contributors have signed the CLA.'
-          #lock-pullrequest-aftermerge: false - if you don't want this bot to automatically lock the pull request after merging (default - true)
-          #use-dco-flag: true - If you are using DCO instead of CLA
+          repository: safe-global/github-reusable-workflows
+          token: ${{ secrets.REUSABLE_WORKFLOWS_TOKEN }}
+          path: reusable-workflows
+          ref: ea5356563c5c5c31ceda25c7249640e2adc2e4c2 # v2.4.19
+      - name: "CLA Assistant"
+        uses: ./reusable-workflows/actions/cla
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          personal-access-token: ${{ secrets.CLA_ACCESS_TOKEN }}
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          allowlist: moisses89,luarx,Uxio0,falvaradorodriguez,*bot
