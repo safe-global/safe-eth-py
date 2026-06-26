@@ -2364,7 +2364,11 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 0, "1.3.0+L2"),
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 0, "1.3.0"),
         ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 26629956, "1.5.0"),  # v1.5.0
-        ("0xEdd160fEBBD92E350D4D398fb636302fccd67C7e", 47937426, "1.5.0+L2"),  # v1.5.0+L2
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            47937426,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.STORY_ODYSSEY_TESTNET: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 340803, "1.3.0"),  # v1.3.0
@@ -4992,7 +4996,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.INK_SEPOLIA: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 681679),  # v1.3.0
-        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 26629950), # v1.5.0
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 26629950),  # v1.5.0
     ],
     EthereumNetwork.STORY_ODYSSEY_TESTNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 340781),  # v1.3.0
