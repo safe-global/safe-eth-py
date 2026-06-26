@@ -38,13 +38,8 @@ class TestCowSwapAPI(TestCase):
             OrderKind.SELL,
             1,
         )
-        self.assertDictEqual(
-            response,
-            {
-                "errorType": "SameBuyAndSellToken",
-                "description": "Buy token is the same as the sell token.",
-            },
-        )
+        # Buying and selling the same token returns a 1:1 quote
+        self.assertEqual(response["buyAmount"], response["sellAmount"])
 
         response = cow_swap.get_estimated_amount(
             "0x6820e776880c02933d47db1b9fc05908e5386b96",
@@ -68,7 +63,7 @@ class TestCowSwapAPI(TestCase):
     def test_get_fee(self):
         order = Order(
             sellToken=self.mainnet_gno_token_address,
-            buyToken=self.mainnet_gno_token_address,
+            buyToken="0x6820e776880c02933d47db1b9fc05908e5386b96",  # Unsupported token
             receiver=NULL_ADDRESS,
             sellAmount=int(1e18),
             buyAmount=1,
@@ -81,11 +76,12 @@ class TestCowSwapAPI(TestCase):
             buyTokenBalance="erc20",
         )
         from_address = Account.create().address
+        # A token without liquidity returns an ErrorResponse instead of a fee
         self.assertEqual(
             self.mainnet_cow_swap_api.get_fee(order, from_address),
             {
-                "errorType": "SameBuyAndSellToken",
-                "description": "Buy token is the same as the sell token.",
+                "errorType": "NoLiquidity",
+                "description": "no route found",
             },
         )
         order.buyToken = self.mainnet_cow_swap_api.weth_address
@@ -132,12 +128,12 @@ class TestCowSwapAPI(TestCase):
         result = self.sepolia_cow_swap_api.place_order(order, Account().create().key)
         self.assertEqual(
             order.feeAmount, 0
-        )  # Cannot estimate, as buy token is the same as the sell token
+        )  # Cannot estimate, as there is no route for the same token
         self.assertEqual(
             result,
             {
-                "description": "Buy token is the same as the sell token.",
-                "errorType": "SameBuyAndSellToken",
+                "description": "no route found",
+                "errorType": "NoLiquidity",
             },
         )
 
