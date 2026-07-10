@@ -354,21 +354,50 @@ class Multicall(ContractBase):
         ethereum_client: EthereumClient,
         multicall_contract_address: Optional[ChecksumAddress] = None,
     ):
-        ethereum_network = ethereum_client.get_network()
-        address = multicall_contract_address or self.ADDRESSES.get(ethereum_network)
-        mainnet_address = self.ADDRESSES.get(EthereumNetwork.MAINNET)
-        if not address and mainnet_address:
-            # Try with Multicall V3 deterministic address
-            address = fast_to_checksum_address(mainnet_address)
-            if not ethereum_client.is_contract(address):
-                raise EthereumNetworkNotSupported(
-                    "Multicall contract not available for %s", ethereum_network.name
-                )
+        # Only detect the address when not provided, as it requires network requests
+        # (`eth_chainId` if not cached, maybe `eth_getCode`)
+        address = (
+            fast_to_checksum_address(multicall_contract_address)
+            if multicall_contract_address
+            else self._detect_multicall_address(ethereum_client)
+        )
+        super().__init__(address, ethereum_client)
 
-        if not address:
+    @classmethod
+    def _multicall_address_candidate(
+        cls, ethereum_network: EthereumNetwork
+    ) -> Tuple[ChecksumAddress, bool]:
+        """
+        :return: Tuple of the candidate Multicall address for the network and whether
+            it must be checked for code: the network's known address doesn't need it,
+            the Multicall V3 deterministic address fallback (mainnet's) is only valid
+            if deployed on the network
+        """
+        address = cls.ADDRESSES.get(ethereum_network)
+        if address:
+            return fast_to_checksum_address(address), False
+
+        mainnet_address = cls.ADDRESSES.get(EthereumNetwork.MAINNET)
+        if not mainnet_address:
             raise ValueError("Contract address cannot be none")
+        return fast_to_checksum_address(mainnet_address), True
 
-        super().__init__(fast_to_checksum_address(address), ethereum_client)
+    @classmethod
+    def _detect_multicall_address(
+        cls, ethereum_client: EthereumClient
+    ) -> ChecksumAddress:
+        """
+        :return: Multicall address for the client's network, falling back to the
+            Multicall V3 deterministic address if it has code
+        :raises EthereumNetworkNotSupported: if no Multicall contract is available
+        """
+        ethereum_network = ethereum_client.get_network()
+        address, needs_code_check = cls._multicall_address_candidate(ethereum_network)
+        if needs_code_check and not ethereum_client.is_contract(address):
+            raise EthereumNetworkNotSupported(
+                "Multicall contract not available for %s", ethereum_network.name
+            )
+        return address
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_multicall_v3_contract
@@ -639,6 +668,39 @@ class AsyncMulticall(Multicall):
     ):
         super().__init__(ethereum_client, multicall_contract_address)
         self.async_w3: AsyncWeb3 = ethereum_client.async_w3
+
+    @classmethod
+    async def async_create(
+        cls,
+        ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
+        multicall_contract_address: Optional[ChecksumAddress] = None,
+    ) -> "AsyncMulticall":
+        """
+        Build an ``AsyncMulticall`` detecting the address through the async RPC
+        methods, so a running event loop is never blocked (``__init__`` detects
+        it with the blocking sync methods).
+        """
+        address = (
+            multicall_contract_address
+            or await cls._async_detect_multicall_address(ethereum_client)
+        )
+        return cls(ethereum_client, address)
+
+    @classmethod
+    async def _async_detect_multicall_address(
+        cls,
+        ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
+    ) -> ChecksumAddress:
+        """
+        Async counterpart of :meth:`Multicall._detect_multicall_address`
+        """
+        ethereum_network = await ethereum_client.async_get_network()
+        address, needs_code_check = cls._multicall_address_candidate(ethereum_network)
+        if needs_code_check and not await ethereum_client.async_is_contract(address):
+            raise EthereumNetworkNotSupported(
+                "Multicall contract not available for %s", ethereum_network.name
+            )
+        return address
 
     @cached_property
     def async_contract(self):

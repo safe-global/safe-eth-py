@@ -23,7 +23,7 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, BlockNumber, ChecksumAddress, Hash32, HexAddress, HexStr
 from hexbytes import HexBytes
-from web3 import HTTPProvider, Web3
+from web3 import AsyncWeb3, HTTPProvider, Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.method_formatters import (
     block_result_formatter,
@@ -1471,6 +1471,9 @@ class EthereumClient:
         :param retry_count: Retry count for failed requests
         :param use_request_caching: Use web3 request caching https://web3py.readthedocs.io/en/latest/internals.html#request-caching
         :param batch_request_max_size: Max size for JSON RPC Batch requests. Some providers have a limitation on 500
+
+        Constructing the client performs no network I/O, the RPC is first contacted
+        when a method requiring it is called.
         """
         # Per-instance cache for values that never change (chainId, client version...).
         # Using an instance dict instead of ``functools.cache`` avoids keeping every
@@ -1497,27 +1500,30 @@ class EthereumClient:
         self.w3: Web3 = Web3(self.w3_provider)
         self.slow_w3: Web3 = Web3(self.w3_slow_provider)
 
-        # Adjust Web3.py middleware
-        for w3 in self.w3, self.slow_w3:
-            # Don't spend resources con converting dictionaries to attribute dictionaries
-            w3.middleware_onion.remove("attrdict")
-
-        # The geth_poa_middleware is required to connect to geth --dev or the Goerli public network.
-        # It may also be needed for other EVM compatible blockchains like Polygon or BNB Chain (Binance Smart Chain).
-        try:
-            if self.get_network() != EthereumNetwork.MAINNET:
-                for w3 in self.w3, self.slow_w3:
-                    w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
-        except (IOError, OSError):
-            # For tests using dummy connections (like IPC)
-            for w3 in self.w3, self.slow_w3:
-                w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+        self._adjust_middlewares(self.w3, self.slow_w3)
 
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
         self.tracing: TracingManager = TracingManager(self)
         self.batch_call_manager: BatchCallManager = BatchCallManager(self)
         self.batch_request_max_size = batch_request_max_size
+
+    @staticmethod
+    def _adjust_middlewares(*w3s: Union[Web3, AsyncWeb3]) -> None:
+        """
+        Adjust Web3.py middlewares:
+
+        - Remove ``attrdict``: don't spend resources converting dictionaries to
+          attribute dictionaries.
+        - Inject ``ExtraDataToPOAMiddleware``: required for PoA-based chains like
+          Polygon or BNB Chain. It's always injected to avoid a blocking
+          ``eth_chainId`` call during ``__init__`` just to detect the network.
+          On Mainnet its only effect is that block responses expose
+          ``proofOfAuthorityData`` instead of ``extraData``.
+        """
+        for w3 in w3s:
+            w3.middleware_onion.remove("attrdict")
+            w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
