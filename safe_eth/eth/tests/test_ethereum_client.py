@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Any, Dict, List, Sequence
 from unittest import mock
 from unittest.mock import MagicMock
@@ -11,6 +12,8 @@ from eth_typing import URI, HexStr
 from hexbytes import HexBytes
 from web3.eth import Eth
 from web3.exceptions import Web3RPCError
+from web3.middleware import ExtraDataToPOAMiddleware
+from web3.providers import AsyncHTTPProvider, HTTPProvider
 from web3.types import TxParams
 
 from ...util.util import to_0x_hex_str
@@ -1251,6 +1254,37 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             )
             self.assertEqual(eip_1559_tx["maxPriorityFeePerGas"], 5)
             self.assertEqual(eip_1559_tx["maxFeePerGas"], 7)
+
+
+UNREACHABLE_NODE_URL = URI("http://unreachable.invalid:8545")
+
+
+@contextmanager
+def forbid_rpc_calls():
+    """Fail the test if any JSON-RPC request is attempted, sync or async."""
+    side_effect = AssertionError("RPC should not be called")
+    with (
+        mock.patch.object(HTTPProvider, "make_request", side_effect=side_effect),
+        mock.patch.object(AsyncHTTPProvider, "make_request", side_effect=side_effect),
+    ):
+        yield
+
+
+class TestEthereumClientConstruction(TestCase):
+    """Construction must be free of network I/O, no node needed for these tests."""
+
+    ethereum_client_cls = EthereumClient
+
+    def get_w3_instances(self, ethereum_client):
+        return ethereum_client.w3, ethereum_client.slow_w3
+
+    def test_init_performs_no_network_requests(self):
+        with forbid_rpc_calls():
+            ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+
+        # POA middleware is always injected, for every network
+        for w3 in self.get_w3_instances(ethereum_client):
+            self.assertIn(ExtraDataToPOAMiddleware, w3.middleware_onion)
 
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):

@@ -29,9 +29,12 @@ from ..ethereum_network import EthereumNetwork
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .test_ethereum_client import (
     FAILED_BATCH_CALL_RESULT,
+    UNREACHABLE_NODE_URL,
     TestERC20Module,
     TestEthereumClient,
+    TestEthereumClientConstruction,
     TestTracingManager,
+    forbid_rpc_calls,
 )
 
 # Manager attributes that must themselves be wrapped in a proxy
@@ -251,3 +254,68 @@ class TestAsyncEthereumClient(AsyncEthereumClientTestMixin, TestEthereumClient):
             [make_function()], raise_exception=False
         )
         self.assertEqual(async_result, sync_result)
+
+
+class TestAsyncEthereumClientConstruction(TestEthereumClientConstruction):
+    """Reuse the sync construction tests, checking the async w3 instances too."""
+
+    ethereum_client_cls = AsyncEthereumClient
+
+    def get_w3_instances(self, ethereum_client):
+        return (
+            ethereum_client.w3,
+            ethereum_client.slow_w3,
+            ethereum_client.async_w3,
+            ethereum_client.async_slow_w3,
+        )
+
+    def test_init_inside_running_event_loop(self):
+        # Building the client in a coroutine (e.g. a FastAPI handler) must not
+        # perform blocking calls, even with an unreachable RPC
+        async def build():
+            return self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+
+        with forbid_rpc_calls():
+            asyncio.run(build())
+
+    def test_async_get_multicall_performs_no_sync_requests(self):
+        # First use of Multicall detects its address, but must do it through the
+        # async RPC methods, never blocking the event loop
+        async def run():
+            async_ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+            with mock.patch.object(
+                AsyncEthereumClient,
+                "async_get_chain_id",
+                new_callable=mock.AsyncMock,
+                return_value=EthereumNetwork.GNOSIS.value,
+            ):
+                multicall = await async_ethereum_client.async_get_multicall()
+            self.assertIsNotNone(multicall)
+            # Memoized, and shared with the `multicall` cached property
+            self.assertIs(await async_ethereum_client.async_get_multicall(), multicall)
+            self.assertIs(async_ethereum_client.multicall, multicall)
+
+        with forbid_rpc_calls():
+            asyncio.run(run())
+
+    def test_async_get_multicall_network_not_supported(self):
+        async def run():
+            async_ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+            with (
+                mock.patch.object(
+                    AsyncEthereumClient,
+                    "async_get_chain_id",
+                    new_callable=mock.AsyncMock,
+                    return_value=4_815_162_342,  # EthereumNetwork.UNKNOWN
+                ),
+                mock.patch.object(
+                    AsyncEthereumClient,
+                    "async_is_contract",
+                    new_callable=mock.AsyncMock,
+                    return_value=False,
+                ),
+            ):
+                self.assertIsNone(await async_ethereum_client.async_get_multicall())
+
+        with forbid_rpc_calls():
+            asyncio.run(run())

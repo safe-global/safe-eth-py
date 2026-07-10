@@ -49,7 +49,6 @@ from web3.exceptions import (
     TransactionNotFound,
     Web3Exception,
 )
-from web3.middleware import ExtraDataToPOAMiddleware
 from web3.types import (
     BlockData,
     BlockIdentifier,
@@ -500,6 +499,10 @@ class AsyncEthereumClient(EthereumClient):
     The ``aiohttp`` session used for JSON-RPC batches is created lazily, one per
     running event loop, so the same instance works across loops (and is safe to
     create outside a running loop, e.g. in ``__init__``).
+
+    Constructing the client performs no network I/O, so it can be built inside a
+    running event loop (e.g. in a FastAPI handler) without blocking it, even if
+    the RPC url is not reachable.
     """
 
     # Narrow the manager types overridden in __init__ for the type checker
@@ -517,7 +520,7 @@ class AsyncEthereumClient(EthereumClient):
         use_request_caching: bool = True,
         batch_request_max_size: int = 500,
     ):
-        # Builds the blocking w3/slow_w3 + detects the network (cached chainId)
+        # Builds the blocking w3/slow_w3
         super().__init__(
             ethereum_node_url,
             provider_timeout=provider_timeout,
@@ -545,18 +548,7 @@ class AsyncEthereumClient(EthereumClient):
         self.async_w3: AsyncWeb3 = AsyncWeb3(self.async_w3_provider)
         self.async_slow_w3: AsyncWeb3 = AsyncWeb3(self.async_w3_slow_provider)
 
-        for async_w3 in self.async_w3, self.async_slow_w3:
-            # Don't spend resources converting dictionaries to attribute dictionaries
-            async_w3.middleware_onion.remove("attrdict")
-
-        # POA middleware (reuse the network already detected by the sync __init__)
-        try:
-            inject_poa = self.get_network() != EthereumNetwork.MAINNET
-        except (IOError, OSError):
-            inject_poa = True
-        if inject_poa:
-            for async_w3 in self.async_w3, self.async_slow_w3:
-                async_w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+        self._adjust_middlewares(self.async_w3, self.async_slow_w3)
 
         # Replace the sync managers built by super().__init__ with async-capable ones
         self.erc20 = AsyncErc20Manager(self)
@@ -569,7 +561,12 @@ class AsyncEthereumClient(EthereumClient):
 
     @cached_property
     def multicall(self) -> Optional["AsyncMulticall"]:  # type: ignore # noqa F821
-        """Async ``Multicall`` for this network, or ``None`` if unsupported."""
+        """
+        Async ``Multicall`` for this network, or ``None`` if unsupported.
+
+        Detecting the Multicall address uses the blocking sync methods; inside a
+        running event loop use :meth:`async_get_multicall` instead.
+        """
         # Imported lazily to avoid a circular import (multicall imports the package),
         # mirroring EthereumClient.multicall.
         from .multicall import AsyncMulticall
@@ -579,6 +576,25 @@ class AsyncEthereumClient(EthereumClient):
         except EthereumNetworkNotSupported:
             logger.warning("Multicall not supported for this network")
             return None
+
+    async def async_get_multicall(self) -> Optional["AsyncMulticall"]:  # type: ignore # noqa F821
+        """
+        Async counterpart of :attr:`multicall`: detect the Multicall address with
+        the async RPC methods, so a running event loop is never blocked. Memoized
+        in the same slot used by the cached property, so both share one instance.
+        """
+        if "multicall" not in self.__dict__:
+            from .multicall import AsyncMulticall
+
+            try:
+                multicall: Optional["AsyncMulticall"] = (
+                    await AsyncMulticall.async_create(self)
+                )
+            except EthereumNetworkNotSupported:
+                logger.warning("Multicall not supported for this network")
+                multicall = None
+            self.multicall = multicall
+        return self.multicall
 
     # --- Session lifecycle ------------------------------------------------
 
@@ -885,10 +901,11 @@ class AsyncEthereumClient(EthereumClient):
         when available (unless ``force_batch_call=True``), matching the sync client,
         including raw revert bytes for failed calls on the Multicall path.
         """
-        if self.multicall and not force_batch_call:  # Multicall is more optimal
+        multicall = None if force_batch_call else await self.async_get_multicall()
+        if multicall:  # Multicall is more optimal
             return [
                 result.return_data_decoded
-                for result in await self.multicall.async_try_aggregate(
+                for result in await multicall.async_try_aggregate(
                     contract_functions,
                     require_success=raise_exception,
                     block_identifier=block_identifier,
@@ -915,10 +932,11 @@ class AsyncEthereumClient(EthereumClient):
         ``Multicall`` when available (unless ``force_batch_call=True``), matching the
         sync client.
         """
-        if self.multicall and not force_batch_call:  # Multicall is more optimal
+        multicall = None if force_batch_call else await self.async_get_multicall()
+        if multicall:  # Multicall is more optimal
             return [
                 result.return_data_decoded
-                for result in await self.multicall.async_try_aggregate_same_function(
+                for result in await multicall.async_try_aggregate_same_function(
                     contract_function,
                     contract_addresses,
                     require_success=raise_exception,
