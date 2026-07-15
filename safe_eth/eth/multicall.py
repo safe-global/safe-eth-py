@@ -5,14 +5,15 @@ https://github.com/mds1/multicall
 
 import logging
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import eth_abi
 from eth_abi.exceptions import DecodingError
 from eth_account.signers.local import LocalAccount
-from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress, HexAddress, HexStr
+from eth_typing import BlockIdentifier, BlockNumber, ChecksumAddress
 from hexbytes import HexBytes
-from web3 import Web3
+from web3 import AsyncWeb3, Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract.contract import Contract, ContractFunction
@@ -22,7 +23,7 @@ from . import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
 from .contracts import ContractBase, get_multicall_v3_contract
 from .ethereum_client import EthereumTxSent
 from .exceptions import BatchCallFunctionFailed, ContractAlreadyDeployed
-from .utils import get_empty_tx_params
+from .utils import fast_to_checksum_address, get_empty_tx_params
 
 logger = logging.getLogger(__name__)
 
@@ -353,21 +354,50 @@ class Multicall(ContractBase):
         ethereum_client: EthereumClient,
         multicall_contract_address: Optional[ChecksumAddress] = None,
     ):
-        ethereum_network = ethereum_client.get_network()
-        address = multicall_contract_address or self.ADDRESSES.get(ethereum_network)
-        mainnet_address = self.ADDRESSES.get(EthereumNetwork.MAINNET)
-        if not address and mainnet_address:
-            # Try with Multicall V3 deterministic address
-            address = ChecksumAddress(HexAddress(HexStr(mainnet_address)))
-            if not ethereum_client.is_contract(address):
-                raise EthereumNetworkNotSupported(
-                    "Multicall contract not available for %s", ethereum_network.name
-                )
+        # Only detect the address when not provided, as it requires network requests
+        # (`eth_chainId` if not cached, maybe `eth_getCode`)
+        address = (
+            fast_to_checksum_address(multicall_contract_address)
+            if multicall_contract_address
+            else self._detect_multicall_address(ethereum_client)
+        )
+        super().__init__(address, ethereum_client)
 
-        if not address:
+    @classmethod
+    def _multicall_address_candidate(
+        cls, ethereum_network: EthereumNetwork
+    ) -> Tuple[ChecksumAddress, bool]:
+        """
+        :return: Tuple of the candidate Multicall address for the network and whether
+            it must be checked for code: the network's known address doesn't need it,
+            the Multicall V3 deterministic address fallback (mainnet's) is only valid
+            if deployed on the network
+        """
+        address = cls.ADDRESSES.get(ethereum_network)
+        if address:
+            return fast_to_checksum_address(address), False
+
+        mainnet_address = cls.ADDRESSES.get(EthereumNetwork.MAINNET)
+        if not mainnet_address:
             raise ValueError("Contract address cannot be none")
+        return fast_to_checksum_address(mainnet_address), True
 
-        super().__init__(ChecksumAddress(HexAddress(HexStr(address))), ethereum_client)
+    @classmethod
+    def _detect_multicall_address(
+        cls, ethereum_client: EthereumClient
+    ) -> ChecksumAddress:
+        """
+        :return: Multicall address for the client's network, falling back to the
+            Multicall V3 deterministic address if it has code
+        :raises EthereumNetworkNotSupported: if no Multicall contract is available
+        """
+        ethereum_network = ethereum_client.get_network()
+        address, needs_code_check = cls._multicall_address_candidate(ethereum_network)
+        if needs_code_check and not ethereum_client.is_contract(address):
+            raise EthereumNetworkNotSupported(
+                "Multicall contract not available for %s", ethereum_network.name
+            )
+        return address
 
     def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
         return get_multicall_v3_contract
@@ -567,6 +597,17 @@ class Multicall(ContractBase):
             require_success=require_success,
             block_identifier=block_identifier,
         )
+        return self._decode_try_aggregate_results(output_types, results)
+
+    def _decode_try_aggregate_results(
+        self,
+        output_types: Sequence[Sequence[str]],
+        results: Sequence[MulticallResult],
+    ) -> List[MulticallDecodedResult]:
+        """
+        Decode ``try_aggregate`` results (pure, shared with the async client). Failed
+        calls keep their raw ``return_data`` (revert bytes), successful ones are ABI-decoded.
+        """
         return [
             MulticallDecodedResult(
                 multicall_result.success,
@@ -606,15 +647,147 @@ class Multicall(ContractBase):
             require_success=require_success,
             block_identifier=block_identifier,
         )
-        return [
-            MulticallDecodedResult(
-                multicall_result.success,
-                (
-                    self._decode_data(output_type, multicall_result.return_data)
-                    if multicall_result.success
-                    and multicall_result.return_data is not None
-                    else multicall_result.return_data
-                ),
+        return self._decode_try_aggregate_results(output_types, results)
+
+
+class AsyncMulticall(Multicall):
+    """
+    Async counterpart of :class:`Multicall`. Reuses all the pure payload-building
+    and decoding logic, overriding only the on-chain ``eth_call`` with an
+    ``AsyncWeb3`` contract so ``async_batch_call`` keeps full parity with the sync
+    client (failed calls return their raw revert bytes, not ``None``).
+
+    Requires an :class:`~safe_eth.eth.async_ethereum_client.AsyncEthereumClient`
+    (it reads ``ethereum_client.async_w3``).
+    """
+
+    def __init__(
+        self,
+        ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
+        multicall_contract_address: Optional[ChecksumAddress] = None,
+    ):
+        super().__init__(ethereum_client, multicall_contract_address)
+        self.async_w3: AsyncWeb3 = ethereum_client.async_w3
+
+    @classmethod
+    async def async_create(
+        cls,
+        ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
+        multicall_contract_address: Optional[ChecksumAddress] = None,
+    ) -> "AsyncMulticall":
+        """
+        Build an ``AsyncMulticall`` detecting the address through the async RPC
+        methods, so a running event loop is never blocked (``__init__`` detects
+        it with the blocking sync methods).
+        """
+        address = (
+            multicall_contract_address
+            or await cls._async_detect_multicall_address(ethereum_client)
+        )
+        return cls(ethereum_client, address)
+
+    @classmethod
+    async def _async_detect_multicall_address(
+        cls,
+        ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
+    ) -> ChecksumAddress:
+        """
+        Async counterpart of :meth:`Multicall._detect_multicall_address`
+        """
+        ethereum_network = await ethereum_client.async_get_network()
+        address, needs_code_check = cls._multicall_address_candidate(ethereum_network)
+        if needs_code_check and not await ethereum_client.async_is_contract(address):
+            raise EthereumNetworkNotSupported(
+                "Multicall contract not available for %s", ethereum_network.name
             )
-            for output_type, multicall_result in zip(output_types, results)
+        return address
+
+    @cached_property
+    def async_contract(self):
+        return self.get_contract_fn()(self.async_w3, self.address)
+
+    async def _async_aggregate(
+        self,
+        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> Tuple[BlockNumber, List[Optional[Any]]]:
+        aggregate_parameter = [
+            {"target": target, "callData": data} for target, data in targets_with_data
         ]
+        try:
+            return await self.async_contract.functions.aggregate(
+                aggregate_parameter
+            ).call(block_identifier=block_identifier or "latest")
+        except (ContractLogicError, OverflowError):
+            raise BatchCallFunctionFailed
+
+    async def async_aggregate(
+        self,
+        contract_functions: Sequence[ContractFunction],
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> Tuple[BlockNumber, List[Optional[Any]]]:
+        targets_with_data, output_types = self._build_payload(contract_functions)
+        block_number, results = await self._async_aggregate(
+            targets_with_data, block_identifier=block_identifier
+        )
+        decoded_results = [
+            self._decode_data(output_type, data) if data is not None else None
+            for output_type, data in zip(output_types, results)
+        ]
+        return block_number, decoded_results
+
+    async def _async_try_aggregate(
+        self,
+        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
+        require_success: bool = False,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> List[MulticallResult]:
+        aggregate_parameter = [
+            {"target": target, "callData": data} for target, data in targets_with_data
+        ]
+        try:
+            result = await self.async_contract.functions.tryAggregate(
+                require_success, aggregate_parameter
+            ).call(block_identifier=block_identifier or "latest")
+
+            if require_success and b"" in (data for _, data in result):
+                # `b''` values are decoding errors/missing contracts/missing functions
+                raise BatchCallFunctionFailed
+
+            return [
+                MulticallResult(success, data if data else None)
+                for success, data in result
+            ]
+        except (ContractLogicError, OverflowError, Web3ValueError, Web3RPCError):
+            raise BatchCallFunctionFailed
+
+    async def async_try_aggregate(
+        self,
+        contract_functions: Sequence[ContractFunction],
+        require_success: bool = False,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> List[MulticallDecodedResult]:
+        targets_with_data, output_types = self._build_payload(contract_functions)
+        results = await self._async_try_aggregate(
+            targets_with_data,
+            require_success=require_success,
+            block_identifier=block_identifier,
+        )
+        return self._decode_try_aggregate_results(output_types, results)
+
+    async def async_try_aggregate_same_function(
+        self,
+        contract_function: ContractFunction,
+        contract_addresses: Sequence[ChecksumAddress],
+        require_success: bool = False,
+        block_identifier: Optional[BlockIdentifier] = "latest",
+    ) -> List[MulticallDecodedResult]:
+        targets_with_data, output_types = self._build_payload_same_function(
+            contract_function, contract_addresses
+        )
+        results = await self._async_try_aggregate(
+            targets_with_data,
+            require_success=require_success,
+            block_identifier=block_identifier,
+        )
+        return self._decode_try_aggregate_results(output_types, results)

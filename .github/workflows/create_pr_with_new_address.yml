@@ -4,13 +4,19 @@ on:
   issue_comment:
     types: [created]
 
+permissions: {}
+
 jobs:
   process-issue:
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'add-new-address') && startsWith(github.event.comment.body, '/')
     steps:
     - name: Checkout repository
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Check if comment is "/execute" by repo owner
       id: check-comment
@@ -105,7 +111,7 @@ jobs:
 
     - name: Install uv
       if: steps.check-comment.outputs.result == 'true'
-      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       with:
         python-version: '3.13'
 
@@ -115,20 +121,18 @@ jobs:
         uv sync --group dev --frozen
         uv pip install "PyGithub" "safe-eth-py @ git+https://github.com/safe-global/safe-eth-py@main"
 
-    - name: Process Issue and Create PR
+    - name: Process Issue
       if: steps.check-comment.outputs.result == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        ISSUE_NUMBER: ${{ github.event.issue.number }}
         ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
-        GITHUB_REPOSITORY_NAME: 'safe-global/safe-eth-py'
+        GITHUB_REPOSITORY_NAME: ${{ github.repository }}
       run: |
-        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py
-
-    - uses: fregante/setup-git-user@024bc0b8e177d7e77203b48dab6fb45666854b35 # v2
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py --action apply-changes
 
     - name: Run pre-commit
       if: steps.check-comment.outputs.result == 'true'
+      id: run-pre-commit
       env:
         ISSUE_INPUTS: ${{ steps.get-issue-inputs.outputs.result }}
       run: |
@@ -143,6 +147,7 @@ jobs:
           exit 1
         }
         branch_name="add-new-chain-${chain_id}-${version}-addresses"
+        echo "branch_name=$branch_name" >> $GITHUB_OUTPUT
         git pull origin main
         git fetch
         git checkout -b "$branch_name" "origin/$branch_name"
@@ -150,13 +155,28 @@ jobs:
         uv run pre-commit run --all-files || true
 
         if [[ $(git status --porcelain) ]]; then
-          git add .
-          git commit -m "Apply linter fixes"
-          git pull --rebase
-          git push
+          echo "has_linter_changes=true" >> $GITHUB_OUTPUT
         else
-          echo "No changes to commit."
+          echo "has_linter_changes=false" >> $GITHUB_OUTPUT
         fi
+
+    - name: Commit linter fixes
+      if: steps.check-comment.outputs.result == 'true' && steps.run-pre-commit.outputs.has_linter_changes == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH_NAME: ${{ steps.run-pre-commit.outputs.branch_name }}
+      run: |
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py --action commit-linter-fixes
+
+    - name: Create PR
+      if: steps.check-comment.outputs.result == 'true'
+      env:
+        GITHUB_PAT: ${{ secrets.TOKEN_GITHUB_SAFE_ETH_PY }}
+        GITHUB_REPOSITORY_NAME: ${{ github.repository }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
+        ISSUE_BODY_INFO: ${{ steps.get-issue-inputs.outputs.result }}
+      run: |
+        uv run python .github/scripts/github_adding_addresses/create_pr_with_new_address.py --action create-pr
 
     - name: Add comment to issue
       if: steps.check-comment.outputs.result == 'true'

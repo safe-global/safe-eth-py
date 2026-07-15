@@ -1,7 +1,7 @@
 import dataclasses
 import datetime
 import logging
-from functools import cache, cached_property
+from functools import cached_property
 from typing import Optional, Union
 from zoneinfo import ZoneInfo
 
@@ -16,7 +16,7 @@ from safe_eth.eth.utils import fast_keccak
 
 logger = logging.getLogger(__name__)
 
-_domain_separator_cache = {}
+_domain_separator_cache: dict[tuple[int, ChecksumAddress], bytes] = {}
 
 
 @dataclasses.dataclass(eq=True, frozen=True)
@@ -153,7 +153,6 @@ class SafeOperation:
             )
         return _domain_separator_cache[key]
 
-    @cache
     def get_safe_operation_hash(
         self, chain_id: int, module_address: ChecksumAddress
     ) -> bytes:

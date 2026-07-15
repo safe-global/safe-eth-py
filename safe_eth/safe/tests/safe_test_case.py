@@ -269,7 +269,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         assert tx_receipt["status"] == 1
 
         # Clear cached empty singleton factory
-        cls.ethereum_client.get_singleton_factory_address.cache_clear()
+        cls.ethereum_client.clear_cache()
 
         return True
 

@@ -48,6 +48,32 @@ dependencies = [
     "web3>=7",
 ]
 
+[dependency-groups]
+dev = [
+    "coverage",
+    "coveralls",
+    "faker",
+    "flake8",
+    "gitpython",
+    "hatch",
+    "ipdb",
+    "ipython",
+    "isort",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "pytest-benchmark",
+    "pytest-django",
+    "pytest-env",
+    "pytest-rerunfailures",
+    "pytest-sugar",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "types-requests",
+]
+
+
+
 [project.optional-dependencies]
 django = [
     "django-filter>=2",
@@ -120,30 +146,6 @@ sections = [
     "SAFE_FOUNDATION",
     "FIRSTPARTY",
     "LOCALFOLDER",
-]
-
-[dependency-groups]
-dev = [
-    "coverage==7.13.5",
-    "coveralls",
-    "faker==40.15.0",
-    "flake8",
-    "gitpython",
-    "hatch",
-    "ipdb",
-    "ipython",
-    "isort",
-    "mypy==1.19.1",
-    "pre-commit",
-    "pytest==9.0.3",
-    "pytest-benchmark==5.2.3",
-    "pytest-django==4.12.0",
-    "pytest-env==1.6.0",
-    "pytest-rerunfailures==16.1",
-    "pytest-sugar==1.1.1",
-    "sphinx",
-    "sphinx-rtd-theme",
-    "types-requests==2.32.4.20260107",
 ]
 
 [tool.uv]

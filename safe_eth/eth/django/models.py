@@ -45,7 +45,7 @@ class EthereumAddressBinaryField(models.Field):
         self, value: memoryview, expression, connection
     ) -> Optional[ChecksumAddress]:
         if value:
-            return fast_bytes_to_checksum_address(value)
+            return fast_bytes_to_checksum_address(bytes(value))
         return None
 
     def get_prep_value(self, value: ChecksumAddress) -> Optional[bytes]:
@@ -108,11 +108,12 @@ class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
                     if len(value) != 20:
                         raise ValueError(
                             "Cannot convert %s to a checksum address, 20 bytes were expected"
+                            % value.hex()
                         )
                 return ChecksumAddress(
                     HexAddress(HexStr(to_normalized_address(value)[2:]))
                 )
-            except ValueError:
+            except (TypeError, ValueError):
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
