@@ -165,6 +165,10 @@ async def find_deployment(
         raise ValueError(
             f"end_block ({resolved_end}) is beyond the latest block ({latest})"
         )
+    if start_block > resolved_end:
+        raise ValueError(
+            f"start_block ({start_block}) is beyond the end block ({resolved_end})"
+        )
     if not await has_code(address, resolved_end, rpc_url):
         raise ValueError(f"No code found at {address} at block {resolved_end}")
     block = await _find_deployment_block(address, rpc_url, start_block, resolved_end)
