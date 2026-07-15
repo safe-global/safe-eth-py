@@ -4011,6 +4011,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             2509701,
             "1.3.0+L2",
         ),  # v1.3.0+L2
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 2509803, "1.4.1"),  # v1.4.1
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            2509810,
+            "1.4.1+L2",
+        ),  # v1.4.1+L2
     ],
 }
 
@@ -5600,6 +5606,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.WHITECHAIN_SEPOLIA: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 2509687),  # v1.3.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2509796),  # v1.4.1
     ],
 }
 
