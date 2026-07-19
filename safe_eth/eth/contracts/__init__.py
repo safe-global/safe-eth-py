@@ -136,7 +136,7 @@ def generate_contract_fn(
     return fn
 
 
-# Anotate functions that will be generated later with `setattr` so typing does not complain
+# Annotate functions that will be generated later with `setattr` so typing does not complain
 def get_safe_contract(w3: Web3, address: Optional[ChecksumAddress] = None) -> Contract:
     """
     :param w3:
