@@ -3,7 +3,7 @@ import os
 from unittest import mock
 from unittest.mock import MagicMock, PropertyMock, patch
 
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 import pytest
 from eth_account import Account
@@ -353,4 +353,80 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             self.assertIn(
                 "Cannot decode tx data:",
                 str(context.exception),
+            )
+
+
+class TestTransactionServiceApiApiKey(SimpleTestCase):
+    """
+    The API key and request timeout are read from the environment. These tests
+    do not need network access or a real key, so they are kept out of
+    `TestTransactionServiceAPI`, which skips unless a key is configured.
+    """
+
+    ENV_API_KEY = "SAFE_TRANSACTION_SERVICE_API_KEY"
+    ENV_TIMEOUT = "SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT"
+
+    @staticmethod
+    def _ethereum_client_mock() -> MagicMock:
+        ethereum_client = MagicMock(spec=EthereumClient)
+        ethereum_client.get_network.return_value = EthereumNetwork.MAINNET
+        return ethereum_client
+
+    def test_api_key_read_from_environment_at_call_time(self):
+        # Set after the module was imported: a default argument value would
+        # have been evaluated at import time and would miss this.
+        with mock.patch.dict(os.environ, {self.ENV_API_KEY: "env-api-key"}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(EthereumNetwork.MAINNET).api_key, "env-api-key"
+            )
+
+    def test_api_key_from_environment_with_explicit_none(self):
+        # `SafeBaseAPI.from_ethereum_client` forwards `api_key=None`, which must
+        # not discard the environment value.
+        with mock.patch.dict(os.environ, {self.ENV_API_KEY: "env-api-key"}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(EthereumNetwork.MAINNET, api_key=None).api_key,
+                "env-api-key",
+            )
+            self.assertEqual(
+                TransactionServiceApi.from_ethereum_client(
+                    self._ethereum_client_mock()
+                ).api_key,
+                "env-api-key",
+            )
+
+    def test_explicit_api_key_takes_precedence(self):
+        with mock.patch.dict(os.environ, {self.ENV_API_KEY: "env-api-key"}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(
+                    EthereumNetwork.MAINNET, api_key="explicit-api-key"
+                ).api_key,
+                "explicit-api-key",
+            )
+            self.assertEqual(
+                TransactionServiceApi.from_ethereum_client(
+                    self._ethereum_client_mock(), api_key="explicit-api-key"
+                ).api_key,
+                "explicit-api-key",
+            )
+
+    def test_api_key_absent(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertIsNone(TransactionServiceApi(EthereumNetwork.MAINNET).api_key)
+
+    def test_request_timeout_read_from_environment_at_call_time(self):
+        with mock.patch.dict(os.environ, {self.ENV_TIMEOUT: "42"}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(EthereumNetwork.MAINNET).request_timeout, 42
+            )
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(EthereumNetwork.MAINNET).request_timeout, 10
+            )
+            self.assertEqual(
+                TransactionServiceApi(
+                    EthereumNetwork.MAINNET, request_timeout=5
+                ).request_timeout,
+                5,
             )

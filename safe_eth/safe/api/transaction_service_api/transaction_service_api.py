@@ -63,12 +63,20 @@ class TransactionServiceApi(SafeBaseAPI):
         network: EthereumNetwork,
         ethereum_client: Optional[EthereumClient] = None,
         base_url: Optional[str] = None,
-        api_key: Optional[str] = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
-        request_timeout: int = int(
-            os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
-        ),
+        api_key: Optional[str] = None,
+        request_timeout: Optional[int] = None,
     ):
-        super().__init__(network, ethereum_client, base_url, api_key, request_timeout)
+        # Resolved here rather than as default argument values, so that the
+        # environment is read at call time and an explicit `None` (as passed by
+        # `SafeBaseAPI.from_ethereum_client`) still falls back to it.
+        super().__init__(
+            network,
+            ethereum_client,
+            base_url,
+            api_key or os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
+            request_timeout
+            or int(os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)),
+        )
 
     def _get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
         network_short_name = self.NETWORK_SHORTNAME.get(network)
