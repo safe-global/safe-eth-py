@@ -356,7 +356,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             )
 
 
-class TestTransactionServiceApiApiKey(SimpleTestCase):
+class TestTransactionServiceApiEnvConfig(SimpleTestCase):
     """
     The API key and request timeout are read from the environment. These tests
     do not need network access or a real key, so they are kept out of
@@ -414,6 +414,21 @@ class TestTransactionServiceApiApiKey(SimpleTestCase):
         with mock.patch.dict(os.environ, {}, clear=True):
             self.assertIsNone(TransactionServiceApi(EthereumNetwork.MAINNET).api_key)
 
+    def test_empty_api_key_forces_anonymous(self):
+        # Only `None` means "not supplied". An empty string is a deliberate
+        # choice to send no Authorization header, and must survive a set
+        # environment variable.
+        with mock.patch.dict(os.environ, {self.ENV_API_KEY: "env-api-key"}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(EthereumNetwork.MAINNET, api_key="").api_key, ""
+            )
+            self.assertEqual(
+                TransactionServiceApi.from_ethereum_client(
+                    self._ethereum_client_mock(), api_key=""
+                ).api_key,
+                "",
+            )
+
     def test_request_timeout_read_from_environment_at_call_time(self):
         with mock.patch.dict(os.environ, {self.ENV_TIMEOUT: "42"}, clear=True):
             self.assertEqual(
@@ -429,4 +444,13 @@ class TestTransactionServiceApiApiKey(SimpleTestCase):
                     EthereumNetwork.MAINNET, request_timeout=5
                 ).request_timeout,
                 5,
+            )
+
+        # Same reasoning as the empty API key: 0 is a value, not an absence.
+        with mock.patch.dict(os.environ, {self.ENV_TIMEOUT: "42"}, clear=True):
+            self.assertEqual(
+                TransactionServiceApi(
+                    EthereumNetwork.MAINNET, request_timeout=0
+                ).request_timeout,
+                0,
             )

@@ -69,14 +69,17 @@ class TransactionServiceApi(SafeBaseAPI):
         # Resolved here rather than as default argument values, so that the
         # environment is read at call time and an explicit `None` (as passed by
         # `SafeBaseAPI.from_ethereum_client`) still falls back to it.
-        super().__init__(
-            network,
-            ethereum_client,
-            base_url,
-            api_key or os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
-            request_timeout
-            or int(os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)),
-        )
+        #
+        # The check is `is None` rather than a truthiness test so that any value
+        # the caller actually passed wins: `api_key=""` forces an anonymous
+        # client even when the environment variable is set.
+        if api_key is None:
+            api_key = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY")
+        if request_timeout is None:
+            request_timeout = int(
+                os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
+            )
+        super().__init__(network, ethereum_client, base_url, api_key, request_timeout)
 
     def _get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
         network_short_name = self.NETWORK_SHORTNAME.get(network)
