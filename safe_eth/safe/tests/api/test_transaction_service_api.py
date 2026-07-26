@@ -78,6 +78,14 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             transaction_service_api_calculated_base_url_with_env_api_key.api_key
         )
 
+        hyperevm_transaction_service_api = TransactionServiceApi(
+            EthereumNetwork.HYPEREVM
+        )
+        self.assertEqual(
+            hyperevm_transaction_service_api.base_url,
+            f"{hyperevm_transaction_service_api.TRANSACTION_SERVICE_BASE_URL}/hyper",
+        )
+
         with self.assertRaises(EthereumNetworkNotSupported):
             TransactionServiceApi(EthereumNetwork.BOBA_NETWORK)
 
