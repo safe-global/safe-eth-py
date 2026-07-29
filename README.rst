@@ -8,7 +8,7 @@ Safe-eth-py (previously known as Gnosis-py)
 Safe-eth-py includes a set of libraries to work with Ethereum and relevant Ethereum projects:
   - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
     tokens and tracing.
-  - `Safe <https://github.com/safe-global/safe-contracts>`_ classes and utilities.
+  - `Safe <https://github.com/safe-global/safe-smart-account>`_ classes and utilities.
   - Price oracles for `Uniswap`, `Kyber`...
   - Django serializers, models and utils.
 
@@ -141,6 +141,56 @@ Example:
 
     transaction_service_api = TransactionServiceApi(EthereumNetwork.GNOSIS)
     transactions = transaction_service_api.get_transactions("0xAedF684C1c41B51CbD228116e11484425d2FACB9")
+
+Environment variables
+----------------------
+Behaviour can be tuned with the following environment variables. All of them are optional and
+fall back to the defaults shown below.
+
+Ethereum RPC client
+~~~~~~~~~~~~~~~~~~~~~
+These are read when the module-level ``EthereumClient`` singleton (``safe_eth.eth.ethereum_client``
+and its async counterpart) is instantiated.
+
+- ``ETHEREUM_NODE_URL``: RPC node url used by the default ``EthereumClient`` singleton. No default
+  (the singleton is not usable until it is set).
+- ``ETHEREUM_RPC_TIMEOUT``: Timeout (seconds) for regular RPC calls. Default ``10``.
+- ``ETHEREUM_RPC_SLOW_TIMEOUT``: Timeout (seconds) for slow RPC calls (e.g. tracing). Default ``60``.
+- ``ETHEREUM_RPC_RETRY_COUNT``: Number of retries for RPC calls. Default ``1``.
+- ``ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE``: Maximum number of calls bundled in a single batch
+  request. Default ``500``.
+
+Caching
+~~~~~~~
+- ``CACHE_KECCAK``: ``lru_cache`` max size for keccak256 hashing. Default ``1024``.
+- ``CACHE_CHECKSUM_ADDRESS``: ``lru_cache`` max size for checksummed address conversion. Default ``500000``.
+
+Safe contract addresses
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Override the default deterministic contract addresses (useful on chains where they were deployed
+to a different address).
+
+- ``SAFE_SINGLETON_FACTORY_ADDRESS``: `Safe singleton factory <https://github.com/safe-global/safe-singleton-factory>`_
+  address. Default ``0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7``.
+- ``SAFE_SIMULATE_TX_ACCESSOR_ADDRESS``: ``SimulateTxAccessor`` contract address. Default
+  ``0x3d4BA2E0884aa488718476ca2FB8Efc291A46199``.
+
+Safe Transaction Service API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- ``SAFE_TRANSACTION_SERVICE_API_KEY``: API key (JWT) for the default Transaction Service. See
+  `Safe APIs`_ above. No default.
+- ``SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
+
+Block explorer and source verification clients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- ``ETHERSCAN_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
+- ``ETHERSCAN_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
+- ``BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
+- ``BLOCKSCOUT_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
+- ``SOURCIFY_BASE_URL_API``: Sourcify API base url. Default ``https://sourcify.dev``.
+- ``SOURCIFY_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
+- ``SOURCIFY_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
+- ``ENS_CLIENT_REQUEST_TIMEOUT``: ENS client request timeout (seconds). Default ``5``.
 
 Contributors
 ------------
