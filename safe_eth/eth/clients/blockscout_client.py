@@ -173,7 +173,7 @@ class BlockscoutClient:
         return urljoin(self.api_url, path)
 
     def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
-        response = self.http_session.get(url, timeout=10)
+        response = self.http_session.get(url, timeout=self.request_timeout)
         if not response.ok:
             return None
 

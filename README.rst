@@ -153,7 +153,10 @@ These are read when the module-level ``EthereumClient`` singleton (``safe_eth.et
 and its async counterpart) is instantiated.
 
 - ``ETHEREUM_NODE_URL``: RPC node url used by the default ``EthereumClient`` singleton. No default
-  (the singleton is not usable until it is set).
+  (the singleton is not usable until it is set). **In a Django application this variable is
+  ignored**: ``get_auto_ethereum_client`` / ``get_auto_async_ethereum_client`` read
+  ``settings.ETHEREUM_NODE_URL`` instead, and that setting is required. The environment variable is
+  only used as a fallback when Django is not installed.
 - ``ETHEREUM_RPC_TIMEOUT``: Timeout (seconds) for regular RPC calls. Default ``10``.
 - ``ETHEREUM_RPC_SLOW_TIMEOUT``: Timeout (seconds) for slow RPC calls (e.g. tracing). Default ``60``.
 - ``ETHEREUM_RPC_RETRY_COUNT``: Number of retries for RPC calls. Default ``1``.
@@ -183,10 +186,15 @@ Safe Transaction Service API
 
 Block explorer and source verification clients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ``*_MAX_REQUESTS`` variables tune the connection pool of the async clients only; the
+synchronous Etherscan and Blockscout clients do not pool connections and ignore them.
+
 - ``ETHERSCAN_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
-- ``ETHERSCAN_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
+- ``ETHERSCAN_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests (``AsyncEtherscanClientV2``
+  only). Default ``100``.
 - ``BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
-- ``BLOCKSCOUT_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
+- ``BLOCKSCOUT_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests (``AsyncBlockscoutClient``
+  only). Default ``100``.
 - ``SOURCIFY_BASE_URL_API``: Sourcify API base url. Default ``https://sourcify.dev``.
 - ``SOURCIFY_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
 - ``SOURCIFY_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
