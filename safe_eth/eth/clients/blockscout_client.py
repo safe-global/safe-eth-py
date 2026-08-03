@@ -151,6 +151,7 @@ class BlockscoutClient:
         EthereumNetwork.LITVM_LITEFORGE_TESTNET: "https://liteforge.explorer.caldera.xyz/api/v2/",
         EthereumNetwork.MIZUHIKI_TESTNET_AWAJI: "https://awaji.blockscout.com/api/v2/",
         EthereumNetwork.MOCA_CHAIN_TESTNET: "https://testnet-scan.mocachain.org/api/v2/",
+        EthereumNetwork.GRAVITY: "https://api.mainnet-explorer.gravity.xyz/api/v2/",
     }
 
     def __init__(
