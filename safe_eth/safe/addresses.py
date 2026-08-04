@@ -281,7 +281,11 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.4.1+L2",
         ),  # v1.4.1+L2
         ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 43726702, "1.5.0"),  # v1.5.0
-        ("0xEdd160fEBBD92E350D4D398fb636302fccd67C7e", 73503005, "1.5.0+L2"),  # v1.5.0+L2
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            73503005,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.AVALANCHE_C_CHAIN: [
         (
@@ -4242,7 +4246,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             23700074,
         ),  # v1.3.0 default proxy factory address
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 23116898),  # v1.4.1
-        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 43726695), # v1.5.0
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 43726695),  # v1.5.0
     ],
     EthereumNetwork.AVALANCHE_C_CHAIN: [
         (
