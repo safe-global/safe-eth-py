@@ -5751,6 +5751,9 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 26597373),  # v1.3.0
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 26598004),  # v1.3.0
     ],
+    EthereumNetwork.HEMI: [
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 4968227),  # v1.5.0
+    ],
 }
 
 
