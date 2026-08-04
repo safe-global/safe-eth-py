@@ -252,6 +252,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             8485903,
             "1.3.0",
         ),  # default singleton address
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 58172315, "1.5.0"),  # v1.5.0
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            66617696,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.CELO_MAINNET: [
         (
@@ -4277,6 +4283,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2",
             8485873,
         ),  # v1.3.0 default proxy factory address
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 58172301),  # v1.5.0
     ],
     EthereumNetwork.CELO_MAINNET: [
         (
