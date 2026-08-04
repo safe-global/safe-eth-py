@@ -4242,6 +4242,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
             23700074,
         ),  # v1.3.0 default proxy factory address
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 23116898),  # v1.4.1
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 43726695), # v1.5.0
     ],
     EthereumNetwork.AVALANCHE_C_CHAIN: [
         (
