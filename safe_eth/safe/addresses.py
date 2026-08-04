@@ -4134,6 +4134,9 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             "1.3.0+L2",
         ),  # v1.3.0+L2
     ],
+    EthereumNetwork.HEMI: [
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 4968228, "1.5.0"),  # v1.5.0
+    ],
 }
 
 PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
