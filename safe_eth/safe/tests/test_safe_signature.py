@@ -70,6 +70,36 @@ def _approved_hash_signature_sample():
     return owner, safe_tx_hash, signature
 
 
+def deploy_caller_gated_eip1271_signer(
+    test_case: EthereumTestCaseMixin, expected_caller: str
+) -> str:
+    """
+    Deploy a minimal EIP-1271 signer that returns the magic value only when ``msg.sender``
+    matches ``expected_caller`` (and 32 zero bytes otherwise). It emulates signers like the
+    ``SafeWebAuthnSharedSigner``, which stores its configuration in the Safe's storage and
+    reads it back through ``msg.sender``, so it can only validate when called by the Safe.
+    """
+    runtime_code = (
+        b"\x33"  # CALLER
+        + b"\x73"
+        + HexBytes(expected_caller)  # PUSH20 expected_caller
+        + b"\x14"  # EQ
+        + b"\x60\x1f\x57"  # PUSH1 0x1f JUMPI
+        + b"\x60\x20\x60\x00\xf3"  # RETURN 32 zero bytes (caller mismatch)
+        + b"\x5b"  # JUMPDEST (offset 0x1f)
+        + b"\x63\x16\x26\xba\x7e"  # PUSH4 EIP-1271 magic value
+        + b"\x60\xe0\x1b"  # PUSH1 0xe0 SHL
+        + b"\x60\x00\x52"  # MSTORE at offset 0
+        + b"\x60\x20\x60\x00\xf3"  # RETURN memory[0:32]
+    )
+    # CODECOPY the 0x30-byte runtime (starting at init code offset 0x0c) and return it
+    init_code = b"\x60\x30\x60\x0c\x60\x00\x39\x60\x30\x60\x00\xf3" + runtime_code
+
+    tx_hash = test_case.send_tx({"data": init_code}, test_case.ethereum_test_account)
+    tx_receipt = test_case.w3.eth.get_transaction_receipt(tx_hash)
+    return tx_receipt["contractAddress"]
+
+
 def build_eip1271_signature_for_message(test_case: "SafeTestCaseMixin"):
     account = Account.create()
     safe_owner = test_case.deploy_test_safe(owners=[account.address])
@@ -193,6 +223,20 @@ class TestSafeSignature(EthereumTestCaseMixin, TestCase):
         )
         self.assertTrue(str(safe_signature))  # Test __str__
         self.assertFalse(safe_signature.is_valid(self.ethereum_client))
+
+    def test_contract_signature_with_msg_sender_dependent_signer(self):
+        safe_address = Account.create().address
+        signer_address = deploy_caller_gated_eip1271_signer(self, safe_address)
+
+        safe_tx_hash = fast_keccak_text("safe-tx")
+        safe_signature = SafeSignatureContract.from_values(
+            signer_address, safe_tx_hash, b"", b""
+        )
+        # A from-less `eth_call` reaches the signer with `msg.sender = address(0)`,
+        # so it cannot find its configuration
+        self.assertFalse(safe_signature.is_valid(self.ethereum_client))
+        # Calling with the Safe as sender mirrors on-chain `checkSignatures`
+        self.assertTrue(safe_signature.is_valid(self.ethereum_client, safe_address))
 
     def test_approved_hash_signature(self):
         owner, safe_tx_hash, signature = _approved_hash_signature_sample()
@@ -834,6 +878,20 @@ class TestSafeSignatureAsync(AsyncSignatureTestMixin, EthereumTestCaseMixin, Tes
         )
         self.assertTrue(str(safe_signature))
         self.assertFalse(self._is_valid_async(safe_signature))
+
+    def test_contract_signature_with_msg_sender_dependent_signer(self):
+        safe_address = Account.create().address
+        signer_address = deploy_caller_gated_eip1271_signer(self, safe_address)
+
+        safe_tx_hash = fast_keccak_text("safe-tx")
+        safe_signature = SafeSignatureContractAsync.from_values(
+            signer_address, safe_tx_hash, b"", b""
+        )
+        # A from-less `eth_call` reaches the signer with `msg.sender = address(0)`,
+        # so it cannot find its configuration
+        self.assertFalse(self._is_valid_async(safe_signature))
+        # Calling with the Safe as sender mirrors on-chain `checkSignatures`
+        self.assertTrue(self._is_valid_async(safe_signature, safe_address))
 
     def test_approved_hash_signature(self):
         owner, safe_tx_hash, signature = _approved_hash_signature_sample()
