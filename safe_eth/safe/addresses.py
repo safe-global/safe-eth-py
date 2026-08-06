@@ -996,6 +996,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             60385703,
             "1.4.1+L2",
         ),  # v1.4.1+L2 canonical
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 71461865, "1.5.0"),  # v1.5.0
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            71461866,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.MANTLE_TESTNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 4404246, "1.3.0+L2"),
@@ -4657,6 +4663,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 60386388),  # v1.3.0 eip155
         ("0xc329D02fd8CB2fc13aa919005aF46320794a8629", 57957636),  # v1.4.1 zksync
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 60385637),  # v1.4.1 canonical
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 71461864),  # v1.5.0
     ],
     EthereumNetwork.MANTLE_TESTNET: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 4404053),  # v1.3.0
