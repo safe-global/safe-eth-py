@@ -996,6 +996,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             60385703,
             "1.4.1+L2",
         ),  # v1.4.1+L2 canonical
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 71461865, "1.5.0"),  # v1.5.0
     ],
     EthereumNetwork.MANTLE_TESTNET: [
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 4404246, "1.3.0+L2"),
