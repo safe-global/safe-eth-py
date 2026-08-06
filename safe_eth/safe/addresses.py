@@ -2605,6 +2605,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             454704,
             "1.3.0+L2",
         ),  # 1.3.0+L2 canonical
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 22131451, "1.5.0"),  # v1.5.0
     ],
     EthereumNetwork.SONIC_BLAZE_TESTNET: [
         ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 7541, "1.3.0"),  # v1.3.0
