@@ -2569,6 +2569,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
             5728153,
             "1.3.0+L2",
         ),  # v1.3.0+L2
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 43713955, "1.5.0"),  # v1.5.0
     ],
     EthereumNetwork.WATERFALL_9_TEST_NETWORK: [
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 7329851, "1.4.1"),  # v1.4.1
