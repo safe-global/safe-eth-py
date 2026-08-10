@@ -10,10 +10,19 @@ services:
       timeout: 5s
       retries: 3
 
-  ganache:
-    image: trufflesuite/ganache:latest
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    environment:
+      ANVIL_IP_ADDR: "0.0.0.0"
     ports:
       - "8545:8545"
-    command: --defaultBalanceEther 10000 --gasLimit 10000000 -a 10 --chain.chainId 1337 --chain.networkId 1337 -d --host 0.0.0.0
+    entrypoint: ["anvil"]
+    command:
+      - --chain-id
+      - "${ANVIL_CHAIN_ID:-1337}"
+      - -a
+      - "${ANVIL_ACCOUNTS:-10}"
+      - -m
+      - "${ANVIL_MNEMONIC:-myth like bonus scare over problem client lizard pioneer submit female collect}"
     healthcheck:
       test: bash -c "echo 'hello' > /dev/tcp/localhost/8545"
