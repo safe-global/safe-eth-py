@@ -578,6 +578,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         function_signature: str,
         data: bytes,
         signature: bytes,
+        safe_address: Optional[str] = None,
     ) -> bool:
         """
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
@@ -587,6 +588,11 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         :param function_signature: The ABI function signature to call.
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
+        :param safe_address: Optional Safe address used as the ``eth_call`` sender. On-chain the
+            Safe itself calls ``isValidSignature`` on its owner contracts (``checkSignatures``),
+            so calling with the Safe as ``msg.sender`` matches on-chain semantics and supports
+            owners that read their configuration through ``msg.sender``, like the
+            ``SafeWebAuthnSharedSigner``.
         :return: True on successful validation; otherwise False.
         """
         fallback_handler = fallback_handler_getter(ethereum_client.w3, self.owner)
@@ -595,7 +601,12 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         )
 
         try:
-            result = is_valid_signature_fn(data, signature).call()
+            if safe_address:
+                result = is_valid_signature_fn(data, signature).call(
+                    {"from": ChecksumAddress(HexAddress(HexStr(safe_address)))}
+                )
+            else:
+                result = is_valid_signature_fn(data, signature).call()
         except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
             logger.warning(
                 "Cannot check EIP1271 with %s on contract %s: %s",
@@ -621,7 +632,9 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         Falls back to the legacy method (bytes,bytes).
 
         :param ethereum_client: EthereumClient instance
-        :param safe_address: Optional Safe EthereumAddress instance.
+        :param safe_address: Optional Safe address. When provided, the EIP-1271 check is
+            performed with the Safe as the ``eth_call`` sender, mirroring how the Safe calls
+            ``isValidSignature`` on-chain.
         """
         if ethereum_client is None:
             raise ValueError(
@@ -646,6 +659,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
                 function_signature,
                 data,
                 bytes(self.contract_signature),
+                safe_address=safe_address,
             ):
                 return True
 
@@ -721,6 +735,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         function_signature: str,
         data: bytes,
         signature: bytes,
+        safe_address: Optional[str] = None,
     ) -> bool:
         """
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
@@ -730,6 +745,11 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         :param function_signature: The ABI function signature to call
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
+        :param safe_address: Optional Safe address used as the ``eth_call`` sender. On-chain the
+            Safe itself calls ``isValidSignature`` on its owner contracts (``checkSignatures``),
+            so calling with the Safe as ``msg.sender`` matches on-chain semantics and supports
+            owners that read their configuration through ``msg.sender``, like the
+            ``SafeWebAuthnSharedSigner``.
         :return: True on successful validation; otherwise False.
         """
         fallback_handler = fallback_handler_getter(web3, self.owner)
@@ -738,7 +758,12 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         )
 
         try:
-            result = await is_valid_signature_fn(data, signature).call()
+            if safe_address:
+                result = await is_valid_signature_fn(data, signature).call(
+                    {"from": ChecksumAddress(HexAddress(HexStr(safe_address)))}
+                )
+            else:
+                result = await is_valid_signature_fn(data, signature).call()
         except (Web3Exception, DecodingError, Web3ValueError, Web3RPCError) as exc:
             logger.warning(
                 "Cannot check EIP1271 with %s on contract %s: %s",
@@ -764,7 +789,9 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         Falls back to the legacy method (bytes,bytes).
 
         :param web3: Optional EthereumClient instance.
-        :param safe_address: Optional Safe EthereumAddress instance.
+        :param safe_address: Optional Safe address. When provided, the EIP-1271 check is
+            performed with the Safe as the ``eth_call`` sender, mirroring how the Safe calls
+            ``isValidSignature`` on-chain.
         """
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
@@ -787,6 +814,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
                 function_signature,
                 data,
                 bytes(self.contract_signature),
+                safe_address=safe_address,
             ):
                 return True
 
