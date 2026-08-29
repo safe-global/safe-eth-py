@@ -50,6 +50,8 @@ class BlockscoutClient:
         EthereumNetwork.HAQQ_NETWORK: "https://explorer.haqq.network/api/v2/",
         EthereumNetwork.HASHKEY_CHAIN: "https://explorer.hsk.xyz/api/v2/",
         EthereumNetwork.HASHKEY_CHAIN_TESTNET: "https://hashkeychain-testnet-explorer.alt.technology/api/v2/",
+        EthereumNetwork.HUMANITY_PROTOCOL: "https://humanity-mainnet.explorer.alchemy.com/api/v2/",
+        EthereumNetwork.HUMANITY_PROTOCOL_TESTNET: "https://humanity-testnet.explorer.alchemy.com/api/v2/",
         EthereumNetwork.IOTA_EVM: "https://iota-evm.blockscout.com/api/v2/",
         EthereumNetwork.INK: "https://explorer.inkonchain.com/api/v2/",
         EthereumNetwork.INK_SEPOLIA: "https://explorer-sepolia.inkonchain.com/api/v2/",
