@@ -2469,6 +2469,12 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 177481, "1.3.0+L2"),  # v1.3.0+L2
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 177679, "1.4.1"),  # v1.4.1
         ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762", 177708, "1.4.1+L2"),  # v1.4.1+L2
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 26105611, "1.5.0"),  # v1.5.0
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            26105613,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.OORT_MAINNETDEV: [
         ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 304563, "1.4.1"),  # v1.4.1
@@ -5349,6 +5355,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     EthereumNetwork.MORPH: [
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 177467),  # v1.3.0
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 177663),  # v1.4.1
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 26105609),  # v1.5.0
     ],
     EthereumNetwork.OORT_MAINNETDEV: [
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 304339),  # v1.4.1
