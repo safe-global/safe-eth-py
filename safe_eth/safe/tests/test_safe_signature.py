@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import logging
+from typing import Optional
 
 from django.test import TestCase
 
@@ -156,6 +157,63 @@ def setup_safe_contract_signature_case_v1_1_1(test_case: "SafeTestCaseMixin"):
     }
 
 
+def build_nested_contract_signatures(
+    test_case: "SafeTestCaseMixin",
+    *,
+    safe_version: str,
+    owner_safe_version: Optional[str] = None,
+):
+    """Build both nestings of an EIP-1271 signature from an owner Safe.
+
+    A Safe owner signs the verifying Safe's transaction as its own message. Which payload
+    it must nest is decided by the *verifying* Safe: below 1.5.0 `checkNSignatures` calls
+    `isValidSignature(bytes,bytes)` with the whole preimage, from 1.5.0
+    `checkContractSignature` calls `isValidSignature(bytes32,bytes)` with the hash. Both
+    are built here so a single deployment covers the valid and the invalid case.
+
+    :param test_case: Test case providing the deployment helpers.
+    :param safe_version: Version of the Safe that verifies the signature.
+    :param owner_safe_version: Version of the owner Safe producing it. Defaults to
+        `safe_version`; set it apart to build a cross-version pair.
+    :return: Dict with the `preimage` and `hash` nestings, and the hash and preimage they
+        were built for.
+    """
+
+    def deploy(version: str, owners):
+        deployer = getattr(test_case, f"deploy_test_safe_v{version.replace('.', '_')}")
+        return deployer(owners=owners, threshold=1)
+
+    owner_account = Account.create()
+    safe_owner = deploy(owner_safe_version or safe_version, [owner_account.address])
+    safe = deploy(safe_version, [safe_owner.address])
+
+    safe_tx = safe.build_multisig_tx(to=Account.create().address, value=0, data=b"")
+    safe_tx_hash = safe_tx.safe_tx_hash
+    safe_tx_hash_preimage = safe_tx.safe_tx_hash_preimage
+
+    def nest(nested_payload: bytes) -> bytes:
+        # The owner Safe signs `nested_payload` as its own message, which is what its
+        # `isValidSignature` reconstructs before running `checkSignatures`
+        inner_signature = owner_account.unsafe_sign_hash(
+            safe_owner.get_message_hash(nested_payload)
+        )["signature"]
+        return bytes(
+            SafeSignatureContract.from_values(
+                safe_owner.address,
+                safe_tx_hash,
+                safe_tx_hash_preimage,
+                inner_signature,
+            ).export_signature()
+        )
+
+    return {
+        "preimage": nest(safe_tx_hash_preimage),
+        "hash": nest(safe_tx_hash),
+        "safe_tx_hash": safe_tx_hash,
+        "safe_tx_hash_preimage": safe_tx_hash_preimage,
+    }
+
+
 class AsyncSignatureTestMixin:
     async_w3: AsyncWeb3
 
@@ -176,9 +234,9 @@ class AsyncSignatureTestMixin:
     def _run_async(self, coroutine):
         return asyncio.run(coroutine)
 
-    def _is_valid_async(self, signature, *args):
+    def _is_valid_async(self, signature, *args, **kwargs):
         async def runner():
-            return await signature.is_valid(self.async_w3, *args)
+            return await signature.is_valid(self.async_w3, *args, **kwargs)
 
         return self._run_async(runner())
 
@@ -823,6 +881,68 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             count += 1
         self.assertEqual(count, 2)
 
+    def test_contract_signature_entrypoint_by_safe_version(self):
+        """Only the entrypoint the verifying Safe calls on-chain is checked.
+
+        Below 1.5.0 that is `isValidSignature(bytes,bytes)` with the preimage, from 1.5.0
+        `isValidSignature(bytes32,bytes)` with the hash. Accepting the other nesting lets
+        through a signature that reverts `GS024` when the Safe is finally executed.
+        """
+        for safe_version, valid_nesting in (
+            ("1.3.0", "preimage"),
+            ("1.4.1", "preimage"),
+            ("1.5.0", "hash"),
+        ):
+            signatures = build_nested_contract_signatures(
+                self, safe_version=safe_version
+            )
+            for nesting in ("preimage", "hash"):
+                with self.subTest(safe_version=safe_version, nesting=nesting):
+                    safe_signature = SafeSignature.parse_signature(
+                        signatures[nesting],
+                        signatures["safe_tx_hash"],
+                        signatures["safe_tx_hash_preimage"],
+                    )[0]
+                    self.assertEqual(
+                        safe_signature.is_valid(
+                            self.ethereum_client, safe_version=safe_version
+                        ),
+                        nesting == valid_nesting,
+                    )
+                    # Without a version both entrypoints are checked, so a signer below
+                    # 1.5.0 (which declares both overloads) answers either nesting
+                    if valid_nesting == "preimage":
+                        self.assertTrue(safe_signature.is_valid(self.ethereum_client))
+
+    def test_contract_signature_from_v1_5_0_owner_on_older_safe(self):
+        """A 1.5.0 owner Safe can never sign for a Safe below 1.5.0.
+
+        The verifying Safe calls `isValidSignature(bytes,bytes)`, which the 1.5.0
+        `CompatibilityFallbackHandler` no longer declares, so no nesting can work.
+        """
+        signatures = build_nested_contract_signatures(
+            self, safe_version="1.4.1", owner_safe_version="1.5.0"
+        )
+        for nesting in ("preimage", "hash"):
+            with self.subTest(nesting=nesting):
+                safe_signature = SafeSignature.parse_signature(
+                    signatures[nesting],
+                    signatures["safe_tx_hash"],
+                    signatures["safe_tx_hash_preimage"],
+                )[0]
+                self.assertFalse(
+                    safe_signature.is_valid(self.ethereum_client, safe_version="1.4.1")
+                )
+
+        # Without a version the `bytes32` entrypoint answers on the 1.5.0 owner, so the
+        # signature is accepted even though no Safe below 1.5.0 can ever verify it
+        hash_signature = SafeSignature.parse_signature(
+            signatures["hash"],
+            signatures["safe_tx_hash"],
+            signatures["safe_tx_hash_preimage"],
+        )[0]
+        self.assertTrue(hash_signature.is_valid(self.ethereum_client))
+
 
 class TestSafeSignatureAsync(AsyncSignatureTestMixin, EthereumTestCaseMixin, TestCase):
     def test_contract_signature(self):
@@ -1233,3 +1353,52 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             self.assertTrue(self._is_valid_async(exported_signature, None))
             count += 1
         self.assertEqual(count, 2)
+
+    def test_contract_signature_entrypoint_by_safe_version(self):
+        """Only the entrypoint the verifying Safe calls on-chain is checked."""
+        for safe_version, valid_nesting in (
+            ("1.3.0", "preimage"),
+            ("1.4.1", "preimage"),
+            ("1.5.0", "hash"),
+        ):
+            signatures = build_nested_contract_signatures(
+                self, safe_version=safe_version
+            )
+            for nesting in ("preimage", "hash"):
+                with self.subTest(safe_version=safe_version, nesting=nesting):
+                    safe_signature = SafeSignatureAsync.parse_signature(
+                        signatures[nesting],
+                        signatures["safe_tx_hash"],
+                        signatures["safe_tx_hash_preimage"],
+                    )[0]
+                    self.assertEqual(
+                        self._is_valid_async(safe_signature, safe_version=safe_version),
+                        nesting == valid_nesting,
+                    )
+                    # Without a version both entrypoints are checked, so a signer below
+                    # 1.5.0 (which declares both overloads) answers either nesting
+                    if valid_nesting == "preimage":
+                        self.assertTrue(self._is_valid_async(safe_signature))
+
+    def test_contract_signature_from_v1_5_0_owner_on_older_safe(self):
+        """A 1.5.0 owner Safe can never sign for a Safe below 1.5.0."""
+        signatures = build_nested_contract_signatures(
+            self, safe_version="1.4.1", owner_safe_version="1.5.0"
+        )
+        for nesting in ("preimage", "hash"):
+            with self.subTest(nesting=nesting):
+                safe_signature = SafeSignatureAsync.parse_signature(
+                    signatures[nesting],
+                    signatures["safe_tx_hash"],
+                    signatures["safe_tx_hash_preimage"],
+                )[0]
+                self.assertFalse(
+                    self._is_valid_async(safe_signature, safe_version="1.4.1")
+                )
+
+        hash_signature = SafeSignatureAsync.parse_signature(
+            signatures["hash"],
+            signatures["safe_tx_hash"],
+            signatures["safe_tx_hash_preimage"],
+        )[0]
+        self.assertTrue(self._is_valid_async(hash_signature))
