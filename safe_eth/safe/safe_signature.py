@@ -621,6 +621,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         function_signature: str,
         data: bytes,
         signature: bytes,
+        expected_magic_value: HexBytes,
     ) -> bool:
         """
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
@@ -630,6 +631,11 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         :param function_signature: The ABI function signature to call.
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
+        :param expected_magic_value: The value the verifying Safe requires back for this
+            entrypoint. Each interface has its own: `ISignatureValidator` declares
+            `0x20c13b0b` up to 1.4.1 and `0x1626ba7e` from 1.5.0, and the Safe compares
+            against that one exactly. Accepting either would pass a signer that returns the
+            other, which then reverts `GS024` on the Safe.
         :return: True on successful validation; otherwise False.
         """
         fallback_handler = fallback_handler_getter(ethereum_client.w3, self.owner)
@@ -648,10 +654,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             )
             return False
 
-        return result in (
-            self.EIP1271_MAGIC_VALUE,
-            self.EIP1271_MAGIC_VALUE_UPDATED,
-        )
+        return HexBytes(result) == expected_magic_value
 
     def is_valid(
         self,
@@ -691,6 +694,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             "isValidSignature(bytes32,bytes)",
             bytes(self.safe_hash),
             bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE_UPDATED,
         ):
             return True
 
@@ -702,6 +706,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             "isValidSignature(bytes,bytes)",
             bytes(self.safe_hash_preimage),
             bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE,
         ):
             return True
 
@@ -781,6 +786,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         function_signature: str,
         data: bytes,
         signature: bytes,
+        expected_magic_value: HexBytes,
     ) -> bool:
         """
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
@@ -790,6 +796,11 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         :param function_signature: The ABI function signature to call
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
+        :param expected_magic_value: The value the verifying Safe requires back for this
+            entrypoint. Each interface has its own: `ISignatureValidator` declares
+            `0x20c13b0b` up to 1.4.1 and `0x1626ba7e` from 1.5.0, and the Safe compares
+            against that one exactly. Accepting either would pass a signer that returns the
+            other, which then reverts `GS024` on the Safe.
         :return: True on successful validation; otherwise False.
         """
         fallback_handler = fallback_handler_getter(web3, self.owner)
@@ -808,10 +819,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
             )
             return False
 
-        return result in (
-            self.EIP1271_MAGIC_VALUE,
-            self.EIP1271_MAGIC_VALUE_UPDATED,
-        )
+        return HexBytes(result) == expected_magic_value
 
     async def is_valid(
         self,
@@ -849,6 +857,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
             "isValidSignature(bytes32,bytes)",
             bytes(self.safe_hash),
             bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE_UPDATED,
         ):
             return True
 
@@ -860,6 +869,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
             "isValidSignature(bytes,bytes)",
             bytes(self.safe_hash_preimage),
             bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE,
         ):
             return True
 

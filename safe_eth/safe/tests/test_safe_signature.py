@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import logging
 from typing import Optional
+from unittest import mock
 
 from django.test import TestCase
 
@@ -26,6 +27,7 @@ from ...eth.contracts import (
 )
 from ...eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from .. import SafeOperationEnum
+from .. import safe_signature as safe_signature_module
 from ..safe_signature import (
     SafeSignature,
     SafeSignatureApprovedHash,
@@ -212,6 +214,25 @@ def build_nested_contract_signatures(
         "safe_tx_hash": safe_tx_hash,
         "safe_tx_hash_preimage": safe_tx_hash_preimage,
     }
+
+
+def fallback_handler_getter_returning(magic_value: bytes, *, is_async: bool):
+    """Stand in for the fallback handler getter, answering `magic_value` verbatim.
+
+    No Safe returns the wrong magic value for an entrypoint, so reaching that branch needs
+    a stub. An owner can be any EIP-1271 contract, not only a Safe, which is where it bites.
+    """
+    call = (
+        mock.AsyncMock(return_value=magic_value)
+        if is_async
+        else mock.MagicMock(return_value=magic_value)
+    )
+    bound_function = mock.MagicMock(call=call)
+    handler = mock.MagicMock()
+    handler.get_function_by_signature.return_value = mock.MagicMock(
+        return_value=bound_function
+    )
+    return mock.MagicMock(return_value=handler)
 
 
 class AsyncSignatureTestMixin:
@@ -943,6 +964,33 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )[0]
         self.assertTrue(hash_signature.is_valid(self.ethereum_client))
 
+    def test_contract_signature_rejects_other_interfaces_magic_value(self):
+        """A signer answering with the other interface's magic value is rejected.
+
+        `ISignatureValidator` declares `0x20c13b0b` up to 1.4.1 and `0x1626ba7e` from 1.5.0,
+        and the verifying Safe compares against its own one exactly. Accepting either would
+        pass a signer whose answer then reverts `GS024` on that Safe.
+        """
+        signatures = build_nested_contract_signatures(self, safe_version="1.5.0")
+        safe_signature = SafeSignature.parse_signature(
+            signatures["hash"],
+            signatures["safe_tx_hash"],
+            signatures["safe_tx_hash_preimage"],
+        )[0]
+        self.assertTrue(
+            safe_signature.is_valid(self.ethereum_client, safe_version="1.5.0")
+        )
+
+        legacy_magic_value = bytes(SafeSignatureContract.EIP1271_MAGIC_VALUE)
+        with mock.patch.object(
+            safe_signature_module,
+            "get_compatibility_fallback_handler_contract",
+            fallback_handler_getter_returning(legacy_magic_value, is_async=False),
+        ):
+            self.assertFalse(
+                safe_signature.is_valid(self.ethereum_client, safe_version="1.5.0")
+            )
+
 
 class TestSafeSignatureAsync(AsyncSignatureTestMixin, EthereumTestCaseMixin, TestCase):
     def test_contract_signature(self):
@@ -1402,3 +1450,26 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             signatures["safe_tx_hash_preimage"],
         )[0]
         self.assertTrue(self._is_valid_async(hash_signature))
+
+    def test_contract_signature_rejects_other_interfaces_magic_value(self):
+        """A signer answering with the other interface's magic value is rejected.
+
+        `ISignatureValidator` declares `0x20c13b0b` up to 1.4.1 and `0x1626ba7e` from 1.5.0,
+        and the verifying Safe compares against its own one exactly. Accepting either would
+        pass a signer whose answer then reverts `GS024` on that Safe.
+        """
+        signatures = build_nested_contract_signatures(self, safe_version="1.5.0")
+        safe_signature = SafeSignatureAsync.parse_signature(
+            signatures["hash"],
+            signatures["safe_tx_hash"],
+            signatures["safe_tx_hash_preimage"],
+        )[0]
+        self.assertTrue(self._is_valid_async(safe_signature, safe_version="1.5.0"))
+
+        legacy_magic_value = bytes(SafeSignatureContract.EIP1271_MAGIC_VALUE)
+        with mock.patch.object(
+            safe_signature_module,
+            "get_compatibility_fallback_handler_contract",
+            fallback_handler_getter_returning(legacy_magic_value, is_async=True),
+        ):
+            self.assertFalse(self._is_valid_async(safe_signature, safe_version="1.5.0"))
