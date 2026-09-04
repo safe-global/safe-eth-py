@@ -22,6 +22,7 @@ from eth_abi.exceptions import DecodingError
 from eth_account.messages import defunct_hash_message
 from eth_typing import BlockIdentifier, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
+from packaging.version import InvalidVersion, Version
 from typing_extensions import Self
 from web3 import AsyncWeb3, Web3
 from web3.contract import Contract
@@ -337,10 +338,14 @@ class SafeSignature(SafeSignatureBase):
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         """
         :param ethereum_client: Required for Contract Signature and Approved Hash check
         :param safe_address: Required for Approved Hash check
+        :param safe_version: Version of the Safe that will verify this signature. Required for
+            a correct Contract Signature check, as the version decides which EIP-1271 entrypoint
+            is called on-chain. Ignored by every other signature type.
         :return: `True` if signature is valid, `False` otherwise
         """
         raise NotImplementedError
@@ -352,8 +357,46 @@ class SafeSignatureAsync(SafeSignatureBase):
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
+        """
+        :param web3: Required for Contract Signature and Approved Hash check
+        :param safe_address: Required for Approved Hash check
+        :param safe_version: Version of the Safe that will verify this signature. Required for
+            a correct Contract Signature check, as the version decides which EIP-1271 entrypoint
+            is called on-chain. Ignored by every other signature type.
+        :return: `True` if signature is valid, `False` otherwise
+        """
         raise NotImplementedError
+
+
+# From this version a Safe verifies contract signatures through
+# `isValidSignature(bytes32,bytes)`; below it, through the legacy
+# `isValidSignature(bytes,bytes)`.
+EIP1271_BYTES32_MIN_VERSION = Version("1.5.0")
+
+
+def uses_bytes32_eip1271(safe_version: str) -> bool:
+    """Whether a Safe of `safe_version` verifies contract signatures with the hash.
+
+    The single home for the rule: `checkContractSignature` on a Safe >= 1.5.0 calls
+    `isValidSignature(bytes32,bytes)` with `dataHash`, while `checkNSignatures` below that
+    calls the legacy `isValidSignature(bytes,bytes)` with the whole preimage. Callers that
+    report a rejection need the same answer to name the entrypoint, so they should ask here
+    rather than compare against `EIP1271_BYTES32_MIN_VERSION` themselves.
+
+    :param safe_version: Version of the Safe that verifies the signature.
+    :return: `True` from 1.5.0 on, `False` below.
+    :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared. Raised
+        instead of `packaging`'s `InvalidVersion` so callers handle one Safe-domain error and
+        do not each reimplement the translation. `VERSION()` is an arbitrary on-chain string.
+    """
+    try:
+        return Version(safe_version) >= EIP1271_BYTES32_MIN_VERSION
+    except InvalidVersion as exc:
+        raise CannotCheckEIP1271ContractSignature(
+            f"Cannot tell which EIP-1271 entrypoint Safe version {safe_version!r} uses"
+        ) from exc
 
 
 class SafeSignatureContractMixin(SafeSignatureBase):
@@ -578,6 +621,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         function_signature: str,
         data: bytes,
         signature: bytes,
+        expected_magic_value: HexBytes,
     ) -> bool:
         """
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
@@ -587,6 +631,11 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         :param function_signature: The ABI function signature to call.
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
+        :param expected_magic_value: The value the verifying Safe requires back for this
+            entrypoint. Each interface has its own: `ISignatureValidator` declares
+            `0x20c13b0b` up to 1.4.1 and `0x1626ba7e` from 1.5.0, and the Safe compares
+            against that one exactly. Accepting either would pass a signer that returns the
+            other, which then reverts `GS024` on the Safe.
         :return: True on successful validation; otherwise False.
         """
         fallback_handler = fallback_handler_getter(ethereum_client.w3, self.owner)
@@ -605,49 +654,61 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             )
             return False
 
-        return result in (
-            self.EIP1271_MAGIC_VALUE,
-            self.EIP1271_MAGIC_VALUE_UPDATED,
-        )
+        return HexBytes(result) == expected_magic_value
 
     def is_valid(
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         """
-        Validate the signature using the appropriate EIP-1271 path.
-        First tries the updated method (bytes32,bytes).
-        Falls back to the legacy method (bytes,bytes).
+        Validate the signature through the EIP-1271 entrypoint the verifying Safe uses.
 
         :param ethereum_client: EthereumClient instance
         :param safe_address: Optional Safe EthereumAddress instance.
+        :param safe_version: Version of the Safe that will verify this signature. Only the
+            entrypoint that version calls on-chain is checked. Defaults to `None`, which checks
+            both and so can return `True` for a signature that reverts `GS024` on that Safe;
+            pass a version whenever it is known.
+        :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared.
         """
         if ethereum_client is None:
             raise ValueError(
                 "ethereum_client is required to validate contract signature"
             )
 
-        for fallback_handler_getter, function_signature, data in (
-            (
-                get_compatibility_fallback_handler_contract,
-                "isValidSignature(bytes32,bytes)",
-                bytes(self.safe_hash),
-            ),
-            (
-                get_compatibility_fallback_handler_V1_4_1_contract,
-                "isValidSignature(bytes,bytes)",
-                bytes(self.safe_hash_preimage),
-            ),
+        # Only one entrypoint is ever called on-chain and the verifying Safe's version
+        # decides which: `checkContractSignature` on a Safe >= 1.5.0 hands `dataHash` to the
+        # signer, while `checkNSignatures` below that hands over the whole preimage. `None`
+        # means the caller does not know, so both are tried.
+        if safe_version is None:
+            try_bytes32 = try_legacy = True
+        else:
+            try_bytes32 = uses_bytes32_eip1271(safe_version)
+            try_legacy = not try_bytes32
+
+        if try_bytes32 and self._check_eip1271(
+            ethereum_client,
+            get_compatibility_fallback_handler_contract,
+            "isValidSignature(bytes32,bytes)",
+            bytes(self.safe_hash),
+            bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE_UPDATED,
         ):
-            if self._check_eip1271(
-                ethereum_client,
-                fallback_handler_getter,
-                function_signature,
-                data,
-                bytes(self.contract_signature),
-            ):
-                return True
+            return True
+
+        # Dropped from the 1.5.0 `CompatibilityFallbackHandler`, so a 1.5.0 signer does not
+        # declare this overload at all and can never answer here
+        if try_legacy and self._check_eip1271(
+            ethereum_client,
+            get_compatibility_fallback_handler_V1_4_1_contract,
+            "isValidSignature(bytes,bytes)",
+            bytes(self.safe_hash_preimage),
+            bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE,
+        ):
+            return True
 
         return False
 
@@ -657,6 +718,7 @@ class SafeSignatureApprovedHash(SafeSignatureApprovedHashMixin, SafeSignature):
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         if ethereum_client is None:
             raise ValueError("ethereum_client is required to validate approved hash")
@@ -689,6 +751,7 @@ class SafeSignatureEthSign(SafeSignatureEthSignMixin, SafeSignature):
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         return True
 
@@ -698,6 +761,7 @@ class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         return True
 
@@ -707,6 +771,7 @@ class SafeSignatureP256(SafeSignatureP256Mixin, SafeSignature):
         self,
         ethereum_client: Optional[EthereumClient] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         return self._is_valid()
 
@@ -721,6 +786,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         function_signature: str,
         data: bytes,
         signature: bytes,
+        expected_magic_value: HexBytes,
     ) -> bool:
         """
         Attempt to validate an EIP-1271 signature using a specific CompatibilityFallbackHandler and function signature.
@@ -730,6 +796,11 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         :param function_signature: The ABI function signature to call
         :param data: The data or hash to be validated, depending on the Safe version.
         :param signature: The contract signature payload to validate.
+        :param expected_magic_value: The value the verifying Safe requires back for this
+            entrypoint. Each interface has its own: `ISignatureValidator` declares
+            `0x20c13b0b` up to 1.4.1 and `0x1626ba7e` from 1.5.0, and the Safe compares
+            against that one exactly. Accepting either would pass a signer that returns the
+            other, which then reverts `GS024` on the Safe.
         :return: True on successful validation; otherwise False.
         """
         fallback_handler = fallback_handler_getter(web3, self.owner)
@@ -748,47 +819,59 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
             )
             return False
 
-        return result in (
-            self.EIP1271_MAGIC_VALUE,
-            self.EIP1271_MAGIC_VALUE_UPDATED,
-        )
+        return HexBytes(result) == expected_magic_value
 
     async def is_valid(
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         """
-        Validate the signature using the appropriate EIP-1271 path.
-        First tries the updated method (bytes32,bytes).
-        Falls back to the legacy method (bytes,bytes).
+        Validate the signature through the EIP-1271 entrypoint the verifying Safe uses.
 
         :param web3: Optional EthereumClient instance.
         :param safe_address: Optional Safe EthereumAddress instance.
+        :param safe_version: Version of the Safe that will verify this signature. Only the
+            entrypoint that version calls on-chain is checked. Defaults to `None`, which checks
+            both and so can return `True` for a signature that reverts `GS024` on that Safe;
+            pass a version whenever it is known.
+        :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared.
         """
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
 
-        for fallback_handler_getter, function_signature, data in (
-            (
-                get_compatibility_fallback_handler_contract,
-                "isValidSignature(bytes32,bytes)",
-                bytes(self.safe_hash),
-            ),
-            (
-                get_compatibility_fallback_handler_V1_4_1_contract,
-                "isValidSignature(bytes,bytes)",
-                bytes(self.safe_hash_preimage),
-            ),
+        # Only one entrypoint is ever called on-chain and the verifying Safe's version
+        # decides which: `checkContractSignature` on a Safe >= 1.5.0 hands `dataHash` to the
+        # signer, while `checkNSignatures` below that hands over the whole preimage. `None`
+        # means the caller does not know, so both are tried.
+        if safe_version is None:
+            try_bytes32 = try_legacy = True
+        else:
+            try_bytes32 = uses_bytes32_eip1271(safe_version)
+            try_legacy = not try_bytes32
+
+        if try_bytes32 and await self._check_eip1271(
+            web3,
+            get_compatibility_fallback_handler_contract,
+            "isValidSignature(bytes32,bytes)",
+            bytes(self.safe_hash),
+            bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE_UPDATED,
         ):
-            if await self._check_eip1271(
-                web3,
-                fallback_handler_getter,
-                function_signature,
-                data,
-                bytes(self.contract_signature),
-            ):
-                return True
+            return True
+
+        # Dropped from the 1.5.0 `CompatibilityFallbackHandler`, so a 1.5.0 signer does not
+        # declare this overload at all and can never answer here
+        if try_legacy and await self._check_eip1271(
+            web3,
+            get_compatibility_fallback_handler_V1_4_1_contract,
+            "isValidSignature(bytes,bytes)",
+            bytes(self.safe_hash_preimage),
+            bytes(self.contract_signature),
+            self.EIP1271_MAGIC_VALUE,
+        ):
+            return True
 
         return False
 
@@ -800,6 +883,7 @@ class SafeSignatureApprovedHashAsync(
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         if web3 is None:
             raise ValueError("web3 is required to validate approved hash")
@@ -830,6 +914,7 @@ class SafeSignatureEthSignAsync(SafeSignatureEthSignMixin, SafeSignatureAsync):
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         return True
 
@@ -839,6 +924,7 @@ class SafeSignatureEOAAsync(SafeSignatureEOAMixin, SafeSignatureAsync):
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         return True
 
@@ -848,6 +934,7 @@ class SafeSignatureP256Async(SafeSignatureP256Mixin, SafeSignatureAsync):
         self,
         web3: Optional[AsyncWeb3] = None,
         safe_address: Optional[str] = None,
+        safe_version: Optional[str] = None,
     ) -> bool:
         return self._is_valid()
 
