@@ -4309,6 +4309,7 @@ MASTER_COPIES: Dict[EthereumNetwork, List[Tuple[str, int, str]]] = {
     EthereumNetwork.ZENITH_EVM_TESTNET: [
         ("0x69f4D1788e39c87893C980c06EdF4b7f686e2938", 225174, "1.3.0"),  # v1.3.0
         ("0xfb1bffC9d739B8D520DaF37dF666da4C687191EA", 225176, "1.3.0+L2"),  # v1.3.0+L2
+        ("0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552", 225156, "1.3.0"),  # v1.3.0
     ],
 }
 
