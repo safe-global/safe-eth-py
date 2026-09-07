@@ -5970,6 +5970,7 @@ PROXY_FACTORIES: Dict[EthereumNetwork, List[Tuple[str, int]]] = {
     ],
     EthereumNetwork.ZENITH_EVM_TESTNET: [
         ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 225217),  # v1.5.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 225191), # v1.4.1
     ],
 }
 
