@@ -29,6 +29,7 @@ from ...eth.tests.ethereum_test_case import EthereumTestCaseMixin
 from .. import SafeOperationEnum
 from .. import safe_signature as safe_signature_module
 from ..safe_signature import (
+    CannotCheckEIP1271ContractSignature,
     SafeSignature,
     SafeSignatureApprovedHash,
     SafeSignatureApprovedHashAsync,
@@ -622,7 +623,11 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         signature_s = fixture["signature_s"]
         signature_v = fixture["signature_v"]
 
-        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
+        # The owner Safe signed `safe_tx_hash` itself as its message, so that hash is
+        # also the data the legacy `isValidSignature(bytes,bytes)` entrypoint takes
+        safe_signature = SafeSignature.parse_signature(
+            signature, safe_tx_hash, safe_tx_hash
+        )[0]
         self.assertIsInstance(safe_signature, SafeSignatureContract)
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
@@ -634,13 +639,17 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         safe_tx.sign(owner_1.key)
         safe_tx.execute(owner_1.key)
 
-        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
+        safe_signature = SafeSignature.parse_signature(
+            signature, safe_tx_hash, safe_tx_hash
+        )[0]
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
         self.assertIsInstance(safe_signature, SafeSignatureContract)
 
         # Check with crafted signature
         safe_tx_hash_2 = fast_keccak_text("test2")
-        safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash_2)[0]
+        safe_signature = SafeSignature.parse_signature(
+            signature, safe_tx_hash_2, safe_tx_hash_2
+        )[0]
         self.assertFalse(safe_signature.is_valid(self.ethereum_client, None))
 
         safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
@@ -661,7 +670,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             signature_r + signature_s + signature_v + encoded_contract_signature
         )
         safe_signature = SafeSignature.parse_signature(
-            crafted_signature, safe_tx_hash_2
+            crafted_signature, safe_tx_hash_2, safe_tx_hash_2
         )[0]
         self.assertEqual(contract_signature, safe_signature.contract_signature)
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
@@ -796,7 +805,9 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
 
         count = 0
         for safe_signature, contract_signature in zip(
-            SafeSignature.parse_signature(signature, safe_tx_hash),
+            # The owner Safe signed `safe_tx_hash` itself as its message, so that hash is
+            # also the data the legacy `isValidSignature(bytes,bytes)` entrypoint takes
+            SafeSignature.parse_signature(signature, safe_tx_hash, safe_tx_hash),
             [contract_signature_1, contract_signature_2],
         ):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
@@ -806,7 +817,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             )
             # Test exported signature
             exported_signature = SafeSignature.parse_signature(
-                safe_signature.export_signature(), safe_tx_hash
+                safe_signature.export_signature(), safe_tx_hash, safe_tx_hash
             )[0]
             self.assertEqual(
                 exported_signature.contract_signature, safe_signature.contract_signature
@@ -991,6 +1002,47 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
                 safe_signature.is_valid(self.ethereum_client, safe_version="1.5.0")
             )
 
+    def test_contract_signature_without_preimage(self):
+        """An unknown preimage raises for a Safe below 1.5.0 instead of reporting invalid.
+
+        `parse_signature` leaves `safe_hash_preimage` unknown when the caller does not have
+        it. `safe_hash` cannot stand in for it on the legacy entrypoint: the signer hashes
+        whatever it receives, so it would reject a valid signature.
+        """
+        signatures = build_nested_contract_signatures(self, safe_version="1.4.1")
+        safe_signature = SafeSignature.parse_signature(
+            signatures["preimage"], signatures["safe_tx_hash"]
+        )[0]
+        self.assertIsNone(safe_signature.safe_hash_preimage)
+
+        with self.assertRaises(CannotCheckEIP1271ContractSignature):
+            safe_signature.is_valid(self.ethereum_client, safe_version="1.4.1")
+
+        # Without a version only the `bytes32` entrypoint is left to check, and the preimage
+        # nesting does not answer there
+        self.assertFalse(safe_signature.is_valid(self.ethereum_client))
+
+        # The same signature is valid once the preimage is known
+        with_preimage = SafeSignature.parse_signature(
+            signatures["preimage"],
+            signatures["safe_tx_hash"],
+            signatures["safe_tx_hash_preimage"],
+        )[0]
+        self.assertTrue(
+            with_preimage.is_valid(self.ethereum_client, safe_version="1.4.1")
+        )
+
+    def test_contract_signature_without_preimage_from_v1_5_0(self):
+        """A Safe from 1.5.0 verifies with the hash, so it needs no preimage."""
+        signatures = build_nested_contract_signatures(self, safe_version="1.5.0")
+        safe_signature = SafeSignature.parse_signature(
+            signatures["hash"], signatures["safe_tx_hash"]
+        )[0]
+        self.assertIsNone(safe_signature.safe_hash_preimage)
+        self.assertTrue(
+            safe_signature.is_valid(self.ethereum_client, safe_version="1.5.0")
+        )
+
 
 class TestSafeSignatureAsync(AsyncSignatureTestMixin, EthereumTestCaseMixin, TestCase):
     def test_contract_signature(self):
@@ -1142,7 +1194,11 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         signature_s = fixture["signature_s"]
         signature_v = fixture["signature_v"]
 
-        safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash)[0]
+        # The owner Safe signed `safe_tx_hash` itself as its message, so that hash is
+        # also the data the legacy `isValidSignature(bytes,bytes)` entrypoint takes
+        safe_signature = SafeSignatureAsync.parse_signature(
+            signature, safe_tx_hash, safe_tx_hash
+        )[0]
         self.assertIsInstance(safe_signature, SafeSignatureContractAsync)
         self.assertFalse(self._is_valid_async(safe_signature, None))
 
@@ -1153,14 +1209,16 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         safe_tx.sign(owner.key)
         safe_tx.execute(owner.key)
 
-        safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash)[0]
+        safe_signature = SafeSignatureAsync.parse_signature(
+            signature, safe_tx_hash, safe_tx_hash
+        )[0]
         self.assertTrue(self._is_valid_async(safe_signature, None))
         self.assertIsInstance(safe_signature, SafeSignatureContractAsync)
 
         safe_tx_hash_2 = fast_keccak_text("test2")
-        safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash_2)[
-            0
-        ]
+        safe_signature = SafeSignatureAsync.parse_signature(
+            signature, safe_tx_hash_2, safe_tx_hash_2
+        )[0]
         self.assertFalse(self._is_valid_async(safe_signature, None))
 
         safe_tx_hash_2_message_hash = safe_contract.functions.getMessageHash(
@@ -1178,7 +1236,7 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             signature_r + signature_s + signature_v + encoded_contract_signature
         )
         safe_signature = SafeSignatureAsync.parse_signature(
-            crafted_signature, safe_tx_hash_2
+            crafted_signature, safe_tx_hash_2, safe_tx_hash_2
         )[0]
         self.assertEqual(contract_signature, safe_signature.contract_signature)
         self.assertTrue(self._is_valid_async(safe_signature, None))
@@ -1304,7 +1362,9 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
 
         count = 0
         for safe_signature, contract_signature in zip(
-            SafeSignatureAsync.parse_signature(signature, safe_tx_hash),
+            # The owner Safe signed `safe_tx_hash` itself as its message, so that hash is
+            # also the data the legacy `isValidSignature(bytes,bytes)` entrypoint takes
+            SafeSignatureAsync.parse_signature(signature, safe_tx_hash, safe_tx_hash),
             [contract_signature_1, contract_signature_2],
         ):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
@@ -1313,7 +1373,7 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
                 safe_signature.signature_type, SafeSignatureType.CONTRACT_SIGNATURE
             )
             exported_signature = SafeSignatureAsync.parse_signature(
-                safe_signature.export_signature(), safe_tx_hash
+                safe_signature.export_signature(), safe_tx_hash, safe_tx_hash
             )[0]
             self.assertEqual(
                 exported_signature.contract_signature, safe_signature.contract_signature
@@ -1473,3 +1533,40 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             fallback_handler_getter_returning(legacy_magic_value, is_async=True),
         ):
             self.assertFalse(self._is_valid_async(safe_signature, safe_version="1.5.0"))
+
+    def test_contract_signature_without_preimage(self):
+        """An unknown preimage raises for a Safe below 1.5.0 instead of reporting invalid.
+
+        `parse_signature` leaves `safe_hash_preimage` unknown when the caller does not have
+        it. `safe_hash` cannot stand in for it on the legacy entrypoint: the signer hashes
+        whatever it receives, so it would reject a valid signature.
+        """
+        signatures = build_nested_contract_signatures(self, safe_version="1.4.1")
+        safe_signature = SafeSignatureAsync.parse_signature(
+            signatures["preimage"], signatures["safe_tx_hash"]
+        )[0]
+        self.assertIsNone(safe_signature.safe_hash_preimage)
+
+        with self.assertRaises(CannotCheckEIP1271ContractSignature):
+            self._is_valid_async(safe_signature, safe_version="1.4.1")
+
+        # Without a version only the `bytes32` entrypoint is left to check, and the preimage
+        # nesting does not answer there
+        self.assertFalse(self._is_valid_async(safe_signature))
+
+        # The same signature is valid once the preimage is known
+        with_preimage = SafeSignatureAsync.parse_signature(
+            signatures["preimage"],
+            signatures["safe_tx_hash"],
+            signatures["safe_tx_hash_preimage"],
+        )[0]
+        self.assertTrue(self._is_valid_async(with_preimage, safe_version="1.4.1"))
+
+    def test_contract_signature_without_preimage_from_v1_5_0(self):
+        """A Safe from 1.5.0 verifies with the hash, so it needs no preimage."""
+        signatures = build_nested_contract_signatures(self, safe_version="1.5.0")
+        safe_signature = SafeSignatureAsync.parse_signature(
+            signatures["hash"], signatures["safe_tx_hash"]
+        )[0]
+        self.assertIsNone(safe_signature.safe_hash_preimage)
+        self.assertTrue(self._is_valid_async(safe_signature, safe_version="1.5.0"))

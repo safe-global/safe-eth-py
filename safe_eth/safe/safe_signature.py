@@ -137,7 +137,11 @@ class SafeSignatureBase(ABC):
         """
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_hash: Signed hash for the Safe (message or transaction)
-        :param safe_hash_preimage: ``safe_hash`` preimage for EIP1271 validation
+        :param safe_hash_preimage: ``safe_hash`` preimage for EIP1271 validation. A Safe below
+            1.5.0 hands the whole preimage to the signer, so validating a contract signature
+            against one of those versions needs it. Defaults to ``None``, and
+            ``SafeSignatureContract.is_valid`` then raises for such a version instead of
+            reporting a valid signature as invalid.
         :param ignore_trailing: Ignore trailing data on the signature. Some libraries pad it and add some zeroes at
             the end
         :return: List of SafeSignatures decoded
@@ -180,7 +184,7 @@ class SafeSignatureBase(ABC):
                     cast(Type[Any], safe_signature_cls)(
                         signature,
                         safe_hash,
-                        safe_hash_preimage or safe_hash,
+                        safe_hash_preimage,
                         contract_signature,
                     ),
                 )
@@ -407,11 +411,16 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         self,
         signature: EthereumBytes,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: EthereumBytes,
+        safe_hash_preimage: Optional[EthereumBytes],
         contract_signature: EthereumBytes,
     ):
         super().__init__(signature, safe_hash)
-        self.safe_hash_preimage: HexBytes = HexBytes(safe_hash_preimage)
+        # `None` means the caller did not have it. It is only needed to reach the legacy
+        # entrypoint, so it stays unknown instead of falling back to `safe_hash`, which
+        # would make a Safe below 1.5.0 hash the wrong data and reject a valid signature.
+        self.safe_hash_preimage: Optional[HexBytes] = (
+            HexBytes(safe_hash_preimage) if safe_hash_preimage is not None else None
+        )
         self.contract_signature: HexBytes = HexBytes(contract_signature)
 
     @classmethod
@@ -419,7 +428,7 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         cls,
         safe_owner: ChecksumAddress,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: EthereumBytes,
+        safe_hash_preimage: Optional[EthereumBytes],
         contract_signature: EthereumBytes,
     ) -> Self:
         signature = signature_to_bytes(
@@ -434,6 +443,22 @@ class SafeSignatureContractMixin(SafeSignatureBase):
     @property
     def signature_type(self) -> SafeSignatureType:
         return SafeSignatureType.CONTRACT_SIGNATURE
+
+    def _legacy_eip1271_data(self) -> bytes:
+        """
+        Data for the legacy ``isValidSignature(bytes,bytes)`` entrypoint: the whole
+        ``safe_hash`` preimage, which is what a Safe below 1.5.0 hands to the signer.
+
+        :return: ``safe_hash_preimage``
+        :raises CannotCheckEIP1271ContractSignature: If the preimage is unknown. The signer
+            hashes whatever it receives, so any stand-in makes it reject a valid signature.
+        """
+        if self.safe_hash_preimage is None:
+            raise CannotCheckEIP1271ContractSignature(
+                "safe_hash_preimage is required to check the legacy EIP-1271 "
+                f"entrypoint on contract {self.owner}"
+            )
+        return bytes(self.safe_hash_preimage)
 
     def export_signature(self) -> HexBytes:
         """
@@ -671,7 +696,9 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             entrypoint that version calls on-chain is checked. Defaults to `None`, which checks
             both and so can return `True` for a signature that reverts `GS024` on that Safe;
             pass a version whenever it is known.
-        :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared.
+        :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared, or
+            if it names a Safe that uses the legacy entrypoint and `safe_hash_preimage` is
+            unknown.
         """
         if ethereum_client is None:
             raise ValueError(
@@ -683,7 +710,10 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
         # signer, while `checkNSignatures` below that hands over the whole preimage. `None`
         # means the caller does not know, so both are tried.
         if safe_version is None:
-            try_bytes32 = try_legacy = True
+            try_bytes32 = True
+            # The legacy entrypoint takes the whole preimage, so with an unknown one there
+            # is nothing to call here; the `bytes32` attempt still answers
+            try_legacy = self.safe_hash_preimage is not None
         else:
             try_bytes32 = uses_bytes32_eip1271(safe_version)
             try_legacy = not try_bytes32
@@ -704,7 +734,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
             ethereum_client,
             get_compatibility_fallback_handler_V1_4_1_contract,
             "isValidSignature(bytes,bytes)",
-            bytes(self.safe_hash_preimage),
+            self._legacy_eip1271_data(),
             bytes(self.contract_signature),
             self.EIP1271_MAGIC_VALUE,
         ):
@@ -836,7 +866,9 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
             entrypoint that version calls on-chain is checked. Defaults to `None`, which checks
             both and so can return `True` for a signature that reverts `GS024` on that Safe;
             pass a version whenever it is known.
-        :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared.
+        :raises CannotCheckEIP1271ContractSignature: If `safe_version` cannot be compared, or
+            if it names a Safe that uses the legacy entrypoint and `safe_hash_preimage` is
+            unknown.
         """
         if web3 is None:
             raise ValueError("web3 is required to validate contract signature")
@@ -846,7 +878,10 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
         # signer, while `checkNSignatures` below that hands over the whole preimage. `None`
         # means the caller does not know, so both are tried.
         if safe_version is None:
-            try_bytes32 = try_legacy = True
+            try_bytes32 = True
+            # The legacy entrypoint takes the whole preimage, so with an unknown one there
+            # is nothing to call here; the `bytes32` attempt still answers
+            try_legacy = self.safe_hash_preimage is not None
         else:
             try_bytes32 = uses_bytes32_eip1271(safe_version)
             try_legacy = not try_bytes32
@@ -867,7 +902,7 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
             web3,
             get_compatibility_fallback_handler_V1_4_1_contract,
             "isValidSignature(bytes,bytes)",
-            bytes(self.safe_hash_preimage),
+            self._legacy_eip1271_data(),
             bytes(self.contract_signature),
             self.EIP1271_MAGIC_VALUE,
         ):
