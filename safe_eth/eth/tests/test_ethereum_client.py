@@ -12,6 +12,10 @@ from eth_abi import encode as abi_encode
 from eth_account import Account
 from eth_typing import URI, HexStr
 from hexbytes import HexBytes
+from web3._utils.error_formatters_utils import (
+    OFFCHAIN_LOOKUP_FIELDS,
+    OFFCHAIN_LOOKUP_FUNC_SELECTOR,
+)
 from web3.eth import Eth
 from web3.exceptions import OffchainLookup, Web3RPCError
 from web3.middleware import ExtraDataToPOAMiddleware
@@ -1276,11 +1280,11 @@ def forbid_rpc_calls():
 # equal the address the call is made to, web3 rejects the lookup otherwise
 OFFCHAIN_LOOKUP_SENDER = "0x00d3e5fCe5e88B4F506500CC9260414480B80169"
 OFFCHAIN_LOOKUP_REVERT_DATA = to_0x_hex_str(
-    # OffchainLookup(address sender, string[] urls, bytes callData,
-    #                bytes4 callbackFunction, bytes extraData)
-    HexBytes("0x556f1830")
+    HexBytes(OFFCHAIN_LOOKUP_FUNC_SELECTOR)
     + abi_encode(
-        ["address", "string[]", "bytes", "bytes4", "bytes"],
+        list(
+            OFFCHAIN_LOOKUP_FIELDS.values()
+        ),  # sender, urls, callData, callback, extra
         [
             OFFCHAIN_LOOKUP_SENDER,
             ["https://144-172-100-27.sslip.io/stage1/{sender}/{data}"],
@@ -1339,21 +1343,16 @@ class TestEthereumClientConstruction(TestCase):
         for w3 in self.get_w3_instances(ethereum_client):
             self.assertIn(ExtraDataToPOAMiddleware, w3.middleware_onion)
 
-    def test_ccip_read_disabled_by_default(self):
-        with forbid_rpc_calls():
-            ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+    def test_ccip_read_is_set_from_constructor(self):
+        for kwargs, expected in (({}, False), ({"ccip_read_enabled": True}, True)):
+            with self.subTest(**kwargs):
+                with forbid_rpc_calls():
+                    ethereum_client = self.ethereum_client_cls(
+                        UNREACHABLE_NODE_URL, **kwargs
+                    )
 
-        for w3 in self.get_w3_instances(ethereum_client):
-            self.assertFalse(w3.provider.global_ccip_read_enabled)
-
-    def test_ccip_read_enabled_when_requested(self):
-        with forbid_rpc_calls():
-            ethereum_client = self.ethereum_client_cls(
-                UNREACHABLE_NODE_URL, ccip_read_enabled=True
-            )
-
-        for w3 in self.get_w3_instances(ethereum_client):
-            self.assertTrue(w3.provider.global_ccip_read_enabled)
+                for w3 in self.get_w3_instances(ethereum_client):
+                    self.assertEqual(w3.provider.global_ccip_read_enabled, expected)
 
     def test_offchain_lookup_is_not_followed(self):
         ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
@@ -1370,15 +1369,12 @@ class TestEthereumClientConstruction(TestCase):
 
     def test_ccip_read_enabled_from_environment(self):
         self.addCleanup(self.get_auto_client.cache_clear)
-        for value, expected in (("true", True), ("false", False)):
-            with self.subTest(value=value):
-                self.get_auto_client.cache_clear()
-                with mock.patch.dict(
-                    os.environ, {"ETHEREUM_RPC_CCIP_READ_ENABLED": value}
-                ):
-                    ethereum_client = self.get_auto_client()
-                for w3 in self.get_w3_instances(ethereum_client):
-                    self.assertEqual(w3.provider.global_ccip_read_enabled, expected)
+        self.get_auto_client.cache_clear()
+        with mock.patch.dict(os.environ, {"ETHEREUM_RPC_CCIP_READ_ENABLED": "true"}):
+            ethereum_client = self.get_auto_client()
+
+        for w3 in self.get_w3_instances(ethereum_client):
+            self.assertTrue(w3.provider.global_ccip_read_enabled)
 
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):

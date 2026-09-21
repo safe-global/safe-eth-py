@@ -1475,7 +1475,9 @@ class EthereumClient:
         :param retry_count: Retry count for failed requests
         :param use_request_caching: Use web3 request caching https://web3py.readthedocs.io/en/latest/internals.html#request-caching
         :param batch_request_max_size: Max size for JSON RPC Batch requests. Some providers have a limitation on 500
-        :param ccip_read_enabled: Allow CCIP-Read (ERC-3668) offchain lookups on ``eth_call``
+        :param ccip_read_enabled: Allow CCIP-Read (ERC-3668) offchain lookups on
+            ``eth_call``. A queried contract can then drive outbound HTTP requests from
+            this process, so only enable it when every contract queried is trusted
 
         Constructing the client performs no network I/O, the RPC is first contacted
         when a method requiring it is called.
@@ -1525,9 +1527,8 @@ class EthereumClient:
           ``eth_chainId`` call during ``__init__`` just to detect the network.
           On Mainnet its only effect is that block responses expose
           ``proofOfAuthorityData`` instead of ``extraData``.
-        - Set CCIP-Read (ERC-3668) on the provider: it makes ``eth_call`` follow a url
-          embedded in a contract revert, so any contract queried can drive outbound
-          HTTP requests from this process. Only enable it for trusted contracts.
+        - Set CCIP-Read (ERC-3668) on the provider: whether ``eth_call`` follows an
+          offchain url embedded in a contract revert.
         """
         for w3 in w3s:
             w3.middleware_onion.remove("attrdict")

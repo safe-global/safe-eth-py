@@ -3,8 +3,8 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-TRUTHY_ENV_VALUES = ("1", "true", "yes", "on")
-FALSY_ENV_VALUES = ("0", "false", "no", "off")
+_TRUTHY_ENV_VALUES = ("1", "true", "yes", "on")
+_FALSY_ENV_VALUES = ("0", "false", "no", "off")
 
 
 def get_bool_env(name: str, default: bool = False) -> bool:
@@ -21,9 +21,9 @@ def get_bool_env(name: str, default: bool = False) -> bool:
     if value is None:
         return default
     normalized_value = value.strip().lower()
-    if normalized_value in TRUTHY_ENV_VALUES:
+    if normalized_value in _TRUTHY_ENV_VALUES:
         return True
-    if normalized_value in FALSY_ENV_VALUES:
+    if normalized_value in _FALSY_ENV_VALUES:
         return False
     logger.warning(
         "Environment variable %s=%s is not a boolean, using %s",
