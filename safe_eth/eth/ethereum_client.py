@@ -98,18 +98,6 @@ from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
 
-# `web3` validates CCIP-Read urls and rejects private address ranges from 7.15.0
-# onwards. Older versions expose no validator attribute and follow any url given.
-CCIP_READ_URLS_VALIDATED = hasattr(HTTPProvider, "ccip_read_url_validator")
-
-
-@cache
-def _warn_ccip_read_urls_not_validated() -> None:
-    logger.warning(
-        "CCIP-Read is enabled on a `web3` version that does not validate offchain "
-        "lookup urls, queried contracts can reach private addresses"
-    )
-
 
 # Mapping of node error messages (Geth / Parity / OpenEthereum) to typed exceptions.
 #     - https://github.com/openethereum/openethereum/blob/main/rpc/src/v1/helpers/errors.rs
@@ -1501,8 +1489,6 @@ class EthereumClient:
         self.slow_timeout = slow_provider_timeout
         self.use_request_caching = use_request_caching
         self.ccip_read_enabled = ccip_read_enabled
-        if ccip_read_enabled and not CCIP_READ_URLS_VALIDATED:
-            _warn_ccip_read_urls_not_validated()
 
         self.w3_provider = HTTPProvider(
             self.ethereum_node_url,

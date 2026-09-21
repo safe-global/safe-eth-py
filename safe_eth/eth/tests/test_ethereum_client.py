@@ -29,7 +29,6 @@ from ..ethereum_client import (
     InvalidNonce,
     SenderAccountNotFoundInNode,
     TracingManager,
-    _warn_ccip_read_urls_not_validated,
     get_auto_ethereum_client,
 )
 from ..exceptions import BatchCallException, InvalidERC20Info
@@ -1355,18 +1354,6 @@ class TestEthereumClientConstruction(TestCase):
 
         for w3 in self.get_w3_instances(ethereum_client):
             self.assertTrue(w3.provider.global_ccip_read_enabled)
-
-    def test_ccip_read_enabled_without_url_validation_warns(self):
-        _warn_ccip_read_urls_not_validated.cache_clear()
-        self.addCleanup(_warn_ccip_read_urls_not_validated.cache_clear)
-        with (
-            mock.patch("safe_eth.eth.ethereum_client.CCIP_READ_URLS_VALIDATED", False),
-            forbid_rpc_calls(),
-            self.assertLogs("safe_eth.eth.ethereum_client", level="WARNING") as logs,
-        ):
-            self.ethereum_client_cls(UNREACHABLE_NODE_URL, ccip_read_enabled=True)
-
-        self.assertIn("does not validate", logs.output[0])
 
     def test_offchain_lookup_is_not_followed(self):
         ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)

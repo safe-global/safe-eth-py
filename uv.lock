@@ -3670,7 +3670,7 @@ requires-dist = [
     { name = "py-evm", specifier = ">=0.7.0a1" },
     { name = "requests", specifier = ">=2" },
     { name = "safe-pysha3", specifier = ">=1.0.0" },
-    { name = "web3", specifier = ">=7" },
+    { name = "web3", specifier = ">=7.15" },
 ]
 provides-extras = ["django"]
 
