@@ -12,10 +12,6 @@ from eth_abi import encode as abi_encode
 from eth_account import Account
 from eth_typing import URI, HexStr
 from hexbytes import HexBytes
-from web3._utils.error_formatters_utils import (
-    OFFCHAIN_LOOKUP_FIELDS,
-    OFFCHAIN_LOOKUP_FUNC_SELECTOR,
-)
 from web3.eth import Eth
 from web3.exceptions import OffchainLookup, Web3RPCError
 from web3.middleware import ExtraDataToPOAMiddleware
@@ -1276,18 +1272,19 @@ def forbid_rpc_calls():
         yield
 
 
-# ERC-3668 `OffchainLookup` revert, as returned by a contract on morph. `sender` must
-# equal the address the call is made to, web3 rejects the lookup otherwise
+# ERC-3668 `OffchainLookup` revert, in the shape a contract on morph used to drive
+# outbound requests. `sender` must equal the address the call is made to, web3 rejects
+# the lookup otherwise. The url is a placeholder: no test may reach a host it does not own
 OFFCHAIN_LOOKUP_SENDER = "0x00d3e5fCe5e88B4F506500CC9260414480B80169"
 OFFCHAIN_LOOKUP_REVERT_DATA = to_0x_hex_str(
-    HexBytes(OFFCHAIN_LOOKUP_FUNC_SELECTOR)
+    # Selector and field types are fixed by EIP-3668
+    HexBytes("0x556f1830")
     + abi_encode(
-        list(
-            OFFCHAIN_LOOKUP_FIELDS.values()
-        ),  # sender, urls, callData, callback, extra
+        # sender, urls, callData, callbackFunction, extraData
+        ["address", "string[]", "bytes", "bytes4", "bytes"],
         [
             OFFCHAIN_LOOKUP_SENDER,
-            ["https://144-172-100-27.sslip.io/stage1/{sender}/{data}"],
+            ["https://example.com/stage1/{sender}/{data}"],
             (1).to_bytes(32, "big"),
             bytes.fromhex("fb43599a"),
             b"",

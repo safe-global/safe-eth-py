@@ -10,6 +10,17 @@ class TestGetBoolEnv(TestCase):
             self.assertFalse(get_bool_env("MISSING_VARIABLE"))
             self.assertTrue(get_bool_env("MISSING_VARIABLE", default=True))
 
+    def test_empty_value_returns_default_without_warning(self):
+        # `FOO=${FOO}` in docker-compose with `FOO` unset declares an empty value
+        for value in ("", "   "):
+            with (
+                self.subTest(value=value),
+                mock.patch.dict(os.environ, {"VARIABLE": value}),
+            ):
+                with self.assertNoLogs("safe_eth.util.environment", level="WARNING"):
+                    self.assertTrue(get_bool_env("VARIABLE", default=True))
+                    self.assertFalse(get_bool_env("VARIABLE", default=False))
+
     def test_truthy_values(self):
         for value in ("1", "true", "TRUE", "True", "yes", "on", " true "):
             with (
@@ -27,7 +38,7 @@ class TestGetBoolEnv(TestCase):
                 self.assertFalse(get_bool_env("VARIABLE", default=True))
 
     def test_unparseable_value_returns_default(self):
-        for value in ("", "maybe", "y"):
+        for value in ("maybe", "y", "treu"):
             with (
                 self.subTest(value=value),
                 mock.patch.dict(os.environ, {"VARIABLE": value}),

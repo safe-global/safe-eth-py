@@ -45,8 +45,6 @@ dependencies = [
     "py-evm>=0.7.0a1",
     "requests>=2",
     "safe-pysha3>=1.0.0",
-    # 7.15 is the first release validating CCIP-Read urls: HTTPS only, private
-    # address ranges rejected, redirects disabled
     "web3>=7.15",
 ]
 

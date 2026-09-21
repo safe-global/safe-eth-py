@@ -12,15 +12,17 @@ def get_bool_env(name: str, default: bool = False) -> bool:
     Read a boolean environment variable
 
     :param name: Environment variable name
-    :param default: Value returned when the variable is not set, or set to a value that
-        is neither truthy nor falsy
+    :param default: Value returned when the variable is unset, empty, or set to a value
+        that is neither truthy nor falsy
     :return: `True` for `1`, `true`, `yes` and `on`, `False` for `0`, `false`, `no` and
         `off` (both case insensitive), `default` otherwise
     """
-    value = os.environ.get(name)
-    if value is None:
+    # An empty value means the variable was declared without one, as
+    # `FOO=${FOO}` does in docker-compose. That is not a misconfiguration
+    value = os.environ.get(name, "").strip()
+    if not value:
         return default
-    normalized_value = value.strip().lower()
+    normalized_value = value.lower()
     if normalized_value in _TRUTHY_ENV_VALUES:
         return True
     if normalized_value in _FALSY_ENV_VALUES:
