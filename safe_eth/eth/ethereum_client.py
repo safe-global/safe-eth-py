@@ -63,8 +63,9 @@ from safe_eth.eth.utils import (
 )
 from safe_eth.util import chunks
 
+from ..util.environment import get_bool_env
 from ..util.http import prepare_http_session
-from ..util.util import get_bool_env, to_0x_hex_str
+from ..util.util import to_0x_hex_str
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
     GAS_CALL_DATA_BYTE,

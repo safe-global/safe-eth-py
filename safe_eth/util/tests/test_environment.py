@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase, mock
 
-from safe_eth.util.util import get_bool_env
+from safe_eth.util.environment import get_bool_env
 
 
 class TestGetBoolEnv(TestCase):
@@ -32,7 +32,7 @@ class TestGetBoolEnv(TestCase):
                 self.subTest(value=value),
                 mock.patch.dict(os.environ, {"VARIABLE": value}),
             ):
-                with self.assertLogs("safe_eth.util.util", level="WARNING"):
+                with self.assertLogs("safe_eth.util.environment", level="WARNING"):
                     self.assertTrue(get_bool_env("VARIABLE", default=True))
-                with self.assertLogs("safe_eth.util.util", level="WARNING"):
+                with self.assertLogs("safe_eth.util.environment", level="WARNING"):
                     self.assertFalse(get_bool_env("VARIABLE", default=False))

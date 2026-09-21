@@ -68,7 +68,8 @@ from safe_eth.eth.utils import (
 )
 from safe_eth.util import chunks
 
-from ..util.util import get_bool_env, to_0x_hex_str
+from ..util.environment import get_bool_env
+from ..util.util import to_0x_hex_str
 from .constants import SAFE_SINGLETON_FACTORY_ADDRESS
 from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_client import (
