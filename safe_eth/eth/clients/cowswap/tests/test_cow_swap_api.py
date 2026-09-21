@@ -91,23 +91,24 @@ class TestCowSwapAPI(TestCase):
 
     def test_get_trades(self):
         mainnet_order_ui = "0x65F1206182C77A040ED41D507B59C622FA94AB5E71CCA567202CFF3909F3D5C4DBE338E45276630FD8237149DD47EE027AF26F9C619723D0"
+        expected_trade = {
+            "blockNumber": 13643462,
+            "logIndex": 0,
+            "orderUid": "0x65f1206182c77a040ed41d507b59c622fa94ab5e71cca567202cff3909f3d5c4dbe338e45276630fd8237149dd47ee027af26f9c619723d0",
+            "buyAmount": "28361861093850079821",
+            "sellAmount": "113521821882",
+            "sellAmountBeforeFees": "113465370931",
+            "owner": "0xdbe338e45276630fd8237149dd47ee027af26f9c",
+            "buyToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "sellToken": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "txHash": "0x691d1a8ba39c036e841b6e2ed970f9068ac4a27b61955afb852f11019f2ff4d8",
+            "executedProtocolFees": [],
+        }
+        trades = self.mainnet_cow_swap_api.get_trades(order_ui=mainnet_order_ui)
+        self.assertEqual(len(trades), 1)
+        # Only the expected keys are checked, as the API adds new fields over time
         self.assertEqual(
-            self.mainnet_cow_swap_api.get_trades(order_ui=mainnet_order_ui),
-            [
-                {
-                    "blockNumber": 13643462,
-                    "logIndex": 0,
-                    "orderUid": "0x65f1206182c77a040ed41d507b59c622fa94ab5e71cca567202cff3909f3d5c4dbe338e45276630fd8237149dd47ee027af26f9c619723d0",
-                    "buyAmount": "28361861093850079821",
-                    "sellAmount": "113521821882",
-                    "sellAmountBeforeFees": "113465370931",
-                    "owner": "0xdbe338e45276630fd8237149dd47ee027af26f9c",
-                    "buyToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "sellToken": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                    "txHash": "0x691d1a8ba39c036e841b6e2ed970f9068ac4a27b61955afb852f11019f2ff4d8",
-                    "executedProtocolFees": [],
-                }
-            ],
+            {key: trades[0][key] for key in expected_trade}, expected_trade
         )
 
     def test_place_order(self):
