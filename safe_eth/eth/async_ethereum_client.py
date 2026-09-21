@@ -68,7 +68,7 @@ from safe_eth.eth.utils import (
 )
 from safe_eth.util import chunks
 
-from ..util.util import to_0x_hex_str
+from ..util.util import get_bool_env, to_0x_hex_str
 from .constants import SAFE_SINGLETON_FACTORY_ADDRESS
 from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_client import (
@@ -519,6 +519,7 @@ class AsyncEthereumClient(EthereumClient):
         retry_count: int = 1,
         use_request_caching: bool = True,
         batch_request_max_size: int = 500,
+        ccip_read_enabled: bool = False,
     ):
         # Builds the blocking w3/slow_w3
         super().__init__(
@@ -528,6 +529,7 @@ class AsyncEthereumClient(EthereumClient):
             retry_count=retry_count,
             use_request_caching=use_request_caching,
             batch_request_max_size=batch_request_max_size,
+            ccip_read_enabled=ccip_read_enabled,
         )
 
         # aiohttp sessions for raw JSON-RPC batches, one per event loop
@@ -548,7 +550,7 @@ class AsyncEthereumClient(EthereumClient):
         self.async_w3: AsyncWeb3 = AsyncWeb3(self.async_w3_provider)
         self.async_slow_w3: AsyncWeb3 = AsyncWeb3(self.async_w3_slow_provider)
 
-        self._adjust_middlewares(self.async_w3, self.async_slow_w3)
+        self._adjust_w3(self.async_w3, self.async_slow_w3)
 
         # Replace the sync managers built by super().__init__ with async-capable ones
         self.erc20 = AsyncErc20Manager(self)
@@ -1170,4 +1172,5 @@ def get_auto_async_ethereum_client() -> "AsyncEthereumClient":
         batch_request_max_size=int(
             os.environ.get("ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE", 500)
         ),
+        ccip_read_enabled=get_bool_env("ETHEREUM_RPC_CCIP_READ_ENABLED"),
     )

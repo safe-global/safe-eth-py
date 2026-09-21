@@ -162,6 +162,11 @@ and its async counterpart) is instantiated.
 - ``ETHEREUM_RPC_RETRY_COUNT``: Number of retries for RPC calls. Default ``1``.
 - ``ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE``: Maximum number of calls bundled in a single batch
   request. Default ``500``.
+- ``ETHEREUM_RPC_CCIP_READ_ENABLED``: Allow CCIP-Read (ERC-3668) offchain lookups on ``eth_call``.
+  Default ``false``. When enabled, a queried contract can make the client issue outbound HTTP
+  requests to a url of its choosing, so only enable it if every contract queried is trusted.
+  ``web3`` validates those urls and rejects private address ranges from ``7.15.0`` onwards; on
+  older versions no validation is applied at all.
 
 Caching
 ~~~~~~~

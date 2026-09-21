@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from typing import Any, Dict, List, Sequence
 from unittest import mock
@@ -7,11 +8,12 @@ from django.test import TestCase
 
 import pytest
 import requests
+from eth_abi import encode as abi_encode
 from eth_account import Account
 from eth_typing import URI, HexStr
 from hexbytes import HexBytes
 from web3.eth import Eth
-from web3.exceptions import Web3RPCError
+from web3.exceptions import OffchainLookup, Web3RPCError
 from web3.middleware import ExtraDataToPOAMiddleware
 from web3.providers import AsyncHTTPProvider, HTTPProvider
 from web3.types import TxParams
@@ -27,6 +29,7 @@ from ..ethereum_client import (
     InvalidNonce,
     SenderAccountNotFoundInNode,
     TracingManager,
+    _warn_ccip_read_urls_not_validated,
     get_auto_ethereum_client,
 )
 from ..exceptions import BatchCallException, InvalidERC20Info
@@ -1270,10 +1273,61 @@ def forbid_rpc_calls():
         yield
 
 
+# ERC-3668 `OffchainLookup` revert, as returned by a contract on morph. `sender` must
+# equal the address the call is made to, web3 rejects the lookup otherwise
+OFFCHAIN_LOOKUP_SENDER = "0x00d3e5fCe5e88B4F506500CC9260414480B80169"
+OFFCHAIN_LOOKUP_REVERT_DATA = to_0x_hex_str(
+    # OffchainLookup(address sender, string[] urls, bytes callData,
+    #                bytes4 callbackFunction, bytes extraData)
+    HexBytes("0x556f1830")
+    + abi_encode(
+        ["address", "string[]", "bytes", "bytes4", "bytes"],
+        [
+            OFFCHAIN_LOOKUP_SENDER,
+            ["https://144-172-100-27.sslip.io/stage1/{sender}/{data}"],
+            (1).to_bytes(32, "big"),
+            bytes.fromhex("fb43599a"),
+            b"",
+        ],
+    )
+)
+
+
+@contextmanager
+def offchain_lookup_node():
+    """Node whose `eth_call` reverts with `OffchainLookup`, sync and async."""
+
+    def make_request(method: str, params: Any) -> Dict[str, Any]:
+        if method == "eth_call":
+            return {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "error": {
+                    "code": 3,
+                    "message": "execution reverted",
+                    "data": OFFCHAIN_LOOKUP_REVERT_DATA,
+                },
+            }
+        # Anything the contract call needs on the way, `eth_chainId` among them
+        return {"jsonrpc": "2.0", "id": 1, "result": "0x1"}
+
+    with (
+        mock.patch.object(HTTPProvider, "make_request", side_effect=make_request),
+        mock.patch.object(
+            AsyncHTTPProvider,
+            "make_request",
+            new_callable=mock.AsyncMock,
+            side_effect=make_request,
+        ),
+    ):
+        yield
+
+
 class TestEthereumClientConstruction(TestCase):
     """Construction must be free of network I/O, no node needed for these tests."""
 
     ethereum_client_cls = EthereumClient
+    get_auto_client = staticmethod(get_auto_ethereum_client)
 
     def get_w3_instances(self, ethereum_client):
         return ethereum_client.w3, ethereum_client.slow_w3
@@ -1285,6 +1339,59 @@ class TestEthereumClientConstruction(TestCase):
         # POA middleware is always injected, for every network
         for w3 in self.get_w3_instances(ethereum_client):
             self.assertIn(ExtraDataToPOAMiddleware, w3.middleware_onion)
+
+    def test_ccip_read_disabled_by_default(self):
+        with forbid_rpc_calls():
+            ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+
+        for w3 in self.get_w3_instances(ethereum_client):
+            self.assertFalse(w3.provider.global_ccip_read_enabled)
+
+    def test_ccip_read_enabled_when_requested(self):
+        with forbid_rpc_calls():
+            ethereum_client = self.ethereum_client_cls(
+                UNREACHABLE_NODE_URL, ccip_read_enabled=True
+            )
+
+        for w3 in self.get_w3_instances(ethereum_client):
+            self.assertTrue(w3.provider.global_ccip_read_enabled)
+
+    def test_ccip_read_enabled_without_url_validation_warns(self):
+        _warn_ccip_read_urls_not_validated.cache_clear()
+        self.addCleanup(_warn_ccip_read_urls_not_validated.cache_clear)
+        with (
+            mock.patch("safe_eth.eth.ethereum_client.CCIP_READ_URLS_VALIDATED", False),
+            forbid_rpc_calls(),
+            self.assertLogs("safe_eth.eth.ethereum_client", level="WARNING") as logs,
+        ):
+            self.ethereum_client_cls(UNREACHABLE_NODE_URL, ccip_read_enabled=True)
+
+        self.assertIn("does not validate", logs.output[0])
+
+    def test_offchain_lookup_is_not_followed(self):
+        ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+        erc20 = get_erc20_contract(ethereum_client.w3, OFFCHAIN_LOOKUP_SENDER)
+
+        with (
+            offchain_lookup_node(),
+            mock.patch("web3.eth.eth.handle_offchain_lookup") as handle_offchain_lookup,
+        ):
+            with self.assertRaises(OffchainLookup):
+                erc20.functions.decimals().call()
+
+        handle_offchain_lookup.assert_not_called()
+
+    def test_ccip_read_enabled_from_environment(self):
+        self.addCleanup(self.get_auto_client.cache_clear)
+        for value, expected in (("true", True), ("false", False)):
+            with self.subTest(value=value):
+                self.get_auto_client.cache_clear()
+                with mock.patch.dict(
+                    os.environ, {"ETHEREUM_RPC_CCIP_READ_ENABLED": value}
+                ):
+                    ethereum_client = self.get_auto_client()
+                for w3 in self.get_w3_instances(ethereum_client):
+                    self.assertEqual(w3.provider.global_ccip_read_enabled, expected)
 
 
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):

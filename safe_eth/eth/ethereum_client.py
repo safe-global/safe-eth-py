@@ -64,7 +64,7 @@ from safe_eth.eth.utils import (
 from safe_eth.util import chunks
 
 from ..util.http import prepare_http_session
-from ..util.util import to_0x_hex_str
+from ..util.util import get_bool_env, to_0x_hex_str
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
     GAS_CALL_DATA_BYTE,
@@ -97,6 +97,18 @@ from .typing import BalanceDict, EthereumData, EthereumHash, LogReceiptDecoded
 from .utils import decode_string_or_bytes32
 
 logger = getLogger(__name__)
+
+# `web3` validates CCIP-Read urls and rejects private address ranges from 7.15.0
+# onwards. Older versions expose no validator attribute and follow any url given.
+CCIP_READ_URLS_VALIDATED = hasattr(HTTPProvider, "ccip_read_url_validator")
+
+
+@cache
+def _warn_ccip_read_urls_not_validated() -> None:
+    logger.warning(
+        "CCIP-Read is enabled on a `web3` version that does not validate offchain "
+        "lookup urls, queried contracts can reach private addresses"
+    )
 
 
 # Mapping of node error messages (Geth / Parity / OpenEthereum) to typed exceptions.
@@ -365,6 +377,7 @@ def get_auto_ethereum_client() -> "EthereumClient":
         - `ETHEREUM_RPC_SLOW_TIMEOUT`: `60` by default.
         - `ETHEREUM_RPC_RETRY_COUNT`: `1` by default.
         - `ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE`: `500` by default.
+        - `ETHEREUM_RPC_CCIP_READ_ENABLED`: `false` by default.
 
     :return: A configured singleton of EthereumClient
     """
@@ -382,6 +395,7 @@ def get_auto_ethereum_client() -> "EthereumClient":
         batch_request_max_size=int(
             os.environ.get("ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE", 500)
         ),
+        ccip_read_enabled=get_bool_env("ETHEREUM_RPC_CCIP_READ_ENABLED"),
     )
 
 
@@ -1463,6 +1477,7 @@ class EthereumClient:
         retry_count: int = 1,
         use_request_caching: bool = True,
         batch_request_max_size: int = 500,
+        ccip_read_enabled: bool = False,
     ):
         """
         :param ethereum_node_url: Ethereum RPC uri
@@ -1471,6 +1486,7 @@ class EthereumClient:
         :param retry_count: Retry count for failed requests
         :param use_request_caching: Use web3 request caching https://web3py.readthedocs.io/en/latest/internals.html#request-caching
         :param batch_request_max_size: Max size for JSON RPC Batch requests. Some providers have a limitation on 500
+        :param ccip_read_enabled: Allow CCIP-Read (ERC-3668) offchain lookups on ``eth_call``
 
         Constructing the client performs no network I/O, the RPC is first contacted
         when a method requiring it is called.
@@ -1484,6 +1500,9 @@ class EthereumClient:
         self.timeout = provider_timeout
         self.slow_timeout = slow_provider_timeout
         self.use_request_caching = use_request_caching
+        self.ccip_read_enabled = ccip_read_enabled
+        if ccip_read_enabled and not CCIP_READ_URLS_VALIDATED:
+            _warn_ccip_read_urls_not_validated()
 
         self.w3_provider = HTTPProvider(
             self.ethereum_node_url,
@@ -1500,7 +1519,7 @@ class EthereumClient:
         self.w3: Web3 = Web3(self.w3_provider)
         self.slow_w3: Web3 = Web3(self.w3_slow_provider)
 
-        self._adjust_middlewares(self.w3, self.slow_w3)
+        self._adjust_w3(self.w3, self.slow_w3)
 
         self.erc20: Erc20Manager = Erc20Manager(self)
         self.erc721: Erc721Manager = Erc721Manager(self)
@@ -1508,22 +1527,25 @@ class EthereumClient:
         self.batch_call_manager: BatchCallManager = BatchCallManager(self)
         self.batch_request_max_size = batch_request_max_size
 
-    @staticmethod
-    def _adjust_middlewares(*w3s: Union[Web3, AsyncWeb3]) -> None:
+    def _adjust_w3(self, *w3s: Union[Web3, AsyncWeb3]) -> None:
         """
-        Adjust Web3.py middlewares:
+        Apply this client's settings to every ``Web3`` instance it builds:
 
-        - Remove ``attrdict``: don't spend resources converting dictionaries to
-          attribute dictionaries.
+        - Remove ``attrdict`` middleware: don't spend resources converting
+          dictionaries to attribute dictionaries.
         - Inject ``ExtraDataToPOAMiddleware``: required for PoA-based chains like
           Polygon or BNB Chain. It's always injected to avoid a blocking
           ``eth_chainId`` call during ``__init__`` just to detect the network.
           On Mainnet its only effect is that block responses expose
           ``proofOfAuthorityData`` instead of ``extraData``.
+        - Set CCIP-Read (ERC-3668) on the provider: it makes ``eth_call`` follow a url
+          embedded in a contract revert, so any contract queried can drive outbound
+          HTTP requests from this process. Only enable it for trusted contracts.
         """
         for w3 in w3s:
             w3.middleware_onion.remove("attrdict")
             w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+            w3.provider.global_ccip_read_enabled = self.ccip_read_enabled
 
     def __str__(self):
         return f"EthereumClient for url={self.ethereum_node_url}"
