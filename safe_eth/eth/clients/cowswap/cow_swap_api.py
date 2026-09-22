@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_typing import Address, ChecksumAddress, HexAddress, HexStr
+from typing_extensions import NotRequired
 
 from safe_eth.eth import EthereumNetwork, EthereumNetworkNotSupported
 from safe_eth.eth.constants import NULL_ADDRESS
@@ -17,6 +18,12 @@ from .order import Order, OrderKind
 AnyAddressType = Union[Address, HexAddress, ChecksumAddress]
 
 
+class ExecutedProtocolFeeResponse(TypedDict, total=False):
+    policy: Dict[str, Any]
+    amount: str  # Stringified int
+    token: AnyAddressType
+
+
 class TradeResponse(TypedDict):
     blockNumber: int
     logIndex: int
@@ -27,7 +34,13 @@ class TradeResponse(TypedDict):
     owner: AnyAddressType  # Not checksummed
     buyToken: AnyAddressType
     sellToken: AnyAddressType
-    txHash: HexStr
+    txHash: Optional[HexStr]  # Null until the settlement is indexed
+    # Fields the API can leave out
+    executedProtocolFees: NotRequired[List[ExecutedProtocolFeeResponse]]
+    gasCost: NotRequired[str]  # Stringified int, set once the settlement is attributed
+    penaltyCapNative: NotRequired[
+        Optional[str]
+    ]  # Stringified int, null for pre CIP-87 auctions
 
 
 class AmountResponse(TypedDict):
