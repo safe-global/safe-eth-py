@@ -31,7 +31,7 @@ def wrap_http_exceptions(url: str, exception_class: Type[Exception]) -> Iterator
     try:
         yield
     except HTTP_TRANSPORT_EXCEPTIONS as exc:
-        raise exception_class(f"Error connecting to {url}: {exc!r}") from exc
+        raise exception_class(f"Error querying {url}: {exc!r}") from exc
 
 
 def prepare_http_session(
