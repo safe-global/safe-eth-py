@@ -69,6 +69,7 @@ from safe_eth.eth.utils import (
 from safe_eth.util import chunks
 
 from ..util.environment import get_bool_env
+from ..util.http import wrap_http_exceptions
 from ..util.util import to_0x_hex_str
 from .constants import SAFE_SINGLETON_FACTORY_ADDRESS
 from .contracts import get_erc20_contract, get_erc721_contract
@@ -94,6 +95,7 @@ from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
 from .exceptions import (
     BatchCallFunctionFailed,
     ContractAlreadyDeployed,
+    EthereumClientConnectionException,
     InvalidERC20Info,
     InvalidERC721Info,
     InvalidNonce,
@@ -146,16 +148,21 @@ class AsyncBatchCallManager(BatchCallManager, AsyncEthereumClientManager):
         session = await self.ethereum_client.get_async_session()
         all_results: List[Any] = []
         for chunk in chunks(queries, batch_size):
-            async with session.post(
-                self.ethereum_node_url,
-                json=chunk,
-                timeout=aiohttp.ClientTimeout(total=self.slow_timeout),
-            ) as response:
-                if not response.ok:
-                    raise ConnectionError(
-                        f"Error connecting to {self.ethereum_node_url}: {await response.text()}"
+            with wrap_http_exceptions(
+                self.ethereum_node_url, EthereumClientConnectionException
+            ):
+                async with session.post(
+                    self.ethereum_node_url,
+                    json=chunk,
+                    timeout=aiohttp.ClientTimeout(total=self.slow_timeout),
+                ) as response:
+                    if not response.ok:
+                        raise EthereumClientConnectionException(
+                            f"Error connecting to {self.ethereum_node_url}: {await response.text()}"
+                        )
+                    all_results.extend(
+                        validate_batch_chunk(await response.json(), chunk)
                     )
-                all_results.extend(validate_batch_chunk(await response.json(), chunk))
 
         return_values, errors = decode_eth_call_results(payloads, all_results)
         if errors and raise_exception:
@@ -245,16 +252,18 @@ class AsyncErc20Manager(Erc20Manager, AsyncEthereumClientManager):
         )
 
     async def async_get_info(self, erc20_address: ChecksumAddress) -> Erc20Info:
-        payload = self._build_info_payload(erc20_address)
         session = await self.ethereum_client.get_async_session()
-        async with session.post(
-            self.ethereum_node_url,
-            json=payload,
-            timeout=aiohttp.ClientTimeout(total=self.slow_timeout),
-        ) as response:
-            if not response.ok:
-                raise InvalidERC20Info(await response.read())
-            return self._parse_info_response(erc20_address, await response.json())
+        with wrap_http_exceptions(self.ethereum_node_url, InvalidERC20Info):
+            # Building the payload queries the node through web3
+            payload = self._build_info_payload(erc20_address)
+            async with session.post(
+                self.ethereum_node_url,
+                json=payload,
+                timeout=aiohttp.ClientTimeout(total=self.slow_timeout),
+            ) as response:
+                if not response.ok:
+                    raise InvalidERC20Info(await response.read())
+                return self._parse_info_response(erc20_address, await response.json())
 
     async def async_get_total_transfer_history(
         self,
@@ -662,21 +671,24 @@ class AsyncEthereumClient(EthereumClient):
         session = await self.get_async_session()
         all_results: List[Any] = []
         for payload_chunk in chunks(payload, batch_size):
-            async with session.post(
-                self.ethereum_node_url,
-                json=payload_chunk,
-                timeout=aiohttp.ClientTimeout(total=self.slow_timeout),
-            ) as response:
-                if not response.ok:
-                    content = await response.read()
-                    logger.error(
-                        "Problem doing raw batch request with payload=%s status_code=%d result=%s",
-                        payload_chunk,
-                        response.status,
-                        content,
-                    )
-                    raise ValueError(f"Batch request error: {content!r}")
-                results = await response.json()
+            with wrap_http_exceptions(
+                self.ethereum_node_url, EthereumClientConnectionException
+            ):
+                async with session.post(
+                    self.ethereum_node_url,
+                    json=payload_chunk,
+                    timeout=aiohttp.ClientTimeout(total=self.slow_timeout),
+                ) as response:
+                    if not response.ok:
+                        content = await response.read()
+                        logger.error(
+                            "Problem doing raw batch request with payload=%s status_code=%d result=%s",
+                            payload_chunk,
+                            response.status,
+                            content,
+                        )
+                        raise ValueError(f"Batch request error: {content!r}")
+                    results = await response.json()
             all_results.extend(process_raw_batch_results(results, payload_chunk))
         return all_results
 

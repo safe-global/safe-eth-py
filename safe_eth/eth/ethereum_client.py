@@ -64,7 +64,7 @@ from safe_eth.eth.utils import (
 from safe_eth.util import chunks
 
 from ..util.environment import get_bool_env
-from ..util.http import prepare_http_session
+from ..util.http import prepare_http_session, wrap_http_exceptions
 from ..util.util import to_0x_hex_str
 from .constants import (
     ERC20_721_TRANSFER_TOPIC,
@@ -79,6 +79,7 @@ from .exceptions import (
     BatchCallFunctionFailed,
     ChainIdIsRequired,
     ContractAlreadyDeployed,
+    EthereumClientConnectionException,
     FromAddressNotFound,
     GasLimitExceeded,
     InsufficientFunds,
@@ -419,7 +420,9 @@ class BatchCallManager(EthereumClientManager):
         :param batch_size: If `payload` length is bigger than size, it will be split into smaller chunks before
             sending to the server
         :return: List with the ABI decoded return values
-        :raises: ValueError if raise_exception=True
+        :raises EthereumClientConnectionException: If the node cannot be reached or
+            answers with a non ok status
+        :raises ValueError: If there's any problem with the call and raise_exception=True
         """
         payloads = list(payloads)
         if not payloads:
@@ -429,14 +432,17 @@ class BatchCallManager(EthereumClientManager):
         batch_size = batch_size or self.ethereum_client.batch_request_max_size
         all_results = []
         for chunk in chunks(queries, batch_size):
-            response = self.http_session.post(
-                self.ethereum_node_url, json=chunk, timeout=self.slow_timeout
-            )
-            if not response.ok:
-                raise ConnectionError(
-                    f"Error connecting to {self.ethereum_node_url}: {response.text}"
+            with wrap_http_exceptions(
+                self.ethereum_node_url, EthereumClientConnectionException
+            ):
+                response = self.http_session.post(
+                    self.ethereum_node_url, json=chunk, timeout=self.slow_timeout
                 )
-            all_results.extend(validate_batch_chunk(response.json(), chunk))
+                if not response.ok:
+                    raise EthereumClientConnectionException(
+                        f"Error connecting to {self.ethereum_node_url}: {response.text}"
+                    )
+                all_results.extend(validate_batch_chunk(response.json(), chunk))
 
         return_values, errors = decode_eth_call_results(payloads, all_results)
         if errors and raise_exception:
@@ -750,17 +756,22 @@ class Erc20Manager(EthereumClientManager):
 
         :param erc20_address:
         :return: Erc20Info
-        :raises: InvalidERC20Info
+        :raises InvalidERC20Info: If the node cannot be reached, answers with a non ok
+            status, or the address is not a valid ERC20
         """
-        payload = self._build_info_payload(erc20_address)
-        response = self.http_session.post(
-            self.ethereum_client.ethereum_node_url,
-            json=payload,
-            timeout=self.slow_timeout,
-        )
-        if not response.ok:
-            raise InvalidERC20Info(response.content)
-        return self._parse_info_response(erc20_address, response.json())
+        with wrap_http_exceptions(
+            self.ethereum_client.ethereum_node_url, InvalidERC20Info
+        ):
+            # Building the payload queries the node through web3
+            payload = self._build_info_payload(erc20_address)
+            response = self.http_session.post(
+                self.ethereum_client.ethereum_node_url,
+                json=payload,
+                timeout=self.slow_timeout,
+            )
+            if not response.ok:
+                raise InvalidERC20Info(response.content)
+            return self._parse_info_response(erc20_address, response.json())
 
     def _build_info_payload(
         self, erc20_address: ChecksumAddress
@@ -977,7 +988,8 @@ class Erc20Manager(EthereumClientManager):
         :param to_address: Address receiving the erc20 transfer
         :param token_address: Address of the token
         :return: List of events (decoded)
-        :throws: ReadTimeout
+        :raises requests.exceptions.ReadTimeout: This method queries the node through
+            the ``web3`` provider, which raises the ``requests`` exceptions directly
         """
         assert (
             from_address or to_address or token_address
@@ -1552,26 +1564,35 @@ class EthereumClient:
         :param batch_size: If `payload` length is bigger than size, it will be split into smaller chunks before
             sending to the server
         :return:
-        :raises: ValueError
+        :raises EthereumClientConnectionException: If the node cannot be reached
+        :raises ValueError: If the node answers with a non ok status or an invalid batch
+            response
         """
 
         batch_size = batch_size or self.batch_request_max_size
 
         for payload_chunk in chunks(payload, batch_size):
-            response = self.http_session.post(
-                self.ethereum_node_url, json=payload_chunk, timeout=self.slow_timeout
-            )
-
-            if not response.ok:
-                logger.error(
-                    "Problem doing raw batch request with payload=%s status_code=%d result=%s",
-                    payload_chunk,
-                    response.status_code,
-                    response.content,
+            with wrap_http_exceptions(
+                self.ethereum_node_url, EthereumClientConnectionException
+            ):
+                response = self.http_session.post(
+                    self.ethereum_node_url,
+                    json=payload_chunk,
+                    timeout=self.slow_timeout,
                 )
-                raise ValueError(f"Batch request error: {response.content!r}")
 
-            yield from process_raw_batch_results(response.json(), payload_chunk)
+                if not response.ok:
+                    logger.error(
+                        "Problem doing raw batch request with payload=%s status_code=%d result=%s",
+                        payload_chunk,
+                        response.status_code,
+                        response.content,
+                    )
+                    raise ValueError(f"Batch request error: {response.content!r}")
+
+                results = response.json()
+
+            yield from process_raw_batch_results(results, payload_chunk)
 
     def clear_cache(self) -> None:
         """

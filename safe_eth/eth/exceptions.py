@@ -5,6 +5,14 @@ class EthereumClientException(ValueError):
     pass
 
 
+class EthereumClientConnectionException(EthereumClientException, ConnectionError):
+    """
+    Node could not be reached, or answered with a non ok status. The builtin
+    ``ConnectionError`` base keeps it catchable by callers handling connection
+    errors, on top of the ``ValueError`` base shared by the rest of the hierarchy.
+    """
+
+
 class ChainIdIsRequired(EthereumClientException):
     pass
 
