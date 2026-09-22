@@ -18,6 +18,7 @@ from unittest import mock
 
 import aiohttp
 from eth_account import Account
+from web3.exceptions import OffchainLookup
 
 from ..async_ethereum_client import (
     AsyncEthereumClient,
@@ -29,12 +30,14 @@ from ..ethereum_network import EthereumNetwork
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .test_ethereum_client import (
     FAILED_BATCH_CALL_RESULT,
+    OFFCHAIN_LOOKUP_SENDER,
     UNREACHABLE_NODE_URL,
     TestERC20Module,
     TestEthereumClient,
     TestEthereumClientConstruction,
     TestTracingManager,
     forbid_rpc_calls,
+    offchain_lookup_node,
 )
 
 # Manager attributes that must themselves be wrapped in a proxy
@@ -260,6 +263,7 @@ class TestAsyncEthereumClientConstruction(TestEthereumClientConstruction):
     """Reuse the sync construction tests, checking the async w3 instances too."""
 
     ethereum_client_cls = AsyncEthereumClient
+    get_auto_client = staticmethod(get_auto_async_ethereum_client)
 
     def get_w3_instances(self, ethereum_client):
         return (
@@ -277,6 +281,25 @@ class TestAsyncEthereumClientConstruction(TestEthereumClientConstruction):
 
         with forbid_rpc_calls():
             asyncio.run(build())
+
+    def test_async_offchain_lookup_is_not_followed(self):
+        async def run():
+            async_ethereum_client = self.ethereum_client_cls(UNREACHABLE_NODE_URL)
+            erc20 = get_erc20_contract(
+                async_ethereum_client.async_w3, OFFCHAIN_LOOKUP_SENDER
+            )
+            with self.assertRaises(OffchainLookup):
+                await erc20.functions.decimals().call()
+
+        with (
+            offchain_lookup_node(),
+            mock.patch(
+                "web3.eth.async_eth.async_handle_offchain_lookup"
+            ) as async_handle_offchain_lookup,
+        ):
+            asyncio.run(run())
+
+        async_handle_offchain_lookup.assert_not_called()
 
     def test_async_get_multicall_performs_no_sync_requests(self):
         # First use of Multicall detects its address, but must do it through the

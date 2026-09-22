@@ -1,0 +1,36 @@
+import os
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+_TRUTHY_ENV_VALUES = ("1", "true", "yes", "on")
+_FALSY_ENV_VALUES = ("0", "false", "no", "off")
+
+
+def get_bool_env(name: str, default: bool = False) -> bool:
+    """
+    Read a boolean environment variable
+
+    :param name: Environment variable name
+    :param default: Value returned when the variable is unset, empty, or set to a value
+        that is neither truthy nor falsy
+    :return: `True` for `1`, `true`, `yes` and `on`, `False` for `0`, `false`, `no` and
+        `off` (both case insensitive), `default` otherwise
+    """
+    # An empty value means the variable was declared without one, as
+    # `FOO=${FOO}` does in docker-compose. That is not a misconfiguration
+    value = os.environ.get(name, "").strip()
+    if not value:
+        return default
+    normalized_value = value.lower()
+    if normalized_value in _TRUTHY_ENV_VALUES:
+        return True
+    if normalized_value in _FALSY_ENV_VALUES:
+        return False
+    logger.warning(
+        "Environment variable %s=%s is not a boolean, using %s",
+        name,
+        value,
+        default,
+    )
+    return default
