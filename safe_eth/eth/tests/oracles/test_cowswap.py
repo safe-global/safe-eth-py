@@ -20,6 +20,7 @@ from ..utils import just_test_if_mainnet_node
 
 @pytest.mark.skip("Having issues often")
 class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)

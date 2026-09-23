@@ -43,7 +43,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", 3.11, 3.12, 3.13]
+        # Tests marked `network` hit external services (third party APIs, RPC nodes)
+        # with the same keys on every job, so they only run on the newest Python to stay
+        # under their rate limits.
+        # Each entry sets `pytest-markers` itself because in GitHub Actions expressions
+        # an empty string is falsy: `cond && '' || 'not network'` always returns
+        # 'not network'.
+        include:
+          - python-version: "3.10"
+            pytest-markers: "not network"
+          - python-version: 3.11
+            pytest-markers: "not network"
+          - python-version: 3.12
+            pytest-markers: "not network"
+          - python-version: 3.13
+            pytest-markers: ""
     services:
       postgres:
         image: postgres:16-alpine
@@ -72,7 +86,7 @@ jobs:
       run: uv sync --group dev --all-extras --frozen
     - name: Run tests and coverage
       run: |
-        uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10
+        uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10 -m "${{ matrix.pytest-markers }}"
         uv run coverage lcov -o coverage.lcov
       env:
         SOURCE_FOLDER: safe_eth

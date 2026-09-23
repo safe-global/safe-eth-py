@@ -9,7 +9,7 @@ import requests
 
 from safe_eth.eth import EthereumNetwork
 from safe_eth.eth.clients import ContractMetadata
-from safe_eth.util.http import prepare_http_session
+from safe_eth.util.http import prepare_http_session, wrap_http_exceptions
 
 
 class EtherscanClientException(Exception):
@@ -24,6 +24,23 @@ class EtherscanRateLimitError(EtherscanClientException):
     pass
 
 
+class EtherscanConnectionError(EtherscanClientException, ConnectionError):
+    """
+    Etherscan could not be reached, or its response could not be decoded. It is also
+    a builtin ``ConnectionError``, so callers that catch connection errors catch it.
+    """
+
+
+class EtherscanHttpError(EtherscanClientException):
+    """
+    Etherscan answered with a non ok HTTP status code other than the rate limit one.
+    """
+
+    def __init__(self, status_code: int):
+        self.status_code = status_code
+        super().__init__(f"Error connecting to Etherscan, HTTP {status_code}")
+
+
 class EtherscanClientV2:
     """
     Etherscan API V2 supports multiple chains in the same url.
@@ -35,6 +52,11 @@ class EtherscanClientV2:
     HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
         "User-Agent": "curl/7.77.0",
     }
+    # Error meaning the request was fine but Etherscan has nothing indexed for the
+    # address, returned by ``getabi`` with ``status: "0"`` (``getsourcecode`` returns
+    # ``status: "1"`` with an empty ABI instead, handled in
+    # ``_process_get_contract_source_code_response``)
+    NOT_FOUND_MESSAGE = "contract source code not verified"
 
     def __init__(
         self,
@@ -57,30 +79,76 @@ class EtherscanClientV2:
             url += f"&apikey={self.api_key}"
         return url
 
-    def _do_request(self, url: str) -> Optional[Union[Dict[str, Any], List[Any], str]]:
-        response = self.http_session.get(url, timeout=self.request_timeout)
+    @staticmethod
+    def _build_http_error(status_code: int) -> EtherscanClientException:
+        """
+        :param status_code: Status code of a not ok HTTP response
+        :return: Exception matching the status code
+        """
+        if status_code == 429:
+            return EtherscanRateLimitError(f"Rate limit reached, HTTP {status_code}")
+        return EtherscanHttpError(status_code)
 
-        if response.ok:
-            response_json = response.json()
-            result = response_json["result"]
-            if "Max rate limit reached" in result:
-                # Max rate limit reached, please use API Key for higher rate limit
-                raise EtherscanRateLimitError
-            if response_json["status"] == "1":
-                return result
-        return None
+    @classmethod
+    def _process_response_json(
+        cls, response_json: Dict[str, Any]
+    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+        """
+        Etherscan answers with HTTP 200 for errors too, they are encoded in the payload:
+        ``status`` is ``"0"`` and ``result`` holds the error message.
+
+        :param response_json: Decoded Etherscan response
+        :return: ``result`` if the query succeeded, ``None`` if the query was valid but
+            Etherscan has nothing indexed for the address
+        :raises EtherscanRateLimitError: If any of the rate limits was reached
+        :raises EtherscanClientException: For any other API error
+        """
+        result = response_json.get("result")
+        if response_json.get("status") == "1":
+            return result
+
+        # `result` holds the error message, but it can be null for some errors. `message`
+        # can be null too, so `or ""` is needed on top of the `.get` default
+        message = (
+            result
+            if isinstance(result, str)
+            else str(response_json.get("message") or "")
+        )
+        lowered_message = message.lower()
+        if "rate limit" in lowered_message:
+            # The per second, per day and free tier limits each have their own wording
+            raise EtherscanRateLimitError(message)
+        if cls.NOT_FOUND_MESSAGE in lowered_message:
+            return None
+        raise EtherscanClientException(message or "Unknown Etherscan API error")
+
+    def _do_request(self, url: str) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+        with wrap_http_exceptions(url, EtherscanConnectionError):
+            response = self.http_session.get(url, timeout=self.request_timeout)
+            if not response.ok:
+                raise self._build_http_error(response.status_code)
+            return self._process_response_json(response.json())
 
     def _retry_request(
         self, url: str, retry: bool = True
     ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
-        for _ in range(3):
+        """
+        :param url: Url to request
+        :param retry: If ``True``, wait and try again when the rate limit is reached
+        :return: Decoded ``result`` of the response, ``None`` if Etherscan has nothing
+            indexed for the address
+        :raises EtherscanRateLimitError: If the rate limit is still reached on the last
+            attempt
+        :raises EtherscanClientException: For any other error, raised with no retry
+        """
+        last_attempt = 2
+        for attempt in range(last_attempt + 1):
             try:
                 return self._do_request(url)
-            except EtherscanRateLimitError as exc:
-                if not retry:
-                    raise exc
-                else:
-                    time.sleep(5)
+            except EtherscanRateLimitError:
+                if not retry or attempt == last_attempt:
+                    raise
+                time.sleep(5)
         return None
 
     @classmethod
@@ -243,18 +311,13 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
         """
         Async version of _do_request
         """
-        async with self.async_session.get(
-            url, timeout=self.request_timeout
-        ) as response:
-            if response.ok:
-                response_json = await response.json()
-                result = response_json["result"]
-                if "Max rate limit reached" in result:
-                    # Max rate limit reached, please use API Key for higher rate limit
-                    raise EtherscanRateLimitError
-                if response_json["status"] == "1":
-                    return result
-            return None
+        with wrap_http_exceptions(url, EtherscanConnectionError):
+            async with self.async_session.get(
+                url, timeout=self.request_timeout
+            ) as response:
+                if not response.ok:
+                    raise self._build_http_error(response.status)
+                return self._process_response_json(await response.json())
 
     async def async_get_contract_source_code(
         self,

@@ -10,6 +10,8 @@ from safe_eth.eth.constants import NULL_ADDRESS
 
 from .. import CowSwapAPI, Order, OrderKind
 
+pytestmark = pytest.mark.network
+
 
 class TestCowSwapAPI(TestCase):
     @classmethod

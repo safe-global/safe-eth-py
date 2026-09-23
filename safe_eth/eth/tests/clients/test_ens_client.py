@@ -9,6 +9,8 @@ from requests import Session
 
 from ...clients import EnsClient
 
+pytestmark = pytest.mark.network
+
 
 class TestEnsClient(TestCase):
     def setUp(self):

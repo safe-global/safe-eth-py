@@ -1454,6 +1454,7 @@ class TestEthereumClientConstruction(TestCase):
             self.assertTrue(w3.provider.global_ccip_read_enabled)
 
 
+@pytest.mark.network
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
     @classmethod
     def setUpClass(cls) -> None:

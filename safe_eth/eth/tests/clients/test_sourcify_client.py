@@ -5,12 +5,16 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
+import pytest
+
 from ... import EthereumNetwork
 from ...clients import SourcifyClient
 from ...clients.sourcify_client import (
     AsyncSourcifyClient,
     SourcifyClientConfigurationProblem,
 )
+
+pytestmark = pytest.mark.network
 
 
 class TestSourcifyClient(TestCase):

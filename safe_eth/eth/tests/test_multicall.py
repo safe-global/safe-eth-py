@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
+import pytest
 from eth_typing import URI, ChecksumAddress, HexAddress, HexStr
 
 from .. import EthereumClient, EthereumNetwork, EthereumNetworkNotSupported
@@ -80,6 +81,7 @@ class TestMulticallGanache(EthereumTestCaseMixin, TestCase):
         self.assertEqual(results, expected_results)
 
 
+@pytest.mark.network
 class TestMulticallNode(EthereumTestCaseMixin, TestCase):
     """
     Test Multicall using a production node

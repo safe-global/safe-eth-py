@@ -16,6 +16,7 @@ from ..utils import just_test_if_mainnet_node
 
 
 class TestUniswapV3Oracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     @pytest.mark.xfail(reason="Could fail due to liquidity changes")
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()

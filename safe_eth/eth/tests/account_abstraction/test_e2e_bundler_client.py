@@ -18,6 +18,8 @@ from ..mocks.mock_bundler import (
     user_operation_v07_hash_2,
 )
 
+pytestmark = pytest.mark.network
+
 
 class TestE2EBundlerClient(TestCase):
     def setUp(self):
