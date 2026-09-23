@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import IntEnum
+from functools import cached_property
 from logging import getLogger
 from typing import (
     Any,
@@ -29,6 +30,7 @@ from web3.contract import Contract
 from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError
 
 from safe_eth.eth import EthereumClient
+from safe_eth.eth.constants import NULL_ADDRESS
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
     get_compatibility_fallback_handler_V1_4_1_contract,
@@ -499,8 +501,26 @@ class SafeSignatureApprovedHashMixin(SafeSignatureBase):
         return cls(HexBytes(r + s + v), safe_hash)
 
 
-class SafeSignatureEthSignMixin(SafeSignatureBase):
-    @property
+class SafeSignatureECDSAMixin(SafeSignatureBase):
+    """
+    Owner is recovered from the ECDSA signature. Recovery is slow and ``is_valid`` reads
+    the owner too, so subclasses cache ``owner``: the signature fields never change
+    after ``__init__``.
+    """
+
+    def _is_valid(self) -> bool:
+        """
+        Off-chain validation, shared by the sync and async implementations.
+        ``get_signing_address`` returns ``NULL_ADDRESS`` when the owner cannot be
+        recovered, and the Safe contract never accepts ``address(0)`` as a signer.
+
+        :return: ``True`` if the recovered owner is not the zero address
+        """
+        return self.owner != NULL_ADDRESS
+
+
+class SafeSignatureEthSignMixin(SafeSignatureECDSAMixin):
+    @cached_property
     def owner(self) -> ChecksumAddress:
         # defunct_hash_message prepends `\x19Ethereum Signed Message:\n32`
         message_hash = defunct_hash_message(primitive=self.safe_hash)
@@ -514,8 +534,8 @@ class SafeSignatureEthSignMixin(SafeSignatureBase):
         return SafeSignatureType.ETH_SIGN
 
 
-class SafeSignatureEOAMixin(SafeSignatureBase):
-    @property
+class SafeSignatureEOAMixin(SafeSignatureECDSAMixin):
+    @cached_property
     def owner(self) -> ChecksumAddress:
         return cast(
             ChecksumAddress,
@@ -783,7 +803,7 @@ class SafeSignatureEthSign(SafeSignatureEthSignMixin, SafeSignature):
         safe_address: Optional[str] = None,
         safe_version: Optional[str] = None,
     ) -> bool:
-        return True
+        return self._is_valid()
 
 
 class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
@@ -793,7 +813,7 @@ class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
         safe_address: Optional[str] = None,
         safe_version: Optional[str] = None,
     ) -> bool:
-        return True
+        return self._is_valid()
 
 
 class SafeSignatureP256(SafeSignatureP256Mixin, SafeSignature):
@@ -951,7 +971,7 @@ class SafeSignatureEthSignAsync(SafeSignatureEthSignMixin, SafeSignatureAsync):
         safe_address: Optional[str] = None,
         safe_version: Optional[str] = None,
     ) -> bool:
-        return True
+        return self._is_valid()
 
 
 class SafeSignatureEOAAsync(SafeSignatureEOAMixin, SafeSignatureAsync):
@@ -961,7 +981,7 @@ class SafeSignatureEOAAsync(SafeSignatureEOAMixin, SafeSignatureAsync):
         safe_address: Optional[str] = None,
         safe_version: Optional[str] = None,
     ) -> bool:
-        return True
+        return self._is_valid()
 
 
 class SafeSignatureP256Async(SafeSignatureP256Mixin, SafeSignatureAsync):

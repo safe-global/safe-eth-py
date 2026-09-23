@@ -14,6 +14,7 @@ from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
 from web3 import AsyncHTTPProvider, AsyncWeb3, Web3
 
+from safe_eth.eth.constants import NULL_ADDRESS
 from safe_eth.eth.utils import (
     fast_bytes_to_checksum_address,
     fast_keccak,
@@ -515,6 +516,86 @@ class TestSafeSignatureP256(TestCase):
         )[0]
         self.assertIsInstance(parsed, SafeSignatureP256Async)
         self.assertTrue(asyncio.run(parsed.is_valid()))
+
+
+class TestSafeSignatureZeroAddress(TestCase):
+    """
+    ECDSA signatures that cannot be recovered parse with ``NULL_ADDRESS`` as owner, and
+    must never be valid
+    """
+
+    safe_hash = fast_keccak_text("zero-address-signature")
+    # `r = s = 0` cannot be recovered
+    zero_signatures = {
+        27: SafeSignatureType.EOA,
+        28: SafeSignatureType.EOA,
+        31: SafeSignatureType.ETH_SIGN,
+        32: SafeSignatureType.ETH_SIGN,
+    }
+
+    @staticmethod
+    def parse_and_validate(signatures: bytes, safe_hash: bytes):
+        """
+        :return: ``(owner, is_valid)`` for every parsed signature, from the sync and the
+            async classes, so both implementations are checked by the same assertions
+        """
+        for safe_signature_cls, is_valid in (
+            (SafeSignature, lambda safe_signature: safe_signature.is_valid()),
+            (
+                SafeSignatureAsync,
+                lambda safe_signature: asyncio.run(safe_signature.is_valid()),
+            ),
+        ):
+            yield safe_signature_cls, [
+                (
+                    safe_signature.signature_type,
+                    safe_signature.owner,
+                    is_valid(safe_signature),
+                )
+                for safe_signature in safe_signature_cls.parse_signature(
+                    signatures, safe_hash
+                )
+            ]
+
+    def test_zero_signature(self):
+        for v, signature_type in self.zero_signatures.items():
+            for safe_signature_cls, results in self.parse_and_validate(
+                signature_to_bytes(v, 0, 0), self.safe_hash
+            ):
+                with self.subTest(v=v, cls=safe_signature_cls.__name__):
+                    self.assertEqual(results, [(signature_type, NULL_ADDRESS, False)])
+
+    def test_zero_signature_in_multiple_signatures(self):
+        eoa_account = Account.create()
+        eoa_signature = eoa_account.unsafe_sign_hash(self.safe_hash)["signature"]
+        eth_sign_account = Account.create()
+        eth_sign_signature = eth_sign_account.unsafe_sign_hash(
+            defunct_hash_message(primitive=self.safe_hash)
+        )["signature"]
+        eth_sign_signature = eth_sign_signature[:64] + HexBytes(
+            eth_sign_signature[64] + 4
+        )
+
+        for v, signature_type in self.zero_signatures.items():
+            signatures = (
+                eoa_signature + signature_to_bytes(v, 0, 0) + eth_sign_signature
+            )
+            for safe_signature_cls, results in self.parse_and_validate(
+                signatures, self.safe_hash
+            ):
+                with self.subTest(v=v, cls=safe_signature_cls.__name__):
+                    self.assertEqual(
+                        results,
+                        [
+                            (SafeSignatureType.EOA, eoa_account.address, True),
+                            (signature_type, NULL_ADDRESS, False),
+                            (
+                                SafeSignatureType.ETH_SIGN,
+                                eth_sign_account.address,
+                                True,
+                            ),
+                        ],
+                    )
 
 
 class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
