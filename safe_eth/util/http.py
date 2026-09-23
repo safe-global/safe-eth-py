@@ -1,7 +1,37 @@
-from typing import Union
+import asyncio
+from contextlib import contextmanager
+from json import JSONDecodeError
+from typing import Iterator, Type, Union
 from urllib.parse import urljoin
 
+import aiohttp
 import requests
+
+# Raised by the HTTP libraries when the server cannot be reached or its response
+# cannot be decoded. Both transports are listed together, as the async clients also
+# reach the server through the inherited blocking helpers
+HTTP_TRANSPORT_EXCEPTIONS = (
+    requests.RequestException,
+    aiohttp.ClientError,
+    asyncio.TimeoutError,
+    JSONDecodeError,
+)
+
+
+@contextmanager
+def wrap_http_exceptions(url: str, exception_class: Type[Exception]) -> Iterator[None]:
+    """
+    Raise ``exception_class`` instead of the HTTP library exception when the server
+    cannot be reached or its response cannot be decoded, so callers only deal with
+    exceptions from this library. The original exception is kept as the cause.
+
+    :param url: Url being requested, used for the error message
+    :param exception_class: Exception raised instead of the HTTP library one
+    """
+    try:
+        yield
+    except HTTP_TRANSPORT_EXCEPTIONS as exc:
+        raise exception_class(f"Error querying {url}: {exc!r}") from exc
 
 
 def prepare_http_session(

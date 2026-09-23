@@ -21,7 +21,11 @@ from .ethereum_client import (
     get_auto_ethereum_client,
 )
 from .ethereum_network import EthereumNetwork, EthereumNetworkNotSupported
-from .exceptions import InvalidERC20Info, InvalidERC721Info
+from .exceptions import (
+    EthereumClientConnectionException,
+    InvalidERC20Info,
+    InvalidERC721Info,
+)
 
 __all__ = [
     "EthereumClient",
@@ -41,6 +45,7 @@ __all__ = [
     "TransactionQueueLimitReached",
     "TxSpeed",
     "UnknownAccount",
+    "EthereumClientConnectionException",
     "EthereumNetwork",
     "EthereumNetworkNotSupported",
     "InvalidERC20Info",

@@ -22,6 +22,7 @@ from ...util.util import to_0x_hex_str
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (
+    Erc20Manager,
     EthereumClient,
     EthereumNetwork,
     FromAddressNotFound,
@@ -31,7 +32,11 @@ from ..ethereum_client import (
     TracingManager,
     get_auto_ethereum_client,
 )
-from ..exceptions import BatchCallException, InvalidERC20Info
+from ..exceptions import (
+    BatchCallException,
+    EthereumClientConnectionException,
+    InvalidERC20Info,
+)
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
 from .mocks.mock_log_receipts import invalid_log_receipt, log_receipts
@@ -1321,6 +1326,81 @@ def offchain_lookup_node():
         ),
     ):
         yield
+
+
+class TestTransportExceptions(TestCase):
+    """
+    Reaching an unreachable node must raise exceptions from this library, never the
+    ones from the HTTP library. The node url does not resolve, so no node is needed.
+    """
+
+    def setUp(self):
+        self.ethereum_client = self.build_ethereum_client()
+        self.batch_call_payloads = [
+            {
+                "to": Account.create().address,
+                "data": "0x06fdde03",  # `name()`
+                "output_type": ["string"],
+            }
+        ]
+
+    def build_ethereum_client(self):
+        return EthereumClient(UNREACHABLE_NODE_URL)
+
+    def build_not_ok_response_mock(self):
+        """Patch the transport so the node answers with a non ok status."""
+        return mock.patch.object(
+            requests.Session,
+            "post",
+            return_value=mock.Mock(ok=False, text="Bad gateway"),
+        )
+
+    def test_batch_call_custom(self):
+        with self.assertRaises(EthereumClientConnectionException) as ctx:
+            self.ethereum_client.batch_call_manager.batch_call_custom(
+                self.batch_call_payloads
+            )
+
+        # Both the previous builtin `ConnectionError` and `ValueError` still match
+        self.assertIsInstance(ctx.exception, ConnectionError)
+        self.assertIsInstance(ctx.exception, ValueError)
+        self.assertIsNotNone(ctx.exception.__cause__)
+
+    def test_batch_call_custom_response_not_ok(self):
+        with self.build_not_ok_response_mock():
+            with self.assertRaises(EthereumClientConnectionException):
+                self.ethereum_client.batch_call_manager.batch_call_custom(
+                    self.batch_call_payloads
+                )
+
+    def test_erc20_get_info(self):
+        with self.assertRaises(InvalidERC20Info) as ctx:
+            self.ethereum_client.erc20.get_info(Account.create().address)
+
+        self.assertIsNotNone(ctx.exception.__cause__)
+
+    def test_erc20_get_info_batch_request(self):
+        # Building the payload already queries the node, so it must be stubbed for
+        # the batch request itself to be reached
+        payload = [{"id": 0, "jsonrpc": "2.0", "method": "eth_call", "params": []}]
+
+        with mock.patch.object(
+            Erc20Manager, "_build_info_payload", return_value=payload
+        ) as build_info_payload_mock:
+            with self.assertRaises(InvalidERC20Info) as ctx:
+                self.ethereum_client.erc20.get_info(Account.create().address)
+
+        build_info_payload_mock.assert_called_once()
+        self.assertIsNotNone(ctx.exception.__cause__)
+
+    def test_raw_batch_request(self):
+        payload = [{"id": 0, "jsonrpc": "2.0", "method": "eth_chainId", "params": []}]
+
+        with self.assertRaises(EthereumClientConnectionException) as ctx:
+            list(self.ethereum_client.raw_batch_request(payload))
+
+        self.assertIsInstance(ctx.exception, ValueError)
+        self.assertIsNotNone(ctx.exception.__cause__)
 
 
 class TestEthereumClientConstruction(TestCase):

@@ -36,6 +36,7 @@ from .test_ethereum_client import (
     TestEthereumClient,
     TestEthereumClientConstruction,
     TestTracingManager,
+    TestTransportExceptions,
     forbid_rpc_calls,
     offchain_lookup_node,
 )
@@ -257,6 +258,29 @@ class TestAsyncEthereumClient(AsyncEthereumClientTestMixin, TestEthereumClient):
             [make_function()], raise_exception=False
         )
         self.assertEqual(async_result, sync_result)
+
+
+class TestAsyncTransportExceptions(TestTransportExceptions):
+    """Run the transport exception tests against the ``aiohttp`` paths."""
+
+    def build_ethereum_client(self):
+        self._async_loop = asyncio.new_event_loop()
+        self._async_ethereum_client = AsyncEthereumClient(UNREACHABLE_NODE_URL)
+        return SyncCallProxy(self._async_ethereum_client, self._async_loop)
+
+    def tearDown(self):
+        self._async_loop.run_until_complete(self._async_ethereum_client.aclose())
+        self._async_loop.close()
+        super().tearDown()
+
+    def build_not_ok_response_mock(self):
+        response = mock.Mock(ok=False)
+        response.text = mock.AsyncMock(return_value="Bad gateway")
+        post_result = mock.MagicMock()
+        post_result.__aenter__.return_value = response
+        return mock.patch.object(
+            aiohttp.ClientSession, "post", return_value=post_result
+        )
 
 
 class TestAsyncEthereumClientConstruction(TestEthereumClientConstruction):
