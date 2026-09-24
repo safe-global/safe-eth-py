@@ -14,8 +14,6 @@ from ...clients.sourcify_client import (
     SourcifyClientConfigurationProblem,
 )
 
-pytestmark = pytest.mark.network
-
 
 class TestSourcifyClient(TestCase):
     @mock.patch.object(SourcifyClient, "is_chain_supported")
@@ -28,6 +26,7 @@ class TestSourcifyClient(TestCase):
         self.assertIsInstance(SourcifyClient(), SourcifyClient)
         self.assertIsInstance(SourcifyClient(EthereumNetwork.GNOSIS), SourcifyClient)
 
+    @pytest.mark.network
     def test_is_chain_supported(self):
         try:
             sourcify = SourcifyClient()
@@ -38,6 +37,7 @@ class TestSourcifyClient(TestCase):
         self.assertTrue(sourcify.is_chain_supported(EthereumNetwork.GNOSIS.value))
         self.assertFalse(sourcify.is_chain_supported(2))
 
+    @pytest.mark.network
     @mock.patch.object(SourcifyClient, "is_chain_supported", return_value=True)
     def test_get_contract_metadata(self, is_chain_supported_mock: MagicMock):
         sourcify_client_mainnet = SourcifyClient()
@@ -71,6 +71,7 @@ class TestSourcifyClient(TestCase):
         self.assertTrue(token_contract_metadata_mainnet.partial_match)
 
 
+@pytest.mark.network
 class TestAsyncSourcifyClient(unittest.IsolatedAsyncioTestCase):
     @mock.patch.object(SourcifyClient, "is_chain_supported", return_value=True)
     async def test_async_get_contract_metadata(
