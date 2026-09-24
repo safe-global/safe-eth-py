@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 
 from ... import EthereumClient
@@ -10,6 +11,7 @@ from ..utils import just_test_if_polygon_node
 
 
 class TestSuperfluidOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_price(self):
         polygon_node = just_test_if_polygon_node()
 

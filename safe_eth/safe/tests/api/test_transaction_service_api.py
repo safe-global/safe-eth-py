@@ -101,6 +101,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             )
             self.assertEqual(transaction_service_api.api_key, "test-api-key")
 
+    @pytest.mark.network
     def test_custom_base_url(self):
         ethereum_network = EthereumNetwork.GNOSIS
         transaction_service_api_with_custom_url = TransactionServiceApi(
@@ -128,11 +129,13 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             decoded_data_text,
         )
 
+    @pytest.mark.network
     def test_get_balances(self):
         balances = self.transaction_service_api.get_balances(self.safe_address)
         self.assertIsInstance(balances, list)
         self.assertGreaterEqual(len(balances), 1)
 
+    @pytest.mark.network
     def test_get_transactions(self):
         transactions = self.transaction_service_api.get_transactions(self.safe_address)
         self.assertIsInstance(transactions, list)
@@ -187,6 +190,7 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 str(context.exception),
             )
 
+    @pytest.mark.network
     def test_get_safes_for_owner(self):
         owner_address = "0x3066786706Ff0B6e71044e55074dBAE7D01573cB"
         safes = self.transaction_service_api.get_safes_for_owner(owner_address)

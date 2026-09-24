@@ -35,6 +35,7 @@ class TestEnsClient(TestCase):
         self.assertEqual(len(EnsClient.domain_hash_to_hex_str(None)), 66)
         self.assertEqual(len(EnsClient.domain_hash_to_hex_str(2)), 66)
 
+    @pytest.mark.network
     def test_query_by_account(self):
         ens_client = EnsClient(config=self.config)
         if not ens_client.is_available():
@@ -148,6 +149,7 @@ class TestEnsClient(TestCase):
             },
         )
 
+    @pytest.mark.network
     def test_query_by_domain_hash(self):
         ens_client = EnsClient(config=self.config)
         if not ens_client.is_available():
@@ -162,6 +164,7 @@ class TestEnsClient(TestCase):
         )
         self.assertIsNone(ens_client.query_by_domain_hash(domain_hash_2))
 
+    @pytest.mark.network
     def test_is_available(self):
         for config in (
             self.config,

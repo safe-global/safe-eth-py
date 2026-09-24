@@ -1,5 +1,7 @@
 from django.test import TestCase
 
+import pytest
+
 from ... import EthereumClient
 from ...oracles import SushiswapOracle
 from ...oracles.utils import get_decimals as oracles_get_decimals
@@ -14,6 +16,7 @@ from ..utils import just_test_if_mainnet_node
 
 
 class TestSushiSwapOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_price(self):
         oracles_get_decimals.cache_clear()
         mainnet_node = just_test_if_mainnet_node()

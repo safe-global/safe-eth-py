@@ -38,6 +38,7 @@ usdt_token_mainnet_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
 
 
 class TestOracles(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_uniswap_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -99,6 +100,7 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
             expected_address,
         )
 
+    @pytest.mark.network
     def test_get_price(self):
         oracles_get_decimals.cache_clear()
         mainnet_node = just_test_if_mainnet_node()
@@ -185,6 +187,7 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
                 uniswap_v2_oracle.get_price(token_2, token_1), 0.06
             )  # Reserves were inverted
 
+    @pytest.mark.network
     def test_get_pool_token_price(self):
         dai_eth_pool_address = "0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11"
         mainnet_node = just_test_if_mainnet_node()
@@ -196,6 +199,7 @@ class TestUniswapV2Oracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestAaveOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -221,6 +225,7 @@ class TestAaveOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestCreamOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -246,6 +251,7 @@ class TestCreamOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestCurveOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_underlying_tokens(self):
         curve_token_address = (
             "0xC25a3A3b969415c80451098fa907EC722572917F"  # Curve.fi DAI/USDC/USDT/sUSD
@@ -293,6 +299,7 @@ class TestCurveOracle(EthereumTestCaseMixin, TestCase):
         with self.assertRaisesMessage(CannotGetPriceFromOracle, error_message):
             curve_oracle.get_underlying_tokens(Account.create().address)
 
+    @pytest.mark.network
     def test_get_underlying_tokens_gauges(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -318,6 +325,7 @@ class TestZerionComposedOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestPoolTogetherOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_underlying_token(self):
         pool_together_token_address = (
             "0xD81b1A8B1AD00Baa2D6609E0BAE28A38713872f7"  # v3 USDC Ticket
@@ -354,6 +362,7 @@ class TestPoolTogetherOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestYearnOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -411,6 +420,7 @@ class TestYearnOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     @pytest.mark.xfail(reason="Could fail due to unbalanced pool")
     def test_get_pool_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
@@ -438,6 +448,7 @@ class TestBalancerOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_get_pool_token_price(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)
@@ -470,6 +481,7 @@ class TestMooniswapOracle(EthereumTestCaseMixin, TestCase):
 
 
 class TestEnzymeOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     @pytest.mark.xfail(reason="Flaky because of external dependency on Enzyme")
     def test_get_underlying_tokens(self):
         mainnet_node = just_test_if_mainnet_node()

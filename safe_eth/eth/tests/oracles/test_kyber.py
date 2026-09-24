@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 
 from ... import EthereumClient
@@ -14,6 +15,7 @@ from ..utils import just_test_if_mainnet_node
 
 
 class TestKyberOracle(EthereumTestCaseMixin, TestCase):
+    @pytest.mark.network
     def test_kyber_oracle(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)

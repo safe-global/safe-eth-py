@@ -3,6 +3,7 @@ import secrets
 
 from django.test import TestCase
 
+import pytest
 from eth_account import Account
 
 from safe_eth.eth import EthereumClient
@@ -95,6 +96,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
                     )
                 )
 
+    @pytest.mark.network
     def test_check_proxy_code_mainnet(self):
         mainnet_node = just_test_if_mainnet_node()
         ethereum_client = EthereumClient(mainnet_node)

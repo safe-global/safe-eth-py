@@ -12,6 +12,9 @@ from .etherscan_client_v2 import (
     EtherscanClientConfigurationProblem,
     EtherscanClientException,
     EtherscanClientV2,
+    EtherscanConnectionError,
+    EtherscanDailyRateLimitError,
+    EtherscanHttpError,
     EtherscanRateLimitError,
 )
 from .sourcify_client import (
@@ -33,6 +36,9 @@ __all__ = [
     "EtherscanClientV2",
     "EtherscanClientConfigurationProblem",
     "EtherscanClientException",
+    "EtherscanConnectionError",
+    "EtherscanDailyRateLimitError",
+    "EtherscanHttpError",
     "EtherscanRateLimitError",
     "SourcifyClient",
     "SourcifyClientConfigurationProblem",

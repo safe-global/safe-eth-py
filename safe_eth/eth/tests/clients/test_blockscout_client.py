@@ -7,9 +7,11 @@ from ...clients import BlockscoutClient, BlockScoutConfigurationProblem
 from ...clients.blockscout_client import AsyncBlockscoutClient
 from .mocks import safe_proxy_abi_mock, sourcify_safe_metadata
 
+pytestmark = pytest.mark.network
+
 
 class TestBlockscoutClient(unittest.TestCase):
-    @pytest.mark.flaky(reruns=5, delay=2)
+    @pytest.mark.flaky(reruns=5, reruns_delay=5)
     def test_blockscout_client(self):
         with self.assertRaises(BlockScoutConfigurationProblem):
             BlockscoutClient(EthereumNetwork.MAINNET)

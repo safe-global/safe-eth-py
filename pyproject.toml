@@ -161,5 +161,10 @@ warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
 
+[tool.pytest.ini_options]
+markers = [
+    "network: hits an external service (third party API or RPC node). CI runs these on one Python version only, as all jobs share the same API keys and rate limits",
+]
+
 [tool.pytest_env]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
