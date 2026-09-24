@@ -13,6 +13,7 @@ from .etherscan_client_v2 import (
     EtherscanClientException,
     EtherscanClientV2,
     EtherscanConnectionError,
+    EtherscanDailyRateLimitError,
     EtherscanHttpError,
     EtherscanRateLimitError,
 )
@@ -36,6 +37,7 @@ __all__ = [
     "EtherscanClientConfigurationProblem",
     "EtherscanClientException",
     "EtherscanConnectionError",
+    "EtherscanDailyRateLimitError",
     "EtherscanHttpError",
     "EtherscanRateLimitError",
     "SourcifyClient",

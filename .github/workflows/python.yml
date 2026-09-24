@@ -38,6 +38,9 @@ jobs:
         run: uv run pre-commit run --all-files
 
   test-app:
+    # Required status checks on `main` use this name. Without it GitHub adds every
+    # matrix value, e.g. `test-app (3.10, not network)`
+    name: test-app (${{ matrix.python-version }})
     permissions:
       contents: read
     runs-on: ubuntu-latest

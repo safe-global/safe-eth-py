@@ -14,6 +14,7 @@ from ...clients import (
     EtherscanClientException,
     EtherscanClientV2,
     EtherscanConnectionError,
+    EtherscanDailyRateLimitError,
     EtherscanHttpError,
     EtherscanRateLimitError,
 )
@@ -47,7 +48,7 @@ class TestEtherscanClientV2ResponseProcessing(unittest.TestCase):
         )
         for rate_limit_message in rate_limit_messages:
             with self.subTest(rate_limit_message=rate_limit_message):
-                with self.assertRaises(EtherscanRateLimitError):
+                with self.assertRaises(EtherscanRateLimitError) as ctx:
                     EtherscanClientV2._process_response_json(
                         {
                             "status": "0",
@@ -55,6 +56,10 @@ class TestEtherscanClientV2ResponseProcessing(unittest.TestCase):
                             "result": rate_limit_message,
                         }
                     )
+                self.assertEqual(
+                    isinstance(ctx.exception, EtherscanDailyRateLimitError),
+                    "daily" in rate_limit_message,
+                )
 
     def test_process_response_json_not_found(self):
         self.assertIsNone(
@@ -110,6 +115,21 @@ class TestEtherscanClientV2ResponseProcessing(unittest.TestCase):
             sleep_mock.reset_mock()
             with self.assertRaises(EtherscanRateLimitError):
                 etherscan_client._retry_request("https://api.etherscan.io", retry=False)
+            self.assertEqual(do_request_mock.call_count, 1)
+            sleep_mock.assert_not_called()
+
+    def test_retry_request_daily_rate_limit(self):
+        etherscan_client = EtherscanClientV2(EthereumNetwork.MAINNET)
+        with (
+            mock.patch.object(
+                EtherscanClientV2,
+                "_do_request",
+                side_effect=EtherscanDailyRateLimitError,
+            ) as do_request_mock,
+            mock.patch.object(time, "sleep") as sleep_mock,
+        ):
+            with self.assertRaises(EtherscanDailyRateLimitError):
+                etherscan_client._retry_request("https://api.etherscan.io")
             self.assertEqual(do_request_mock.call_count, 1)
             sleep_mock.assert_not_called()
 

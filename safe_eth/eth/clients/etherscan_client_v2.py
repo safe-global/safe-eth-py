@@ -24,6 +24,13 @@ class EtherscanRateLimitError(EtherscanClientException):
     pass
 
 
+class EtherscanDailyRateLimitError(EtherscanRateLimitError):
+    """
+    Daily quota of the API key is used. It is not retried, as it only resets the next
+    day.
+    """
+
+
 class EtherscanConnectionError(EtherscanClientException, ConnectionError):
     """
     Etherscan could not be reached, or its response could not be decoded. It is also
@@ -117,6 +124,8 @@ class EtherscanClientV2:
         lowered_message = message.lower()
         if "rate limit" in lowered_message:
             # The per second, per day and free tier limits each have their own wording
+            if "daily" in lowered_message:
+                raise EtherscanDailyRateLimitError(message)
             raise EtherscanRateLimitError(message)
         if cls.NOT_FOUND_MESSAGE in lowered_message:
             return None
@@ -134,22 +143,25 @@ class EtherscanClientV2:
     ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
         """
         :param url: Url to request
-        :param retry: If ``True``, wait and try again when the rate limit is reached
+        :param retry: If ``True``, wait and try again when the rate limit is reached,
+            up to 3 attempts
         :return: Decoded ``result`` of the response, ``None`` if Etherscan has nothing
             indexed for the address
         :raises EtherscanRateLimitError: If the rate limit is still reached on the last
             attempt
-        :raises EtherscanClientException: For any other error, raised with no retry
+        :raises EtherscanDailyRateLimitError: When the daily quota is used, with no retry
+        :raises EtherscanClientException: For any other error, with no retry
         """
-        last_attempt = 2
-        for attempt in range(last_attempt + 1):
+        for _ in range(2):
             try:
                 return self._do_request(url)
+            except EtherscanDailyRateLimitError:
+                raise
             except EtherscanRateLimitError:
-                if not retry or attempt == last_attempt:
+                if not retry:
                     raise
                 time.sleep(5)
-        return None
+        return self._do_request(url)
 
     @classmethod
     def get_supported_networks(cls) -> List[Dict[str, Any]]:
