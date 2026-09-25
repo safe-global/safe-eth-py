@@ -188,6 +188,10 @@ Safe Transaction Service API
   `Safe APIs`_ above. No default.
 - ``SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
 
+ERC-4337 bundler client
+~~~~~~~~~~~~~~~~~~~~~~~
+- ``BUNDLER_CLIENT_REQUEST_TIMEOUT``: Request timeout (seconds). Default ``10``.
+
 Block explorer and source verification clients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ``*_MAX_REQUESTS`` variables tune the connection pool of the async clients only; the

@@ -176,3 +176,23 @@ class TestBundlerClient(TestCase):
         self.assertEqual(
             self.bundler.supported_entry_points(), supported_entrypoint_mock["result"]
         )
+
+    def test_request_timeout_default(self):
+        self.assertEqual(self.bundler.request_timeout, 10)
+
+    @mock.patch.object(requests.Session, "post")
+    def test_do_request_uses_request_timeout(self, mock_session: MagicMock):
+        mock_session.return_value.ok = True
+        mock_session.return_value.json = MagicMock(
+            return_value={"jsonrpc": "2.0", "id": 1, "result": None}
+        )
+        bundler = BundlerClient("https://localhost", request_timeout=5)
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "eth_chainId",
+            "params": [],
+            "id": 1,
+        }
+        bundler._do_request(payload)
+
+        mock_session.assert_called_with("https://localhost", json=payload, timeout=5)
