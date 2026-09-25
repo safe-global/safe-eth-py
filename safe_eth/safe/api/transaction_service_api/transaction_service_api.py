@@ -50,6 +50,8 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.SCROLL: "scr",
         EthereumNetwork.SEPOLIA: "sep",
         EthereumNetwork.SONIC_MAINNET: "sonic",
+        EthereumNetwork.TEMPO_MAINNET: "tempo",
+        EthereumNetwork.TEMPO_TESTNET_MODERATO: "tempo-moderato",
         EthereumNetwork.UNICHAIN: "unichain",
         EthereumNetwork.WORLD_CHAIN: "wc",
         EthereumNetwork.X_LAYER_MAINNET: "okb",
