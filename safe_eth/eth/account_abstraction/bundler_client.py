@@ -1,4 +1,5 @@
 import logging
+import os
 from functools import cache, lru_cache
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -23,9 +24,13 @@ class BundlerClient:
         self,
         url: str,
         retry_count: int = 0,
+        request_timeout: int = int(
+            os.environ.get("BUNDLER_CLIENT_REQUEST_TIMEOUT", 10)
+        ),
     ):
         self.url = url
         self.retry_count = retry_count
+        self.request_timeout = request_timeout
         self.http_session = prepare_http_session(1, 100, retry_count=retry_count)
 
     def __str__(self):
@@ -45,7 +50,9 @@ class BundlerClient:
         :raises BundlerClientResponseException: If the request from the bundler contains an error
         """
         try:
-            response = self.http_session.post(self.url, json=payload)
+            response = self.http_session.post(
+                self.url, json=payload, timeout=self.request_timeout
+            )
         except IOError as exception:
             raise BundlerClientConnectionException(
                 f"Error connecting to bundler {self.url} : {exception}"
