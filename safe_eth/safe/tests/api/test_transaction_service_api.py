@@ -358,3 +358,49 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
                 "Cannot decode tx data:",
                 str(context.exception),
             )
+
+
+class TestTransactionServiceApiKey(TestCase):
+    """
+    API key resolution, runs without a Transaction Service API key or network access.
+    """
+
+    api_key_variable_name = "SAFE_TRANSACTION_SERVICE_API_KEY"
+
+    def setUp(self) -> None:
+        self.ethereum_client = mock.create_autospec(EthereumClient, instance=True)
+        self.ethereum_client.get_network.return_value = EthereumNetwork.SEPOLIA
+
+    def test_api_key_from_environment(self):
+        with mock.patch.dict(os.environ, {self.api_key_variable_name: "env-api-key"}):
+            for transaction_service_api in (
+                TransactionServiceApi(EthereumNetwork.SEPOLIA),
+                TransactionServiceApi.from_ethereum_client(self.ethereum_client),
+            ):
+                self.assertEqual(transaction_service_api.api_key, "env-api-key")
+                self.assertEqual(
+                    transaction_service_api._get_request_headers()["Authorization"],
+                    "Bearer env-api-key",
+                )
+
+    def test_explicit_api_key_overrides_environment(self):
+        with mock.patch.dict(os.environ, {self.api_key_variable_name: "env-api-key"}):
+            for transaction_service_api in (
+                TransactionServiceApi(EthereumNetwork.SEPOLIA, api_key="explicit"),
+                TransactionServiceApi.from_ethereum_client(
+                    self.ethereum_client, api_key="explicit"
+                ),
+            ):
+                self.assertEqual(transaction_service_api.api_key, "explicit")
+
+    def test_no_api_key(self):
+        with mock.patch.dict(os.environ):
+            os.environ.pop(self.api_key_variable_name, None)
+            for transaction_service_api in (
+                TransactionServiceApi(EthereumNetwork.SEPOLIA),
+                TransactionServiceApi.from_ethereum_client(self.ethereum_client),
+            ):
+                self.assertIsNone(transaction_service_api.api_key)
+                self.assertNotIn(
+                    "Authorization", transaction_service_api._get_request_headers()
+                )
