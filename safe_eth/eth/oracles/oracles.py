@@ -3,7 +3,6 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List, Optional, Tuple
 
 import requests
 from eth_abi import decode as decode_abi
@@ -75,7 +74,7 @@ class PricePoolOracle(BaseOracle):
 
 class ComposedPriceOracle(BaseOracle):
     @abstractmethod
-    def get_underlying_tokens(self, *args) -> List[UnderlyingToken]:
+    def get_underlying_tokens(self, *args) -> list[UnderlyingToken]:
         raise NotImplementedError
 
 
@@ -96,7 +95,7 @@ class UniswapOracle(PriceOracle):
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        uniswap_factory_address: Optional[str] = None,
+        uniswap_factory_address: str | None = None,
     ):
         """
         :param ethereum_client:
@@ -130,7 +129,7 @@ class UniswapOracle(PriceOracle):
     def uniswap_factory(self):
         return get_uniswap_factory_contract(self.w3, self.uniswap_factory_address)
 
-    @functools.lru_cache(maxsize=2048)
+    @functools.lru_cache(maxsize=2048)  # noqa: B019 - long-lived oracle, bounded cache
     def get_uniswap_exchange(self, token_address: str) -> str:
         return self.uniswap_factory.functions.getExchange(token_address).call()
 
@@ -250,7 +249,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
     )
 
     def __init__(
-        self, ethereum_client: EthereumClient, router_address: Optional[str] = None
+        self, ethereum_client: EthereumClient, router_address: str | None = None
     ):
         """
         :param ethereum_client:
@@ -310,10 +309,8 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         """
         return self.router.functions.WETH().call()
 
-    @functools.lru_cache(maxsize=2048)
-    def get_pair_address(
-        self, token_address: str, token_address_2: str
-    ) -> Optional[str]:
+    @functools.lru_cache(maxsize=2048)  # noqa: B019 - long-lived oracle, bounded cache
+    def get_pair_address(self, token_address: str, token_address_2: str) -> str | None:
         """
         Get uniswap pair address. `token_address` and `token_address_2` are interchangeable.
         https://uniswap.org/docs/v2/smart-contracts/factory/
@@ -330,7 +327,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             return None
         return pair_address
 
-    @functools.lru_cache(maxsize=2048)
+    @functools.lru_cache(maxsize=2048)  # noqa: B019 - long-lived oracle, bounded cache
     def calculate_pair_address(self, token_address: str, token_address_2: str):
         """
         Calculate pair address without querying blockchain.
@@ -354,7 +351,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         )[-20:]
         return fast_bytes_to_checksum_address(address)
 
-    def get_reserves(self, pair_address: str) -> Tuple[int, int]:
+    def get_reserves(self, pair_address: str) -> tuple[int, int]:
         """
         Returns the number of tokens in the pool. `getReserves()` also returns the block.timestamp (mod 2**32) of
         the last block during which an interaction occurred for the pair, but it's ignored.
@@ -370,7 +367,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
         return reserves_1, reserves_2
 
     def get_price(
-        self, token_address: str, token_address_2: Optional[str] = None
+        self, token_address: str, token_address_2: str | None = None
     ) -> float:
         # These lines only make sense when `get_pair_address` is used. `calculate_pair_address` will always return
         # an address, even it that exchange is not deployed
@@ -416,7 +413,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
             raise CannotGetPriceFromOracle(message) from e
 
     def get_price_without_exception(
-        self, token_address: str, token_address_2: Optional[str] = None
+        self, token_address: str, token_address_2: str | None = None
     ) -> float:
         """
         :param token_address:
@@ -468,6 +465,7 @@ class UniswapV2Oracle(PricePoolOracle, PriceOracle):
                 (token_address_1, token_address_2),
                 (decimals_1, decimals_2),
                 (reserves_1, reserves_2),
+                strict=False,
             ):
                 try:
                     price = self.get_price(str(token_address))
@@ -524,10 +522,10 @@ class AaveOracle(PriceOracle):
                 .call()
             )
             return self.price_oracle.get_price(underlying_token)
-        except (Web3Exception, DecodingError, ValueError):
+        except (Web3Exception, DecodingError, ValueError) as exc:
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {token_address}. It is not an Aaave atoken"
-            )
+            ) from exc
 
 
 class CreamOracle(PriceOracle):
@@ -561,19 +559,19 @@ class CreamOracle(PriceOracle):
                 .call()
             )
             return self.price_oracle.get_price(underlying_token)
-        except (Web3Exception, DecodingError, ValueError):
+        except (Web3Exception, DecodingError, ValueError) as exc:
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {token_address}. It is not a Cream cToken"
-            )
+            ) from exc
 
 
 class ZerionComposedOracle(ComposedPriceOracle):
-    ZERION_ADAPTER_ADDRESS: Optional[str] = None
+    ZERION_ADAPTER_ADDRESS: str | None = None
 
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        zerion_adapter_address: Optional[str] = None,
+        zerion_adapter_address: str | None = None,
     ):
         """
         :param ethereum_client:
@@ -602,7 +600,7 @@ class ZerionComposedOracle(ComposedPriceOracle):
         return ethereum_client.get_network() == EthereumNetwork.MAINNET
 
     @cached_property
-    def zerion_adapter_contract(self) -> Optional[Contract]:
+    def zerion_adapter_contract(self) -> Contract | None:
         """
         :return: https://curve.readthedocs.io/registry-registry.html
         """
@@ -617,7 +615,7 @@ class ZerionComposedOracle(ComposedPriceOracle):
 
     def get_underlying_tokens(
         self, token_address: ChecksumAddress
-    ) -> List[UnderlyingToken]:
+    ) -> list[UnderlyingToken]:
         """
         Use Zerion Token adapter to return underlying components for pool
 
@@ -666,7 +664,7 @@ class CurveOracle(ZerionComposedOracle):
 
     def get_underlying_tokens(
         self, token_address: ChecksumAddress
-    ) -> List[UnderlyingToken]:
+    ) -> list[UnderlyingToken]:
         """
         Check if passed token address is a Curve gauge deposit token, if it's a gauge we replace the address with
         the corresponding LP token address
@@ -709,12 +707,9 @@ class YearnOracle(ComposedPriceOracle):
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        yearn_vault_token_adapter: Optional[
-            str
-        ] = "0xb460FcC1B6c1CBD7D03F47B6BD5F03994d286c75",
-        iearn_token_adapter: Optional[
-            str
-        ] = "0x65B23774daE2a5be02dD275918DDF048d177a5B4",
+        yearn_vault_token_adapter: str
+        | None = "0xb460FcC1B6c1CBD7D03F47B6BD5F03994d286c75",
+        iearn_token_adapter: str | None = "0x65B23774daE2a5be02dD275918DDF048d177a5B4",
     ):
         """
         :param ethereum_client:
@@ -743,7 +738,7 @@ class YearnOracle(ComposedPriceOracle):
 
     def get_underlying_tokens(
         self, token_address: ChecksumAddress
-    ) -> List[UnderlyingToken]:
+    ) -> list[UnderlyingToken]:
         """
         :param token_address:
         :return: Price per share and underlying token
@@ -833,17 +828,17 @@ class BalancerOracle(PricePoolOracle):
             ]
             total_eth_value = 0.0
             for token_balance_bytes, token_decimal_bytes, token_price in zip(
-                token_balances, token_decimals, token_prices
+                token_balances, token_decimals, token_prices, strict=False
             ):
                 token_balance = bytes_to_float(token_balance_bytes)
                 token_decimal = bytes_to_float(token_decimal_bytes)
                 total_eth_value += (token_balance / 10**token_decimal) * token_price
             return total_eth_value / (total_supply / 1e18)
-        except (Web3Exception, DecodingError, ValueError):
+        except (Web3Exception, DecodingError, ValueError) as exc:
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {pool_token_address}. "
                 f"It is not a balancer pool token"
-            )
+            ) from exc
 
 
 class MooniswapOracle(BalancerOracle):
@@ -870,7 +865,7 @@ class MooniswapOracle(BalancerOracle):
             if not tokens:
                 raise ValueError
             if len(tokens) == 1 or any(
-                [token == NULL_ADDRESS for token in tokens]
+                token == NULL_ADDRESS for token in tokens
             ):  # One of the tokens is ether
                 ethereum_amount = self.ethereum_client.get_balance(pool_token_address)
                 return ethereum_amount * 2 / total_supply
@@ -903,8 +898,8 @@ class MooniswapOracle(BalancerOracle):
                     f"It is not a mooniswap pool token"
                 )
 
-        except (Web3Exception, DecodingError, ValueError):
+        except (Web3Exception, DecodingError, ValueError) as exc:
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {pool_token_address}. "
                 f"It is not a mooniswap pool token"
-            )
+            ) from exc

@@ -1,7 +1,8 @@
 import json
 import os
 import time
-from typing import Any, Dict, List, MutableMapping, Optional, Union
+from collections.abc import MutableMapping
+from typing import Any
 from urllib.parse import urljoin
 
 import aiohttp
@@ -56,7 +57,7 @@ class EtherscanClientV2:
     """
 
     BASE_API_V2_URL = "https://api.etherscan.io"
-    HTTP_HEADERS: MutableMapping[str, Union[str, bytes]] = {
+    HTTP_HEADERS: MutableMapping[str, str | bytes] = {
         "User-Agent": "curl/7.77.0",
     }
     # Error meaning the request was fine but Etherscan has nothing indexed for the
@@ -68,7 +69,7 @@ class EtherscanClientV2:
     def __init__(
         self,
         network: EthereumNetwork,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         request_timeout: int = int(
             os.environ.get("ETHERSCAN_CLIENT_REQUEST_TIMEOUT", 10)
         ),
@@ -98,8 +99,8 @@ class EtherscanClientV2:
 
     @classmethod
     def _process_response_json(
-        cls, response_json: Dict[str, Any]
-    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+        cls, response_json: dict[str, Any]
+    ) -> dict[str, Any] | list[Any] | str | None:
         """
         Etherscan answers with HTTP 200 for errors too, they are encoded in the payload:
         ``status`` is ``"0"`` and ``result`` holds the error message.
@@ -131,7 +132,7 @@ class EtherscanClientV2:
             return None
         raise EtherscanClientException(message or "Unknown Etherscan API error")
 
-    def _do_request(self, url: str) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+    def _do_request(self, url: str) -> dict[str, Any] | list[Any] | str | None:
         with wrap_http_exceptions(url, EtherscanConnectionError):
             response = self.http_session.get(url, timeout=self.request_timeout)
             if not response.ok:
@@ -140,7 +141,7 @@ class EtherscanClientV2:
 
     def _retry_request(
         self, url: str, retry: bool = True
-    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+    ) -> dict[str, Any] | list[Any] | str | None:
         """
         :param url: Url to request
         :param retry: If ``True``, wait and try again when the rate limit is reached,
@@ -164,7 +165,7 @@ class EtherscanClientV2:
         return self._do_request(url)
 
     @classmethod
-    def get_supported_networks(cls) -> List[Dict[str, Any]]:
+    def get_supported_networks(cls) -> list[dict[str, Any]]:
         """
         Fetches a list of supported networks by the Etherscan API v2.
 
@@ -207,7 +208,7 @@ class EtherscanClientV2:
             item.get("chainid") == str(network.value) for item in supported_networks
         )
 
-    def get_base_url(self) -> Optional[str]:
+    def get_base_url(self) -> str | None:
         """
         :param network: The Ethereum network to check.
         :return: Base url for the current network
@@ -219,8 +220,8 @@ class EtherscanClientV2:
 
     @staticmethod
     def _process_contract_metadata(
-        contract_data: Dict[str, Any],
-    ) -> Optional[ContractMetadata]:
+        contract_data: dict[str, Any],
+    ) -> ContractMetadata | None:
         contract_name = contract_data["ContractName"]
         contract_abi = contract_data["ABI"]
         contract_proxy_implementation_address = (
@@ -237,7 +238,7 @@ class EtherscanClientV2:
 
     def get_contract_metadata(
         self, contract_address: str, retry: bool = True
-    ) -> Optional[ContractMetadata]:
+    ) -> ContractMetadata | None:
         contract_source_code = self.get_contract_source_code(
             contract_address, retry=retry
         )
@@ -306,7 +307,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
     def __init__(
         self,
         network: EthereumNetwork,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         request_timeout: int = int(
             os.environ.get("ETHERSCAN_CLIENT_REQUEST_TIMEOUT", 10)
         ),
@@ -319,7 +320,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
 
     async def _async_do_request(
         self, url: str
-    ) -> Optional[Union[Dict[str, Any], List[Any], str]]:
+    ) -> dict[str, Any] | list[Any] | str | None:
         """
         Async version of _do_request
         """
@@ -349,7 +350,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
 
     async def async_get_contract_metadata(
         self, contract_address: str
-    ) -> Optional[ContractMetadata]:
+    ) -> ContractMetadata | None:
         contract_source_code = await self.async_get_contract_source_code(
             contract_address
         )

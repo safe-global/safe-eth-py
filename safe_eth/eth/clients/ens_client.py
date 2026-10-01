@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
-from functools import cache
-from typing import Any, Dict, List, Optional, Union
+from functools import lru_cache
+from typing import Any
 
 import requests
 from eth_typing import HexStr
@@ -14,6 +14,8 @@ class EnsClient:
     """
     Resolves Ethereum Name Service domains using ``thegraph`` API
     """
+
+    CACHE_SIZE = 4096  # Domain labels kept for ``query_by_domain_hash``
 
     @dataclass
     class Config:
@@ -38,6 +40,10 @@ class EnsClient:
             os.environ.get("ENS_CLIENT_REQUEST_TIMEOUT", 5)
         )  # Seconds
         self.request_session = requests.Session()
+        # Cached on the instance: a cache on the method would keep every instance alive
+        self._cached_query_by_domain_hash = lru_cache(maxsize=self.CACHE_SIZE)(
+            self._query_by_domain_hash
+        )
 
     def is_available(self) -> bool:
         """
@@ -49,11 +55,11 @@ class EnsClient:
                 self.config.url, json=query, timeout=self.request_timeout
             )
             return response.ok
-        except IOError:
+        except OSError:
             return False
 
     @staticmethod
-    def domain_hash_to_hex_str(domain_hash: Union[HexStr, bytes, int]) -> HexStr:
+    def domain_hash_to_hex_str(domain_hash: HexStr | bytes | int) -> HexStr:
         """
         :param domain_hash:
         :return: Domain hash as an hex string of 66 chars (counting with 0x), padding with zeros if needed
@@ -62,8 +68,11 @@ class EnsClient:
             domain_hash = b""
         return HexStr(to_0x_hex_str(HexBytes(domain_hash)).rjust(66, "0"))
 
-    @cache
-    def _query_by_domain_hash(self, domain_hash_str: HexStr) -> Optional[str]:
+    def _query_by_domain_hash(self, domain_hash_str: HexStr) -> str | None:
+        """
+        :raises OSError: if the request fails or the response is not ok, so the
+            result is not cached
+        """
         query = """
                 {
                     domains(where: {labelhash: "domain_hash"}) {
@@ -71,14 +80,13 @@ class EnsClient:
                     }
                 }
                 """.replace("domain_hash", domain_hash_str)
-        try:
-            response = self.request_session.post(
-                self.config.url,
-                json={"query": query},
-                timeout=self.request_timeout,
-            )
-        except IOError:
-            return None
+        response = self.request_session.post(
+            self.config.url,
+            json={"query": query},
+            timeout=self.request_timeout,
+        )
+        if not response.ok:
+            raise OSError(f"ENS query failed with status {response.status_code}")
 
         """
         Example:
@@ -92,17 +100,14 @@ class EnsClient:
             }
         }
         """
-        if response.ok:
-            data = response.json()
-            if data:
-                domains = data.get("data", {}).get("domains")
-                if domains:
-                    return domains[0].get("labelName")
+        data = response.json()
+        if data:
+            domains = data.get("data", {}).get("domains")
+            if domains:
+                return domains[0].get("labelName")
         return None
 
-    def query_by_domain_hash(
-        self, domain_hash: Union[HexStr, bytes, int]
-    ) -> Optional[str]:
+    def query_by_domain_hash(self, domain_hash: HexStr | bytes | int) -> str | None:
         """
         Get domain label from domain_hash (keccak of domain name without the TLD, don't confuse with namehash)
         used for ENS ERC721 token_id. Use another method for caching purposes (use same parameter type)
@@ -112,9 +117,12 @@ class EnsClient:
         :return: domain label if found
         """
         domain_hash_str = self.domain_hash_to_hex_str(domain_hash)
-        return self._query_by_domain_hash(domain_hash_str)
+        try:
+            return self._cached_query_by_domain_hash(domain_hash_str)
+        except OSError:
+            return None
 
-    def query_by_account(self, account: str) -> Optional[List[Dict[str, Any]]]:
+    def query_by_account(self, account: str) -> list[dict[str, Any]] | None:
         """
         :param account: ethereum account to search for ENS registered addresses
         :return: None if there's a problem or not found, otherwise example of dictionary returned:
@@ -157,7 +165,7 @@ class EnsClient:
                 json={"query": query},
                 timeout=self.request_timeout,
             )
-        except IOError:
+        except OSError:
             return None
 
         if response.ok:

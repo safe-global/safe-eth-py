@@ -19,8 +19,8 @@ class SafeMultisigEstimateTxSerializer(serializers.Serializer):
     def validate_operation(self, value):
         try:
             return SafeOperationEnum(value).value
-        except ValueError:
-            raise ValidationError("Unknown operation")
+        except ValueError as exc:
+            raise ValidationError("Unknown operation") from exc
 
     def validate(self, data):
         super().validate(data)

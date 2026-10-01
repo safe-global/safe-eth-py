@@ -61,7 +61,9 @@ class TestMultiSend(SafeTestCaseMixin, TestCase):
         encoded_multisend_txs = b""
         values = [876 * i for i in range(3)]
         datas = [HexBytes("0x123456789a") * i for i in range(3)]
-        for value, data in zip(values, datas):  # Craft the same transaction three times
+        for value, data in zip(
+            values, datas, strict=True
+        ):  # Craft the same transaction three times
             operation = MultiSendOperation.DELEGATE_CALL
             address = Account.create().address
             multi_send_tx = MultiSendTx(operation, address, value, data)
@@ -76,7 +78,9 @@ class TestMultiSend(SafeTestCaseMixin, TestCase):
 
         multisend_txs = MultiSend.from_bytes(encoded_multisend_txs)
         self.assertEqual(len(multisend_txs), 3)
-        for multi_send_tx, value, data in zip(multisend_txs, values, datas):
+        for multi_send_tx, value, data in zip(
+            multisend_txs, values, datas, strict=True
+        ):
             self.assertEqual(multi_send_tx.value, value)
             self.assertEqual(multi_send_tx.data, data)
 
@@ -97,13 +101,14 @@ class TestMultiSend(SafeTestCaseMixin, TestCase):
             "0x7de7edef00000000000000000000000034cfac646f301356faa8b21e94227e3583fe3f5f"
         )
         change_fallback_manager_data = HexBytes(
-            "0xf08a0323000000000000000000000000d5d82b6addc9027b22dca772aa68d5d74cd"
-            "bdf44"
+            "0xf08a0323000000000000000000000000d5d82b6addc9027b22dca772aa68d5d74cdbdf44"
         )
         multisend_txs = MultiSend.from_transaction_data(data)
         self.assertEqual(len(multisend_txs), 2)
         for multisend_tx, expected_data in zip(
-            multisend_txs, (change_master_copy_data, change_fallback_manager_data)
+            multisend_txs,
+            (change_master_copy_data, change_fallback_manager_data),
+            strict=True,
         ):
             self.assertEqual(multisend_tx.to, safe_contract_address)
             self.assertEqual(multisend_tx.data, expected_data)
