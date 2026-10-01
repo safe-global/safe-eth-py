@@ -234,7 +234,7 @@ async def main_async() -> None:
             return_exceptions=True,
         )
 
-    for address, result in zip(args.contracts, results):
+    for address, result in zip(args.contracts, results, strict=True):
         print(f"Contract: {address}")
         if isinstance(result, ValueError):
             print(f"  Error: {result}")
@@ -250,7 +250,8 @@ async def main_async() -> None:
                     f"Code already present at --start-block ({args.start_block}) "
                     f"for {address}; true deployment is at or before this block "
                     f"but cannot be determined from the given range. "
-                    f"Re-run with a lower --start-block to find the actual deployment."
+                    f"Re-run with a lower --start-block to find the actual deployment.",
+                    stacklevel=2,
                 )
             else:
                 print(f"  Deployed at block:       {block}")

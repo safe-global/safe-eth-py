@@ -1,18 +1,13 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Sequence
 from enum import IntEnum
 from functools import cached_property
 from logging import getLogger
 from typing import (
     Any,
-    Callable,
     ClassVar,
-    List,
-    Optional,
     Protocol,
-    Sequence,
-    Type,
     TypeVar,
-    Union,
     cast,
     runtime_checkable,
 )
@@ -51,7 +46,7 @@ from safe_eth.safe.signatures import (
 logger = getLogger(__name__)
 
 
-EthereumBytes = Union[bytes, str]
+EthereumBytes = bytes | str
 
 
 class SafeSignatureException(Exception):
@@ -107,11 +102,11 @@ class SupportsContractSignature(Protocol):
 
 
 class SafeSignatureBase(ABC):
-    contract_signature_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
-    approved_hash_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
-    eoa_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
-    eth_sign_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
-    p256_cls: ClassVar[Optional[Type["SafeSignatureBase"]]] = None
+    contract_signature_cls: ClassVar[type["SafeSignatureBase"] | None] = None
+    approved_hash_cls: ClassVar[type["SafeSignatureBase"] | None] = None
+    eoa_cls: ClassVar[type["SafeSignatureBase"] | None] = None
+    eth_sign_cls: ClassVar[type["SafeSignatureBase"] | None] = None
+    p256_cls: ClassVar[type["SafeSignatureBase"] | None] = None
 
     def __init__(self, signature: EthereumBytes, safe_hash: EthereumBytes):
         """
@@ -130,12 +125,12 @@ class SafeSignatureBase(ABC):
 
     @classmethod
     def parse_signature(
-        cls: Type[TSafeSignature],
+        cls: type[TSafeSignature],
         signatures: EthereumBytes,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: Optional[EthereumBytes] = None,
+        safe_hash_preimage: EthereumBytes | None = None,
         ignore_trailing: bool = True,
-    ) -> List[TSafeSignature]:
+    ) -> list[TSafeSignature]:
         """
         :param signatures: One or more signatures appended. EIP1271 data at the end is supported.
         :param safe_hash: Signed hash for the Safe (message or transaction)
@@ -158,7 +153,7 @@ class SafeSignatureBase(ABC):
             signatures
         )  # For contract signatures, to stop parsing at data position
 
-        safe_signatures: List[TSafeSignature] = []
+        safe_signatures: list[TSafeSignature] = []
         for i in range(0, len(signatures), signature_size):
             if (
                 i >= data_position
@@ -183,7 +178,7 @@ class SafeSignatureBase(ABC):
                 safe_signature_cls = cls._get_contract_signature_cls()
                 safe_signature = cast(
                     TSafeSignature,
-                    cast(Type[Any], safe_signature_cls)(
+                    cast(type[Any], safe_signature_cls)(
                         signature,
                         safe_hash,
                         safe_hash_preimage,
@@ -202,7 +197,7 @@ class SafeSignatureBase(ABC):
                 safe_signature_cls = cls._get_p256_cls()
                 safe_signature = cast(
                     TSafeSignature,
-                    cast(Type[Any], safe_signature_cls)(
+                    cast(type[Any], safe_signature_cls)(
                         signature,
                         safe_hash,
                         passkey_signature,
@@ -212,19 +207,19 @@ class SafeSignatureBase(ABC):
                 safe_signature_cls = cls._get_approved_hash_cls()
                 safe_signature = cast(
                     TSafeSignature,
-                    cast(Type[Any], safe_signature_cls)(signature, safe_hash),
+                    cast(type[Any], safe_signature_cls)(signature, safe_hash),
                 )
             elif signature_type == SafeSignatureType.EOA:
                 safe_signature_cls = cls._get_eoa_cls()
                 safe_signature = cast(
                     TSafeSignature,
-                    cast(Type[Any], safe_signature_cls)(signature, safe_hash),
+                    cast(type[Any], safe_signature_cls)(signature, safe_hash),
                 )
             elif signature_type == SafeSignatureType.ETH_SIGN:
                 safe_signature_cls = cls._get_eth_sign_cls()
                 safe_signature = cast(
                     TSafeSignature,
-                    cast(Type[Any], safe_signature_cls)(signature, safe_hash),
+                    cast(type[Any], safe_signature_cls)(signature, safe_hash),
                 )
             else:
                 logger.warning("Unexpected signature %s", signature)
@@ -310,31 +305,31 @@ class SafeSignatureBase(ABC):
     @classmethod
     def _ensure_class(
         cls,
-        candidate: Optional[Type["SafeSignatureBase"]],
+        candidate: type["SafeSignatureBase"] | None,
         attribute: str,
-    ) -> Type["SafeSignatureBase"]:
+    ) -> type["SafeSignatureBase"]:
         if candidate is None:
             raise SafeSignatureException(f"{cls.__name__} does not define {attribute}")
         return candidate
 
     @classmethod
-    def _get_contract_signature_cls(cls) -> Type["SafeSignatureBase"]:
+    def _get_contract_signature_cls(cls) -> type["SafeSignatureBase"]:
         return cls._ensure_class(cls.contract_signature_cls, "contract_signature_cls")
 
     @classmethod
-    def _get_approved_hash_cls(cls) -> Type["SafeSignatureBase"]:
+    def _get_approved_hash_cls(cls) -> type["SafeSignatureBase"]:
         return cls._ensure_class(cls.approved_hash_cls, "approved_hash_cls")
 
     @classmethod
-    def _get_eoa_cls(cls) -> Type["SafeSignatureBase"]:
+    def _get_eoa_cls(cls) -> type["SafeSignatureBase"]:
         return cls._ensure_class(cls.eoa_cls, "eoa_cls")
 
     @classmethod
-    def _get_eth_sign_cls(cls) -> Type["SafeSignatureBase"]:
+    def _get_eth_sign_cls(cls) -> type["SafeSignatureBase"]:
         return cls._ensure_class(cls.eth_sign_cls, "eth_sign_cls")
 
     @classmethod
-    def _get_p256_cls(cls) -> Type["SafeSignatureBase"]:
+    def _get_p256_cls(cls) -> type["SafeSignatureBase"]:
         return cls._ensure_class(cls.p256_cls, "p256_cls")
 
 
@@ -342,9 +337,9 @@ class SafeSignature(SafeSignatureBase):
     @abstractmethod
     def is_valid(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         """
         :param ethereum_client: Required for Contract Signature and Approved Hash check
@@ -361,9 +356,9 @@ class SafeSignatureAsync(SafeSignatureBase):
     @abstractmethod
     async def is_valid(
         self,
-        web3: Optional[AsyncWeb3] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        web3: AsyncWeb3 | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         """
         :param web3: Required for Contract Signature and Approved Hash check
@@ -413,14 +408,14 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         self,
         signature: EthereumBytes,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: Optional[EthereumBytes],
+        safe_hash_preimage: EthereumBytes | None,
         contract_signature: EthereumBytes,
     ):
         super().__init__(signature, safe_hash)
         # `None` means the caller did not have it. It is only needed to reach the legacy
         # entrypoint, so it stays unknown instead of falling back to `safe_hash`, which
         # would make a Safe below 1.5.0 hash the wrong data and reject a valid signature.
-        self.safe_hash_preimage: Optional[HexBytes] = (
+        self.safe_hash_preimage: HexBytes | None = (
             HexBytes(safe_hash_preimage) if safe_hash_preimage is not None else None
         )
         self.contract_signature: HexBytes = HexBytes(contract_signature)
@@ -430,7 +425,7 @@ class SafeSignatureContractMixin(SafeSignatureBase):
         cls,
         safe_owner: ChecksumAddress,
         safe_hash: EthereumBytes,
-        safe_hash_preimage: Optional[EthereumBytes],
+        safe_hash_preimage: EthereumBytes | None,
         contract_signature: EthereumBytes,
     ) -> Self:
         signature = signature_to_bytes(
@@ -662,7 +657,7 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
     def _check_eip1271(
         self,
         ethereum_client: EthereumClient,
-        fallback_handler_getter: Callable[[Web3, Optional[ChecksumAddress]], Contract],
+        fallback_handler_getter: Callable[[Web3, ChecksumAddress | None], Contract],
         function_signature: str,
         data: bytes,
         signature: bytes,
@@ -703,9 +698,9 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
 
     def is_valid(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         """
         Validate the signature through the EIP-1271 entrypoint the verifying Safe uses.
@@ -766,9 +761,9 @@ class SafeSignatureContract(SafeSignatureContractMixin, SafeSignature):
 class SafeSignatureApprovedHash(SafeSignatureApprovedHashMixin, SafeSignature):
     def is_valid(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         if ethereum_client is None:
             raise ValueError("ethereum_client is required to validate approved hash")
@@ -778,9 +773,9 @@ class SafeSignatureApprovedHash(SafeSignatureApprovedHashMixin, SafeSignature):
         safe_contract = get_safe_contract(
             ethereum_client.w3, ChecksumAddress(HexAddress(HexStr(safe_address)))
         )
-        exception: Optional[Exception] = None
+        exception: Exception | None = None
 
-        block_identifiers: List[BlockIdentifier] = ["pending", "latest"]
+        block_identifiers: list[BlockIdentifier] = ["pending", "latest"]
         for block_identifier in block_identifiers:
             try:
                 return (
@@ -799,9 +794,9 @@ class SafeSignatureApprovedHash(SafeSignatureApprovedHashMixin, SafeSignature):
 class SafeSignatureEthSign(SafeSignatureEthSignMixin, SafeSignature):
     def is_valid(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         return self._is_valid()
 
@@ -809,9 +804,9 @@ class SafeSignatureEthSign(SafeSignatureEthSignMixin, SafeSignature):
 class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
     def is_valid(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         return self._is_valid()
 
@@ -819,9 +814,9 @@ class SafeSignatureEOA(SafeSignatureEOAMixin, SafeSignature):
 class SafeSignatureP256(SafeSignatureP256Mixin, SafeSignature):
     def is_valid(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         return self._is_valid()
 
@@ -873,9 +868,9 @@ class SafeSignatureContractAsync(SafeSignatureContractMixin, SafeSignatureAsync)
 
     async def is_valid(
         self,
-        web3: Optional[AsyncWeb3] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        web3: AsyncWeb3 | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         """
         Validate the signature through the EIP-1271 entrypoint the verifying Safe uses.
@@ -936,9 +931,9 @@ class SafeSignatureApprovedHashAsync(
 ):
     async def is_valid(
         self,
-        web3: Optional[AsyncWeb3] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        web3: AsyncWeb3 | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         if web3 is None:
             raise ValueError("web3 is required to validate approved hash")
@@ -948,9 +943,9 @@ class SafeSignatureApprovedHashAsync(
         safe_contract = get_safe_contract(
             cast(Any, web3), ChecksumAddress(HexAddress(HexStr(safe_address)))
         )
-        exception: Optional[Exception] = None
+        exception: Exception | None = None
 
-        block_identifiers: List[BlockIdentifier] = ["pending", "latest"]
+        block_identifiers: list[BlockIdentifier] = ["pending", "latest"]
         for block_identifier in block_identifiers:
             try:
                 approved_hashes = await safe_contract.functions.approvedHashes(
@@ -967,9 +962,9 @@ class SafeSignatureApprovedHashAsync(
 class SafeSignatureEthSignAsync(SafeSignatureEthSignMixin, SafeSignatureAsync):
     async def is_valid(
         self,
-        web3: Optional[AsyncWeb3] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        web3: AsyncWeb3 | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         return self._is_valid()
 
@@ -977,9 +972,9 @@ class SafeSignatureEthSignAsync(SafeSignatureEthSignMixin, SafeSignatureAsync):
 class SafeSignatureEOAAsync(SafeSignatureEOAMixin, SafeSignatureAsync):
     async def is_valid(
         self,
-        web3: Optional[AsyncWeb3] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        web3: AsyncWeb3 | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         return self._is_valid()
 
@@ -987,9 +982,9 @@ class SafeSignatureEOAAsync(SafeSignatureEOAMixin, SafeSignatureAsync):
 class SafeSignatureP256Async(SafeSignatureP256Mixin, SafeSignatureAsync):
     async def is_valid(
         self,
-        web3: Optional[AsyncWeb3] = None,
-        safe_address: Optional[str] = None,
-        safe_version: Optional[str] = None,
+        web3: AsyncWeb3 | None = None,
+        safe_address: str | None = None,
+        safe_version: str | None = None,
     ) -> bool:
         return self._is_valid()
 

@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Union, cast
+from typing import cast
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 
@@ -48,7 +48,7 @@ class CowswapOracle(PriceOracle):
             return False
 
     def get_price(
-        self, token_address_1: str, token_address_2: Optional[str] = None
+        self, token_address_1: str, token_address_2: str | None = None
     ) -> float:
         token_address_2 = token_address_2 or self.api.weth_address
         if token_address_1 == token_address_2:
@@ -57,13 +57,11 @@ class CowswapOracle(PriceOracle):
         token_address_2_checksum = ChecksumAddress(HexAddress(HexStr(token_address_2)))
         token_1_decimals = get_decimals(token_address_1_checksum, self.ethereum_client)
         try:
-            result: Union[AmountResponse, ErrorResponse] = (
-                self.api.get_estimated_amount(
-                    token_address_1_checksum,
-                    token_address_2_checksum,
-                    OrderKind.SELL,
-                    10**token_1_decimals,
-                )
+            result: AmountResponse | ErrorResponse = self.api.get_estimated_amount(
+                token_address_1_checksum,
+                token_address_2_checksum,
+                OrderKind.SELL,
+                10**token_1_decimals,
             )
             if "buyAmount" in result and "sellAmount" in result:
                 result = cast(AmountResponse, result)
@@ -78,7 +76,7 @@ class CowswapOracle(PriceOracle):
                 )
 
             exception = None
-        except IOError as exc:
+        except OSError as exc:
             exception = exc
 
         message = (

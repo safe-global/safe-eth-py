@@ -1,5 +1,5 @@
 import binascii
-from typing import Any, Optional, Union
+from typing import Any
 
 from django import forms
 from django.core import exceptions
@@ -44,7 +44,7 @@ class HexFieldForm(forms.CharField):
         else:
             return ""
 
-    def to_python(self, value: Optional[Any]) -> Optional[HexBytes]:
+    def to_python(self, value: Any | None) -> HexBytes | None:
         if value in self.empty_values:
             return self.empty_value
         try:
@@ -54,12 +54,12 @@ class HexFieldForm(forms.CharField):
                 return HexBytes(value)
             else:
                 raise TypeError(f"Unsupported type for HexBytes: {type(value)}")
-        except (binascii.Error, TypeError, ValueError):
+        except (binascii.Error, TypeError, ValueError) as exc:
             raise exceptions.ValidationError(
                 self.error_messages["invalid"],
                 code="invalid",
                 params={"value": value},
-            )
+            ) from exc
 
 
 class Keccak256FieldForm(HexFieldForm):
@@ -68,14 +68,14 @@ class Keccak256FieldForm(HexFieldForm):
         "length": _('"%(value)s" keccak256 hash should be 32 bytes.'),
     }
 
-    def prepare_value(self, value: Union[str, memoryview]) -> str:
+    def prepare_value(self, value: str | memoryview) -> str:
         # Keccak field already returns a hex str
         if isinstance(value, str):
             return value
         return super().prepare_value(value)
 
-    def to_python(self, value: Optional[Any]) -> Optional[HexBytes]:
-        python_value: Optional[HexBytes] = super().to_python(value)
+    def to_python(self, value: Any | None) -> HexBytes | None:
+        python_value: HexBytes | None = super().to_python(value)
         if python_value and len(python_value) != 32:
             raise ValidationError(
                 self.error_messages["length"],

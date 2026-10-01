@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
+from collections.abc import Callable
 from functools import cached_property
 from logging import getLogger
-from typing import Callable, Optional
 
 from eth_typing import ChecksumAddress
 from web3 import Web3
@@ -23,7 +23,7 @@ class ContractBase(metaclass=ABCMeta):
         self.w3 = ethereum_client.w3
 
     @abstractmethod
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         """
         :return: Contract function to get the proper contract
         """
