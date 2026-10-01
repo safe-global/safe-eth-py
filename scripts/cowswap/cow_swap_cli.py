@@ -1,5 +1,3 @@
-from typing import Union
-
 from eth_typing import HexStr
 
 from safe_eth.eth.clients.cowswap import CowSwapAPI, Order, OrderKind
@@ -67,7 +65,7 @@ if __name__ == "__main__":
         buyTokenBalance="erc20",  # `erc20` or `internal`
     )
 
-    fee: Union[int, ErrorResponse] = cow_swap_api.get_fee(order, NULL_ADDRESS)
+    fee: int | ErrorResponse = cow_swap_api.get_fee(order, NULL_ADDRESS)
     if isinstance(fee, int):
         order.feeAmount = fee
 

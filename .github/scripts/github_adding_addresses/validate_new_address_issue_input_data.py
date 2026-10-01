@@ -16,7 +16,7 @@ import json
 import os
 import re
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 import requests
@@ -39,7 +39,7 @@ def convert_chain_name(name: str) -> str:
     return name_converted
 
 
-def get_chain_enum_name(chain_id: int) -> Optional[str]:
+def get_chain_enum_name(chain_id: int) -> str | None:
     try:
         url = "https://chainlist.org/rpcs.json"
         response = requests.get(url)
@@ -50,12 +50,12 @@ def get_chain_enum_name(chain_id: int) -> Optional[str]:
                 if chain_data.get("chainId") == chain_id:
                     return convert_chain_name(chain_data.get("name", ""))
         return None
-    except (IOError, ConnectionError) as e:
+    except (OSError, ConnectionError) as e:
         print(f"Error getting chain name: {e}")
         return None
 
 
-def get_chain_id_from_rpc_url(rpc_url: str) -> Optional[int]:
+def get_chain_id_from_rpc_url(rpc_url: str) -> int | None:
     try:
         response = requests.post(
             rpc_url,
@@ -65,14 +65,14 @@ def get_chain_id_from_rpc_url(rpc_url: str) -> Optional[int]:
         if response.status_code == 200:
             return int(response.json().get("result"), 16)
         return None
-    except (IOError, ConnectionError) as e:
+    except (OSError, ConnectionError) as e:
         print(f"Error validating RPC url: {e}")
         return None
 
 
 def get_contract_address_and_block_from_tx_hash(
     rpc_url: str, tx_hash: str
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     try:
         ethereum_client = EthereumClient(rpc_url)
         tx = ethereum_client.get_transaction(tx_hash)
@@ -85,12 +85,12 @@ def get_contract_address_and_block_from_tx_hash(
                 tx.get("to"), tx.get("input")[:32], tx.get("input")[32:]
             ),
         }
-    except (IOError, ConnectionError) as e:
+    except (OSError, ConnectionError) as e:
         print(f"Error info from tx hash: {e}")
         return None
 
 
-def validate_chain(chain_id_input: str) -> Optional[Dict[str, Any]]:
+def validate_chain(chain_id_input: str) -> dict[str, Any] | None:
     if not chain_id_input.isdigit():
         ERRORS.append("Chain ID is required.")
         return None
@@ -152,7 +152,7 @@ def validate_etherscan_client_required_urls(base_url: str, api_url: str) -> None
         return None
 
 
-def get_chain_explorers_urls(chain_id: int) -> List[str]:
+def get_chain_explorers_urls(chain_id: int) -> list[str]:
     try:
         url = "https://chainlist.org/rpcs.json"
         response = requests.get(url)
@@ -167,13 +167,13 @@ def get_chain_explorers_urls(chain_id: int) -> List[str]:
                         for explorer in explorers
                         if explorer.get("url")
                     ]
-    except (IOError, ConnectionError) as e:
+    except (OSError, ConnectionError) as e:
         print(f"Error getting chain explorers urls: {e}")
     return []
 
 
 def validate_blockscout_client_url(
-    url: str, chain_explorers_urls: List[str], tx_hash: str
+    url: str, chain_explorers_urls: list[str], tx_hash: str
 ) -> None:
     if url:
         client_url_domain = f"{extract(url).domain}.{extract(url).suffix}"
@@ -193,7 +193,7 @@ def validate_blockscout_client_url(
                 tx_status = response.json().get("status", "").lower()
                 if tx_status == "ok":
                     return None
-        except (IOError, ConnectionError, AttributeError) as e:
+        except (OSError, ConnectionError, AttributeError) as e:
             print(f"Error validating Blockscout Client URL: {e}")
 
         ERRORS.append(f"Blockscout Client URL ({url}) not valid.")
@@ -201,7 +201,7 @@ def validate_blockscout_client_url(
 
 
 def validate_etherscan_client_urls(
-    base_url: str, api_url: str, chain_explorers_urls: List[str], tx_hash: str
+    base_url: str, api_url: str, chain_explorers_urls: list[str], tx_hash: str
 ) -> None:
     chain_explorers_urls_domains = [
         f"{extract(explorer_url).domain}.{extract(explorer_url).suffix}"
@@ -250,7 +250,7 @@ def validate_etherscan_client_urls(
                 tx_status = response.json().get("result", {}).get("status", "")
                 if tx_status == "1":
                     return None
-        except (IOError, ConnectionError, AttributeError) as e:
+        except (OSError, ConnectionError, AttributeError) as e:
             print(f"Error validating Etherscan Client API URL: {e}")
 
         ERRORS.append(f"Etherscan Client API URL ({api_url}) not valid.")
@@ -329,7 +329,7 @@ def validate_proxy_address_by_version(address: str, version: str) -> None:
 
 def validate_address_and_transactions(
     type: str, address: str, tx_hash: str, rpc_url: str
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     if not address and not tx_hash:
         print("Skipping address and tx validation. Not data provided!")
         return None

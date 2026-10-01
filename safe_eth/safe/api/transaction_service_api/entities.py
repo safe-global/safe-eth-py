@@ -1,8 +1,8 @@
-from typing import Any, List, Optional, TypedDict, Union
+from typing import Any, TypedDict
 
 from eth_typing import Address, ChecksumAddress, HexAddress, HexStr
 
-AnyAddressType = Union[Address, HexAddress, ChecksumAddress]
+AnyAddressType = Address | HexAddress | ChecksumAddress
 
 
 class ParameterDecoded(TypedDict):
@@ -13,7 +13,7 @@ class ParameterDecoded(TypedDict):
 
 class DataDecoded(TypedDict):
     method: str
-    parameters: List[ParameterDecoded]
+    parameters: list[ParameterDecoded]
 
 
 class Erc20Info(TypedDict):
@@ -24,13 +24,13 @@ class Erc20Info(TypedDict):
 
 
 class Balance(TypedDict):
-    token_address: Optional[AnyAddressType]
-    token: Optional[Erc20Info]
+    token_address: AnyAddressType | None
+    token: Erc20Info | None
     balance: int
 
 
 class DelegateUser(TypedDict):
-    safe: Optional[AnyAddressType]
+    safe: AnyAddressType | None
     delegate: AnyAddressType
     delegator: AnyAddressType
     label: str
@@ -52,8 +52,8 @@ class Message(TypedDict):
     message: Any
     proposedBy: AnyAddressType
     safeAppId: int
-    confirmations: Optional[List[MessageConfirmation]]
-    preparedSignature: Optional[HexStr]
+    confirmations: list[MessageConfirmation] | None
+    preparedSignature: HexStr | None
 
 
 class TransactionConfirmation(TypedDict):
@@ -68,32 +68,32 @@ class Transaction(TypedDict):
     safe: AnyAddressType
     to: AnyAddressType
     value: str
-    data: Optional[HexStr]
+    data: HexStr | None
     operation: int
-    gasToken: Optional[AnyAddressType]
+    gasToken: AnyAddressType | None
     safeTxGas: str
     baseGas: str
     gasPrice: str
-    refundReceiver: Optional[AnyAddressType]
+    refundReceiver: AnyAddressType | None
     nonce: str
     execution_date: str
     submission_date: str
     modified: str
-    blockNumber: Optional[int]
+    blockNumber: int | None
     transactionHash: HexStr
     safeTxHash: HexStr
     proposer: AnyAddressType
-    executor: Optional[AnyAddressType]
+    executor: AnyAddressType | None
     isExecuted: bool
-    isSuccessful: Optional[bool]
-    ethGasPrice: Optional[str]
-    maxFeePerGas: Optional[str]
-    maxPriorityFeePerGas: Optional[str]
-    gasUsed: Optional[int]
-    fee: Optional[int]
-    origin: Optional[str]
-    dataDecoded: Optional[List[DataDecoded]]
+    isSuccessful: bool | None
+    ethGasPrice: str | None
+    maxFeePerGas: str | None
+    maxPriorityFeePerGas: str | None
+    gasUsed: int | None
+    fee: int | None
+    origin: str | None
+    dataDecoded: list[DataDecoded] | None
     confirmationsRequired: int
-    confirmations: Optional[List[TransactionConfirmation]]
+    confirmations: list[TransactionConfirmation] | None
     trusted: bool
-    signatures: Optional[HexStr]
+    signatures: HexStr | None

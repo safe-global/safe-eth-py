@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import urljoin
 
 import aiohttp
@@ -173,7 +173,7 @@ class BlockscoutClient:
     def build_url(self, path: str):
         return urljoin(self.api_url, path)
 
-    def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
+    def _do_request(self, url: str) -> dict[str, Any] | None:
         response = self.http_session.get(url, timeout=self.request_timeout)
         if not response.ok:
             return None
@@ -183,7 +183,7 @@ class BlockscoutClient:
     @staticmethod
     def _process_contract_metadata(
         contract_data: dict[str, Any],
-    ) -> Optional[ContractMetadata]:
+    ) -> ContractMetadata | None:
         """
         Return a ContractMetadata from BlockScout response
 
@@ -203,7 +203,7 @@ class BlockscoutClient:
 
     def get_contract_metadata(
         self, address: ChecksumAddress
-    ) -> Optional[ContractMetadata]:
+    ) -> ContractMetadata | None:
         contract_request = self.build_url(f"smart-contracts/{address}")
         contract_data = self._do_request(contract_request)
         if contract_data:
@@ -226,7 +226,7 @@ class AsyncBlockscoutClient(BlockscoutClient):
             connector=aiohttp.TCPConnector(limit_per_host=max_requests)
         )
 
-    async def _async_do_request(self, url: str) -> Optional[Dict[str, Any]]:
+    async def _async_do_request(self, url: str) -> dict[str, Any] | None:
         """
         Asynchronous version of _do_request
         """
@@ -240,7 +240,7 @@ class AsyncBlockscoutClient(BlockscoutClient):
 
     async def async_get_contract_metadata(
         self, address: ChecksumAddress
-    ) -> Optional[ContractMetadata]:
+    ) -> ContractMetadata | None:
         contract_request = self.build_url(f"smart-contracts/{address}")
         contract_data = await self._async_do_request(contract_request)
         if contract_data:

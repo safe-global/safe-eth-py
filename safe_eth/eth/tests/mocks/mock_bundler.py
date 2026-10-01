@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
@@ -19,7 +19,7 @@ safe_4337_safe_operation_hash_mock = HexBytes(
 )
 safe_4337_chain_id_mock = 11155111
 
-user_operation_mock: Dict[str, Any] = {
+user_operation_mock: dict[str, Any] = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
@@ -43,7 +43,7 @@ user_operation_mock: Dict[str, Any] = {
     },
 }
 
-user_operation_receipt_mock: Dict[str, Any] = {
+user_operation_receipt_mock: dict[str, Any] = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
@@ -386,7 +386,7 @@ user_operation_receipt_mock: Dict[str, Any] = {
     },
 }
 
-supported_entrypoint_mock: Dict[str, Any] = {
+supported_entrypoint_mock: dict[str, Any] = {
     "jsonrpc": "2.0",
     "id": 1,
     "result": [

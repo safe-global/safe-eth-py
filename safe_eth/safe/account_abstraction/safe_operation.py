@@ -2,7 +2,6 @@ import dataclasses
 import datetime
 import logging
 from functools import cached_property
-from typing import Optional, Union
 from zoneinfo import ZoneInfo
 
 from eth_abi import encode as abi_encode
@@ -60,12 +59,10 @@ class SafeOperation:
     DOMAIN_SEPARATOR_TYPE_HASH: bytes = HexBytes(
         "0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218"
     )  # bytes32
-    safe_operation_hash: Optional[bytes] = None
+    safe_operation_hash: bytes | None = None
 
     @classmethod
-    def from_user_operation(
-        cls, user_operation: Union[UserOperation, UserOperationV07]
-    ):
+    def from_user_operation(cls, user_operation: UserOperation | UserOperationV07):
         return cls(
             user_operation.sender,
             user_operation.nonce,
@@ -84,7 +81,7 @@ class SafeOperation:
         )
 
     @staticmethod
-    def _parse_epoch(epoch: int) -> Optional[datetime.datetime]:
+    def _parse_epoch(epoch: int) -> datetime.datetime | None:
         if not epoch:
             return None
 
@@ -95,11 +92,11 @@ class SafeOperation:
             return None
 
     @cached_property
-    def valid_after_as_datetime(self) -> Optional[datetime.datetime]:
+    def valid_after_as_datetime(self) -> datetime.datetime | None:
         return self._parse_epoch(self.valid_after)
 
     @cached_property
-    def valid_until_as_datetime(self) -> Optional[datetime.datetime]:
+    def valid_until_as_datetime(self) -> datetime.datetime | None:
         return self._parse_epoch(self.valid_until)
 
     @cached_property

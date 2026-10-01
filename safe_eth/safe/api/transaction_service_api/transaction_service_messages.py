@@ -3,7 +3,7 @@ Utilities to build EIP712 messages for Safe
 """
 
 import time
-from typing import Any, Dict
+from typing import Any
 
 from eth_typing import ChecksumAddress
 
@@ -18,7 +18,7 @@ def get_totp() -> int:
 
 def get_delegate_message(
     delegate_address: ChecksumAddress, chain_id: int
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Retrieves the required message for creating or removing a delegate on Safe Transaction Service.
 
@@ -56,7 +56,7 @@ def get_delegate_message(
 
 def get_remove_transaction_message(
     safe_address: ChecksumAddress, safe_tx_hash: bytes, chain_id: int
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Retrieves the required message for removing a not executed transaction on Safe Transaction Service.
 
