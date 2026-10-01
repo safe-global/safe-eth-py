@@ -9,7 +9,6 @@ import os
 import pathlib
 import re
 import subprocess
-from typing import Optional
 
 import requests
 from github import Github, InputGitTreeElement
@@ -28,7 +27,7 @@ def convert_chain_name(name: str) -> str:
     return name_converted
 
 
-def get_chain_enum_name(chain_id: int) -> Optional[str]:
+def get_chain_enum_name(chain_id: int) -> str | None:
     try:
         url = "https://chainlist.org/rpcs.json"
         response = requests.get(url)
@@ -39,12 +38,12 @@ def get_chain_enum_name(chain_id: int) -> Optional[str]:
                 if chain_data.get("chainId") == chain_id:
                     return convert_chain_name(chain_data.get("name", ""))
         return None
-    except IOError as e:
+    except OSError as e:
         print(f"Error getting chain name: {e}")
         return None
 
 
-def get_contract_block_from_tx_hash(rpc_url: str, tx_hash: str) -> Optional[int]:
+def get_contract_block_from_tx_hash(rpc_url: str, tx_hash: str) -> int | None:
     ethereum_client = EthereumClient(rpc_url)
     tx = ethereum_client.get_transaction(tx_hash)
     if not tx:
@@ -492,7 +491,7 @@ def commit_linter_fixes() -> None:
     tree = repo.create_git_tree(
         [
             InputGitTreeElement(path=f, mode="100644", type="blob", sha=b.sha)
-            for f, b in zip(files, blobs)
+            for f, b in zip(files, blobs, strict=True)
         ],
         parent.commit.tree,
     )

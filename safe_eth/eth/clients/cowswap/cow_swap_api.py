@@ -1,6 +1,6 @@
 import json
 from functools import cached_property
-from typing import Any, Dict, List, Optional, TypedDict, Union, cast
+from typing import Any, TypedDict, cast
 
 from eth_account import Account
 from eth_account.messages import encode_defunct
@@ -15,11 +15,11 @@ from safe_eth.util.util import to_0x_hex_str
 
 from .order import Order, OrderKind
 
-AnyAddressType = Union[Address, HexAddress, ChecksumAddress]
+AnyAddressType = Address | HexAddress | ChecksumAddress
 
 
 class ExecutedProtocolFeeResponse(TypedDict, total=False):
-    policy: Dict[str, Any]
+    policy: dict[str, Any]
     amount: str  # Stringified int
     token: AnyAddressType
 
@@ -34,12 +34,12 @@ class TradeResponse(TypedDict):
     owner: AnyAddressType  # Not checksummed
     buyToken: AnyAddressType
     sellToken: AnyAddressType
-    txHash: Optional[HexStr]  # Null until the settlement is indexed
+    txHash: HexStr | None  # Null until the settlement is indexed
     # Fields the API can leave out
-    executedProtocolFees: NotRequired[List[ExecutedProtocolFeeResponse]]
+    executedProtocolFees: NotRequired[list[ExecutedProtocolFeeResponse]]
     gasCost: NotRequired[str]  # Stringified int, set once the settlement is attributed
     penaltyCapNative: NotRequired[
-        Optional[str]
+        str | None
     ]  # Stringified int, null for pre CIP-87 auctions
 
 
@@ -100,7 +100,7 @@ class CowSwapAPI:
 
     def get_quote(
         self, order: Order, from_address: ChecksumAddress
-    ) -> Union[Dict[str, Any], ErrorResponse]:
+    ) -> dict[str, Any] | ErrorResponse:
         url = self.base_url + "/api/v1/quote"
         data_json = {
             "sellToken": order.sellToken.lower(),
@@ -127,27 +127,25 @@ class CowSwapAPI:
 
     def get_fee(
         self, order: Order, from_address: ChecksumAddress
-    ) -> Union[int, ErrorResponse]:
+    ) -> int | ErrorResponse:
         quote = self.get_quote(order, from_address)
 
         if "quote" in quote:
-            result = cast(Dict[str, Any], quote)
+            result = cast(dict[str, Any], quote)
             return int(result["quote"]["feeAmount"])
         else:
             error = cast(ErrorResponse, quote)
             return error
 
-    def place_order(
-        self, order: Order, private_key: HexStr
-    ) -> Union[HexStr, ErrorResponse]:
+    def place_order(self, order: Order, private_key: HexStr) -> HexStr | ErrorResponse:
         """
         Place order. If `feeAmount=0` in Order it will be calculated calling `get_fee(order, from_address)`
 
         :return: UUID for the order as a hex hash
         """
-        assert (
-            order.buyAmount and order.sellAmount
-        ), "Order buyAmount and sellAmount cannot be empty"
+        assert order.buyAmount and order.sellAmount, (
+            "Order buyAmount and sellAmount cannot be empty"
+        )
 
         url = self.base_url + "/api/v1/orders"
         from_address = Account.from_key(private_key).address
@@ -193,7 +191,7 @@ class CowSwapAPI:
 
     def get_orders(
         self, owner: ChecksumAddress, offset: int = 0, limit=10
-    ) -> Union[List[Dict[str, Any]], ErrorResponse]:
+    ) -> list[dict[str, Any]] | ErrorResponse:
         """
         :param owner:
         :param offset: Defaults to 0
@@ -207,7 +205,7 @@ class CowSwapAPI:
         url = self.base_url + f"/api/v1/account/{owner}/orders"
         r = self.http_session.get(url, timeout=self.request_timeout)
         if r.ok:
-            return cast(List[Dict[str, Any]], r.json())
+            return cast(list[dict[str, Any]], r.json())
         else:
             response_dict = r.json()
             return ErrorResponse(
@@ -216,11 +214,11 @@ class CowSwapAPI:
             )
 
     def get_trades(
-        self, order_ui: Optional[HexStr] = None, owner: Optional[ChecksumAddress] = None
-    ) -> Union[List[TradeResponse], ErrorResponse]:
-        assert bool(order_ui) ^ bool(
-            owner
-        ), "order_ui or owner must be provided, but not both"
+        self, order_ui: HexStr | None = None, owner: ChecksumAddress | None = None
+    ) -> list[TradeResponse] | ErrorResponse:
+        assert bool(order_ui) ^ bool(owner), (
+            "order_ui or owner must be provided, but not both"
+        )
         url = self.base_url + "/api/v1/trades?"
         if order_ui:
             url += f"orderUid={order_ui}"
@@ -228,7 +226,7 @@ class CowSwapAPI:
             url += f"owner={owner}"
         r = self.http_session.get(url, timeout=self.request_timeout)
         if r.ok:
-            return cast(List[TradeResponse], r.json())
+            return cast(list[TradeResponse], r.json())
         else:
             response_dict = r.json()
             return ErrorResponse(
@@ -242,7 +240,7 @@ class CowSwapAPI:
         quote_token: ChecksumAddress,
         kind: OrderKind,
         amount_wei: int,
-    ) -> Union[AmountResponse, ErrorResponse]:
+    ) -> AmountResponse | ErrorResponse:
         """
 
         :param base_token:
@@ -271,7 +269,7 @@ class CowSwapAPI:
             ChecksumAddress(HexAddress(HexStr(self.settlement_contract_address))),
         )
         if "quote" in quote:
-            result = cast(Dict[str, Any], quote)
+            result = cast(dict[str, Any], quote)
             return {
                 "buyAmount": int(result["quote"]["buyAmount"]),
                 "sellAmount": int(result["quote"]["sellAmount"]),

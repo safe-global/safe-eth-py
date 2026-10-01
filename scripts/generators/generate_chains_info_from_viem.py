@@ -1,7 +1,6 @@
 import re
 import shutil
 from glob import glob
-from typing import Optional
 
 import requests
 from git import Repo
@@ -78,7 +77,7 @@ def convert_chain_name(name: str) -> str:
     return name_converted
 
 
-def get_chain_enum_name(chain_id: int) -> Optional[str]:
+def get_chain_enum_name(chain_id: int) -> str | None:
     """
     Retrieves the chain name for a given chain ID from chainlist.org/rpcs.json.
     Converts the name to a constant format using `convert_chain_name`.
@@ -95,7 +94,7 @@ def get_chain_enum_name(chain_id: int) -> Optional[str]:
                 if chain_data.get("chainId") == chain_id:
                     return convert_chain_name(chain_data.get("name", ""))
         return None
-    except IOError as e:
+    except OSError as e:
         print(f"Error getting chain name: {e}")
         return None
 
@@ -115,7 +114,7 @@ def validate_api_url(api_url: str) -> bool:
             tx_status = response.json().get("status", "")
             if tx_status == "1":
                 return True
-    except (IOError, ConnectionError) as e:
+    except (OSError, ConnectionError) as e:
         print(f"Error validating Etherscan Client API URL: {e}")
     return False
 
@@ -131,7 +130,7 @@ def upsert_chain_id(chain_id: int, chain_enum_name: str) -> str:
     :return: The name of the constant in the `EthereumNetwork` enum.
     """
     file_path = "safe_eth/eth/ethereum_network.py"
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         content = file.read()
     match = ETHEREUM_NETWORK_CLASS_PATTERN.search(content)
     if match:
@@ -184,7 +183,7 @@ def upsert_chain_info_enum_based(
     :param config_enum_name: The name of the configuration enum to update.
     :return: None
     """
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         content = file.read()
     match = CONFIG_ENUM_PATTERNS.get(config_enum_name, DEFAULT_PATTERN).search(content)
     if match:
@@ -239,7 +238,7 @@ def process_chains() -> None:
     for f_name in glob(
         LOCAL_REPO_DIR + "/src/chains/definitions/**/*.ts", recursive=True
     ):
-        with open(f_name, "r") as file:
+        with open(f_name) as file:
             content = file.read()
         chain_info = {}
         for key, pattern in VIEM_SEARCH_PATTERNS.items():

@@ -1,7 +1,7 @@
 import asyncio
+from collections.abc import Iterator
 from contextlib import contextmanager
 from json import JSONDecodeError
-from typing import Iterator, Type, Union
 from urllib.parse import urljoin
 
 import aiohttp
@@ -19,7 +19,7 @@ HTTP_TRANSPORT_EXCEPTIONS = (
 
 
 @contextmanager
-def wrap_http_exceptions(url: str, exception_class: Type[Exception]) -> Iterator[None]:
+def wrap_http_exceptions(url: str, exception_class: type[Exception]) -> Iterator[None]:
     """
     Raise ``exception_class`` instead of the HTTP library exception when the server
     cannot be reached or its response cannot be decoded, so callers only deal with
@@ -46,7 +46,7 @@ def prepare_http_session(
     https://docs.python-requests.org/en/latest/api/#requests.adapters.HTTPAdapter
     """
     session = requests.Session()
-    retry_conf: Union[requests.adapters.Retry, int] = (
+    retry_conf: requests.adapters.Retry | int = (
         requests.adapters.Retry(
             total=retry_count, backoff_factor=0.3, respect_retry_after_header=False
         )

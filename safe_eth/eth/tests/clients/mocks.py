@@ -1,5 +1,3 @@
-# noqa
-
 sourcify_safe_metadata = {
     "compiler": {"version": "0.5.17+commit.d19bba13"},
     "language": "Solidity",

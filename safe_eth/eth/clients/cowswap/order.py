@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Literal
+from typing import Any, Literal
 
 from eth_typing import ChecksumAddress
 
@@ -14,7 +14,7 @@ class Order:
     sellAmount: int
     buyAmount: int
     validTo: int
-    appData: Dict
+    appData: dict
     feeAmount: int
     kind: Literal["sell", "buy"]
     partiallyFillable: bool
@@ -26,7 +26,7 @@ class Order:
 
     def get_eip712_structured_data(
         self, chain_id: int, verifying_contract: ChecksumAddress
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         types = {
             "EIP712Domain": [
                 {"name": "name", "type": "string"},

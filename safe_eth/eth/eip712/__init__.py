@@ -26,7 +26,7 @@ SOFTWARE.
 """
 
 import re
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from eth_abi import encode as encode_abi
 from eth_typing import Hash32
@@ -80,7 +80,7 @@ def encode_data(primary_type: str, data, types):
             if value:
                 parsed_type = typ[: typ.rindex("[")]
                 type_value_pairs = [_encode_field(name, parsed_type, v) for v in value]
-                data_types, data_hashes = zip(*type_value_pairs)
+                data_types, data_hashes = zip(*type_value_pairs, strict=False)
             else:
                 # Empty array
                 data_types, data_hashes = [], []
@@ -139,7 +139,7 @@ def hash_struct(primary_type: str, data, types) -> Hash32:
     return fast_keccak(encode_data(primary_type, data, types))
 
 
-def eip712_encode(typed_data: Dict[str, Any]) -> Tuple[bytes, Hash32, Hash32]:
+def eip712_encode(typed_data: dict[str, Any]) -> tuple[bytes, Hash32, Hash32]:
     """
     Given a dict of structured data and types, return a 3-element tuple of
     the encoded, signable data.
@@ -169,7 +169,7 @@ def eip712_encode(typed_data: Dict[str, Any]) -> Tuple[bytes, Hash32, Hash32]:
         raise ValueError(f"Not valid {typed_data}") from exc
 
 
-def eip712_encode_hash(typed_data: Dict[str, Any]) -> Hash32:
+def eip712_encode_hash(typed_data: dict[str, Any]) -> Hash32:
     """
     :param typed_data: EIP712 structured data and types
     :return: Keccak256 hash of encoded signable data

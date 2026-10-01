@@ -14,8 +14,6 @@ the integer ``z`` (matching the precompile, which is fed a pre-computed digest),
 is responsible for hashing the message beforehand.
 """
 
-from typing import Optional, Tuple
-
 # Domain parameters for the NIST P-256 (a.k.a. secp256r1, prime256v1) curve.
 # See https://www.secg.org/sec2-v2.pdf section 2.4.2.
 _P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
@@ -26,12 +24,12 @@ _GX = 0x6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
 _GY = 0x4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
 
 # Affine point. ``None`` represents the point at infinity (the group identity).
-Point = Optional[Tuple[int, int]]
+Point = tuple[int, int] | None
 
 # Jacobian point ``(X, Y, Z)`` representing affine ``(X / Z**2, Y / Z**3)``. ``Z == 0`` is the
 # identity. Jacobian coordinates avoid a modular inversion on every group operation, which keeps
 # scalar multiplication cheap in pure Python.
-_JacobianPoint = Tuple[int, int, int]
+_JacobianPoint = tuple[int, int, int]
 _IDENTITY: _JacobianPoint = (0, 0, 0)
 
 

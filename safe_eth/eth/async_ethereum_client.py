@@ -21,16 +21,12 @@ failed calls on the Multicall path.
 
 import asyncio
 import os
+from collections.abc import Sequence
 from functools import cache, cached_property, wraps
 from logging import getLogger
 from typing import (
     Any,
-    Dict,
-    List,
     Optional,
-    Sequence,
-    Tuple,
-    Union,
     cast,
 )
 
@@ -126,7 +122,7 @@ class AsyncEthereumClientManager(EthereumClientManager):
 
     def __init__(self, ethereum_client: "AsyncEthereumClient"):
         super().__init__(ethereum_client)
-        self.ethereum_client: "AsyncEthereumClient" = ethereum_client
+        self.ethereum_client: AsyncEthereumClient = ethereum_client
         self.async_w3: AsyncWeb3 = ethereum_client.async_w3
         self.async_slow_w3: AsyncWeb3 = ethereum_client.async_slow_w3
 
@@ -134,11 +130,11 @@ class AsyncEthereumClientManager(EthereumClientManager):
 class AsyncBatchCallManager(BatchCallManager, AsyncEthereumClientManager):
     async def async_batch_call_custom(
         self,
-        payloads: Sequence[Dict[str, Any]],
+        payloads: Sequence[dict[str, Any]],
         raise_exception: bool = True,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-        batch_size: Optional[int] = None,
-    ) -> List[Optional[Any]]:
+        block_identifier: BlockIdentifier | None = "latest",
+        batch_size: int | None = None,
+    ) -> list[Any | None]:
         payloads = list(payloads)
         if not payloads:
             return []
@@ -146,7 +142,7 @@ class AsyncBatchCallManager(BatchCallManager, AsyncEthereumClientManager):
         queries = build_eth_call_queries(payloads, block_identifier)
         batch_size = batch_size or self.ethereum_client.batch_request_max_size
         session = await self.ethereum_client.get_async_session()
-        all_results: List[Any] = []
+        all_results: list[Any] = []
         for chunk in chunks(queries, batch_size):
             with wrap_http_exceptions(
                 self.ethereum_node_url, EthereumClientConnectionException
@@ -172,10 +168,10 @@ class AsyncBatchCallManager(BatchCallManager, AsyncEthereumClientManager):
     async def async_batch_call(
         self,
         contract_functions: Sequence[ContractFunction],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[Any | None]:
         if not contract_functions:
             return []
         payloads = self._build_call_payloads(contract_functions, from_address)
@@ -187,10 +183,10 @@ class AsyncBatchCallManager(BatchCallManager, AsyncEthereumClientManager):
         self,
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[Any | None]:
         if contract_function is None:
             raise ValueError("Contract function is required")
         if not contract_addresses:
@@ -218,7 +214,7 @@ class AsyncErc20Manager(Erc20Manager, AsyncEthereumClientManager):
         address: ChecksumAddress,
         token_addresses: Sequence[ChecksumAddress],
         include_native_balance: bool = True,
-    ) -> List[BalanceDict]:
+    ) -> list[BalanceDict]:
         balances = await self.ethereum_client.async_batch_call_same_function(
             get_erc20_contract(self.w3).functions.balanceOf(address),
             token_addresses,
@@ -267,11 +263,11 @@ class AsyncErc20Manager(Erc20Manager, AsyncEthereumClientManager):
 
     async def async_get_total_transfer_history(
         self,
-        addresses: Optional[Sequence[ChecksumAddress]] = None,
+        addresses: Sequence[ChecksumAddress] | None = None,
         from_block: BlockIdentifier = BlockNumber(0),
-        to_block: Optional[BlockIdentifier] = None,
-        token_address: Optional[ChecksumAddress] = None,
-    ) -> List[LogReceiptDecoded]:
+        to_block: BlockIdentifier | None = None,
+        token_address: ChecksumAddress | None = None,
+    ) -> list[LogReceiptDecoded]:
         all_topics, parameters = self._build_transfer_history_filters(
             addresses, from_block, to_block, token_address
         )
@@ -287,9 +283,9 @@ class AsyncErc20Manager(Erc20Manager, AsyncEthereumClientManager):
         amount: int,
         erc20_address: ChecksumAddress,
         private_key: str,
-        nonce: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        gas: Optional[int] = None,
+        nonce: int | None = None,
+        gas_price: int | None = None,
+        gas: int | None = None,
     ) -> bytes:
         erc20 = get_erc20_contract(self.async_w3, erc20_address)
         account = Account.from_key(private_key)
@@ -321,7 +317,7 @@ class AsyncErc721Manager(Erc721Manager, AsyncEthereumClientManager):
 
     async def async_get_balances(
         self, address: ChecksumAddress, token_addresses: Sequence[ChecksumAddress]
-    ) -> List:
+    ) -> list:
         function = get_erc721_contract(self.w3).functions.balanceOf(address)
         balances = await self.ethereum_client.async_batch_call_same_function(
             function,
@@ -334,7 +330,7 @@ class AsyncErc721Manager(Erc721Manager, AsyncEthereumClientManager):
         erc721_contract = get_erc721_contract(self.w3, token_address)
         try:
             name, symbol = cast(
-                List[str],
+                list[str],
                 await self.ethereum_client.async_batch_call(
                     [
                         erc721_contract.functions.name(),
@@ -343,12 +339,12 @@ class AsyncErc721Manager(Erc721Manager, AsyncEthereumClientManager):
                 ),
             )
             return Erc721Info(name, symbol)
-        except (DecodingError, ValueError):  # Not all the ERC721 have metadata
-            raise InvalidERC721Info
+        except (DecodingError, ValueError) as exc:  # Not all the ERC721 have metadata
+            raise InvalidERC721Info from exc
 
     async def async_get_owners(
-        self, token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]]
-    ) -> List[Optional[ChecksumAddress]]:
+        self, token_addresses_with_token_ids: Sequence[tuple[ChecksumAddress, int]]
+    ) -> list[ChecksumAddress | None]:
         functions = self._build_token_id_functions(
             "ownerOf", token_addresses_with_token_ids
         )
@@ -359,8 +355,8 @@ class AsyncErc721Manager(Erc721Manager, AsyncEthereumClientManager):
         )
 
     async def async_get_token_uris(
-        self, token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]]
-    ) -> List[Optional[str]]:
+        self, token_addresses_with_token_ids: Sequence[tuple[ChecksumAddress, int]]
+    ) -> list[str | None]:
         functions = self._build_token_id_functions(
             "tokenURI", token_addresses_with_token_ids
         )
@@ -400,7 +396,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
 
     async def async_trace_block(
         self, block_identifier: BlockIdentifier
-    ) -> List[BlockTrace]:
+    ) -> list[BlockTrace]:
         result = await self._async_trace_rpc(
             "trace_block",
             [
@@ -415,7 +411,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
 
     async def async_trace_blocks(
         self, block_identifiers: Sequence[BlockIdentifier]
-    ) -> List[List[BlockTrace]]:
+    ) -> list[list[BlockTrace]]:
         if not block_identifiers:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -427,7 +423,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
         results = await self.ethereum_client.async_raw_batch_request(payload)
         return [trace_list_result_formatter(block_traces) for block_traces in results]
 
-    async def async_trace_transaction(self, tx_hash: EthereumHash) -> List[FilterTrace]:
+    async def async_trace_transaction(self, tx_hash: EthereumHash) -> list[FilterTrace]:
         result = await self._async_trace_rpc(
             "trace_transaction", [to_0x_hex_str(HexBytes(tx_hash))]
         )
@@ -435,7 +431,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
 
     async def async_trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
-    ) -> List[List[FilterTrace]]:
+    ) -> list[list[FilterTrace]]:
         if not tx_hashes:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -450,12 +446,12 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
     async def async_trace_filter(
         self,
         from_block: int = 1,
-        to_block: Optional[int] = None,
-        from_address: Optional[Sequence[ChecksumAddress]] = None,
-        to_address: Optional[Sequence[ChecksumAddress]] = None,
-        after: Optional[int] = None,
-        count: Optional[int] = None,
-    ) -> List[FilterTrace]:
+        to_block: int | None = None,
+        from_address: Sequence[ChecksumAddress] | None = None,
+        to_address: Sequence[ChecksumAddress] | None = None,
+        after: int | None = None,
+        count: int | None = None,
+    ) -> list[FilterTrace]:
         """
         Async counterpart of :meth:`TracingManager.trace_filter`. See the
         :class:`AsyncTracingManager` docstring for the raw-JSON-RPC caveats
@@ -473,7 +469,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
         trace_address: Sequence[int],
         number_traces: int = 1,
         skip_delegate_calls: bool = False,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         if len(trace_address) < number_traces:
             return None
         return self._select_previous_trace(
@@ -489,7 +485,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
         trace_address: Sequence[int],
         remove_delegate_calls: bool = False,
         remove_calls: bool = False,
-    ) -> List[FilterTrace]:
+    ) -> list[FilterTrace]:
         return self._select_next_traces(
             await self.async_trace_transaction(tx_hash),
             trace_address,
@@ -543,7 +539,7 @@ class AsyncEthereumClient(EthereumClient):
         )
 
         # aiohttp sessions for raw JSON-RPC batches, one per event loop
-        self._async_http_sessions: Dict[Any, aiohttp.ClientSession] = {}
+        self._async_http_sessions: dict[Any, aiohttp.ClientSession] = {}
 
         self.async_w3_provider = AsyncHTTPProvider(
             self.ethereum_node_url,
@@ -599,8 +595,8 @@ class AsyncEthereumClient(EthereumClient):
             from .multicall import AsyncMulticall
 
             try:
-                multicall: Optional["AsyncMulticall"] = (
-                    await AsyncMulticall.async_create(self)
+                multicall: AsyncMulticall | None = await AsyncMulticall.async_create(
+                    self
                 )
             except EthereumNetworkNotSupported:
                 logger.warning("Multicall not supported for this network")
@@ -664,12 +660,12 @@ class AsyncEthereumClient(EthereumClient):
     # --- Raw batch --------------------------------------------------------
 
     async def async_raw_batch_request(
-        self, payload: Sequence[Dict[str, Any]], batch_size: Optional[int] = None
-    ) -> List[Any]:
+        self, payload: Sequence[dict[str, Any]], batch_size: int | None = None
+    ) -> list[Any]:
         """Async version of :meth:`EthereumClient.raw_batch_request` (returns a list)."""
         batch_size = batch_size or self.batch_request_max_size
         session = await self.get_async_session()
-        all_results: List[Any] = []
+        all_results: list[Any] = []
         for payload_chunk in chunks(payload, batch_size):
             with wrap_http_exceptions(
                 self.ethereum_node_url, EthereumClientConnectionException
@@ -723,7 +719,7 @@ class AsyncEthereumClient(EthereumClient):
 
     async def async_get_singleton_factory_address(
         self,
-    ) -> Optional[ChecksumAddress]:
+    ) -> ChecksumAddress | None:
         if "singleton_factory_address" not in self._cache:
             address = os.environ.get(
                 "SAFE_SINGLETON_FACTORY_ADDRESS", SAFE_SINGLETON_FACTORY_ADDRESS
@@ -741,11 +737,11 @@ class AsyncEthereumClient(EthereumClient):
     async def async_get_balance(
         self,
         address: ChecksumAddress,
-        block_identifier: Optional[BlockIdentifier] = None,
+        block_identifier: BlockIdentifier | None = None,
     ) -> int:
         return await self.async_w3.eth.get_balance(address, block_identifier)
 
-    async def async_get_transaction(self, tx_hash: EthereumHash) -> Optional[TxData]:
+    async def async_get_transaction(self, tx_hash: EthereumHash) -> TxData | None:
         try:
             return await self.async_w3.eth.get_transaction(tx_hash)
         except TransactionNotFound:
@@ -753,7 +749,7 @@ class AsyncEthereumClient(EthereumClient):
 
     async def async_get_transactions(
         self, tx_hashes: Sequence[EthereumHash]
-    ) -> List[Optional[TxData]]:
+    ) -> list[TxData | None]:
         if not tx_hashes:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -766,7 +762,7 @@ class AsyncEthereumClient(EthereumClient):
 
     async def async_get_transaction_receipt(
         self, tx_hash: EthereumHash, timeout=None
-    ) -> Optional[TxReceipt]:
+    ) -> TxReceipt | None:
         try:
             if not timeout:
                 tx_receipt = await self.async_w3.eth.get_transaction_receipt(tx_hash)
@@ -789,7 +785,7 @@ class AsyncEthereumClient(EthereumClient):
 
     async def async_get_transaction_receipts(
         self, tx_hashes: Sequence[EthereumData]
-    ) -> List[Optional[TxReceipt]]:
+    ) -> list[TxReceipt | None]:
         if not tx_hashes:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -802,7 +798,7 @@ class AsyncEthereumClient(EthereumClient):
 
     async def async_get_block(
         self, block_identifier: BlockIdentifier, full_transactions: bool = False
-    ) -> Optional[BlockData]:
+    ) -> BlockData | None:
         try:
             return await self.async_w3.eth.get_block(
                 block_identifier, full_transactions=full_transactions
@@ -814,7 +810,7 @@ class AsyncEthereumClient(EthereumClient):
         self,
         block_identifiers: Sequence[BlockIdentifier],
         full_transactions: bool = False,
-    ) -> List[Optional[BlockData]]:
+    ) -> list[BlockData | None]:
         if not block_identifiers:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -838,7 +834,7 @@ class AsyncEthereumClient(EthereumClient):
     async def async_get_nonce_for_account(
         self,
         address: ChecksumAddress,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> Nonce:
         return await self.async_w3.eth.get_transaction_count(
             address, block_identifier=block_identifier
@@ -849,12 +845,12 @@ class AsyncEthereumClient(EthereumClient):
     async def async_estimate_gas(
         self,
         to: str,
-        from_: Optional[str] = None,
-        value: Optional[int] = None,
-        data: Optional[EthereumData] = None,
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        block_identifier: Optional[BlockIdentifier] = None,
+        from_: str | None = None,
+        value: int | None = None,
+        data: EthereumData | None = None,
+        gas: int | None = None,
+        gas_price: int | None = None,
+        block_identifier: BlockIdentifier | None = None,
     ) -> int:
         tx: TxParams = {"to": to}
         if from_:
@@ -879,7 +875,7 @@ class AsyncEthereumClient(EthereumClient):
 
     async def async_estimate_fee_eip1559(
         self, tx_speed: TxSpeed = TxSpeed.NORMAL
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         percentile = self._tx_speed_percentile(tx_speed)
         result = await self.async_w3.eth.fee_history(
             1, "latest", reward_percentiles=[percentile]
@@ -889,9 +885,10 @@ class AsyncEthereumClient(EthereumClient):
     async def async_set_eip1559_fees(
         self, tx: TxParams, tx_speed: TxSpeed = TxSpeed.NORMAL
     ) -> TxParams:
-        base_fee_per_gas, max_priority_fee_per_gas = (
-            await self.async_estimate_fee_eip1559(tx_speed)
-        )
+        (
+            base_fee_per_gas,
+            max_priority_fee_per_gas,
+        ) = await self.async_estimate_fee_eip1559(tx_speed)
         tx = TxParams(**tx)  # Don't modify provided tx
         if "gasPrice" in tx:
             del tx["gasPrice"]
@@ -906,11 +903,11 @@ class AsyncEthereumClient(EthereumClient):
     async def async_batch_call(
         self,
         contract_functions: Sequence[ContractFunction],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
         force_batch_call: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Union[bytes, Any]]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[bytes | Any | None]:
         """
         Async counterpart of :meth:`EthereumClient.batch_call`. Uses ``Multicall``
         when available (unless ``force_batch_call=True``), matching the sync client,
@@ -937,11 +934,11 @@ class AsyncEthereumClient(EthereumClient):
         self,
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
         force_batch_call: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Union[bytes, Any]]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[bytes | Any | None]:
         """
         Async counterpart of :meth:`EthereumClient.batch_call_same_function`. Uses
         ``Multicall`` when available (unless ``force_batch_call=True``), matching the
@@ -981,10 +978,10 @@ class AsyncEthereumClient(EthereumClient):
     async def async_send_unsigned_transaction(
         self,
         tx: TxParams,
-        private_key: Optional[str] = None,
-        public_key: Optional[str] = None,
+        private_key: str | None = None,
+        public_key: str | None = None,
         retry: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "pending",
+        block_identifier: BlockIdentifier | None = "pending",
     ) -> HexBytes:
         if private_key:
             address = Account.from_key(private_key).address
@@ -1021,8 +1018,7 @@ class AsyncEthereumClient(EthereumClient):
                         # Parity 2.2.11 sometimes fails with "already imported" even if processed
                         tx_hash = signed_tx.hash
                         logger.error(
-                            "Transaction with tx-hash=%s already imported: %s"
-                            % (tx_hash.hex(), str(e))
+                            f"Transaction with tx-hash={tx_hash.hex()} already imported: {str(e)}"
                         )
                         return tx_hash
                 elif public_key:
@@ -1069,10 +1065,10 @@ class AsyncEthereumClient(EthereumClient):
         to: str,
         gas_price: int,
         value: Wei,
-        gas: Optional[int] = None,
-        nonce: Optional[int] = None,
+        gas: int | None = None,
+        nonce: int | None = None,
         retry: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "pending",
+        block_identifier: BlockIdentifier | None = "pending",
     ) -> bytes:
         assert fast_is_checksum_address(to)
         account = Account.from_key(private_key)
@@ -1104,17 +1100,17 @@ class AsyncEthereumClient(EthereumClient):
     async def async_deploy_and_initialize_contract(
         self,
         deployer_account: LocalAccount,
-        constructor_data: Union[bytes, HexStr],
-        initializer_data: Optional[Union[bytes, HexStr]] = None,
+        constructor_data: bytes | HexStr,
+        initializer_data: bytes | HexStr | None = None,
         check_receipt: bool = True,
         deterministic: bool = True,
     ) -> EthereumTxSent:
-        contract_address: Optional[ChecksumAddress] = None
-        assert (
-            constructor_data or initializer_data
-        ), "At least constructor_data or initializer_data must be provided"
-        tx_hash: Optional[HexBytes] = None
-        tx: Optional[TxParams] = None
+        contract_address: ChecksumAddress | None = None
+        assert constructor_data or initializer_data, (
+            "At least constructor_data or initializer_data must be provided"
+        )
+        tx_hash: HexBytes | None = None
+        tx: TxParams | None = None
         gas_price = await self.async_w3.eth.gas_price
         chain_id = await self.async_get_chain_id()
         for data in (constructor_data, initializer_data):
@@ -1133,7 +1129,8 @@ class AsyncEthereumClient(EthereumClient):
                 }
                 if not contract_address:
                     if deterministic and (
-                        singleton_factory_address := await self.async_get_singleton_factory_address()
+                        singleton_factory_address
+                        := await self.async_get_singleton_factory_address()
                     ):
                         salt = HexBytes("0" * 64)
                         tx["data"] = salt + data  # 32 bytes salt for singleton factory

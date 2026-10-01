@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type
+from typing import Any, NoReturn
 
 from eth_account import Account
 from eth_typing import ChecksumAddress
@@ -47,19 +47,19 @@ class SafeTx:
         self,
         ethereum_client: EthereumClient,
         safe_address: ChecksumAddress,
-        to: Optional[ChecksumAddress],
+        to: ChecksumAddress | None,
         value: int,
         data: bytes,
         operation: SafeOperationLike,
         safe_tx_gas: int,
         base_gas: int,
         gas_price: int,
-        gas_token: Optional[ChecksumAddress],
-        refund_receiver: Optional[ChecksumAddress],
-        signatures: Optional[bytes] = None,
-        safe_nonce: Optional[int] = None,
-        safe_version: Optional[str] = None,
-        chain_id: Optional[int] = None,
+        gas_token: ChecksumAddress | None,
+        refund_receiver: ChecksumAddress | None,
+        signatures: bytes | None = None,
+        safe_nonce: int | None = None,
+        safe_version: str | None = None,
+        chain_id: int | None = None,
     ):
         """
         :param ethereum_client:
@@ -97,8 +97,8 @@ class SafeTx:
         self._safe_version = safe_version
         self._chain_id = chain_id and int(chain_id)
 
-        self.tx: Optional[TxParams] = None  # If executed, `tx` is set
-        self.tx_hash: Optional[bytes] = None  # If executed, `tx_hash` is set
+        self.tx: TxParams | None = None  # If executed, `tx` is set
+        self.tx_hash: bytes | None = None  # If executed, `tx_hash` is set
 
     def __str__(self):
         return (
@@ -138,7 +138,7 @@ class SafeTx:
             return self.contract.functions.VERSION().call()
 
     @property
-    def eip712_structured_data(self) -> Dict[str, Any]:
+    def eip712_structured_data(self) -> dict[str, Any]:
         safe_version = Version(self.safe_version)
 
         # Safes >= 1.0.0 Renamed `baseGas` to `dataGas`
@@ -173,7 +173,7 @@ class SafeTx:
             "nonce": self.safe_nonce,
         }
 
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "types": types,
             "primaryType": "SafeTx",
             "domain": {"verifyingContract": self.safe_address},
@@ -196,7 +196,7 @@ class SafeTx:
         return HexBytes(fast_keccak(self.safe_tx_hash_preimage))
 
     @property
-    def signers(self) -> List[str]:
+    def signers(self) -> list[str]:
         if not self.signatures:
             return []
         else:
@@ -230,7 +230,7 @@ class SafeTx:
         )
 
     def _raise_safe_vm_exception(self, message: str) -> NoReturn:
-        error_with_exception: Dict[str, Type[InvalidMultisigTx]] = {
+        error_with_exception: dict[str, type[InvalidMultisigTx]] = {
             # https://github.com/safe-global/safe-contracts/blob/v1.3.0/docs/error_codes.md
             "GS000": CouldNotFinishInitialization,
             "GS001": ThresholdNeedsToBeDefined,
@@ -293,9 +293,9 @@ class SafeTx:
 
     def call(
         self,
-        tx_sender_address: Optional[str] = None,
-        tx_gas: Optional[int] = None,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        tx_sender_address: str | None = None,
+        tx_gas: int | None = None,
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> int:
         """
         :param tx_sender_address:
@@ -319,30 +319,12 @@ class SafeTx:
 
             if not success:
                 raise InvalidInternalTx(
-                    "Success bit is %d, should be equal to 1" % success
+                    f"Success bit is {success:d}, should be equal to 1"
                 )
             return success
         except (Web3Exception, ValueError) as exc:
             # e.g. web3.exceptions.ContractLogicError: execution reverted: Invalid owner provided
             return self._raise_safe_vm_exception(str(exc))
-        except ValueError as exc:  # Parity
-            """
-            Parity throws a ValueError, e.g.
-            {'code': -32015,
-             'message': 'VM execution error.',
-             'data': 'Reverted 0x08c379a0000000000000000000000000000000000000000000000000000000000000020000000000000000
-                      000000000000000000000000000000000000000000000001b496e76616c6964207369676e6174757265732070726f7669
-                      6465640000000000'
-            }
-            """
-            error_dict = exc.args[0]
-            data = error_dict.get("data")
-            if data and isinstance(data, str) and "Reverted " in data:
-                # Parity
-                result = HexBytes(data.replace("Reverted ", ""))
-                return self._raise_safe_vm_exception(str(result))
-            else:
-                raise exc
 
     def recommended_gas(self) -> Wei:
         """
@@ -353,12 +335,12 @@ class SafeTx:
     def execute(
         self,
         tx_sender_private_key: str,
-        tx_gas: Optional[int] = None,
-        tx_gas_price: Optional[int] = None,
-        tx_nonce: Optional[int] = None,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-        eip1559_speed: Optional[TxSpeed] = None,
-    ) -> Tuple[HexBytes, TxParams]:
+        tx_gas: int | None = None,
+        tx_gas_price: int | None = None,
+        tx_nonce: int | None = None,
+        block_identifier: BlockIdentifier | None = "latest",
+        eip1559_speed: TxSpeed | None = None,
+    ) -> tuple[HexBytes, TxParams]:
         """
         Send multisig tx to the Safe
 

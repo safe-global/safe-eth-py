@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
 
 import requests
 
@@ -19,9 +18,9 @@ class SafeBaseAPI(ABC):
     def __init__(
         self,
         network: EthereumNetwork,
-        ethereum_client: Optional[EthereumClient] = None,
-        base_url: Optional[str] = None,
-        api_key: Optional[str] = None,
+        ethereum_client: EthereumClient | None = None,
+        base_url: str | None = None,
+        api_key: str | None = None,
         request_timeout: int = 10,
     ):
         """
@@ -39,7 +38,7 @@ class SafeBaseAPI(ABC):
         self.request_timeout = request_timeout
 
     @abstractmethod
-    def _get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
+    def _get_url_by_network(self, network: EthereumNetwork) -> str | None:
         """
         Should return the base URL for the given network.
         :param network: EthereumNetwork to get the base URL for.
@@ -48,7 +47,7 @@ class SafeBaseAPI(ABC):
         pass
 
     def _get_api_base_url(
-        self, network: EthereumNetwork, custom_base_url: Optional[str] = None
+        self, network: EthereumNetwork, custom_base_url: str | None = None
     ) -> str:
         """
         Returns the base API URL for the specified Ethereum network.
@@ -69,12 +68,12 @@ class SafeBaseAPI(ABC):
     def from_ethereum_client(
         cls,
         ethereum_client: EthereumClient,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
     ) -> "SafeBaseAPI":
         ethereum_network = ethereum_client.get_network()
         return cls(ethereum_network, ethereum_client=ethereum_client, api_key=api_key)
 
-    def _get_request_headers(self, include_json_body: bool = False) -> Dict[str, str]:
+    def _get_request_headers(self, include_json_body: bool = False) -> dict[str, str]:
         """
         Build the default HTTP headers for a request.
 
@@ -94,7 +93,7 @@ class SafeBaseAPI(ABC):
             full_url, headers=self._get_request_headers(), timeout=self.request_timeout
         )
 
-    def _post_request(self, url: str, payload: Dict) -> requests.Response:
+    def _post_request(self, url: str, payload: dict) -> requests.Response:
         full_url = build_full_url(self.base_url, url)
         return self.http_session.post(
             full_url,
@@ -103,7 +102,7 @@ class SafeBaseAPI(ABC):
             timeout=self.request_timeout,
         )
 
-    def _delete_request(self, url: str, payload: Dict) -> requests.Response:
+    def _delete_request(self, url: str, payload: dict) -> requests.Response:
         full_url = build_full_url(self.base_url, url)
         return self.http_session.delete(
             full_url,

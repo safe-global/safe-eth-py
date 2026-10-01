@@ -1,5 +1,3 @@
-from typing import Optional
-
 from eth_typing import ChecksumAddress
 from web3.types import BlockIdentifier
 
@@ -30,7 +28,7 @@ class StandardProxy(Proxy):
     )
 
     def get_implementation_address(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
         :param block_identifier:
@@ -47,7 +45,7 @@ class StandardProxy(Proxy):
         return NULL_ADDRESS
 
     def get_admin_address(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
         :param block_identifier:

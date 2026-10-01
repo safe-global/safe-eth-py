@@ -1,25 +1,8 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+# `language: unsupported` needs pre-commit 4.4.0
+minimum_pre_commit_version: "4.4.0"
 repos:
-  - repo: https://github.com/PyCQA/isort
-    rev: 8.0.1
-    hooks:
-      - id: isort
-  - repo: https://github.com/psf/black
-    rev: 26.3.1
-    hooks:
-      - id: black
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
-    hooks:
-      - id: flake8
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.20.0
-    hooks:
-      - id: mypy
-        exclude: env|docs|config|.github
-        args: [--ignore-missing-imports, --warn-unused-ignores, --warn-redundant-casts, --warn-unused-configs]
-        language: system
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -29,7 +12,28 @@ repos:
       - id: detect-private-key
       - id: trailing-whitespace
       - id: end-of-file-fixer
-        types: [python]
       - id: check-yaml
       - id: check-added-large-files
         args: ['--maxkb=1024']
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+        types_or: [python, pyi]
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi]
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.12.21
+    hooks:
+      - id: uv-lock
+  - repo: local
+    hooks:
+      # Runs the project's mypy with the [tool.mypy] config, on the whole
+      # project like CI, as checking single files can give other results
+      - id: mypy
+        name: mypy
+        entry: uv run mypy .
+        language: unsupported
+        types: [python]
+        pass_filenames: false

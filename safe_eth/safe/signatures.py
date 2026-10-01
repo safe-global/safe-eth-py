@@ -1,5 +1,3 @@
-from typing import List, Tuple, Union
-
 from eth_keys import keys
 from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
@@ -8,9 +6,7 @@ from safe_eth.eth.constants import NULL_ADDRESS
 from safe_eth.eth.utils import fast_to_checksum_address
 
 
-def signature_split(
-    signatures: Union[bytes, str], pos: int = 0
-) -> Tuple[int, int, int]:
+def signature_split(signatures: bytes | str, pos: int = 0) -> tuple[int, int, int]:
     """
     :param signatures: signatures in form of {bytes32 r}{bytes32 s}{uint8 v}
     :param pos: position of the signature
@@ -43,7 +39,7 @@ def signature_to_bytes(v: int, r: int, s: int) -> bytes:
     )
 
 
-def signatures_to_bytes(signatures: List[Tuple[int, int, int]]) -> bytes:
+def signatures_to_bytes(signatures: list[tuple[int, int, int]]) -> bytes:
     """
     Convert signatures to bytes
     :param signatures: list of tuples(v, r, s)

@@ -178,5 +178,58 @@ class TestEnsClient(TestCase):
             with self.subTest(base_url=config.base_url):
                 ens_client = EnsClient(config=config)
                 self.assertTrue(ens_client.is_available())
-                with mock.patch.object(Session, "post", side_effect=IOError()):
+                with mock.patch.object(Session, "post", side_effect=OSError()):
                     self.assertFalse(ens_client.is_available())
+
+
+class TestEnsClientCache(TestCase):
+    def setUp(self):
+        self.config = EnsClient.Config(base_url="https://ens.test")
+        self.domain_hash = keccak(text="gnosis")
+
+    def _response(self, ok: bool = True, label: str | None = "gnosis") -> mock.Mock:
+        response = mock.Mock(ok=ok, status_code=200 if ok else 502)
+        domains = [{"labelName": label}] if label else []
+        response.json.return_value = {"data": {"domains": domains}}
+        return response
+
+    def test_query_by_domain_hash_caches_results_per_instance(self):
+        with mock.patch.object(
+            Session, "post", return_value=self._response()
+        ) as post_mock:
+            ens_client = EnsClient(config=self.config)
+            self.assertEqual(
+                ens_client.query_by_domain_hash(self.domain_hash), "gnosis"
+            )
+            self.assertEqual(
+                ens_client.query_by_domain_hash(self.domain_hash), "gnosis"
+            )
+            self.assertEqual(post_mock.call_count, 1)
+
+            other_ens_client = EnsClient(config=self.config)
+            self.assertEqual(
+                other_ens_client.query_by_domain_hash(self.domain_hash), "gnosis"
+            )
+            self.assertEqual(post_mock.call_count, 2)
+
+    def test_query_by_domain_hash_caches_not_found(self):
+        with mock.patch.object(
+            Session, "post", return_value=self._response(label=None)
+        ) as post_mock:
+            ens_client = EnsClient(config=self.config)
+            self.assertIsNone(ens_client.query_by_domain_hash(self.domain_hash))
+            self.assertIsNone(ens_client.query_by_domain_hash(self.domain_hash))
+            self.assertEqual(post_mock.call_count, 1)
+
+    def test_query_by_domain_hash_does_not_cache_errors(self):
+        for error in (OSError(), self._response(ok=False)):
+            with self.subTest(error=error):
+                with mock.patch.object(
+                    Session, "post", side_effect=[error, self._response()]
+                ) as post_mock:
+                    ens_client = EnsClient(config=self.config)
+                    self.assertIsNone(ens_client.query_by_domain_hash(self.domain_hash))
+                    self.assertEqual(
+                        ens_client.query_by_domain_hash(self.domain_hash), "gnosis"
+                    )
+                    self.assertEqual(post_mock.call_count, 2)

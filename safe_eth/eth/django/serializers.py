@@ -52,8 +52,8 @@ class EthereumAddressField(serializers.Field):
                 raise ValidationError("0x0 address is not allowed")
             elif int(data, 16) == 1 and not self.allow_sentinel_address:
                 raise ValidationError("0x1 address is not allowed")
-        except ValueError:
-            raise ValidationError("Address %s is not checksumed" % data)
+        except ValueError as exc:
+            raise ValidationError(f"Address {data} is not checksumed") from exc
 
         return data
 

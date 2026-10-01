@@ -1,7 +1,6 @@
 import secrets
 from abc import ABC, ABCMeta
-from functools import cache
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from eth_abi.packed import encode_packed
 from eth_account.signers.local import LocalAccount
@@ -37,6 +36,9 @@ from safe_eth.safe.safe_deployments import default_safe_deployments
 class ProxyFactory(ContractBase, metaclass=ABCMeta):
     # Mapping of Safe version strings to their corresponding ProxyFactory implementation classes
     _VERSION_MAPPING: dict[str, type["ProxyFactory"]] = {}
+    # Cached on the instance: a cache on the method would keep every instance alive
+    _proxy_creation_code: bytes | None = None
+    _proxy_runtime_code: bytes | None = None
 
     def __new__(cls, *args, version: str = "1.5.0", **kwargs) -> "ProxyFactory":
         if cls is not ProxyFactory:
@@ -112,21 +114,25 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
             deployer_account, constructor_data
         )
 
-    @cache
     def get_proxy_creation_code(self) -> bytes:
         """
         :return: Creation code used for the Proxy deployment.
             With this it is easily possible to calculate predicted address.
         """
-        return self.contract.functions.proxyCreationCode().call()
+        if self._proxy_creation_code is None:
+            self._proxy_creation_code = (
+                self.contract.functions.proxyCreationCode().call()
+            )
+        return self._proxy_creation_code
 
-    @cache
     def get_proxy_runtime_code(self) -> bytes:
         """
         :return: Runtime code of a deployed Proxy. For v1.4.1 onwards the method is not available, so `None`
             will be returned
         """
-        return self.contract.functions.proxyRuntimeCode().call()
+        if self._proxy_runtime_code is None:
+            self._proxy_runtime_code = self.contract.functions.proxyRuntimeCode().call()
+        return self._proxy_runtime_code
 
     def get_deploy_function(
         self, chain_specific: bool, is_l2: bool = False
@@ -150,7 +156,7 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         :return: ``True`` if proxy is valid, ``False`` otherwise
         """
 
-        def get_proxy_runtime_code() -> Optional[bytes]:
+        def get_proxy_runtime_code() -> bytes | None:
             try:
                 return self.get_proxy_runtime_code()
             except NotImplementedError:
@@ -177,9 +183,9 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         self,
         deployer_account: LocalAccount,
         deploy_fn: ContractFunction,
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        nonce: Optional[int] = None,
+        gas: int | None = None,
+        gas_price: int | None = None,
+        nonce: int | None = None,
     ) -> EthereumTxSent:
         """
         Common logic for `createProxy` and `createProxyWithNonce`
@@ -211,9 +217,9 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         deployer_account: LocalAccount,
         master_copy: ChecksumAddress,
         initializer: bytes = b"",
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        nonce: Optional[int] = None,
+        gas: int | None = None,
+        gas_price: int | None = None,
+        nonce: int | None = None,
     ) -> EthereumTxSent:
         """
         Deploy proxy contract via ProxyFactory using `createProxy` function (CREATE opcode)
@@ -279,10 +285,10 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
         deployer_account: LocalAccount,
         master_copy: ChecksumAddress,
         initializer: bytes = b"",
-        salt_nonce: Optional[int] = None,
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        nonce: Optional[int] = None,
+        salt_nonce: int | None = None,
+        gas: int | None = None,
+        gas_price: int | None = None,
+        nonce: int | None = None,
         chain_specific: bool = False,
         is_l2: bool = False,
     ) -> EthereumTxSent:
@@ -311,17 +317,17 @@ class ProxyFactory(ContractBase, metaclass=ABCMeta):
 
 
 class ProxyFactoryV100(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_proxy_factory_V1_0_0_contract
 
 
 class ProxyFactoryV111(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_proxy_factory_V1_1_1_contract
 
 
 class ProxyFactoryV130(ProxyFactory):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_proxy_factory_V1_3_0_contract
 
 
@@ -331,7 +337,6 @@ class ProxyFactoryCompatibilityAdapter(ProxyFactory, ABC):
     Overrides some methods to handle API changes in newer contract versions.
     """
 
-    @cache
     def get_proxy_runtime_code(self) -> bytes:
         """
         :return: From v1.4.1 onwards the method is not available
@@ -366,12 +371,12 @@ class ProxyFactoryV141(ProxyFactoryCompatibilityAdapter):
             else super().get_deploy_function(chain_specific)
         )
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_proxy_factory_V1_4_1_contract
 
 
 class ProxyFactoryV150(ProxyFactoryCompatibilityAdapter):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_proxy_factory_V1_5_0_contract
 
     def get_deploy_function(
