@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 from eth_typing import ChecksumAddress
 from web3.types import BlockIdentifier
@@ -7,7 +7,9 @@ from ..ethereum_client import EthereumClient
 from ..utils import fast_bytes_to_checksum_address
 
 
-class Proxy(metaclass=ABCMeta):
+# Not abstract: Proxy is public and can be created directly, and
+# get_implementation_address only fails when it is called
+class Proxy(metaclass=ABCMeta):  # noqa: B024
     """
     Generic class for proxy contracts
     """
@@ -36,7 +38,6 @@ class Proxy(metaclass=ABCMeta):
             self._code = self.w3.eth.get_code(self.address)
         return self._code
 
-    @abstractmethod
     def get_implementation_address(
         self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
