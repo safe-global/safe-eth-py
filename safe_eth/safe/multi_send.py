@@ -1,6 +1,5 @@
 from enum import Enum
 from logging import getLogger
-from typing import List, Optional, Union
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexAddress, HexStr
@@ -82,16 +81,14 @@ class MultiSendTx:
 
     @property
     def encoded_data(self):
-        operation = HexBytes("{:0>2x}".format(self.operation.value))  # Operation 1 byte
-        to = HexBytes("{:0>40x}".format(int(self.to, 16)))  # Address 20 bytes
-        value = HexBytes("{:0>64x}".format(self.value))  # Value 32 bytes
-        data_length = HexBytes(
-            "{:0>64x}".format(self.data_length)
-        )  # Data length 32 bytes
+        operation = HexBytes(f"{self.operation.value:0>2x}")  # Operation 1 byte
+        to = HexBytes(f"{int(self.to, 16):0>40x}")  # Address 20 bytes
+        value = HexBytes(f"{self.value:0>64x}")  # Value 32 bytes
+        data_length = HexBytes(f"{self.data_length:0>64x}")  # Data length 32 bytes
         return operation + to + value + data_length + self.data
 
     @classmethod
-    def from_bytes(cls, encoded_multisend_tx: Union[str, bytes]) -> "MultiSendTx":
+    def from_bytes(cls, encoded_multisend_tx: str | bytes) -> "MultiSendTx":
         """
         Decoded one MultiSend transaction. ABI must be used to get the `transactions` parameter and use that data
         for this function
@@ -106,7 +103,7 @@ class MultiSendTx:
             return cls._decode_multisend_old_transaction(encoded_multisend_tx)
 
     @classmethod
-    def _decode_multisend_data(cls, encoded_multisend_tx: Union[str, bytes]):
+    def _decode_multisend_data(cls, encoded_multisend_tx: str | bytes):
         """
         Decodes one Multisend transaction. If there's more data after `data` it's ignored. Fallbacks to the old
         multisend structure if this structure cannot be decoded.
@@ -137,7 +134,7 @@ class MultiSendTx:
 
     @classmethod
     def _decode_multisend_old_transaction(
-        cls, encoded_multisend_tx: Union[str, bytes]
+        cls, encoded_multisend_tx: str | bytes
     ) -> "MultiSendTx":
         """
         Decodes one old multisend transaction. If there's more data after `data` it's ignored. The difference with
@@ -185,8 +182,8 @@ class MultiSend:
 
     def __init__(
         self,
-        ethereum_client: Optional[EthereumClient] = None,
-        address: Optional[ChecksumAddress] = None,
+        ethereum_client: EthereumClient | None = None,
+        address: ChecksumAddress | None = None,
         call_only: bool = True,
     ):
         """
@@ -207,7 +204,7 @@ class MultiSend:
 
         if address:
             assert fast_is_checksum_address(address), (
-                "%s proxy factory address not valid" % address
+                f"{address} proxy factory address not valid"
             )
         elif ethereum_client:
             # Try to detect MultiSend address if not provided
@@ -232,7 +229,7 @@ class MultiSend:
         return (self.ethereum_client and self.ethereum_client.w3) or Web3()
 
     @classmethod
-    def from_bytes(cls, encoded_multisend_txs: Union[str, bytes]) -> List[MultiSendTx]:
+    def from_bytes(cls, encoded_multisend_txs: str | bytes) -> list[MultiSendTx]:
         """
         Decodes one or more multisend transactions from `bytes transactions` (Abi decoded)
 
@@ -243,14 +240,14 @@ class MultiSend:
             return []
 
         remaining_data = HexBytes(encoded_multisend_txs)
-        multisend_txs: List[MultiSendTx] = []
+        multisend_txs: list[MultiSendTx] = []
         while remaining_data:
             multisend_tx = MultiSendTx.from_bytes(remaining_data)
             multisend_tx_size = len(multisend_tx)
 
-            assert (
-                multisend_tx_size > 0
-            ), "Multisend tx cannot be empty"  # This should never happen, just in case
+            assert multisend_tx_size > 0, (
+                "Multisend tx cannot be empty"
+            )  # This should never happen, just in case
             if multisend_tx.old_encoding:
                 next_data_position = (
                     (multisend_tx.data_length + 0x1F) // 0x20 * 0x20
@@ -263,9 +260,7 @@ class MultiSend:
         return multisend_txs
 
     @classmethod
-    def from_transaction_data(
-        cls, multisend_data: Union[str, bytes]
-    ) -> List[MultiSendTx]:
+    def from_transaction_data(cls, multisend_data: str | bytes) -> list[MultiSendTx]:
         """
         Decodes multisend transactions from transaction data (ABI encoded with selector)
 
@@ -313,7 +308,7 @@ class MultiSend:
         return get_multi_send_contract(self.w3, self.address)
 
     def build_tx(
-        self, multi_send_txs: List[MultiSendTx], tx_params: Optional[TxParams] = None
+        self, multi_send_txs: list[MultiSendTx], tx_params: TxParams | None = None
     ) -> TxParams:
         """
         Txs don't need to be valid to get through
@@ -328,7 +323,7 @@ class MultiSend:
             encoded_multisend_data
         ).build_transaction(tx_params or {})
 
-    def build_tx_data(self, multi_send_txs: List[MultiSendTx]) -> HexBytes:
+    def build_tx_data(self, multi_send_txs: list[MultiSendTx]) -> HexBytes:
         """
         Txs don't need to be valid to get through
 

@@ -45,7 +45,7 @@ class SuperfluidOracle(PriceOracle):
                 .call()
             )
             return self.price_oracle.get_price(underlying_token)
-        except (Web3Exception, DecodingError, ValueError):
+        except (Web3Exception, DecodingError, ValueError) as exc:
             raise CannotGetPriceFromOracle(
                 f"Cannot get price for {token_address}. It is not a wrapper Super Token"
-            )
+            ) from exc

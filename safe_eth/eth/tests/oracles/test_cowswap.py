@@ -59,7 +59,7 @@ class TestCowswapOracle(EthereumTestCaseMixin, TestCase):
         self.assertAlmostEqual(price, 1.0, delta=0.5)
 
         with mock.patch.object(
-            Session, "post", side_effect=IOError("Connection Error")
+            Session, "post", side_effect=OSError("Connection Error")
         ):
             with self.assertRaises(CannotGetPriceFromOracle):
                 cowswap_oracle.get_price(

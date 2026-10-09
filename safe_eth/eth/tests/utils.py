@@ -50,7 +50,7 @@ def just_test_if_node_available(node_url_variable_name: str) -> str:
                 pytest.fail(
                     f"Problem connecting to node {node_url}: {response.status_code} - {response.content!r}"
                 )
-        except IOError:
+        except OSError:
             pytest.fail(f"Problem connecting to {node_url}")
     setattr(just_test_if_node_available, node_url_variable_name, node_url)
     return node_url
@@ -103,10 +103,7 @@ def send_tx(w3: Web3, tx: TxParams, account: LocalAccount) -> bytes:
     signed_tx = account.sign_transaction(tx)  # type: ignore
     tx_hash = w3.eth.send_raw_transaction(bytes(signed_tx.raw_transaction))
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    assert tx_receipt["status"] == 1, "Error with tx %s - %s" % (
-        to_0x_hex_str(tx_hash),
-        tx,
-    )
+    assert tx_receipt["status"] == 1, f"Error with tx {to_0x_hex_str(tx_hash)} - {tx}"
     return tx_hash
 
 
@@ -154,7 +151,7 @@ def bytes_to_str(o: Any) -> Any:
             o[k] = bytes_to_str(o[k])
     elif isinstance(o, list):
         o = deepcopy(o)
-        for i, v in enumerate(o):
+        for i, _v in enumerate(o):
             o[i] = bytes_to_str(o[i])
     elif isinstance(o, tuple):
         o = tuple(bytes_to_str(v) for v in o)

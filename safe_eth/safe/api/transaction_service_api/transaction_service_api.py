@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 from urllib.parse import urlencode
 
 from eth_typing import ChecksumAddress, Hash32, HexStr
@@ -61,23 +61,23 @@ class TransactionServiceApi(SafeBaseAPI):
     def __init__(
         self,
         network: EthereumNetwork,
-        ethereum_client: Optional[EthereumClient] = None,
-        base_url: Optional[str] = None,
-        api_key: Optional[str] = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
+        ethereum_client: EthereumClient | None = None,
+        base_url: str | None = None,
+        api_key: str | None = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
         request_timeout: int = int(
             os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
         ),
     ):
         super().__init__(network, ethereum_client, base_url, api_key, request_timeout)
 
-    def _get_url_by_network(self, network: EthereumNetwork) -> Optional[str]:
+    def _get_url_by_network(self, network: EthereumNetwork) -> str | None:
         network_short_name = self.NETWORK_SHORTNAME.get(network)
         if not network_short_name:
             return None
         return f"{self.TRANSACTION_SERVICE_BASE_URL}/{network_short_name}"
 
     @classmethod
-    def data_decoded_to_text(cls, data_decoded: Dict[str, Any]) -> Optional[str]:
+    def data_decoded_to_text(cls, data_decoded: dict[str, Any]) -> str | None:
         """
         Decoded data decoded to text
         :param data_decoded:
@@ -120,7 +120,7 @@ class TransactionServiceApi(SafeBaseAPI):
             )
 
     @classmethod
-    def parse_signatures(cls, raw_tx: Transaction) -> Optional[bytes]:
+    def parse_signatures(cls, raw_tx: Transaction) -> bytes | None:
         """
         Parse signatures in `confirmations` list to build a valid signature (owners must be sorted lexicographically)
 
@@ -149,7 +149,7 @@ class TransactionServiceApi(SafeBaseAPI):
         )
 
     def _build_transaction_service_tx(
-        self, safe_tx_hash: Union[bytes, HexStr], tx_raw: Transaction
+        self, safe_tx_hash: bytes | HexStr, tx_raw: Transaction
     ) -> TransactionServiceTx:
         signatures = self.parse_signatures(tx_raw)
         safe_tx = TransactionServiceTx(
@@ -180,7 +180,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         return safe_tx
 
-    def get_balances(self, safe_address: ChecksumAddress) -> List[Balance]:
+    def get_balances(self, safe_address: ChecksumAddress) -> list[Balance]:
         """
 
         :param safe_address:
@@ -192,8 +192,8 @@ class TransactionServiceApi(SafeBaseAPI):
         return response.json()
 
     def get_safe_transaction(
-        self, safe_tx_hash: Union[bytes, HexStr]
-    ) -> Tuple[TransactionServiceTx, Optional[HexBytes]]:
+        self, safe_tx_hash: bytes | HexStr
+    ) -> tuple[TransactionServiceTx, HexBytes | None]:
         """
         :param safe_tx_hash:
         :return: SafeTx and `tx-hash` if transaction was executed
@@ -218,8 +218,8 @@ class TransactionServiceApi(SafeBaseAPI):
         return safe_tx, HexBytes(safe_tx.tx_hash) if safe_tx.tx_hash else None
 
     def get_transactions(
-        self, safe_address: ChecksumAddress, **kwargs: Dict[str, Union[str, int, bool]]
-    ) -> List[Transaction]:
+        self, safe_address: ChecksumAddress, **kwargs: dict[str, str | int | bool]
+    ) -> list[Transaction]:
         """
 
         :param safe_address:
@@ -249,7 +249,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
         return transactions
 
-    def get_delegates(self, safe_address: ChecksumAddress) -> List[DelegateUser]:
+    def get_delegates(self, safe_address: ChecksumAddress) -> list[DelegateUser]:
         """
 
         :param safe_address:
@@ -262,7 +262,7 @@ class TransactionServiceApi(SafeBaseAPI):
 
     def get_safes_for_owner(
         self, owner_address: ChecksumAddress
-    ) -> List[ChecksumAddress]:
+    ) -> list[ChecksumAddress]:
         """
 
         :param owner_address:
@@ -297,7 +297,7 @@ class TransactionServiceApi(SafeBaseAPI):
         delegator_address: ChecksumAddress,
         label: str,
         signature: bytes,
-        safe_address: Optional[ChecksumAddress] = None,
+        safe_address: ChecksumAddress | None = None,
     ) -> bool:
         add_payload = {
             "delegate": delegate_address,
@@ -317,7 +317,7 @@ class TransactionServiceApi(SafeBaseAPI):
         delegate_address: ChecksumAddress,
         delegator_address: ChecksumAddress,
         signature: bytes,
-        safe_address: Optional[ChecksumAddress] = None,
+        safe_address: ChecksumAddress | None = None,
     ) -> bool:
         """
         Deletes a delegated user
@@ -389,9 +389,9 @@ class TransactionServiceApi(SafeBaseAPI):
     def post_message(
         self,
         safe_address: ChecksumAddress,
-        message: Union[str, Dict],
+        message: str | dict,
         signature: bytes,
-        safe_app_id: Optional[int] = 0,
+        safe_app_id: int | None = 0,
     ) -> bool:
         """
         Create safe message on transaction service for provided Safe address
@@ -426,7 +426,7 @@ class TransactionServiceApi(SafeBaseAPI):
             raise SafeAPIException(f"Cannot get messages: {response.content!r}")
         return response.json()
 
-    def get_messages(self, safe_address: ChecksumAddress) -> List[Message]:
+    def get_messages(self, safe_address: ChecksumAddress) -> list[Message]:
         """
 
         :param safe_address:
@@ -459,7 +459,7 @@ class TransactionServiceApi(SafeBaseAPI):
         return True
 
     def decode_data(
-        self, data: Union[bytes, HexStr], to_address: Optional[ChecksumAddress] = None
+        self, data: bytes | HexStr, to_address: ChecksumAddress | None = None
     ) -> DataDecoded:
         """
         Retrieve decoded information using tx service internal ABI information given the tx data.

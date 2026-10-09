@@ -1,19 +1,13 @@
 import os
+from collections.abc import Iterable, Sequence
 from enum import Enum
 from functools import cache, cached_property, wraps
 from logging import getLogger
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    List,
     NamedTuple,
     NoReturn,
     Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
     cast,
 )
 
@@ -106,7 +100,7 @@ logger = getLogger(__name__)
 #     - https://github.com/ethereum/go-ethereum/blob/master/core/error.go
 #     - https://github.com/ethereum/go-ethereum/blob/master/core/tx_pool.go
 #     - https://gist.github.com/kunal365roy/3c37ac9d1c3aaf31140f7c5faa083932
-_TX_ERROR_MAPPING_RAW: Dict[str, Type[Exception]] = {
+_TX_ERROR_MAPPING_RAW: dict[str, type[Exception]] = {
     "EIP-155": ChainIdIsRequired,
     "Transaction with the same hash was already imported": TransactionAlreadyImported,
     "replacement transaction underpriced": ReplacementTransactionUnderpriced,
@@ -139,7 +133,7 @@ _TX_ERROR_MAPPING_RAW: Dict[str, Type[Exception]] = {
 }
 
 # Pre-lowercase so we don't do it on every call
-_TX_ERROR_MAPPING: Dict[str, Type[Exception]] = {
+_TX_ERROR_MAPPING: dict[str, type[Exception]] = {
     reason.lower(): exc for reason, exc in _TX_ERROR_MAPPING_RAW.items()
 }
 
@@ -174,8 +168,8 @@ def tx_with_exception_handling(func):
 
 
 def build_jsonrpc_batch_payload(
-    entries: Sequence[Tuple[str, Sequence[Any]]],
-) -> List[Dict[str, Any]]:
+    entries: Sequence[tuple[str, Sequence[Any]]],
+) -> list[dict[str, Any]]:
     """
     Build a JSON-RPC 2.0 batch payload.
 
@@ -189,7 +183,7 @@ def build_jsonrpc_batch_payload(
 
 
 def process_raw_batch_results(
-    results: Any, payload_chunk: Sequence[Dict[str, Any]]
+    results: Any, payload_chunk: Sequence[dict[str, Any]]
 ) -> Iterable[Any]:
     """
     Validate a JSON-RPC batch response and yield the ``result`` of each entry,
@@ -220,7 +214,9 @@ def process_raw_batch_results(
             "Batch request error: Different number of results than payload requests were returned"
         )
 
-    for query, result in zip(payload_chunk, sorted(results, key=lambda x: x["id"])):
+    for query, result in zip(
+        payload_chunk, sorted(results, key=lambda x: x["id"]), strict=False
+    ):
         if "result" not in result:
             message = f"Batch request problem with payload=`{query}` result={result}"
             logger.error(message)
@@ -229,9 +225,9 @@ def process_raw_batch_results(
 
 
 def build_eth_call_queries(
-    payloads: Sequence[Dict[str, Any]],
-    block_identifier: Optional[BlockIdentifier] = "latest",
-) -> List[Dict[str, Any]]:
+    payloads: Sequence[dict[str, Any]],
+    block_identifier: BlockIdentifier | None = "latest",
+) -> list[dict[str, Any]]:
     """
     Build ``eth_call`` JSON-RPC queries from ``batch_call`` payloads.
 
@@ -262,7 +258,7 @@ def build_eth_call_queries(
     return queries
 
 
-def validate_batch_chunk(results: Any, chunk: Sequence[Dict[str, Any]]) -> List[Any]:
+def validate_batch_chunk(results: Any, chunk: Sequence[dict[str, Any]]) -> list[Any]:
     """
     Validate the response of an ``eth_call`` batch chunk.
 
@@ -290,8 +286,8 @@ def validate_batch_chunk(results: Any, chunk: Sequence[Dict[str, Any]]) -> List[
 
 
 def decode_eth_call_results(
-    payloads: Sequence[Dict[str, Any]], all_results: Sequence[Dict[str, Any]]
-) -> Tuple[List[Optional[Any]], List[str]]:
+    payloads: Sequence[dict[str, Any]], all_results: Sequence[dict[str, Any]]
+) -> tuple[list[Any | None], list[str]]:
     """
     ABI-decode the results of an ``eth_call`` batch.
 
@@ -299,12 +295,14 @@ def decode_eth_call_results(
     :param all_results: JSON-RPC results for ``payloads`` (any order, sorted here by ``id``)
     :return: Tuple ``(decoded_values, errors)``
     """
-    return_values: List[Optional[Any]] = []
-    errors: List[str] = []
-    for payload, result in zip(payloads, sorted(all_results, key=lambda x: x["id"])):
+    return_values: list[Any | None] = []
+    errors: list[str] = []
+    for payload, result in zip(
+        payloads, sorted(all_results, key=lambda x: x["id"]), strict=False
+    ):
         if "error" in result:
             fn_name = payload.get("fn_name", to_0x_hex_str(HexBytes(payload["data"])))
-            errors.append(f'`{fn_name}`: {result["error"]}')
+            errors.append(f"`{fn_name}`: {result['error']}")
             return_values.append(None)
         else:
             output_type = payload["output_type"]
@@ -329,7 +327,7 @@ def decode_eth_call_results(
 class EthereumTxSent(NamedTuple):
     tx_hash: bytes
     tx: TxParams
-    contract_address: Optional[ChecksumAddress]
+    contract_address: ChecksumAddress | None
 
 
 class Erc20Info(NamedTuple):
@@ -403,11 +401,11 @@ class EthereumClientManager:
 class BatchCallManager(EthereumClientManager):
     def batch_call_custom(
         self,
-        payloads: Iterable[Dict[str, Any]],
+        payloads: Iterable[dict[str, Any]],
         raise_exception: bool = True,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-        batch_size: Optional[int] = None,
-    ) -> List[Optional[Any]]:
+        block_identifier: BlockIdentifier | None = "latest",
+        batch_size: int | None = None,
+    ) -> list[Any | None]:
         """
         Do batch requests of multiple contract calls (`eth_call`)
 
@@ -452,10 +450,10 @@ class BatchCallManager(EthereumClientManager):
     def batch_call(
         self,
         contract_functions: Iterable[ContractFunction],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[Any | None]:
         """
         Do batch requests of multiple contract calls
 
@@ -477,8 +475,8 @@ class BatchCallManager(EthereumClientManager):
     @staticmethod
     def _build_call_payloads(
         contract_functions: Iterable[ContractFunction],
-        from_address: Optional[ChecksumAddress] = None,
-    ) -> List[Dict[str, Any]]:
+        from_address: ChecksumAddress | None = None,
+    ) -> list[dict[str, Any]]:
         """Build ``batch_call_custom`` payloads from contract functions (pure, shared with async)."""
         params: TxParams = {"gas": Wei(0), "gasPrice": Wei(0)}
         payloads = []
@@ -504,10 +502,10 @@ class BatchCallManager(EthereumClientManager):
         self,
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Any]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[Any | None]:
         """
         Do batch requests using the same function to multiple address. ``batch_call`` could be used to achieve that,
         but generating the ContractFunction is slow, so this function allows to use the same contract_function for
@@ -538,8 +536,8 @@ class BatchCallManager(EthereumClientManager):
     def _build_same_function_payloads(
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-        from_address: Optional[ChecksumAddress] = None,
-    ) -> List[Dict[str, Any]]:
+        from_address: ChecksumAddress | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Build ``batch_call_custom`` payloads reusing the same function for many addresses
         (pure, shared with async).
@@ -593,7 +591,7 @@ class Erc20Manager(EthereumClientManager):
 
     def _decode_transfer_log(
         self, data: EthereumData, topics: Sequence[bytes]
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         topics_len = len(topics)
         if topics_len and topics[0] == self.TRANSFER_TOPIC:
             if topics_len == 1:
@@ -682,7 +680,7 @@ class Erc20Manager(EthereumClientManager):
         address: ChecksumAddress,
         token_addresses: Sequence[ChecksumAddress],
         include_native_balance: bool = True,
-    ) -> List[BalanceDict]:
+    ) -> list[BalanceDict]:
         """
         Get balances for Ether and tokens for an `address`
 
@@ -712,14 +710,14 @@ class Erc20Manager(EthereumClientManager):
     @staticmethod
     def _build_balance_dicts(
         token_addresses: Sequence[ChecksumAddress], balances: Sequence[Any]
-    ) -> List[BalanceDict]:
+    ) -> list[BalanceDict]:
         """Build ``BalanceDict`` list from raw balances (pure, shared with async)."""
         return [
             BalanceDict(
                 balance=balance if isinstance(balance, int) else 0,
                 token_address=token_address,
             )
-            for token_address, balance in zip(token_addresses, balances)
+            for token_address, balance in zip(token_addresses, balances, strict=False)
         ]
 
     @staticmethod
@@ -775,7 +773,7 @@ class Erc20Manager(EthereumClientManager):
 
     def _build_info_payload(
         self, erc20_address: ChecksumAddress
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Build the ``eth_call`` batch payload to fetch ``name``, ``symbol`` and ``decimals``."""
         erc20 = get_erc20_contract(self.w3, erc20_address)
         params: TxParams = {
@@ -817,11 +815,11 @@ class Erc20Manager(EthereumClientManager):
 
     def get_total_transfer_history(
         self,
-        addresses: Optional[Sequence[ChecksumAddress]] = None,
+        addresses: Sequence[ChecksumAddress] | None = None,
         from_block: BlockIdentifier = BlockNumber(0),
-        to_block: Optional[BlockIdentifier] = None,
-        token_address: Optional[ChecksumAddress] = None,
-    ) -> List[LogReceiptDecoded]:
+        to_block: BlockIdentifier | None = None,
+        token_address: ChecksumAddress | None = None,
+    ) -> list[LogReceiptDecoded]:
         """
         Get events for erc20 and erc721 transfers from and to an `address`. We decode it manually.
         Example of an erc20 event:
@@ -904,11 +902,11 @@ class Erc20Manager(EthereumClientManager):
 
     def _build_transfer_history_filters(
         self,
-        addresses: Optional[Sequence[ChecksumAddress]],
+        addresses: Sequence[ChecksumAddress] | None,
         from_block: BlockIdentifier,
-        to_block: Optional[BlockIdentifier],
-        token_address: Optional[ChecksumAddress],
-    ) -> Tuple[List[Sequence[Any]], FilterParams]:
+        to_block: BlockIdentifier | None,
+        token_address: ChecksumAddress | None,
+    ) -> tuple[list[Sequence[Any]], FilterParams]:
         """Build the ``eth_getLogs`` topics filters and base parameters (pure helper)."""
         topic_0 = to_0x_hex_str(self.TRANSFER_TOPIC)
         if addresses:
@@ -917,7 +915,7 @@ class Erc20Manager(EthereumClientManager):
                 for address in addresses
             ]
             # Topics for transfer `to` and `from` an address
-            all_topics: List[Sequence[Any]] = [
+            all_topics: list[Sequence[Any]] = [
                 [topic_0, addresses_encoded],  # Topics from
                 [topic_0, None, addresses_encoded],  # Topics to
             ]
@@ -932,13 +930,13 @@ class Erc20Manager(EthereumClientManager):
 
     def _decode_and_sort_transfer_events(
         self, events_per_topic: Sequence[Sequence[LogReceipt]]
-    ) -> List[LogReceiptDecoded]:
+    ) -> list[LogReceiptDecoded]:
         """
         Decode and sort transfer events, picking valid ERC20/ERC721 Transfer events
         (both share the same signature) and deduplicating events that match more than
         one topics filter (e.g. a transfer where both ``from`` and ``to`` are searched).
         """
-        erc20_events: List[LogReceiptDecoded] = []
+        erc20_events: list[LogReceiptDecoded] = []
         seen: set = set()
         for events in events_per_topic:
             for event in events:
@@ -955,11 +953,11 @@ class Erc20Manager(EthereumClientManager):
     def get_transfer_history(
         self,
         from_block: int,
-        to_block: Optional[int] = None,
-        from_address: Optional[str] = None,
-        to_address: Optional[str] = None,
-        token_address: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        to_block: int | None = None,
+        from_address: str | None = None,
+        to_address: str | None = None,
+        token_address: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         DON'T USE, it will fail in some cases until they fix https://github.com/ethereum/web3.py/issues/1351
         Get events for erc20/erc721 transfers. At least one of `from_address`, `to_address` or `token_address` must be
@@ -991,9 +989,9 @@ class Erc20Manager(EthereumClientManager):
         :raises requests.exceptions.ReadTimeout: This method queries the node through
             the ``web3`` provider, which raises the ``requests`` exceptions directly
         """
-        assert (
-            from_address or to_address or token_address
-        ), "At least one parameter must be provided"
+        assert from_address or to_address or token_address, (
+            "At least one parameter must be provided"
+        )
 
         erc20 = get_erc20_contract(self.slow_w3)
 
@@ -1016,9 +1014,9 @@ class Erc20Manager(EthereumClientManager):
         amount: int,
         erc20_address: ChecksumAddress,
         private_key: str,
-        nonce: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        gas: Optional[int] = None,
+        nonce: int | None = None,
+        gas_price: int | None = None,
+        gas: int | None = None,
     ) -> bytes:
         """
         Send tokens to address
@@ -1071,7 +1069,7 @@ class Erc721Manager(EthereumClientManager):
 
     def get_balances(
         self, address: ChecksumAddress, token_addresses: Sequence[ChecksumAddress]
-    ) -> List[TokenBalance]:
+    ) -> list[TokenBalance]:
         """
         Get balances for tokens for an `address`. If there's a problem with a token_address `0` will be
         returned for balance
@@ -1093,18 +1091,18 @@ class Erc721Manager(EthereumClientManager):
     @staticmethod
     def _build_token_balances(
         token_addresses: Sequence[ChecksumAddress], balances: Sequence[Any]
-    ) -> List[TokenBalance]:
+    ) -> list[TokenBalance]:
         """Build ``TokenBalance`` list from raw balances (pure, shared with async)."""
         return [
             TokenBalance(token_address, balance if isinstance(balance, int) else 0)
-            for (token_address, balance) in zip(token_addresses, balances)
+            for (token_address, balance) in zip(token_addresses, balances, strict=False)
         ]
 
     def _build_token_id_functions(
         self,
         fn_name: str,
-        token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]],
-    ) -> List[ContractFunction]:
+        token_addresses_with_token_ids: Sequence[tuple[ChecksumAddress, int]],
+    ) -> list[ContractFunction]:
         """Build the ``ownerOf``/``tokenURI`` contract functions (pure, shared with async)."""
         return [
             getattr(
@@ -1125,7 +1123,7 @@ class Erc721Manager(EthereumClientManager):
         erc721_contract = get_erc721_contract(self.w3, token_address)
         try:
             name, symbol = cast(
-                List[str],
+                list[str],
                 self.ethereum_client.batch_call(
                     [
                         erc721_contract.functions.name(),
@@ -1134,12 +1132,12 @@ class Erc721Manager(EthereumClientManager):
                 ),
             )
             return Erc721Info(name, symbol)
-        except (DecodingError, ValueError):  # Not all the ERC721 have metadata
-            raise InvalidERC721Info
+        except (DecodingError, ValueError) as exc:  # Not all the ERC721 have metadata
+            raise InvalidERC721Info from exc
 
     def get_owners(
-        self, token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]]
-    ) -> List[Optional[ChecksumAddress]]:
+        self, token_addresses_with_token_ids: Sequence[tuple[ChecksumAddress, int]]
+    ) -> list[ChecksumAddress | None]:
         """
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of owner addresses, `None` if not found
@@ -1152,7 +1150,7 @@ class Erc721Manager(EthereumClientManager):
         )
 
     @staticmethod
-    def _format_owners(results: Sequence[Any]) -> List[Optional[ChecksumAddress]]:
+    def _format_owners(results: Sequence[Any]) -> list[ChecksumAddress | None]:
         return [
             (
                 ChecksumAddress(HexAddress(HexStr(owner)))
@@ -1163,8 +1161,8 @@ class Erc721Manager(EthereumClientManager):
         ]
 
     def get_token_uris(
-        self, token_addresses_with_token_ids: Sequence[Tuple[ChecksumAddress, int]]
-    ) -> List[Optional[str]]:
+        self, token_addresses_with_token_ids: Sequence[tuple[ChecksumAddress, int]]
+    ) -> list[str | None]:
         """
         :param token_addresses_with_token_ids: Tuple(token_address: str, token_id: int)
         :return: List of token_uris, `None` if not found
@@ -1177,7 +1175,7 @@ class Erc721Manager(EthereumClientManager):
         )
 
     @staticmethod
-    def _format_token_uris(results: Sequence[Any]) -> List[Optional[str]]:
+    def _format_token_uris(results: Sequence[Any]) -> list[str | None]:
         return [
             token_uri if isinstance(token_uri, str) else None for token_uri in results
         ]
@@ -1185,8 +1183,8 @@ class Erc721Manager(EthereumClientManager):
 
 class TracingManager(EthereumClientManager):
     def filter_out_errored_traces(
-        self, internal_txs: Sequence[Dict[str, Any]]
-    ) -> Sequence[Dict[str, Any]]:
+        self, internal_txs: Sequence[dict[str, Any]]
+    ) -> Sequence[dict[str, Any]]:
         """
         Filter out errored transactions (traces that are errored or that have an errored parent)
 
@@ -1196,7 +1194,7 @@ class TracingManager(EthereumClientManager):
         :return: List of not errored traces
         """
         new_list = []
-        errored_trace_address: Optional[List[int]] = None
+        errored_trace_address: list[int] | None = None
         for internal_tx in internal_txs:
             if internal_tx.get("error") is not None:
                 errored_trace_address = internal_tx["traceAddress"]
@@ -1216,7 +1214,7 @@ class TracingManager(EthereumClientManager):
         trace_address: Sequence[int],
         number_traces: int = 1,
         skip_delegate_calls: bool = False,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         :param tx_hash:
         :param trace_address:
@@ -1240,7 +1238,7 @@ class TracingManager(EthereumClientManager):
         trace_address: Sequence[int],
         number_traces: int = 1,
         skip_delegate_calls: bool = False,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Pure selection logic shared with the async client."""
         trace_address = trace_address[:-number_traces]
         for trace in reversed(list(traces)):
@@ -1260,7 +1258,7 @@ class TracingManager(EthereumClientManager):
         trace_address: Sequence[int],
         remove_delegate_calls: bool = False,
         remove_calls: bool = False,
-    ) -> List[FilterTrace]:
+    ) -> list[FilterTrace]:
         """
         :param tx_hash:
         :param trace_address:
@@ -1282,10 +1280,10 @@ class TracingManager(EthereumClientManager):
         trace_address: Sequence[int],
         remove_delegate_calls: bool = False,
         remove_calls: bool = False,
-    ) -> List[FilterTrace]:
+    ) -> list[FilterTrace]:
         """Pure selection logic shared with the async client."""
         trace_address_len = len(trace_address)
-        traces: List[FilterTrace] = []
+        traces: list[FilterTrace] = []
         for trace in all_traces:
             if (
                 trace_address_len + 1 == len(trace["traceAddress"])
@@ -1302,12 +1300,12 @@ class TracingManager(EthereumClientManager):
                     traces.append(trace)
         return traces
 
-    def trace_block(self, block_identifier: BlockIdentifier) -> List[BlockTrace]:
+    def trace_block(self, block_identifier: BlockIdentifier) -> list[BlockTrace]:
         return self.slow_w3.tracing.trace_block(block_identifier)  # type: ignore[attr-defined]
 
     def trace_blocks(
         self, block_identifiers: Sequence[BlockIdentifier]
-    ) -> List[List[BlockTrace]]:
+    ) -> list[list[BlockTrace]]:
         if not block_identifiers:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -1322,7 +1320,7 @@ class TracingManager(EthereumClientManager):
         results = self.ethereum_client.raw_batch_request(payload)
         return [trace_list_result_formatter(block_traces) for block_traces in results]  # type: ignore[arg-type]
 
-    def trace_transaction(self, tx_hash: EthereumHash) -> List[FilterTrace]:
+    def trace_transaction(self, tx_hash: EthereumHash) -> list[FilterTrace]:
         """
         :param tx_hash:
         :return: List of internal txs for `tx_hash`
@@ -1331,7 +1329,7 @@ class TracingManager(EthereumClientManager):
 
     def trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
-    ) -> List[List[FilterTrace]]:
+    ) -> list[list[FilterTrace]]:
         """
         :param tx_hashes:
         :return: For every `tx_hash` a list of internal txs (in the same order as the `tx_hashes` were provided)
@@ -1350,12 +1348,12 @@ class TracingManager(EthereumClientManager):
     def trace_filter(
         self,
         from_block: int = 1,
-        to_block: Optional[int] = None,
-        from_address: Optional[Sequence[ChecksumAddress]] = None,
-        to_address: Optional[Sequence[ChecksumAddress]] = None,
-        after: Optional[int] = None,
-        count: Optional[int] = None,
-    ) -> List[FilterTrace]:
+        to_block: int | None = None,
+        from_address: Sequence[ChecksumAddress] | None = None,
+        to_address: Sequence[ChecksumAddress] | None = None,
+        after: int | None = None,
+        count: int | None = None,
+    ) -> list[FilterTrace]:
         """
         Get events using ``trace_filter`` method
 
@@ -1437,24 +1435,24 @@ class TracingManager(EthereumClientManager):
     @staticmethod
     def _build_trace_filter_params(
         from_block: int = 1,
-        to_block: Optional[int] = None,
-        from_address: Optional[Sequence[ChecksumAddress]] = None,
-        to_address: Optional[Sequence[ChecksumAddress]] = None,
-        after: Optional[int] = None,
-        count: Optional[int] = None,
+        to_block: int | None = None,
+        from_address: Sequence[ChecksumAddress] | None = None,
+        to_address: Sequence[ChecksumAddress] | None = None,
+        after: int | None = None,
+        count: int | None = None,
     ) -> TraceFilterParams:
-        assert (
-            from_address or to_address
-        ), "You must provide at least `from_address` or `to_address`"
+        assert from_address or to_address, (
+            "You must provide at least `from_address` or `to_address`"
+        )
         parameters: TraceFilterParams = {}
         if after:
             parameters["after"] = after
         if count:
             parameters["count"] = count
         if from_block:
-            parameters["fromBlock"] = HexStr("0x%x" % from_block)
+            parameters["fromBlock"] = HexStr(f"0x{from_block:x}")
         if to_block:
-            parameters["toBlock"] = HexStr("0x%x" % to_block)
+            parameters["toBlock"] = HexStr(f"0x{to_block:x}")
         if from_address:
             parameters["fromAddress"] = from_address
         if to_address:
@@ -1497,7 +1495,7 @@ class EthereumClient:
         # Per-instance cache for values that never change (chainId, client version...).
         # Using an instance dict instead of ``functools.cache`` avoids keeping every
         # client instance alive for the process lifetime (cache held a strong ref to `self`).
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
         self.http_session = prepare_http_session(1, 100, retry_count=retry_count)
         self.ethereum_node_url: str = ethereum_node_url
         self.timeout = provider_timeout
@@ -1528,7 +1526,7 @@ class EthereumClient:
         self.batch_call_manager: BatchCallManager = BatchCallManager(self)
         self.batch_request_max_size = batch_request_max_size
 
-    def _adjust_w3(self, *w3s: Union[Web3, AsyncWeb3]) -> None:
+    def _adjust_w3(self, *w3s: Web3 | AsyncWeb3) -> None:
         """
         Apply this client's settings to every ``Web3`` instance it builds:
 
@@ -1555,8 +1553,8 @@ class EthereumClient:
             self.http_session.close()
 
     def raw_batch_request(
-        self, payload: Sequence[Dict[str, Any]], batch_size: Optional[int] = None
-    ) -> Iterable[Union[Optional[Dict[str, Any]], List[Dict[str, Any]]]]:
+        self, payload: Sequence[dict[str, Any]], batch_size: int | None = None
+    ) -> Iterable[dict[str, Any] | None | list[dict[str, Any]]]:
         """
         Perform a raw batch JSON RPC call
 
@@ -1630,7 +1628,7 @@ class EthereumClient:
         """
         return EthereumNetwork(self.get_chain_id())
 
-    def get_singleton_factory_address(self) -> Optional[ChecksumAddress]:
+    def get_singleton_factory_address(self) -> ChecksumAddress | None:
         """
         Get singleton factory address if available. Try the singleton managed by Safe by default unless
         SAFE_SINGLETON_FACTORY_ADDRESS environment variable is defined.
@@ -1674,11 +1672,11 @@ class EthereumClient:
     def batch_call(
         self,
         contract_functions: Iterable[ContractFunction],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
         force_batch_call: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Union[bytes, Any]]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[bytes | Any | None]:
         """
         Call multiple functions. ``Multicall`` contract by MakerDAO will be used by default if available
 
@@ -1713,11 +1711,11 @@ class EthereumClient:
         self,
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-        from_address: Optional[ChecksumAddress] = None,
+        from_address: ChecksumAddress | None = None,
         raise_exception: bool = True,
         force_batch_call: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[Optional[Union[bytes, Any]]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[bytes | Any | None]:
         """
         Call the same function in multiple contracts. Way more optimal than using ``batch_call`` generating multiple
         ``ContractFunction`` objects.
@@ -1755,8 +1753,8 @@ class EthereumClient:
     def deploy_and_initialize_contract(
         self,
         deployer_account: LocalAccount,
-        constructor_data: Union[bytes, HexStr],
-        initializer_data: Optional[Union[bytes, HexStr]] = None,
+        constructor_data: bytes | HexStr,
+        initializer_data: bytes | HexStr | None = None,
         check_receipt: bool = True,
         deterministic: bool = True,
     ) -> EthereumTxSent:
@@ -1770,12 +1768,12 @@ class EthereumClient:
         :return:
         :raises ValueError: No contract was deployed/initialized
         """
-        contract_address: Optional[ChecksumAddress] = None
-        assert (
-            constructor_data or initializer_data
-        ), "At least constructor_data or initializer_data must be provided"
-        tx_hash: Optional[HexBytes] = None
-        tx: Optional[TxParams] = None
+        contract_address: ChecksumAddress | None = None
+        assert constructor_data or initializer_data, (
+            "At least constructor_data or initializer_data must be provided"
+        )
+        tx_hash: HexBytes | None = None
+        tx: TxParams | None = None
         for data in (constructor_data, initializer_data):
             # Because initializer_data is not mandatory
             if data:
@@ -1791,7 +1789,8 @@ class EthereumClient:
                 }
                 if not contract_address:
                     if deterministic and (
-                        singleton_factory_address := self.get_singleton_factory_address()
+                        singleton_factory_address
+                        := self.get_singleton_factory_address()
                     ):
                         salt = HexBytes("0" * 64)
                         tx["data"] = (
@@ -1827,7 +1826,7 @@ class EthereumClient:
     def get_nonce_for_account(
         self,
         address: ChecksumAddress,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        block_identifier: BlockIdentifier | None = "latest",
     ):
         """
         Get nonce for account. `getTransactionCount` is the only method for what `pending` is currently working
@@ -1844,12 +1843,12 @@ class EthereumClient:
     def estimate_gas(
         self,
         to: str,
-        from_: Optional[str] = None,
-        value: Optional[int] = None,
-        data: Optional[EthereumData] = None,
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        block_identifier: Optional[BlockIdentifier] = None,
+        from_: str | None = None,
+        value: int | None = None,
+        data: EthereumData | None = None,
+        gas: int | None = None,
+        gas_price: int | None = None,
+        block_identifier: BlockIdentifier | None = None,
     ) -> int:
         """
         Estimate gas calling `eth_estimateGas`
@@ -1904,7 +1903,7 @@ class EthereumClient:
 
     def estimate_fee_eip1559(
         self, tx_speed: TxSpeed = TxSpeed.NORMAL
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         """
         Check https://github.com/ethereum/execution-apis/blob/main/src/eth/fee_market.json#L15
 
@@ -1916,7 +1915,7 @@ class EthereumClient:
         return self._parse_fee_history(result)
 
     # Reward percentile per transaction speed for `eth_feeHistory`
-    _TX_SPEED_PERCENTILE: Dict[TxSpeed, int] = {
+    _TX_SPEED_PERCENTILE: dict[TxSpeed, int] = {
         TxSpeed.SLOWEST: 0,
         TxSpeed.VERY_SLOW: 10,
         TxSpeed.SLOW: 25,
@@ -1931,7 +1930,7 @@ class EthereumClient:
         return cls._TX_SPEED_PERCENTILE.get(tx_speed, 50)
 
     @staticmethod
-    def _parse_fee_history(result: Any) -> Tuple[int, int]:
+    def _parse_fee_history(result: Any) -> tuple[int, int]:
         # Get next block `base_fee_per_gas`
         base_fee_per_gas = result["baseFeePerGas"][-1]
         max_priority_fee_per_gas = result["reward"][0][0]
@@ -1959,11 +1958,11 @@ class EthereumClient:
     def get_balance(
         self,
         address: ChecksumAddress,
-        block_identifier: Optional[BlockIdentifier] = None,
+        block_identifier: BlockIdentifier | None = None,
     ):
         return self.w3.eth.get_balance(address, block_identifier)
 
-    def get_transaction(self, tx_hash: EthereumHash) -> Optional[TxData]:
+    def get_transaction(self, tx_hash: EthereumHash) -> TxData | None:
         try:
             return self.w3.eth.get_transaction(tx_hash)
         except TransactionNotFound:
@@ -1971,7 +1970,7 @@ class EthereumClient:
 
     def get_transactions(
         self, tx_hashes: Sequence[EthereumHash]
-    ) -> List[Optional[TxData]]:
+    ) -> list[TxData | None]:
         if not tx_hashes:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -1983,7 +1982,7 @@ class EthereumClient:
         return self._format_transactions(self.raw_batch_request(payload))
 
     @staticmethod
-    def _format_transactions(results: Iterable[Any]) -> List[Optional[TxData]]:
+    def _format_transactions(results: Iterable[Any]) -> list[TxData | None]:
         return [
             transaction_result_formatter(raw_tx) if raw_tx else None
             for raw_tx in results
@@ -1991,7 +1990,7 @@ class EthereumClient:
 
     def get_transaction_receipt(
         self, tx_hash: EthereumHash, timeout=None
-    ) -> Optional[TxReceipt]:
+    ) -> TxReceipt | None:
         try:
             if not timeout:
                 tx_receipt = self.w3.eth.get_transaction_receipt(tx_hash)
@@ -2014,7 +2013,7 @@ class EthereumClient:
 
     def get_transaction_receipts(
         self, tx_hashes: Sequence[EthereumData]
-    ) -> List[Optional[TxReceipt]]:
+    ) -> list[TxReceipt | None]:
         if not tx_hashes:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -2026,7 +2025,7 @@ class EthereumClient:
         return self._format_receipts(self.raw_batch_request(payload))
 
     @staticmethod
-    def _format_receipts(results: Iterable[Any]) -> List[Optional[TxReceipt]]:
+    def _format_receipts(results: Iterable[Any]) -> list[TxReceipt | None]:
         receipts = []
         for tx_receipt in results:
             # Parity returns tx_receipt even is tx is still pending, so we check `blockNumber` is not None
@@ -2042,7 +2041,7 @@ class EthereumClient:
 
     def get_block(
         self, block_identifier: BlockIdentifier, full_transactions: bool = False
-    ) -> Optional[BlockData]:
+    ) -> BlockData | None:
         try:
             return self.w3.eth.get_block(
                 block_identifier, full_transactions=full_transactions
@@ -2061,7 +2060,7 @@ class EthereumClient:
         self,
         block_identifiers: Iterable[BlockIdentifier],
         full_transactions: bool = False,
-    ) -> List[Optional[BlockData]]:
+    ) -> list[BlockData | None]:
         if not block_identifiers:
             return []
         payload = build_jsonrpc_batch_payload(
@@ -2080,7 +2079,7 @@ class EthereumClient:
         return self._format_blocks(self.raw_batch_request(payload))
 
     @staticmethod
-    def _format_blocks(results: Iterable[Any]) -> List[Optional[BlockData]]:
+    def _format_blocks(results: Iterable[Any]) -> list[BlockData | None]:
         blocks = []
         for raw_block in results:
             if raw_block and isinstance(raw_block, dict):
@@ -2098,14 +2097,14 @@ class EthereumClient:
 
     @staticmethod
     def build_tx_params(
-        from_address: Optional[ChecksumAddress] = None,
-        to_address: Optional[ChecksumAddress] = None,
-        value: Optional[int] = None,
-        gas: Optional[int] = None,
-        gas_price: Optional[int] = None,
-        nonce: Optional[int] = None,
-        chain_id: Optional[int] = None,
-        tx_params: Optional[TxParams] = None,
+        from_address: ChecksumAddress | None = None,
+        to_address: ChecksumAddress | None = None,
+        value: int | None = None,
+        gas: int | None = None,
+        gas_price: int | None = None,
+        nonce: int | None = None,
+        chain_id: int | None = None,
+        tx_params: TxParams | None = None,
     ) -> TxParams:
         """
         Build tx params dictionary.
@@ -2159,10 +2158,10 @@ class EthereumClient:
     def send_unsigned_transaction(
         self,
         tx: TxParams,
-        private_key: Optional[str] = None,
-        public_key: Optional[str] = None,
+        private_key: str | None = None,
+        public_key: str | None = None,
         retry: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "pending",
+        block_identifier: BlockIdentifier | None = "pending",
     ) -> HexBytes:
         """
         Send a tx using an unlocked public key in the node or a private key. Both `public_key` and
@@ -2211,8 +2210,7 @@ class EthereumClient:
                         # processed
                         tx_hash = signed_tx.hash
                         logger.error(
-                            "Transaction with tx-hash=%s already imported: %s"
-                            % (tx_hash.hex(), str(e))
+                            f"Transaction with tx-hash={tx_hash.hex()} already imported: {str(e)}"
                         )
                         return tx_hash
                 elif public_key:
@@ -2259,10 +2257,10 @@ class EthereumClient:
         to: str,
         gas_price: int,
         value: Wei,
-        gas: Optional[int] = None,
-        nonce: Optional[int] = None,
+        gas: int | None = None,
+        nonce: int | None = None,
         retry: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "pending",
+        block_identifier: BlockIdentifier | None = "pending",
     ) -> bytes:
         """
         Send ether using configured account

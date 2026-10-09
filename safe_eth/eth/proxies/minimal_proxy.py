@@ -1,6 +1,3 @@
-from functools import cache
-from typing import Optional
-
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3.types import BlockIdentifier
@@ -43,12 +40,12 @@ class MinimalProxy(Proxy):
             + HexBytes("5af43d82803e903d91602b57fd5bf3")
         )
 
-    @cache
     def get_implementation_address(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
-        Minimal proxies cannot be upgraded, so return value is cached
+        Minimal proxies cannot be upgraded, so the address comes from the cached code
+        and ``block_identifier`` is not used
 
         :return: Address for the singleton contract the Proxy points to
         """

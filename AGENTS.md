@@ -39,7 +39,8 @@ pre-commit install -f
 `--all-extras` pulls the `django` extra, which the test suite needs. `uv.lock` is the source of
 truth: always sync `--frozen`, run `uv lock` after editing `pyproject.toml` and commit both.
 `[tool.uv] exclude-newer = "7 days"` rejects packages published in the last 7 days, so a brand new
-release cannot be locked yet.
+release cannot be locked yet. Use the `pre-commit` from the venv: the config needs pre-commit 4.4.0
+or newer (the local mypy hook uses `language: unsupported`), and that hook runs `uv run mypy .`.
 
 ### Running Tests
 
@@ -72,8 +73,8 @@ to run the Django part of the suite and is not shipped in the wheel.
 
 ### Linting and Type Checking
 ```bash
-pre-commit run --all-files   # isort, black, flake8, mypy — this is what CI runs
-mypy safe_eth
+pre-commit run --all-files   # ruff check, ruff format, uv lock, mypy — this is what CI runs
+mypy .                       # same check as the pre-commit mypy hook
 ```
 
 ### Building the Docs
@@ -243,18 +244,21 @@ publish a GitHub release. The `publish` job in `.github/workflows/python.yml` ru
 
 ## Python Version
 
-Supported: **3.10 to 3.13** (CI matrix). mypy targets 3.13. Do not use syntax or stdlib APIs newer
-than 3.10.
+Supported: **3.10 to 3.13** (CI matrix). mypy and Ruff target 3.10. Do not use syntax or stdlib
+APIs newer than 3.10.
 
 ## Code Quality Standards
 
 - **Type hints required**: all functions must have complete annotations. The package ships `py.typed`
-  and mypy runs over `safe_eth` in pre-commit with `check_untyped_defs`, `warn_unused_ignores`,
-  `warn_redundant_casts`
+  and mypy runs over the whole project in pre-commit (`[tool.mypy]` in `pyproject.toml`) with
+  `warn_unused_ignores` and `warn_redundant_casts`. `check_untyped_defs` is off: the bodies of
+  functions without annotations are not checked
 - **reST style docstrings**: `:param x:` / `:return:`, matching the surrounding code and Sphinx
-- **Formatting**: black and isort (profile `black`, with the custom section order
-  `FUTURE, STDLIB, DJANGO, THIRDPARTY, SAFE_FOUNDATION, FIRSTPARTY, LOCALFOLDER`), flake8 with
-  line length 88 (`E501` ignored, black decides)
+- **Formatting and linting**: Ruff (`[tool.ruff]` in `pyproject.toml`). `ruff format` formats the
+  code, line length 88. `ruff check` runs the pycodestyle (`E`, `W`), pyflakes (`F`), isort (`I`),
+  flake8-bugbear (`B`), flake8-comprehensions (`C4`), pyupgrade (`UP`) and unused `noqa`
+  (`RUF100`) rules, with `E501` ignored (the formatter decides). Imports use the custom section
+  order `future, standard-library, django, third-party, safe-foundation, first-party, local-folder`
 - **Web3 types**: use `ChecksumAddress`, `HexBytes`, `HexStr` and the `web3.types` aliases instead of
   raw `str`/`bytes` for blockchain data
 - **Exceptions**: raise the library's own exceptions from `safe_eth/eth/exceptions.py` and

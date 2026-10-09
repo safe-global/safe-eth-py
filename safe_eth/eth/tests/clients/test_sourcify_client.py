@@ -1,5 +1,4 @@
 import unittest
-from typing import List
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -30,7 +29,7 @@ class TestSourcifyClient(TestCase):
     def test_is_chain_supported(self):
         try:
             sourcify = SourcifyClient()
-        except IOError:
+        except OSError:
             self.skipTest("Cannot connect to Sourcify")
 
         self.assertTrue(sourcify.is_chain_supported(EthereumNetwork.MAINNET.value))
@@ -46,11 +45,11 @@ class TestSourcifyClient(TestCase):
             safe_contract_metadata_mainnet = (
                 sourcify_client_mainnet.get_contract_metadata(safe_contract_address)
             )
-        except IOError:
+        except OSError:
             self.skipTest("Cannot connect to Sourcify")
         assert safe_contract_metadata_mainnet is not None
         self.assertEqual(safe_contract_metadata_mainnet.name, "Safe")
-        self.assertIsInstance(safe_contract_metadata_mainnet.abi, List)
+        self.assertIsInstance(safe_contract_metadata_mainnet.abi, list)
         self.assertTrue(safe_contract_metadata_mainnet.abi)
         self.assertFalse(safe_contract_metadata_mainnet.partial_match)
         sourcify_client_sepolia = SourcifyClient(EthereumNetwork.SEPOLIA)
@@ -66,7 +65,7 @@ class TestSourcifyClient(TestCase):
         )
         assert token_contract_metadata_mainnet is not None
         self.assertEqual(token_contract_metadata_mainnet.name, "LiquidGasToken")
-        self.assertIsInstance(token_contract_metadata_mainnet.abi, List)
+        self.assertIsInstance(token_contract_metadata_mainnet.abi, list)
         self.assertTrue(token_contract_metadata_mainnet.abi)
         self.assertTrue(token_contract_metadata_mainnet.partial_match)
 
@@ -85,11 +84,11 @@ class TestAsyncSourcifyClient(unittest.IsolatedAsyncioTestCase):
                     safe_contract_address
                 )
             )
-        except IOError:
+        except OSError:
             self.skipTest("Cannot connect to Sourcify")
         assert safe_contract_metadata_mainnet is not None
         self.assertEqual(safe_contract_metadata_mainnet.name, "Safe")
-        self.assertIsInstance(safe_contract_metadata_mainnet.abi, List)
+        self.assertIsInstance(safe_contract_metadata_mainnet.abi, list)
         self.assertTrue(safe_contract_metadata_mainnet.abi)
         self.assertFalse(safe_contract_metadata_mainnet.partial_match)
         sourcify_client_sepolia = AsyncSourcifyClient(EthereumNetwork.SEPOLIA)
@@ -109,6 +108,6 @@ class TestAsyncSourcifyClient(unittest.IsolatedAsyncioTestCase):
         )
         assert token_contract_metadata_mainnet is not None
         self.assertEqual(token_contract_metadata_mainnet.name, "LiquidGasToken")
-        self.assertIsInstance(token_contract_metadata_mainnet.abi, List)
+        self.assertIsInstance(token_contract_metadata_mainnet.abi, list)
         self.assertTrue(token_contract_metadata_mainnet.abi)
         self.assertTrue(token_contract_metadata_mainnet.partial_match)

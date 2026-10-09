@@ -1,7 +1,6 @@
 import functools
 import logging
 from functools import cached_property
-from typing import Optional
 
 from eth_abi.exceptions import DecodingError
 from eth_typing import ChecksumAddress, HexAddress, HexStr
@@ -38,7 +37,7 @@ class UniswapV3Oracle(PriceOracle):
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        uniswap_v3_router_address: Optional[ChecksumAddress] = None,
+        uniswap_v3_router_address: ChecksumAddress | None = None,
     ):
         """
         :param ethereum_client:
@@ -56,7 +55,7 @@ class UniswapV3Oracle(PriceOracle):
     def is_available(
         cls,
         ethereum_client: EthereumClient,
-        uniswap_v3_router_address: Optional[ChecksumAddress] = None,
+        uniswap_v3_router_address: ChecksumAddress | None = None,
     ) -> bool:
         """
         :param ethereum_client:
@@ -83,10 +82,10 @@ class UniswapV3Oracle(PriceOracle):
         """
         try:
             factory_address = self.router.functions.factory().call()
-        except Web3Exception:
+        except Web3Exception as exc:
             raise ValueError(
                 f"Uniswap V3 Router Contract {self.router_address} does not exist"
-            )
+            ) from exc
         return self.w3.eth.contract(factory_address, abi=uniswap_v3_factory_abi)
 
     @cached_property
@@ -106,10 +105,10 @@ class UniswapV3Oracle(PriceOracle):
         """
         return self.router.functions.WETH9().call()
 
-    @functools.lru_cache(maxsize=512)
+    @functools.lru_cache(maxsize=512)  # noqa: B019 - long-lived oracle, bounded cache
     def get_pool_address(
-        self, token_address: str, token_address_2: str, fee: Optional[int] = 3000
-    ) -> Optional[ChecksumAddress]:
+        self, token_address: str, token_address_2: str, fee: int | None = 3000
+    ) -> ChecksumAddress | None:
         """
         Get pool address for tokens with a given fee (by default, 0.3)
 
@@ -128,7 +127,7 @@ class UniswapV3Oracle(PriceOracle):
         return pool_address
 
     def get_price(
-        self, token_address: str, token_address_2: Optional[str] = None
+        self, token_address: str, token_address_2: str | None = None
     ) -> float:
         """
         :param token_address:

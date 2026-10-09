@@ -1,6 +1,7 @@
 import math
+from collections.abc import Sequence
 from logging import getLogger
-from typing import List, NamedTuple, Optional, Sequence
+from typing import NamedTuple
 
 from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress
@@ -27,7 +28,7 @@ logger = getLogger(__name__)
 
 class SafeCreate2Tx(NamedTuple):
     salt_nonce: int
-    owners: List[str]
+    owners: list[str]
     threshold: int
     fallback_handler: str
     master_copy_address: str
@@ -38,7 +39,7 @@ class SafeCreate2Tx(NamedTuple):
     gas: int
     gas_price: int
     payment_token_eth_value: float
-    fixed_creation_cost: Optional[int]
+    fixed_creation_cost: int | None
     safe_address: str
     safe_setup_data: bytes
 
@@ -89,11 +90,11 @@ class SafeCreate2TxBuilder:
         threshold: int,
         salt_nonce: int,
         gas_price: int,
-        fallback_handler: Optional[ChecksumAddress] = None,
-        payment_receiver: Optional[ChecksumAddress] = None,
-        payment_token: Optional[ChecksumAddress] = None,
+        fallback_handler: ChecksumAddress | None = None,
+        payment_receiver: ChecksumAddress | None = None,
+        payment_token: ChecksumAddress | None = None,
         payment_token_eth_value: float = 1.0,
-        fixed_creation_cost: Optional[int] = None,
+        fixed_creation_cost: int | None = None,
     ) -> SafeCreate2Tx:
         """
         :param owners: Owners of the Safe
@@ -153,9 +154,9 @@ class SafeCreate2TxBuilder:
         )
 
         safe_address = self.calculate_create2_address(final_safe_setup_data, salt_nonce)
-        assert int(
-            safe_address, 16
-        ), "Calculated Safe address cannot be the NULL ADDRESS"
+        assert int(safe_address, 16), (
+            "Calculated Safe address cannot be the NULL ADDRESS"
+        )
 
         return SafeCreate2Tx(
             salt_nonce,
@@ -177,7 +178,7 @@ class SafeCreate2TxBuilder:
 
     @staticmethod
     def _calculate_gas(
-        owners: List[str], safe_setup_data: bytes, payment_token: str
+        owners: list[str], safe_setup_data: bytes, payment_token: str
     ) -> int:
         """
         Calculate gas manually, based on tests of previously deployed Safes
@@ -205,7 +206,7 @@ class SafeCreate2TxBuilder:
     def _calculate_refund_payment(
         gas: int,
         gas_price: int,
-        fixed_creation_cost: Optional[int],
+        fixed_creation_cost: int | None,
         payment_token_eth_value: float,
     ) -> int:
         if fixed_creation_cost is None:
@@ -272,7 +273,7 @@ class SafeCreate2TxBuilder:
 
     def _get_initial_setup_safe_data(
         self,
-        owners: List[str],
+        owners: list[str],
         threshold: int,
         fallback_handler: str = NULL_ADDRESS,
         payment_token: str = NULL_ADDRESS,
