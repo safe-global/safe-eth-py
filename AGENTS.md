@@ -39,7 +39,8 @@ pre-commit install -f
 `--all-extras` pulls the `django` extra, which the test suite needs. `uv.lock` is the source of
 truth: always sync `--frozen`, run `uv lock` after editing `pyproject.toml` and commit both.
 `[tool.uv] exclude-newer = "7 days"` rejects packages published in the last 7 days, so a brand new
-release cannot be locked yet.
+release cannot be locked yet. Use the `pre-commit` from the venv: the config needs pre-commit 4.4.0
+or newer (the local mypy hook uses `language: unsupported`), and that hook runs `uv run mypy .`.
 
 ### Running Tests
 
@@ -254,8 +255,9 @@ APIs newer than 3.10.
   functions without annotations are not checked
 - **reST style docstrings**: `:param x:` / `:return:`, matching the surrounding code and Sphinx
 - **Formatting and linting**: Ruff (`[tool.ruff]` in `pyproject.toml`). `ruff format` formats the
-  code, line length 88. `ruff check` runs the pycodestyle (`E`, `W`), pyflakes (`F`) and isort (`I`)
-  rules, with `E501` (the formatter decides) and `F841` ignored. Imports use the custom section
+  code, line length 88. `ruff check` runs the pycodestyle (`E`, `W`), pyflakes (`F`), isort (`I`),
+  flake8-bugbear (`B`), flake8-comprehensions (`C4`), pyupgrade (`UP`) and unused `noqa`
+  (`RUF100`) rules, with `E501` ignored (the formatter decides). Imports use the custom section
   order `future, standard-library, django, third-party, safe-foundation, first-party, local-folder`
 - **Web3 types**: use `ChecksumAddress`, `HexBytes`, `HexStr` and the `web3.types` aliases instead of
   raw `str`/`bytes` for blockchain data
