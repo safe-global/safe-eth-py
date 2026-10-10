@@ -898,7 +898,10 @@ class AsyncEthereumClient(EthereumClient):
         if "chainId" not in tx:
             tx["chainId"] = await self.async_get_chain_id()
         tx["maxPriorityFeePerGas"] = Wei(max_priority_fee_per_gas)
-        tx["maxFeePerGas"] = Wei(base_fee_per_gas + max_priority_fee_per_gas)
+        # Double the base fee, like web3.py, so the tx is not rejected if the base fee
+        # rises before it is mined (up to 12.5% per block). Only the actual base fee is
+        # charged, so this does not increase the cost
+        tx["maxFeePerGas"] = Wei(2 * base_fee_per_gas + max_priority_fee_per_gas)
         return tx
 
     # --- Batch call (no Multicall, always JSON-RPC batch path) ------------

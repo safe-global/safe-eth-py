@@ -1260,7 +1260,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
                 eip_1559_tx["chainId"], self.ethereum_client.get_network().value
             )
             self.assertEqual(eip_1559_tx["maxPriorityFeePerGas"], 5)
-            self.assertEqual(eip_1559_tx["maxFeePerGas"], 7)
+            # Base fee doubled, like web3.py, so the tx stays valid if it rises
+            self.assertEqual(eip_1559_tx["maxFeePerGas"], 9)
 
 
 UNREACHABLE_NODE_URL = URI("http://unreachable.invalid:8545")
