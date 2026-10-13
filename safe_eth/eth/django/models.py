@@ -1,5 +1,4 @@
 import binascii
-from typing import Optional, Union
 
 from django.core import exceptions
 from django.core.exceptions import ValidationError
@@ -43,33 +42,33 @@ class EthereumAddressBinaryField(models.Field):
 
     def from_db_value(
         self, value: memoryview, expression, connection
-    ) -> Optional[ChecksumAddress]:
+    ) -> ChecksumAddress | None:
         if value:
             return fast_bytes_to_checksum_address(bytes(value))
         return None
 
-    def get_prep_value(self, value: ChecksumAddress) -> Optional[bytes]:
+    def get_prep_value(self, value: ChecksumAddress) -> bytes | None:
         if value:
             try:
                 return HexBytes(to_normalized_address(value))
-            except (TypeError, ValueError):
+            except (TypeError, ValueError) as exc:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
-                )
+                ) from exc
         return None
 
-    def to_python(self, value) -> Optional[ChecksumAddress]:
+    def to_python(self, value) -> ChecksumAddress | None:
         if value is not None:
             try:
                 return fast_to_checksum_address(value)
-            except ValueError:
+            except ValueError as exc:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
-                )
+                ) from exc
         return None
 
     def formfield(self, **kwargs):
@@ -95,30 +94,29 @@ class EthereumAddressFastBinaryField(EthereumAddressBinaryField):
 
     def from_db_value(
         self, value: memoryview, expression, connection
-    ) -> Optional[ChecksumAddress]:
+    ) -> ChecksumAddress | None:
         if value:
             return ChecksumAddress(HexAddress(HexStr(to_0x_hex_str(bytes(value)))))
 
         return None
 
-    def to_python(self, value) -> Optional[ChecksumAddress]:
+    def to_python(self, value) -> ChecksumAddress | None:
         if value is not None:
             try:
                 if isinstance(value, bytes):
                     if len(value) != 20:
                         raise ValueError(
-                            "Cannot convert %s to a checksum address, 20 bytes were expected"
-                            % value.hex()
+                            f"Cannot convert {value.hex()} to a checksum address, 20 bytes were expected"
                         )
                 return ChecksumAddress(
                     HexAddress(HexStr(to_normalized_address(value)[2:]))
                 )
-            except (TypeError, ValueError):
+            except (TypeError, ValueError) as exc:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
-                )
+                ) from exc
         return None
 
 
@@ -205,7 +203,7 @@ class Keccak256Field(models.BinaryField):
         "length": _('"%(value)s" hash must have exactly 32 bytes.'),
     }
 
-    def _to_bytes(self, value) -> Optional[bytes]:
+    def _to_bytes(self, value) -> bytes | None:
         if value is None:
             return None
         else:
@@ -218,19 +216,19 @@ class Keccak256Field(models.BinaryField):
                         params={"value": value},
                     )
                 return result
-            except (ValueError, binascii.Error):
+            except (ValueError, binascii.Error) as exc:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
-                )
+                ) from exc
 
-    def from_db_value(self, value: memoryview, expression, connection) -> Optional[str]:
+    def from_db_value(self, value: memoryview, expression, connection) -> str | None:
         if value:
             return to_0x_hex_str(bytes(value))
         return None
 
-    def get_prep_value(self, value: Union[bytes, str]) -> Optional[bytes]:
+    def get_prep_value(self, value: bytes | str) -> bytes | None:
         if value:
             return self._to_bytes(value)
         return None
@@ -238,16 +236,16 @@ class Keccak256Field(models.BinaryField):
     def value_to_string(self, obj):
         return str(self.value_from_object(obj))
 
-    def to_python(self, value) -> Optional[bytes]:
+    def to_python(self, value) -> bytes | None:
         if value is not None:
             try:
                 return self._to_bytes(value)
-            except (ValueError, binascii.Error):
+            except (ValueError, binascii.Error) as exc:
                 raise exceptions.ValidationError(
                     self.error_messages["invalid"],
                     code="invalid",
                     params={"value": value},
-                )
+                ) from exc
         return None
 
     def formfield(self, **kwargs):
@@ -296,7 +294,7 @@ class Sha3HashField(models.CharField):
 class HexField(models.CharField):
     system_check_removed_details = {
         "msg": (
-            "HexField has been removed except for support in " "historical migrations."
+            "HexField has been removed except for support in historical migrations."
         ),
         "hint": "Use HexV2Field instead.",
         "id": "fields.E4818",  # pick a unique ID for your field.

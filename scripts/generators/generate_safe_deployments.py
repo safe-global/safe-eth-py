@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 from contextlib import contextmanager
-from typing import Dict, List
 
 from git import Repo
 
@@ -40,7 +39,7 @@ def get_safe_deployments(*args, **kwds):
         clean_resources()
 
 
-def get_network_addresses_by_chain(safe_deployment: Dict) -> Dict[str, List[str]]:
+def get_network_addresses_by_chain(safe_deployment: dict) -> dict[str, list[str]]:
     """
     Generates a dictionary mapping chains to their respective addresses.
     Translates address types to actual addresses from the safe_deployment dictionary.
@@ -52,7 +51,7 @@ def get_network_addresses_by_chain(safe_deployment: Dict) -> Dict[str, List[str]
 
     # Applying list because networkAddresses is not list for all networks
     for chain_id, address_types in safe_deployment["networkAddresses"].items():
-        addresses: List[str] = []
+        addresses: list[str] = []
         if not isinstance(address_types, list):
             address_types = [address_types]
         for address_type in address_types:
@@ -64,14 +63,14 @@ def get_network_addresses_by_chain(safe_deployment: Dict) -> Dict[str, List[str]
     return network_addresses_by_chain
 
 
-def get_default_network_addresses(deployments: Dict) -> List[str]:
+def get_default_network_addresses(deployments: dict) -> list[str]:
     """
     Get default safe addresses from the provided deployments dict.
 
     :param deployments:
     :return: list of addresses
     """
-    addresses: List[str] = []
+    addresses: list[str] = []
 
     # Ignoring if is canonical, eip155 or zksync
     for _, address_dict in deployments.items():
@@ -86,12 +85,12 @@ def generate_safe_deployments_py():
     """
 
     # Store the version with list of addresses
-    safe_deployments: Dict[str, Dict[str, Dict[str, List[str]]]] = (
-        {}
-    )  # Version -> Contract name -> ChainId -> List of addresses
-    default_safe_addresses: Dict[str, Dict[str, List[str]]] = (
-        {}
-    )  # Version -> Contract name -> List of addresses
+    safe_deployments: dict[
+        str, dict[str, dict[str, list[str]]]
+    ] = {}  # Version -> Contract name -> ChainId -> List of addresses
+    default_safe_addresses: dict[
+        str, dict[str, list[str]]
+    ] = {}  # Version -> Contract name -> List of addresses
     # Clone repo
     with get_safe_deployments() as repo:
         logging.info(

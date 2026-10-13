@@ -3,7 +3,7 @@ Safe-eth-py (previously known as Gnosis-py)
 
 .. class:: no-web no-pdf
 
-|ci| |coveralls| |python| |django| |pipy| |readthedocs| |black|
+|ci| |coveralls| |python| |django| |pipy| |readthedocs| |ruff|
 
 Safe-eth-py includes a set of libraries to work with Ethereum and relevant Ethereum projects:
   - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
@@ -232,6 +232,6 @@ Contributors
     :target: https://safe-eth-py.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
-    :alt: Black
+.. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+    :target: https://github.com/astral-sh/ruff
+    :alt: Ruff

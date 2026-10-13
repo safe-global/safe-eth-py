@@ -4,9 +4,10 @@ https://github.com/mds1/multicall
 """
 
 import logging
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, List, Optional, Sequence, Tuple
+from typing import Any
 
 import eth_abi
 from eth_abi.exceptions import DecodingError
@@ -31,13 +32,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MulticallResult:
     success: bool
-    return_data: Optional[bytes]
+    return_data: bytes | None
 
 
 @dataclass
 class MulticallDecodedResult:
     success: bool
-    return_data_decoded: Optional[Any]
+    return_data_decoded: Any | None
 
 
 class Multicall(ContractBase):
@@ -352,7 +353,7 @@ class Multicall(ContractBase):
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        multicall_contract_address: Optional[ChecksumAddress] = None,
+        multicall_contract_address: ChecksumAddress | None = None,
     ):
         # Only detect the address when not provided, as it requires network requests
         # (`eth_chainId` if not cached, maybe `eth_getCode`)
@@ -366,7 +367,7 @@ class Multicall(ContractBase):
     @classmethod
     def _multicall_address_candidate(
         cls, ethereum_network: EthereumNetwork
-    ) -> Tuple[ChecksumAddress, bool]:
+    ) -> tuple[ChecksumAddress, bool]:
         """
         :return: Tuple of the candidate Multicall address for the network and whether
             it must be checked for code: the network's known address doesn't need it,
@@ -399,13 +400,13 @@ class Multicall(ContractBase):
             )
         return address
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_multicall_v3_contract
 
     @classmethod
     def deploy_contract(
         cls, ethereum_client: EthereumClient, deployer_account: LocalAccount
-    ) -> Optional[EthereumTxSent]:
+    ) -> EthereumTxSent | None:
         """
         Deploy contract
 
@@ -440,7 +441,7 @@ class Multicall(ContractBase):
     @staticmethod
     def _build_payload(
         contract_functions: Sequence[ContractFunction],
-    ) -> Tuple[List[Tuple[ChecksumAddress, HexBytes]], List[List[Any]]]:
+    ) -> tuple[list[tuple[ChecksumAddress, HexBytes]], list[list[Any]]]:
         targets_with_data = []
         output_types = []
         for contract_function in contract_functions:
@@ -460,7 +461,7 @@ class Multicall(ContractBase):
         self,
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
-    ) -> Tuple[List[Tuple[ChecksumAddress, HexBytes]], List[List[Any]]]:
+    ) -> tuple[list[tuple[ChecksumAddress, HexBytes]], list[list[Any]]]:
         targets_with_data = []
         output_types = []
         tx_data = HexBytes(contract_function._encode_transaction_data())
@@ -472,7 +473,7 @@ class Multicall(ContractBase):
 
         return targets_with_data, output_types
 
-    def _decode_data(self, output_type: Sequence[str], data: bytes) -> Optional[Any]:
+    def _decode_data(self, output_type: Sequence[str], data: bytes) -> Any | None:
         """
 
         :param output_type:
@@ -499,9 +500,9 @@ class Multicall(ContractBase):
 
     def _aggregate(
         self,
-        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> Tuple[BlockNumber, List[Optional[Any]]]:
+        targets_with_data: Sequence[tuple[ChecksumAddress, bytes]],
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> tuple[BlockNumber, list[Any | None]]:
         """
 
         :param targets_with_data: List of target `addresses` and `data` to be called in each Contract
@@ -516,14 +517,14 @@ class Multicall(ContractBase):
             return self.contract.functions.aggregate(aggregate_parameter).call(
                 block_identifier=block_identifier or "latest"
             )
-        except (ContractLogicError, OverflowError):
-            raise BatchCallFunctionFailed
+        except (ContractLogicError, OverflowError) as exc:
+            raise BatchCallFunctionFailed from exc
 
     def aggregate(
         self,
         contract_functions: Sequence[ContractFunction],
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> Tuple[BlockNumber, List[Optional[Any]]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> tuple[BlockNumber, list[Any | None]]:
         """
         Calls ``aggregate`` on MakerDAO's Multicall contract. If a function called raises an error execution is stopped
 
@@ -538,16 +539,16 @@ class Multicall(ContractBase):
         )
         decoded_results = [
             self._decode_data(output_type, data) if data is not None else None
-            for output_type, data in zip(output_types, results)
+            for output_type, data in zip(output_types, results, strict=False)
         ]
         return block_number, decoded_results
 
     def _try_aggregate(
         self,
-        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
+        targets_with_data: Sequence[tuple[ChecksumAddress, bytes]],
         require_success: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[MulticallResult]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[MulticallResult]:
         """
         Calls ``try_aggregate`` on MakerDAO's Multicall contract.
 
@@ -574,15 +575,15 @@ class Multicall(ContractBase):
                 MulticallResult(success, data if data else None)
                 for success, data in result
             ]
-        except (ContractLogicError, OverflowError, Web3ValueError, Web3RPCError):
-            raise BatchCallFunctionFailed
+        except (ContractLogicError, OverflowError, Web3ValueError, Web3RPCError) as exc:
+            raise BatchCallFunctionFailed from exc
 
     def try_aggregate(
         self,
         contract_functions: Sequence[ContractFunction],
         require_success: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[MulticallDecodedResult]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[MulticallDecodedResult]:
         """
         Calls ``try_aggregate`` on MakerDAO's Multicall contract.
 
@@ -603,7 +604,7 @@ class Multicall(ContractBase):
         self,
         output_types: Sequence[Sequence[str]],
         results: Sequence[MulticallResult],
-    ) -> List[MulticallDecodedResult]:
+    ) -> list[MulticallDecodedResult]:
         """
         Decode ``try_aggregate`` results (pure, shared with the async client). Failed
         calls keep their raw ``return_data`` (revert bytes), successful ones are ABI-decoded.
@@ -618,7 +619,9 @@ class Multicall(ContractBase):
                     else multicall_result.return_data
                 ),
             )
-            for output_type, multicall_result in zip(output_types, results)
+            for output_type, multicall_result in zip(
+                output_types, results, strict=False
+            )
         ]
 
     def try_aggregate_same_function(
@@ -626,8 +629,8 @@ class Multicall(ContractBase):
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
         require_success: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[MulticallDecodedResult]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[MulticallDecodedResult]:
         """
         Calls ``try_aggregate`` on MakerDAO's Multicall contract. Reuse same function with multiple contract addresses.
         It's more optimal due to instantiating ``ContractFunction`` objects is very demanding
@@ -664,7 +667,7 @@ class AsyncMulticall(Multicall):
     def __init__(
         self,
         ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
-        multicall_contract_address: Optional[ChecksumAddress] = None,
+        multicall_contract_address: ChecksumAddress | None = None,
     ):
         super().__init__(ethereum_client, multicall_contract_address)
         self.async_w3: AsyncWeb3 = ethereum_client.async_w3
@@ -673,7 +676,7 @@ class AsyncMulticall(Multicall):
     async def async_create(
         cls,
         ethereum_client: "AsyncEthereumClient",  # type: ignore # noqa F821
-        multicall_contract_address: Optional[ChecksumAddress] = None,
+        multicall_contract_address: ChecksumAddress | None = None,
     ) -> "AsyncMulticall":
         """
         Build an ``AsyncMulticall`` detecting the address through the async RPC
@@ -708,9 +711,9 @@ class AsyncMulticall(Multicall):
 
     async def _async_aggregate(
         self,
-        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> Tuple[BlockNumber, List[Optional[Any]]]:
+        targets_with_data: Sequence[tuple[ChecksumAddress, bytes]],
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> tuple[BlockNumber, list[Any | None]]:
         aggregate_parameter = [
             {"target": target, "callData": data} for target, data in targets_with_data
         ]
@@ -718,30 +721,30 @@ class AsyncMulticall(Multicall):
             return await self.async_contract.functions.aggregate(
                 aggregate_parameter
             ).call(block_identifier=block_identifier or "latest")
-        except (ContractLogicError, OverflowError):
-            raise BatchCallFunctionFailed
+        except (ContractLogicError, OverflowError) as exc:
+            raise BatchCallFunctionFailed from exc
 
     async def async_aggregate(
         self,
         contract_functions: Sequence[ContractFunction],
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> Tuple[BlockNumber, List[Optional[Any]]]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> tuple[BlockNumber, list[Any | None]]:
         targets_with_data, output_types = self._build_payload(contract_functions)
         block_number, results = await self._async_aggregate(
             targets_with_data, block_identifier=block_identifier
         )
         decoded_results = [
             self._decode_data(output_type, data) if data is not None else None
-            for output_type, data in zip(output_types, results)
+            for output_type, data in zip(output_types, results, strict=False)
         ]
         return block_number, decoded_results
 
     async def _async_try_aggregate(
         self,
-        targets_with_data: Sequence[Tuple[ChecksumAddress, bytes]],
+        targets_with_data: Sequence[tuple[ChecksumAddress, bytes]],
         require_success: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[MulticallResult]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[MulticallResult]:
         aggregate_parameter = [
             {"target": target, "callData": data} for target, data in targets_with_data
         ]
@@ -758,15 +761,15 @@ class AsyncMulticall(Multicall):
                 MulticallResult(success, data if data else None)
                 for success, data in result
             ]
-        except (ContractLogicError, OverflowError, Web3ValueError, Web3RPCError):
-            raise BatchCallFunctionFailed
+        except (ContractLogicError, OverflowError, Web3ValueError, Web3RPCError) as exc:
+            raise BatchCallFunctionFailed from exc
 
     async def async_try_aggregate(
         self,
         contract_functions: Sequence[ContractFunction],
         require_success: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[MulticallDecodedResult]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[MulticallDecodedResult]:
         targets_with_data, output_types = self._build_payload(contract_functions)
         results = await self._async_try_aggregate(
             targets_with_data,
@@ -780,8 +783,8 @@ class AsyncMulticall(Multicall):
         contract_function: ContractFunction,
         contract_addresses: Sequence[ChecksumAddress],
         require_success: bool = False,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[MulticallDecodedResult]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[MulticallDecodedResult]:
         targets_with_data, output_types = self._build_payload_same_function(
             contract_function, contract_addresses
         )

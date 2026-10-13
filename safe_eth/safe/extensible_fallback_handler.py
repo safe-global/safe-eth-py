@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
@@ -50,5 +50,5 @@ class ExtensibleFallbackHandler(ContractBase, metaclass=ABCMeta):
 
 
 class ExtensibleFallbackHandlerV150(ExtensibleFallbackHandler):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_extensible_fallback_handler_V1_5_0_contract

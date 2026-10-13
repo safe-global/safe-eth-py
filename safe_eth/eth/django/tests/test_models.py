@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.serializers import serialize
-from django.db import transaction
+from django.db import DataError, transaction
 from django.test import TestCase
 
 from eth_account import Account
@@ -100,7 +100,7 @@ class TestModels(TestCase):
             self.assertEqual(uint256.value, value)
 
         # Overflow
-        with self.assertRaises(Exception):
+        with self.assertRaises(DataError):
             value = 2**263
             Uint256.objects.create(value=value)
 
@@ -120,7 +120,7 @@ class TestModels(TestCase):
             self.assertEqual(uint96.value, value)
 
         # Overflow
-        with self.assertRaises(Exception):
+        with self.assertRaises(DataError):
             value = 2**97
             Uint96.objects.create(value=value)
 
@@ -139,7 +139,7 @@ class TestModels(TestCase):
             uint32.refresh_from_db()
             self.assertEqual(uint32.value, value)
         # Overflow
-        with self.assertRaises(Exception):
+        with self.assertRaises(DataError):
             value = 2**34
             Uint32.objects.create(value=value)
 

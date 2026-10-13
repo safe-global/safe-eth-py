@@ -1,6 +1,6 @@
 import os
 from functools import cache
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import urljoin
 
 import aiohttp
@@ -52,7 +52,7 @@ class SourcifyClient:
                 f"Network {network.name} - {network.value} not supported"
             )
 
-    def _do_request(self, url: str) -> Optional[Dict[str, Any]]:
+    def _do_request(self, url: str) -> dict[str, Any] | None:
         response = self.http_session.get(url, timeout=self.request_timeout)
         if not response.ok:
             return None
@@ -62,7 +62,7 @@ class SourcifyClient:
     def is_chain_supported(self, chain_id: int) -> bool:
         chains = self.get_chains()
         if not chains:
-            raise IOError("Cannot get chains for SourcifyClient")
+            raise OSError("Cannot get chains for SourcifyClient")
         for chain in chains:
             if not isinstance(chain, dict):
                 continue
@@ -76,14 +76,14 @@ class SourcifyClient:
                 continue
         return False
 
-    @cache
-    def get_chains(self) -> Dict[str, Any]:
+    @cache  # noqa: B019 - one client per process
+    def get_chains(self) -> dict[str, Any]:
         url = urljoin(self.base_url_api, "/server/chains")
         result = self._do_request(url)
         return result or {}
 
     def _process_v2_contract_data(
-        self, contract_data: Dict[str, Any]
+        self, contract_data: dict[str, Any]
     ) -> ContractMetadata:
         abi = contract_data.get("abi") or []
         name = (contract_data.get("compilation") or {}).get("name")
@@ -97,12 +97,10 @@ class SourcifyClient:
         partial_match = contract_data.get("match") != "exact_match"
         return ContractMetadata(name, abi, partial_match)
 
-    def get_contract_metadata(
-        self, contract_address: str
-    ) -> Optional[ContractMetadata]:
-        assert fast_is_checksum_address(
-            contract_address
-        ), "Expecting a checksummed address"
+    def get_contract_metadata(self, contract_address: str) -> ContractMetadata | None:
+        assert fast_is_checksum_address(contract_address), (
+            "Expecting a checksummed address"
+        )
 
         url = urljoin(
             self.base_url_api,
@@ -132,7 +130,7 @@ class AsyncSourcifyClient(SourcifyClient):
             connector=aiohttp.TCPConnector(limit_per_host=max_requests)
         )
 
-    async def _async_do_request(self, url: str) -> Optional[Dict[str, Any]]:
+    async def _async_do_request(self, url: str) -> dict[str, Any] | None:
         """
         Asynchronous version of _do_request
         """
@@ -146,13 +144,13 @@ class AsyncSourcifyClient(SourcifyClient):
 
     async def async_get_contract_metadata(
         self, contract_address: str
-    ) -> Optional[ContractMetadata]:
+    ) -> ContractMetadata | None:
         """
         Asynchronous version of get_contract_metadata
         """
-        assert fast_is_checksum_address(
-            contract_address
-        ), "Expecting a checksummed address"
+        assert fast_is_checksum_address(contract_address), (
+            "Expecting a checksummed address"
+        )
 
         url = urljoin(
             self.base_url_api,

@@ -1,6 +1,5 @@
 import logging
 from functools import cached_property
-from typing import Optional
 
 from eth_abi.exceptions import DecodingError
 from web3.exceptions import Web3Exception
@@ -34,7 +33,7 @@ class KyberOracle(PriceOracle):
     def __init__(
         self,
         ethereum_client: EthereumClient,
-        kyber_network_proxy_address: Optional[str] = None,
+        kyber_network_proxy_address: str | None = None,
     ):
         """
         :param ethereum_client:

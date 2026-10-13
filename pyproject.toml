@@ -53,12 +53,10 @@ dev = [
     "coverage",
     "coveralls",
     "faker",
-    "flake8",
     "gitpython",
     "hatch",
     "ipdb",
     "ipython",
-    "isort",
     "mypy",
     "pre-commit",
     "pytest",
@@ -132,21 +130,41 @@ packages = [
     "/safe_eth",
 ]
 
-[tool.isort]
-profile = "black"
-default_section = "THIRDPARTY"
-known_first_party = "safe_eth"
-known_safe_foundation = "py_eth_sig_utils"
-known_django = "django"
-sections = [
-    "FUTURE",
-    "STDLIB",
-    "DJANGO",
-    "THIRDPARTY",
-    "SAFE_FOUNDATION",
-    "FIRSTPARTY",
-    "LOCALFOLDER",
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "RUF100",  # unused noqa
 ]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["eth_typing.BlockNumber", "eth_typing.URI"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["safe_eth"]
+section-order = [
+    "future",
+    "standard-library",
+    "django",
+    "third-party",
+    "safe-foundation",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+django = ["django"]
+safe-foundation = ["py_eth_sig_utils"]
 
 [tool.uv]
 # Reject packages published less than 7 days ago to avoid supply-chain attacks
@@ -154,8 +172,8 @@ exclude-newer = "7 days"
 compile-bytecode = true
 
 [tool.mypy]
-python_version = "3.13"
-check_untyped_defs = true
+python_version = "3.10"
+exclude = "env|docs|config|.github"
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true

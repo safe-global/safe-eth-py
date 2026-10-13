@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
@@ -54,15 +54,15 @@ class CompatibilityFallbackHandler(ContractBase, metaclass=ABCMeta):
 
 
 class CompatibilityFallbackHandlerV130(CompatibilityFallbackHandler):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_compatibility_fallback_handler_V1_3_0_contract
 
 
 class CompatibilityFallbackHandlerV141(CompatibilityFallbackHandler):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_compatibility_fallback_handler_V1_4_1_contract
 
 
 class CompatibilityFallbackHandlerV150(CompatibilityFallbackHandler):
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_compatibility_fallback_handler_V1_5_0_contract
