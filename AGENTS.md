@@ -244,8 +244,8 @@ publish a GitHub release. The `publish` job in `.github/workflows/python.yml` ru
 
 ## Python Version
 
-Supported: **3.10 to 3.13** (CI matrix). mypy and Ruff target 3.10. Do not use syntax or stdlib
-APIs newer than 3.10.
+Supported: **3.11 to 3.14** (CI matrix). mypy and Ruff target 3.11. Do not use syntax or stdlib
+APIs newer than 3.11.
 
 ## Code Quality Standards
 

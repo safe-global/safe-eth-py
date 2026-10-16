@@ -1,11 +1,10 @@
 import json
 from functools import cached_property
-from typing import Any, TypedDict, cast
+from typing import Any, NotRequired, TypedDict, cast
 
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_typing import Address, ChecksumAddress, HexAddress, HexStr
-from typing_extensions import NotRequired
 
 from safe_eth.eth import EthereumNetwork, EthereumNetworkNotSupported
 from safe_eth.eth.constants import NULL_ADDRESS
