@@ -1,5 +1,6 @@
 import logging
-from typing import List, NamedTuple, Optional, Sequence
+from collections.abc import Sequence
+from typing import NamedTuple
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -27,7 +28,7 @@ class SafeCreationEstimate(NamedTuple):
     gas: int
     gas_price: int
     payment: int
-    payment_token: Optional[str]
+    payment_token: str | None
 
 
 class SafeCreator:
@@ -40,13 +41,13 @@ class SafeCreator:
         ethereum_client: EthereumClient,
         deployer_account: LocalAccount,
         master_copy_address: ChecksumAddress,
-        owners: List[ChecksumAddress],
+        owners: list[ChecksumAddress],
         threshold: int,
-        fallback_handler: Optional[ChecksumAddress] = NULL_ADDRESS,
-        proxy_factory_address: Optional[ChecksumAddress] = None,
-        payment_token: Optional[ChecksumAddress] = NULL_ADDRESS,
+        fallback_handler: ChecksumAddress | None = NULL_ADDRESS,
+        proxy_factory_address: ChecksumAddress | None = None,
+        payment_token: ChecksumAddress | None = NULL_ADDRESS,
         payment: int = 0,
-        payment_receiver: Optional[ChecksumAddress] = NULL_ADDRESS,
+        payment_receiver: ChecksumAddress | None = NULL_ADDRESS,
     ) -> EthereumTxSent:
         """
         Deploy new Safe proxy pointing to the specified `master_copy` address and configured
@@ -69,9 +70,8 @@ class SafeCreator:
         """
 
         assert owners, "At least one owner must be set"
-        assert 1 <= threshold <= len(owners), "Threshold=%d must be <= %d" % (
-            threshold,
-            len(owners),
+        assert 1 <= threshold <= len(owners), (
+            f"Threshold={threshold:d} must be <= {len(owners):d}"
         )
 
         initializer = (
@@ -143,11 +143,11 @@ class SafeCreator:
         proxy_factory_address: ChecksumAddress,
         number_owners: int,
         gas_price: int,
-        payment_token: Optional[ChecksumAddress],
+        payment_token: ChecksumAddress | None,
         payment_receiver: ChecksumAddress = NULL_ADDRESS,
-        fallback_handler: Optional[ChecksumAddress] = None,
+        fallback_handler: ChecksumAddress | None = None,
         payment_token_eth_value: float = 1.0,
-        fixed_creation_cost: Optional[int] = None,
+        fixed_creation_cost: int | None = None,
     ) -> SafeCreationEstimate:
         """
         :param ethereum_client:
@@ -200,13 +200,12 @@ class SafeCreator:
         owners: Sequence[ChecksumAddress],
         threshold: int,
         gas_price: int,
-        payment_token: Optional[ChecksumAddress],
-        payment_receiver: Optional[
-            ChecksumAddress
-        ] = None,  # If none, it will be `tx.origin`
-        fallback_handler: Optional[ChecksumAddress] = NULL_ADDRESS,
+        payment_token: ChecksumAddress | None,
+        payment_receiver: ChecksumAddress
+        | None = None,  # If none, it will be `tx.origin`
+        fallback_handler: ChecksumAddress | None = NULL_ADDRESS,
         payment_token_eth_value: float = 1.0,
-        fixed_creation_cost: Optional[int] = None,
+        fixed_creation_cost: int | None = None,
     ) -> SafeCreate2Tx:
         """
         Prepare safe proxy deployment for being relayed. It calculates and sets the costs of deployment to be returned
@@ -229,8 +228,6 @@ class SafeCreator:
                 fixed_creation_cost=fixed_creation_cost,
             )
         except InvalidERC20Token as exc:
-            raise InvalidPaymentToken(
-                "Invalid payment token %s" % payment_token
-            ) from exc
+            raise InvalidPaymentToken(f"Invalid payment token {payment_token}") from exc
 
         return safe_creation_tx

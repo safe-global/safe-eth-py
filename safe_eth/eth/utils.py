@@ -1,6 +1,6 @@
 import os
 from functools import lru_cache
-from typing import Any, Union
+from typing import Any
 
 import eth_abi
 from eth._utils.address import generate_contract_address
@@ -95,7 +95,7 @@ def _fast_to_checksum_address(address: HexAddress):
     return _build_checksum_address(address, address_hash)
 
 
-def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAddress:
+def fast_to_checksum_address(value: AnyAddress | str | bytes) -> ChecksumAddress:
     """
     Converts to checksum_address. Uses more optimal `pysha3` instead of `eth_utils` for keccak256 calculation
 
@@ -105,8 +105,7 @@ def fast_to_checksum_address(value: Union[AnyAddress, str, bytes]) -> ChecksumAd
     if isinstance(value, bytes):
         if len(value) != 20:
             raise ValueError(
-                "Cannot convert %s to a checksum address, 20 bytes were expected"
-                % value.hex()
+                f"Cannot convert {value.hex()} to a checksum address, 20 bytes were expected"
             )
 
     norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
@@ -123,14 +122,13 @@ def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
     """
     if len(value) != 20:
         raise ValueError(
-            "Cannot convert %s to a checksum address, 20 bytes were expected"
-            % bytes(value).hex()
+            f"Cannot convert {bytes(value).hex()} to a checksum address, 20 bytes were expected"
         )
     norm_address = HexAddress(HexStr(bytes(value).hex()))
     return _fast_to_checksum_address(norm_address)
 
 
-def fast_is_checksum_address(value: Union[AnyAddress, str, bytes]) -> bool:
+def fast_is_checksum_address(value: AnyAddress | str | bytes) -> bool:
     """
     Fast version to check if an address is a checksum_address
 
@@ -186,7 +184,7 @@ def remove_swarm_metadata(code: bytes) -> bytes:
             0xA3,
         ):
             return code[:metadata_start]
-    raise ValueError("Metadata not found in code %s" % code.hex())
+    raise ValueError(f"Metadata not found in code {code.hex()}")
 
 
 def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
@@ -210,7 +208,7 @@ def compare_byte_code(code_1: bytes, code_2: bytes) -> bool:
         return codes[0] == codes[1]
 
 
-def mk_contract_address(address: Union[str, bytes], nonce: int) -> ChecksumAddress:
+def mk_contract_address(address: str | bytes, nonce: int) -> ChecksumAddress:
     """
     Generate expected contract address when using EVM CREATE
 
@@ -224,9 +222,9 @@ def mk_contract_address(address: Union[str, bytes], nonce: int) -> ChecksumAddre
 
 
 def mk_contract_address_2(
-    from_: Union[ChecksumAddress, bytes],
-    salt: Union[HexStr, bytes],
-    init_code: Union[HexStr, bytes],
+    from_: ChecksumAddress | bytes,
+    salt: HexStr | bytes,
+    init_code: HexStr | bytes,
 ) -> ChecksumAddress:
     """
     Generate expected contract address when using EVM CREATE2.
@@ -241,9 +239,9 @@ def mk_contract_address_2(
     salt = HexBytes(salt)
     init_code = HexBytes(init_code)
 
-    assert (
-        len(from_) == 20
-    ), f"Address {to_0x_hex_str(from_)} is not valid. Must be 20 bytes"
+    assert len(from_) == 20, (
+        f"Address {to_0x_hex_str(from_)} is not valid. Must be 20 bytes"
+    )
     assert len(salt) == 32, f"Salt {to_0x_hex_str(salt)} is not valid. Must be 32 bytes"
     assert len(init_code) > 0, f"Init code {to_0x_hex_str(init_code)} is not valid"
 
@@ -268,6 +266,6 @@ def bytes_to_float(value: Any) -> float:
         try:
             return float(int.from_bytes(value, "big"))
         except (ValueError, OverflowError) as e:
-            raise ValueError(f"Cannot convert bytes to float: {e}")
+            raise ValueError(f"Cannot convert bytes to float: {e}") from e
     else:
         raise ValueError(f"Unsupported type for conversion to float: {type(value)}")

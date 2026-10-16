@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
@@ -20,17 +20,17 @@ class UserOperationReceipt:
     entry_point: ChecksumAddress
     sender: ChecksumAddress
     nonce: int
-    paymaster: Optional[ChecksumAddress]
+    paymaster: ChecksumAddress | None
     actual_gas_cost: int
     actual_gas_used: int
     success: bool
-    reason: Optional[str]
-    logs: List[LogReceipt]
+    reason: str | None
+    logs: list[LogReceipt]
 
     @classmethod
     def from_bundler_response(
         cls,
-        user_operation_receipt_response: Dict[str, Any],
+        user_operation_receipt_response: dict[str, Any],
     ) -> "UserOperationReceipt":
         return cls(
             HexBytes(user_operation_receipt_response["userOpHash"]),
@@ -45,7 +45,7 @@ class UserOperationReceipt:
             user_operation_receipt_response["logs"],
         )
 
-    def get_deployed_account(self) -> Optional[ChecksumAddress]:
+    def get_deployed_account(self) -> ChecksumAddress | None:
         """
         :return: Deployed account in case a new account was deployed
         """
@@ -73,7 +73,7 @@ class UserOperationReceipt:
                 deposited += int(log["data"], 16)
         return deposited
 
-    def get_module_address(self) -> Optional[ChecksumAddress]:
+    def get_module_address(self) -> ChecksumAddress | None:
         """
         Use Safe's `ExecutionFromModuleSuccess` event to get the 4337 module address
 

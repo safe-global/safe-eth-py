@@ -2,9 +2,10 @@ import dataclasses
 import math
 import os
 from abc import ABC, ABCMeta, abstractmethod
+from collections.abc import Callable
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any
 
 import eth_abi
 from eth_abi.exceptions import DecodingError
@@ -64,9 +65,9 @@ class SafeInfo:
     fallback_handler: ChecksumAddress
     guard: ChecksumAddress
     master_copy: ChecksumAddress
-    modules: List[ChecksumAddress]
+    modules: list[ChecksumAddress]
     nonce: int
-    owners: List[ChecksumAddress]
+    owners: list[ChecksumAddress]
     threshold: int
     version: str
     module_guard: ChecksumAddress
@@ -100,7 +101,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         cls,
         address: ChecksumAddress,
         ethereum_client: EthereumClient,
-        version: Optional[str] = None,
+        version: str | None = None,
         *args,
         **kwargs,
     ) -> "Safe":
@@ -114,7 +115,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         :param kwargs: Extra kwargs forwarded to the concrete Safe class
         :return: Instance of the concrete Safe subclass that matches the provided/detected version
         """
-        assert fast_is_checksum_address(address), "%s is not a valid address" % address
+        assert fast_is_checksum_address(address), f"{address} is not a valid address"
         if cls is not Safe:
             return super().__new__(cls, *args, **kwargs)
 
@@ -126,7 +127,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         return instance
 
     @classmethod
-    def _version_class_map(cls) -> Dict[str, Type["Safe"]]:
+    def _version_class_map(cls) -> dict[str, type["Safe"]]:
         """Return the mapping between Safe semantic versions and Python classes."""
         return {
             "0.0.1": SafeV001,
@@ -143,7 +144,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         return cls._DEFAULT_VERSION
 
     @classmethod
-    def _default_version_class(cls) -> Type["Safe"]:
+    def _default_version_class(cls) -> type["Safe"]:
         """Default Safe implementation used when VERSION() cannot be detected on-chain."""
         version = cls._default_version()
         return cls._version_class_map()[version]
@@ -153,8 +154,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         cls,
         address: ChecksumAddress,
         ethereum_client: EthereumClient,
-        version: Optional[str] = None,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        version: str | None = None,
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> str:
         """
         Helper to consolidate the precedence rules for selecting the Safe version.
@@ -174,7 +175,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         )
 
     @classmethod
-    def available_versions(cls) -> List[str]:
+    def available_versions(cls) -> list[str]:
         """
         Helpful utility for tooling that needs to know which Safe versions are bundled.
 
@@ -213,8 +214,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         cls,
         address: ChecksumAddress,
         ethereum_client: EthereumClient,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> Optional[str]:
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> str | None:
         """
         Return the Safe semantic version reported by the contract. None is returned if the read fails.
 
@@ -235,8 +236,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         self,
         address: ChecksumAddress,
         ethereum_client: EthereumClient,
-        simulate_tx_accessor_address: Optional[ChecksumAddress] = None,
-        version: Optional[str] = None,
+        simulate_tx_accessor_address: ChecksumAddress | None = None,
+        version: str | None = None,
     ):
         """
         :param address: Safe proxy address
@@ -284,14 +285,14 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         self._simulate_tx_accessor_address = value
 
     def retrieve_version(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> str:
         return self.contract.functions.VERSION().call(
             block_identifier=block_identifier or "latest"
         )
 
     @cached_property
-    def domain_separator(self) -> Optional[bytes]:
+    def domain_separator(self) -> bytes | None:
         """
         :return: EIP721 DomainSeparator for the Safe. Returns `None` if not supported (for Safes < 1.0.0)
         """
@@ -329,9 +330,9 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             .call()
         )
         safe_version = cls.get_version(cls)  # type: ignore[arg-type]
-        assert (
-            deployed_version == safe_version
-        ), f"Deployed version {deployed_version} is not matching expected {safe_version} version"
+        assert deployed_version == safe_version, (
+            f"Deployed version {deployed_version} is not matching expected {safe_version} version"
+        )
 
         logger.info(
             "Deployed and initialized Safe Master Contract version=%s on address %s by %s",
@@ -450,8 +451,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         value: int,
         data: bytes,
         operation: SafeOperationLike,
-        gas_limit: Optional[int] = None,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        gas_limit: int | None = None,
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> int:
         """
         Estimate tx gas using safe `requiredTxGas` method
@@ -486,7 +487,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                     result.hex(),
                     tx,
                 )
-                raise CannotEstimateGas("Received %s for tx=%s" % (result.hex(), tx))
+                raise CannotEstimateGas(f"Received {result.hex()} for tx={tx}")
 
             return int(gas_estimation.hex(), 16)
 
@@ -521,7 +522,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         )
         if response.ok:
             response_data = response.json()
-            error_data: Optional[str] = None
+            error_data: str | None = None
             if "error" in response_data and "data" in response_data["error"]:
                 error_data = response_data["error"]["data"]
             elif "result" in response_data:  # Ganache-cli
@@ -559,7 +560,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         self,
         to: ChecksumAddress,
         value: int,
-        data: Union[bytes, str],
+        data: bytes | str,
         operation: SafeOperationLike,
     ) -> int:
         """
@@ -580,8 +581,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             data = HexBytes(data)
 
         gas_estimated = self.estimate_tx_gas_with_safe(to, value, data, operation)
-        block_gas_limit: Optional[int] = None
-        base_gas: Optional[int] = self.ethereum_client.estimate_data_gas(data)
+        block_gas_limit: int | None = None
+        base_gas: int | None = self.ethereum_client.estimate_data_gas(data)
 
         for i in range(
             1, 30
@@ -654,7 +655,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
                 + WEB3_ESTIMATION_OFFSET
             )
 
-    def get_message_preimage(self, message: Union[str, bytes]) -> bytes:
+    def get_message_preimage(self, message: str | bytes) -> bytes:
         """
         Return preimage for a message that can be signed by owners.
 
@@ -684,7 +685,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         )
 
     def get_message_hash_and_preimage(
-        self, message: Union[str, bytes]
+        self, message: str | bytes
     ) -> tuple[Hash32, bytes]:
         """
         Return hash of a message and its preimage that can be signed by owners.
@@ -695,7 +696,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         message_preimage = self.get_message_preimage(message)
         return fast_keccak(message_preimage), message_preimage
 
-    def get_message_hash(self, message: Union[str, bytes]) -> Hash32:
+    def get_message_hash(self, message: str | bytes) -> Hash32:
         """
         Return hash of a message that can be signed by owners.
 
@@ -706,7 +707,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         return message_hash
 
     def retrieve_all_info(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> SafeInfo:
         """
         Get all Safe info in the same batch call.
@@ -784,8 +785,8 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             raise CannotRetrieveSafeInfoException(self.address) from e
 
     def retrieve_domain_separator(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
-    ) -> Optional[bytes]:
+        self, block_identifier: BlockIdentifier | None = "latest"
+    ) -> bytes | None:
         return self.contract.functions.domainSeparator().call(
             block_identifier=block_identifier or "latest"
         )
@@ -794,7 +795,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         return self.w3.eth.get_code(self.address)
 
     def retrieve_fallback_handler(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         address = self.ethereum_client.w3.eth.get_storage_at(
             self.address,
@@ -807,7 +808,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return NULL_ADDRESS
 
     def retrieve_transaction_guard(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
         Retrieve the transaction guard address from storage.
@@ -827,7 +828,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return NULL_ADDRESS
 
     def retrieve_module_guard(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
         Retrieve the module guard address from storage.
@@ -847,7 +848,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             return NULL_ADDRESS
 
     def retrieve_master_copy_address(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
         :param block_identifier:
@@ -864,10 +865,10 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
 
     def retrieve_modules(
         self,
-        pagination: Optional[int] = 50,
-        max_modules_to_retrieve: Optional[int] = 500,
-        block_identifier: Optional[BlockIdentifier] = "latest",
-    ) -> List[ChecksumAddress]:
+        pagination: int | None = 50,
+        max_modules_to_retrieve: int | None = 500,
+        block_identifier: BlockIdentifier | None = "latest",
+    ) -> list[ChecksumAddress]:
         """
         Get modules enabled on the Safe
         From v1.1.1:
@@ -900,7 +901,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         # We need to iterate the module paginator
         contract = self.contract
         next_module = SENTINEL_ADDRESS
-        all_modules: List[ChecksumAddress] = []
+        all_modules: list[ChecksumAddress] = []
 
         for _ in range(max_modules_to_retrieve // pagination):
             # If we use a `while True` loop a custom coded Safe could get us into an infinite loop
@@ -923,7 +924,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         self,
         owner: ChecksumAddress,
         safe_hash: bytes,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> bool:
         return (
             self.contract.functions.approvedHashes(owner, safe_hash).call(
@@ -935,7 +936,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     def retrieve_is_message_signed(
         self,
         message_hash: Hash32,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> bool:
         return self.contract.functions.signedMessages(message_hash).call(
             block_identifier=block_identifier or "latest"
@@ -944,28 +945,28 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
     def retrieve_is_owner(
         self,
         owner: ChecksumAddress,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> bool:
         return self.contract.functions.isOwner(owner).call(
             block_identifier=block_identifier or "latest"
         )
 
     def retrieve_nonce(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> int:
         return self.contract.functions.nonce().call(
             block_identifier=block_identifier or "latest"
         )
 
     def retrieve_owners(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
-    ) -> List[ChecksumAddress]:
+        self, block_identifier: BlockIdentifier | None = "latest"
+    ) -> list[ChecksumAddress]:
         return self.contract.functions.getOwners().call(
             block_identifier=block_identifier or "latest"
         )
 
     def retrieve_threshold(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> int:
         return self.contract.functions.getThreshold().call(
             block_identifier=block_identifier or "latest"
@@ -983,7 +984,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         gas_token: ChecksumAddress = NULL_ADDRESS,
         refund_receiver: ChecksumAddress = NULL_ADDRESS,
         signatures: bytes = b"",
-        safe_nonce: Optional[int] = None,
+        safe_nonce: int | None = None,
     ) -> SafeTx:
         """
         Allows to execute a Safe transaction confirmed by required number of owners and then pays the account
@@ -1039,7 +1040,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
         tx_sender_private_key: HexStr,
         tx_gas=None,
         tx_gas_price=None,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> EthereumTxSent:
         """
         Build and send Safe tx
@@ -1094,7 +1095,7 @@ class SafeV001(Safe):
     def get_version(self) -> str:
         return "0.0.1"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V0_0_1_contract
 
     @classmethod
@@ -1139,7 +1140,7 @@ class SafeV100(Safe):
     def get_version(self) -> str:
         return "1.0.0"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V1_0_0_contract
 
     @classmethod
@@ -1187,7 +1188,7 @@ class SafeV111(Safe):
     def get_version(self) -> str:
         return "1.1.1"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V1_1_1_contract
 
 
@@ -1195,7 +1196,7 @@ class SafeV120(Safe):
     def get_version(self) -> str:
         return "1.2.0"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V1_1_1_contract
 
 
@@ -1203,7 +1204,7 @@ class SafeV130(Safe):
     def get_version(self) -> str:
         return "1.3.0"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V1_3_0_contract
 
 
@@ -1227,8 +1228,8 @@ class SafeCompatibilityAdapter(Safe, ABC):
         value: int,
         data: bytes,
         operation: SafeOperationLike,
-        gas_limit: Optional[int] = None,
-        block_identifier: Optional[BlockIdentifier] = "latest",
+        gas_limit: int | None = None,
+        block_identifier: BlockIdentifier | None = "latest",
     ) -> int:
         """
         Estimate tx gas. Use `SimulateTxAccessor` and `simulate` on the `CompatibilityFallHandler`
@@ -1254,7 +1255,9 @@ class SafeCompatibilityAdapter(Safe, ABC):
                 accessor.address, simulation_data
             ).call(params)
         except (Web3ValueError, Web3RPCError, ContractLogicError) as e:
-            raise CannotEstimateGas(f"Reverted call using SimulateTxAccessor {e}")
+            raise CannotEstimateGas(
+                f"Reverted call using SimulateTxAccessor {e}"
+            ) from e
         try:
             # Simulate returns (uint256 estimate, bool success, bytes memory returnData)
             estimate, success, return_data = eth_abi.decode(
@@ -1267,21 +1270,21 @@ class SafeCompatibilityAdapter(Safe, ABC):
             return estimate
         except DecodingError as e:
             try:
-                decoded_revert: Union[tuple[Any], str] = eth_abi.decode(
+                decoded_revert: tuple[Any] | str = eth_abi.decode(
                     ["string"], accessible_data
                 )
             except DecodingError:
                 decoded_revert = "No revert message"
             raise CannotEstimateGas(
                 f"Cannot estimate gas using SimulateTxAccessor {e} - {decoded_revert}"
-            )
+            ) from e
 
 
 class SafeV141(SafeCompatibilityAdapter):
     def get_version(self) -> str:
         return "1.4.1"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V1_4_1_contract
 
     def _get_simulate_tx_accessor(self) -> Contract:
@@ -1301,7 +1304,7 @@ class SafeV150(SafeCompatibilityAdapter):
     def get_version(self) -> str:
         return "1.5.0"
 
-    def get_contract_fn(self) -> Callable[[Web3, Optional[ChecksumAddress]], Contract]:
+    def get_contract_fn(self) -> Callable[[Web3, ChecksumAddress | None], Contract]:
         return get_safe_V1_5_0_contract
 
     def _get_simulate_tx_accessor(self) -> Contract:

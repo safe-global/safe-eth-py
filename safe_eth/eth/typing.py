@@ -1,17 +1,17 @@
-from typing import Any, Dict, Optional, TypedDict, Union
+from typing import Any, TypedDict
 
 from eth_typing import ChecksumAddress, Hash32, HexStr
 from hexbytes import HexBytes
 from web3.types import LogReceipt
 
-EthereumHash = Union[Hash32, HexBytes, HexStr]
-EthereumData = Union[bytes, HexStr]
+EthereumHash = Hash32 | HexBytes | HexStr
+EthereumData = bytes | HexStr
 
 
 class BalanceDict(TypedDict):
-    token_address: Optional[ChecksumAddress]
+    token_address: ChecksumAddress | None
     balance: int
 
 
 class LogReceiptDecoded(LogReceipt):
-    args: Dict[str, Any]
+    args: dict[str, Any]

@@ -1,6 +1,6 @@
 import dataclasses
 from functools import cached_property
-from typing import Any, Dict, Optional, Union
+from typing import Any, Union
 
 from eth_abi import encode as abi_encode
 from eth_typing import ChecksumAddress, HexStr
@@ -37,13 +37,13 @@ class UserOperation:
     paymaster_and_data: bytes
     signature: bytes
     entry_point: ChecksumAddress
-    metadata: Optional[UserOperationMetadata] = None
+    metadata: UserOperationMetadata | None = None
 
     @classmethod
     def from_bundler_response(
         cls,
-        user_operation_hash: Union[HexStr, bytes],
-        user_operation_response: Dict[str, Any],
+        user_operation_hash: HexStr | bytes,
+        user_operation_response: dict[str, Any],
     ) -> Union["UserOperation", "UserOperationV07"]:
         user_operation = user_operation_response["userOperation"]
         metadata = UserOperationMetadata(
@@ -116,13 +116,13 @@ class UserOperation:
         return f"User Operation sender={self.sender} nonce={self.nonce} hash={self.user_operation_hash.hex()}"
 
     @cached_property
-    def paymaster(self) -> Optional[ChecksumAddress]:
+    def paymaster(self) -> ChecksumAddress | None:
         if self.paymaster_and_data and len(self.paymaster_and_data) >= 20:
             return fast_to_checksum_address(self.paymaster_and_data[:20])
         return None
 
     @cached_property
-    def paymaster_data(self) -> Optional[bytes]:
+    def paymaster_data(self) -> bytes | None:
         if self.paymaster_and_data:
             return self.paymaster_and_data[20:]
         return None
@@ -184,13 +184,13 @@ class UserOperationV07:
     max_priority_fee_per_gas: int
     signature: bytes
     entry_point: ChecksumAddress
-    factory: Optional[ChecksumAddress] = None
-    factory_data: Optional[bytes] = None
-    paymaster_verification_gas_limit: Optional[int] = None
-    paymaster_post_op_gas_limit: Optional[int] = None
-    paymaster: Optional[bytes] = None
-    paymaster_data: Optional[bytes] = None
-    metadata: Optional[UserOperationMetadata] = None
+    factory: ChecksumAddress | None = None
+    factory_data: bytes | None = None
+    paymaster_verification_gas_limit: int | None = None
+    paymaster_post_op_gas_limit: int | None = None
+    paymaster: bytes | None = None
+    paymaster_data: bytes | None = None
+    metadata: UserOperationMetadata | None = None
 
     @property
     def init_code(self) -> bytes:

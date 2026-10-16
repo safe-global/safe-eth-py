@@ -1,7 +1,6 @@
 import asyncio
 import hashlib
 import logging
-from typing import Optional
 from unittest import mock
 
 from django.test import TestCase
@@ -165,7 +164,7 @@ def build_nested_contract_signatures(
     test_case: "SafeTestCaseMixin",
     *,
     safe_version: str,
-    owner_safe_version: Optional[str] = None,
+    owner_safe_version: str | None = None,
 ):
     """Build both nestings of an EIP-1271 signature from an owner Safe.
 
@@ -546,16 +545,19 @@ class TestSafeSignatureZeroAddress(TestCase):
                 lambda safe_signature: asyncio.run(safe_signature.is_valid()),
             ),
         ):
-            yield safe_signature_cls, [
-                (
-                    safe_signature.signature_type,
-                    safe_signature.owner,
-                    is_valid(safe_signature),
-                )
-                for safe_signature in safe_signature_cls.parse_signature(
-                    signatures, safe_hash
-                )
-            ]
+            yield (
+                safe_signature_cls,
+                [
+                    (
+                        safe_signature.signature_type,
+                        safe_signature.owner,
+                        is_valid(safe_signature),
+                    )
+                    for safe_signature in safe_signature_cls.parse_signature(
+                        signatures, safe_hash
+                    )
+                ],
+            )
 
     def test_zero_signature(self):
         for v, signature_type in self.zero_signatures.items():
@@ -890,6 +892,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             # also the data the legacy `isValidSignature(bytes,bytes)` entrypoint takes
             SafeSignature.parse_signature(signature, safe_tx_hash, safe_tx_hash),
             [contract_signature_1, contract_signature_2],
+            strict=True,
         ):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
             self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
@@ -977,6 +980,7 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         for safe_signature, contract_signature in zip(
             SafeSignature.parse_signature(signature, safe_tx_hash),
             [contract_signature_1, contract_signature_2],
+            strict=True,
         ):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
             self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
@@ -1447,6 +1451,7 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             # also the data the legacy `isValidSignature(bytes,bytes)` entrypoint takes
             SafeSignatureAsync.parse_signature(signature, safe_tx_hash, safe_tx_hash),
             [contract_signature_1, contract_signature_2],
+            strict=True,
         ):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
             self.assertTrue(self._is_valid_async(safe_signature, None))
@@ -1527,6 +1532,7 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         for safe_signature, contract_signature in zip(
             SafeSignatureAsync.parse_signature(signature, safe_tx_hash),
             [contract_signature_1, contract_signature_2],
+            strict=True,
         ):
             self.assertEqual(safe_signature.contract_signature, contract_signature)
             self.assertTrue(self._is_valid_async(safe_signature, None))

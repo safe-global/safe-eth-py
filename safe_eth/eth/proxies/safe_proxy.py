@@ -1,5 +1,3 @@
-from typing import Optional
-
 from eth_typing import ChecksumAddress
 from web3.types import BlockIdentifier
 
@@ -12,7 +10,7 @@ class SafeProxy(Proxy):
     """
 
     def get_implementation_address(
-        self, block_identifier: Optional[BlockIdentifier] = "latest"
+        self, block_identifier: BlockIdentifier | None = "latest"
     ) -> ChecksumAddress:
         """
         :return: Address for the singleton contract the Proxy points to

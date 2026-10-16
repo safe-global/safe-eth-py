@@ -1,7 +1,8 @@
 import logging
 import os
+from collections.abc import Sequence
 from functools import cache, lru_cache
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
@@ -37,12 +38,8 @@ class BundlerClient:
         return f"Bundler client at {self.url}"
 
     def _do_request(
-        self, payload: Union[Dict[Any, Any], Sequence[Dict[Any, Any]]]
-    ) -> Union[
-        Optional[Union[Dict[str, Any]]],
-        Optional[List[Dict[str, Any]]],
-        Optional[List[str]],
-    ]:
+        self, payload: dict[Any, Any] | Sequence[dict[Any, Any]]
+    ) -> dict[str, Any] | None | list[dict[str, Any]] | None | list[str] | None:
         """
         :param payload: Allows simple request or a batch request
         :return: Result of the request
@@ -53,7 +50,7 @@ class BundlerClient:
             response = self.http_session.post(
                 self.url, json=payload, timeout=self.request_timeout
             )
-        except IOError as exception:
+        except OSError as exception:
             raise BundlerClientConnectionException(
                 f"Error connecting to bundler {self.url} : {exception}"
             ) from exception
@@ -71,7 +68,7 @@ class BundlerClient:
         for rpc_response in bundler_responses:
             result = rpc_response.get("result")
             if not result and "error" in rpc_response:
-                error_str = f'Bundler returned error for payload {payload} : {rpc_response["error"]}'
+                error_str = f"Bundler returned error for payload {payload} : {rpc_response['error']}"
                 logger.warning(error_str)
                 raise BundlerClientResponseException(error_str)
             results.append(result)
@@ -82,7 +79,7 @@ class BundlerClient:
 
     @staticmethod
     def _parse_user_operation_receipt(
-        user_operation_receipt: Dict[str, Any],
+        user_operation_receipt: dict[str, Any],
     ) -> UserOperationReceipt:
         return UserOperationReceipt(
             HexBytes(user_operation_receipt["userOpHash"]),
@@ -100,7 +97,7 @@ class BundlerClient:
     @staticmethod
     def _get_user_operation_by_hash_payload(
         user_operation_hash: HexStr, request_id: int = 1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "jsonrpc": "2.0",
             "method": "eth_getUserOperationByHash",
@@ -111,7 +108,7 @@ class BundlerClient:
     @staticmethod
     def _get_user_operation_receipt_payload(
         user_operation_hash: HexStr, request_id: int = 1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "jsonrpc": "2.0",
             "method": "eth_getUserOperationReceipt",
@@ -119,7 +116,7 @@ class BundlerClient:
             "id": request_id,
         }
 
-    @cache
+    @cache  # noqa: B019 - one client per process
     def get_chain_id(self):
         payload = {
             "jsonrpc": "2.0",
@@ -130,10 +127,10 @@ class BundlerClient:
         result = self._do_request(payload)
         return int(result, 16)
 
-    @lru_cache(maxsize=1024)
+    @lru_cache(maxsize=1024)  # noqa: B019 - one client per process
     def get_user_operation_by_hash(
         self, user_operation_hash: HexStr
-    ) -> Optional[Union[UserOperation, UserOperationV07]]:
+    ) -> UserOperation | UserOperationV07 | None:
         """
         https://docs.alchemy.com/reference/eth-getuseroperationbyhash
 
@@ -149,10 +146,10 @@ class BundlerClient:
         else:
             return None
 
-    @lru_cache(maxsize=1024)
+    @lru_cache(maxsize=1024)  # noqa: B019 - one client per process
     def get_user_operation_receipt(
         self, user_operation_hash: HexStr
-    ) -> Optional[UserOperationReceipt]:
+    ) -> UserOperationReceipt | None:
         """
         https://docs.alchemy.com/reference/eth-getuseroperationreceipt
 
@@ -168,10 +165,10 @@ class BundlerClient:
         else:
             return None
 
-    @lru_cache(maxsize=1024)
+    @lru_cache(maxsize=1024)  # noqa: B019 - one client per process
     def get_user_operation_and_receipt(
         self, user_operation_hash: HexStr
-    ) -> Optional[Tuple[Union[UserOperation, UserOperationV07], UserOperationReceipt]]:
+    ) -> tuple[UserOperation | UserOperationV07, UserOperationReceipt] | None:
         """
         Get UserOperation and UserOperationReceipt in the same request using a batch query.
         NOTE: Batch requests are not supported by Pimlico
@@ -199,8 +196,8 @@ class BundlerClient:
 
         return None
 
-    @lru_cache(maxsize=None)
-    def supported_entry_points(self) -> List[ChecksumAddress]:
+    @cache  # noqa: B019 - one client per process
+    def supported_entry_points(self) -> list[ChecksumAddress]:
         """
         https://docs.alchemy.com/reference/eth-supportedentrypoints
 

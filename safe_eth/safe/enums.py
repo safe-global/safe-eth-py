@@ -1,5 +1,4 @@
 from enum import IntEnum
-from typing import Union
 
 
 class SafeOperationEnum(IntEnum):
@@ -8,4 +7,4 @@ class SafeOperationEnum(IntEnum):
     CREATE = 2
 
 
-SafeOperationLike = Union[SafeOperationEnum, int]
+SafeOperationLike = SafeOperationEnum | int

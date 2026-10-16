@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Dict, List, Optional
 from unittest import TestCase
 
 from eth_account import Account
@@ -81,7 +80,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         "multi_send_V1_5_0": MultiSend.deploy_contract,
     }
 
-    contract_addresses: Dict[str, ChecksumAddress] = {}
+    contract_addresses: dict[str, ChecksumAddress] = {}
 
     @property
     def safe_contract(self):
@@ -285,7 +284,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         self,
         initializer: bytes,
         master_copy_address: ChecksumAddress,
-        initial_funding_wei: Optional[Wei] = None,
+        initial_funding_wei: Wei | None = None,
     ) -> Safe:
         """
         Internal method to deploy a Safe given the initializer and master copy
@@ -317,10 +316,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         master_copy_version: str,
         master_copy_address: ChecksumAddress,
         number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[ChecksumAddress]] = None,
+        threshold: int | None = None,
+        owners: list[ChecksumAddress] | None = None,
         initial_funding_wei: int = 0,
-        fallback_handler: Optional[ChecksumAddress] = None,
+        fallback_handler: ChecksumAddress | None = None,
     ) -> Safe:
         """
         Internal method to deploy Safes from 1.1.1 to 1.5.0, as setup method didn't change
@@ -378,10 +377,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     def deploy_test_safe_v1_5_0(
         self,
         number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[ChecksumAddress]] = None,
+        threshold: int | None = None,
+        owners: list[ChecksumAddress] | None = None,
         initial_funding_wei: int = 0,
-        fallback_handler: Optional[ChecksumAddress] = None,
+        fallback_handler: ChecksumAddress | None = None,
     ) -> Safe:
         """
         Deploy a Safe v1.5.0
@@ -407,10 +406,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     def deploy_test_safe_v1_4_1(
         self,
         number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[ChecksumAddress]] = None,
+        threshold: int | None = None,
+        owners: list[ChecksumAddress] | None = None,
         initial_funding_wei: int = 0,
-        fallback_handler: Optional[ChecksumAddress] = None,
+        fallback_handler: ChecksumAddress | None = None,
     ) -> Safe:
         """
         Deploy a Safe v1.4.1
@@ -436,10 +435,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     def deploy_test_safe_v1_3_0(
         self,
         number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[ChecksumAddress]] = None,
+        threshold: int | None = None,
+        owners: list[ChecksumAddress] | None = None,
         initial_funding_wei: int = 0,
-        fallback_handler: Optional[ChecksumAddress] = None,
+        fallback_handler: ChecksumAddress | None = None,
     ) -> Safe:
         """
         Deploy a Safe v1.3.0
@@ -465,10 +464,10 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     def deploy_test_safe_v1_1_1(
         self,
         number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[ChecksumAddress]] = None,
+        threshold: int | None = None,
+        owners: list[ChecksumAddress] | None = None,
         initial_funding_wei: int = 0,
-        fallback_handler: Optional[ChecksumAddress] = NULL_ADDRESS,
+        fallback_handler: ChecksumAddress | None = NULL_ADDRESS,
     ) -> Safe:
         return self._deploy_new_test_safe(
             "1.1.1",
@@ -483,8 +482,8 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
     def deploy_test_safe_v1_0_0(
         self,
         number_owners: int = 3,
-        threshold: Optional[int] = None,
-        owners: Optional[List[ChecksumAddress]] = None,
+        threshold: int | None = None,
+        owners: list[ChecksumAddress] | None = None,
         initial_funding_wei: int = 0,
     ) -> Safe:
         owners = (
@@ -516,7 +515,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
 
         return safe
 
-    def deploy_example_transaction_guard(self) -> Optional[ChecksumAddress]:
+    def deploy_example_transaction_guard(self) -> ChecksumAddress | None:
         """
         :return: An example DebugTransactionGuard (from safe contracts v1.4.1) supporting IERC165
         """
@@ -530,7 +529,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         assert tx_receipt["status"] == 1, "Problem deploying example guard"
         return tx_receipt["contractAddress"]
 
-    def deploy_example_module_guard(self) -> Optional[ChecksumAddress]:
+    def deploy_example_module_guard(self) -> ChecksumAddress | None:
         """
         :return: An example DelegateCallTransactionGuard that implements both ITransactionGuard and IModuleGuard
         This guard supports both transaction guard and module guard interfaces with ERC165 support.
@@ -565,7 +564,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         assert tx_receipt["status"] == 1, "Problem deploying example module guard"
         return tx_receipt["contractAddress"]
 
-    def deploy_sign_message_lib(self) -> Optional[ChecksumAddress]:
+    def deploy_sign_message_lib(self) -> ChecksumAddress | None:
         """
         Deploy sign message lib
 

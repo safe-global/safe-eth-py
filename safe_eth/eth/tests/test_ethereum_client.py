@@ -1,6 +1,7 @@
 import os
+from collections.abc import Sequence
 from contextlib import contextmanager
-from typing import Any, Dict, List, Sequence
+from typing import Any
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -641,7 +642,7 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
         TracingManager, "trace_transaction", return_value=creation_internal_txs
     )
     def test_get_next_traces(self, trace_transaction_mock: MagicMock):
-        def trace_addresses(traces: Sequence[Dict[str, Any]]) -> List[List[int]]:
+        def trace_addresses(traces: Sequence[dict[str, Any]]) -> list[list[int]]:
             return [trace["traceAddress"] for trace in traces]
 
         self.assertEqual(
@@ -834,7 +835,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
         self.assertEqual(self.ethereum_client.get_transaction_receipts([]), [])
         receipts = self.ethereum_client.get_transaction_receipts(tx_hashes)
-        for i, receipt in enumerate(receipts):
+        for _i, receipt in enumerate(receipts):
             self.assertEqual(receipt["status"], 1)
             self.assertGreaterEqual(receipt["gasUsed"], 21000)
 
@@ -1215,14 +1216,14 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         blocks = self.ethereum_client.get_blocks(block_numbers, full_transactions=True)
         block_hashes = [block["hash"] for block in blocks]
         block_hashes_hex = [to_0x_hex_str(block_hash) for block_hash in block_hashes]
-        for block_number, block in zip(block_numbers, blocks):
+        for block_number, block in zip(block_numbers, blocks, strict=True):
             self.assertEqual(block["number"], block_number)
             self.assertEqual(len(block["hash"]), 32)
             self.assertEqual(len(block["parentHash"]), 32)
             self.assertGreaterEqual(len(block["transactions"]), 0)
 
         blocks = self.ethereum_client.get_blocks(block_hashes, full_transactions=True)
-        for block_number, block in zip(block_numbers, blocks):
+        for block_number, block in zip(block_numbers, blocks, strict=True):
             self.assertEqual(block["number"], block_number)
             self.assertEqual(len(block["hash"]), 32)
             self.assertEqual(len(block["parentHash"]), 32)
@@ -1231,7 +1232,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         blocks = self.ethereum_client.get_blocks(
             block_hashes_hex, full_transactions=True
         )
-        for block_number, block in zip(block_numbers, blocks):
+        for block_number, block in zip(block_numbers, blocks, strict=True):
             self.assertEqual(block["number"], block_number)
             self.assertEqual(len(block["hash"]), 32)
             self.assertEqual(len(block["parentHash"]), 32)
@@ -1302,7 +1303,7 @@ OFFCHAIN_LOOKUP_REVERT_DATA = to_0x_hex_str(
 def offchain_lookup_node():
     """Node whose `eth_call` reverts with `OffchainLookup`, sync and async."""
 
-    def make_request(method: str, params: Any) -> Dict[str, Any]:
+    def make_request(method: str, params: Any) -> dict[str, Any]:
         if method == "eth_call":
             return {
                 "jsonrpc": "2.0",
@@ -1505,7 +1506,9 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             trace_block_2191709_mock,
             trace_block_15630274_mock,
         ]
-        for block_number, trace_block_mock in zip(block_numbers, block_mocks):
+        for block_number, trace_block_mock in zip(
+            block_numbers, block_mocks, strict=True
+        ):
             with self.subTest(block_number=block_number):
                 self.assertEqual(
                     self.ethereum_client.tracing.trace_block(block_number),

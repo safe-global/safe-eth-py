@@ -242,7 +242,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
 
         signature_0_removed = safe_tx.unsign(owners_unsorted[0].address)
         self.assertTrue(signature_0_removed)
-        self.assertEqual(set([]), set(safe_tx.signers))
+        self.assertEqual(set(), set(safe_tx.signers))
         self.assertEqual(len(safe_tx.signers), 0)
 
         # test unsign with invalid address

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
 class ContractMetadata:
-    name: Optional[str]
-    abi: List[Dict[str, Any]]
+    name: str | None
+    abi: list[dict[str, Any]]
     partial_match: bool
-    implementation: Optional[str] = None
+    implementation: str | None = None
