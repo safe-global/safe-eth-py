@@ -218,8 +218,8 @@ Contributors
 .. |coveralls| image:: https://coveralls.io/repos/github/safe-global/safe-eth-py/badge.svg
     :target: https://coveralls.io/github/safe-global/safe-eth-py
 
-.. |python| image:: https://img.shields.io/badge/Python-3.13-blue.svg
-    :alt: Python 3.13
+.. |python| image:: https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg
+    :alt: Python 3.11 | 3.12 | 3.13 | 3.14
 
 .. |django| image:: https://img.shields.io/badge/Django-5-blue.svg
     :alt: Django 5

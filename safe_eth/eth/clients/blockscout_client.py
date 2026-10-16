@@ -232,7 +232,7 @@ class AsyncBlockscoutClient(BlockscoutClient):
         Asynchronous version of _do_request
         """
         async with self.async_session.get(
-            url, timeout=self.request_timeout
+            url, timeout=aiohttp.ClientTimeout(total=self.request_timeout)
         ) as response:
             if not response.ok:
                 return None

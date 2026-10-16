@@ -7,6 +7,7 @@ from typing import (
     Any,
     ClassVar,
     Protocol,
+    Self,
     TypeVar,
     cast,
     runtime_checkable,
@@ -19,7 +20,6 @@ from eth_account.messages import defunct_hash_message
 from eth_typing import BlockIdentifier, ChecksumAddress, HexAddress, HexStr
 from hexbytes import HexBytes
 from packaging.version import InvalidVersion, Version
-from typing_extensions import Self
 from web3 import AsyncWeb3, Web3
 from web3.contract import Contract
 from web3.exceptions import Web3Exception, Web3RPCError, Web3ValueError

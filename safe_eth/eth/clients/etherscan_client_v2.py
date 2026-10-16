@@ -326,7 +326,7 @@ class AsyncEtherscanClientV2(EtherscanClientV2):
         """
         with wrap_http_exceptions(url, EtherscanConnectionError):
             async with self.async_session.get(
-                url, timeout=self.request_timeout
+                url, timeout=aiohttp.ClientTimeout(total=self.request_timeout)
             ) as response:
                 if not response.ok:
                     raise self._build_http_error(response.status)
