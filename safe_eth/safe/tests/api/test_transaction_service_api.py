@@ -78,6 +78,16 @@ class TestTransactionServiceAPI(EthereumTestCaseMixin, TestCase):
             transaction_service_api_calculated_base_url_with_env_api_key.api_key
         )
 
+        for ethereum_network, short_name in (
+            (EthereumNetwork.TEMPO_MAINNET, "tempo"),
+            (EthereumNetwork.TEMPO_TESTNET_MODERATO, "tempo-moderato"),
+        ):
+            transaction_service_api = TransactionServiceApi(ethereum_network)
+            self.assertEqual(
+                transaction_service_api.base_url,
+                f"{transaction_service_api.TRANSACTION_SERVICE_BASE_URL}/{short_name}",
+            )
+
         with self.assertRaises(EthereumNetworkNotSupported):
             TransactionServiceApi(EthereumNetwork.BOBA_NETWORK)
 
