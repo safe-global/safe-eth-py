@@ -10,7 +10,7 @@ from web3.types import TxParams, Wei
 
 from ..ethereum_client import EthereumClient, get_auto_ethereum_client
 from ..multicall import Multicall
-from .utils import deploy_erc20, send_tx
+from .utils import add_wait_for_receipt_middleware, deploy_erc20, send_tx
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ class EthereumTestCaseMixin:
 
         if not cls.ethereum_client:
             cls.ethereum_client = get_auto_ethereum_client()
+            add_wait_for_receipt_middleware(cls.ethereum_client.w3)
             Multicall.deploy_contract(cls.ethereum_client, cls.ethereum_test_account)
             _cached_data["ethereum_client"] = cls.ethereum_client
 
@@ -55,7 +56,7 @@ class EthereumTestCaseMixin:
         except ModuleNotFoundError:
             key = os.environ.get(
                 "ETHEREUM_TEST_PRIVATE_KEY",
-                "b0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773",  # Ganache account 9
+                "b0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773",  # Test mnemonic account 9
             )
         return Account.from_key(key)
 

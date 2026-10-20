@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from eth_account import Account
 from hexbytes import HexBytes
-from web3.exceptions import Web3RPCError
+from web3.exceptions import ContractLogicError
 
 from safe_eth.eth.constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from safe_eth.eth.contracts import get_safe_contract, get_sign_message_lib_contract
@@ -229,8 +229,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertEqual(set(contract_owners), set(owners))
         self.assertEqual(w3.eth.get_balance(owners[0]), owner0_balance)
 
-        # with self.assertRaises(CouldNotPayGasWithEther):
-        # Ganache v7 does not raise CouldNotPayGasWithEther anymore
+        # The Safe has no ether, so the internal tx fails and `execTransaction`
+        # returns `False`. The refund does not revert with GS011: the Safe pays
+        # `min(gasPrice, tx.gasprice)` and `tx.gasprice` is 0 in the `eth_call`
+        # done by `SafeTx.call`, so the payment is 0
         with self.assertRaises(InvalidInternalTx):
             safe.send_multisig_tx(
                 to,
@@ -269,7 +271,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         self.assertTrue(tx_receipt["status"])
         owner0_new_balance = w3.eth.get_balance(owners[0])
         gas_used = tx_receipt["gasUsed"]
-        gas_cost = gas_used * self.gas_price
+        gas_cost = gas_used * tx_receipt["effectiveGasPrice"]
         estimated_payment = (base_gas + gas_used) * gas_price
         real_payment = owner0_new_balance - (owner0_balance - gas_cost)
         # Estimated payment will be bigger, because it uses all the tx gas. Real payment only uses gas left
@@ -705,7 +707,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             initializer=b"",
         )
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
-        with self.assertRaisesMessage(Web3RPCError, "revert"):
+        with self.assertRaises(ContractLogicError):
             self.assertEqual(safe.retrieve_modules(), [])
         self.assertEqual(safe.retrieve_all_info().modules, [])
 

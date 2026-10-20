@@ -383,9 +383,10 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
     - **The web3 tracing middleware/request-munging is bypassed.** Results are
       decoded with ``trace_list_result_formatter`` (same as the sync plural
       ``trace_blocks``/``trace_transactions``), so the decoded shape is expected to
-      match, but this happy path is not exercised by the test suite (ganache does
-      not implement ``trace_*``). Verify against a trace-capable node
-      (Erigon / Geth ``debug``) before relying on async tracing in production.
+      match. The test suite runs ``async_trace_filter`` against the local anvil
+      node, but the other ``async_trace_*`` methods are only tested with mocked
+      responses. Verify them against a trace-capable node (Erigon / Geth ``debug``)
+      before relying on them in production.
     """
 
     async def _async_trace_rpc(self, method: str, params: Sequence[Any]) -> Any:
