@@ -54,10 +54,11 @@ class TestSafeV100(BaseTestSafe):
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(self.ethereum_test_account.key)
-        safe_tx.execute(
+        tx_hash, _ = safe_tx.execute(
             tx_sender_private_key=self.ethereum_test_account.key,
             tx_gas_price=self.gas_price,
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(safe.retrieve_modules(), [module_address])
         self.assertEqual(safe.retrieve_all_info().modules, [module_address])
 
@@ -71,5 +72,6 @@ class TestSafeV100(BaseTestSafe):
             self.safe_contract.address,
             initializer=b"",
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_modules(), [])

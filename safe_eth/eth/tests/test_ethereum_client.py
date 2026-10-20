@@ -180,7 +180,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         token_balance = self.ethereum_client.erc20.get_balance(
             address, erc20_contract.address
         )
-        self.assertTrue(token_balance, amount)
+        self.assertEqual(token_balance, amount)
 
         another_account = Account.create().address
         token_balance = self.ethereum_client.erc20.get_balance(
@@ -449,9 +449,10 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         )
 
         amount_2 = 3
-        self.ethereum_client.erc20.send_tokens(
+        tx_hash = self.ethereum_client.erc20.send_tokens(
             owner_2.address, amount_2, erc20.address, owner.key
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(
             self.ethereum_client.erc20.get_balance(owner.address, erc20.address),
             amount - amount_2,
@@ -897,23 +898,24 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
         )
+        self.wait_for_receipt(tx_hash)
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_client.send_eth_to(
-            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
-        )
-        self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
-
-        _ = self.ethereum_client.send_eth_to(
-            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
-        )
+        for _ in range(2):
+            next_tx_hash = self.ethereum_client.send_eth_to(
+                self.ethereum_test_account.key,
+                to=to,
+                gas_price=self.gas_price,
+                value=value,
+            )
+            self.wait_for_receipt(next_tx_hash)
         self.assertTrue(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
     def test_estimate_gas(self):
         send_ether_gas = 21000
         from_ = self.ethereum_test_account.address
         # 21000 only holds for an existing account, a new one costs more on Amsterdam (EIP-8037)
-        to = self.w3.eth.accounts[0]
+        to = self.create_and_fund_account(initial_wei=1).address
         gas = self.ethereum_client.estimate_gas(
             to, from_=from_, value=5, data=None, block_identifier="pending"
         )
@@ -964,7 +966,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         token_balance = self.ethereum_client.erc20.get_balance(
             to, erc20_contract.address
         )
-        self.assertTrue(token_balance, amount_to_send)
+        self.assertEqual(token_balance, amount_to_send)
 
         # Gas will be lowest now because you don't have to pay for storage
         gas2 = self.ethereum_client.estimate_gas(
@@ -1050,9 +1052,10 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_eth_to(self):
         address = Account.create().address
         value = 1
-        self.ethereum_client.send_eth_to(
+        tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, address, self.gas_price, value
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(address), value)
 
     def test_send_eth_without_key(self):
@@ -1078,7 +1081,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.send_transaction(tx)
 
         tx["from"] = address
-        self.ethereum_client.send_transaction(tx)
+        tx_hash = self.ethereum_client.send_transaction(tx)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), 1)
 
         with self.assertRaises(InvalidNonce):
@@ -1106,7 +1110,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         ):
             self.ethereum_client.send_unsigned_transaction(tx)
 
-        self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
         first_nonce = tx["nonce"]
         self.assertGreaterEqual(first_nonce, 0)
@@ -1116,17 +1121,19 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
 
         # With retry, everything should work
-        self.ethereum_client.send_unsigned_transaction(
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
             tx, public_key=address, retry=True
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 1)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 2)
 
         # We try again with the first nonce, and should work too
         tx["nonce"] = first_nonce
-        self.ethereum_client.send_unsigned_transaction(
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
             tx, public_key=address, retry=True
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
@@ -1145,7 +1152,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             "gasPrice": self.gas_price,
         }
 
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
         first_nonce = tx["nonce"]
         self.assertGreaterEqual(first_nonce, 0)
@@ -1155,13 +1163,19 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
 
         # With retry, everything should work
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=key, retry=True)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=key, retry=True
+        )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 1)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 2)
 
         # We try again with the first nonce, and should work too
         tx["nonce"] = first_nonce
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=key, retry=True)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=key, retry=True
+        )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
@@ -1172,10 +1186,12 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
         )
-        receipt1 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None)
-        receipt2 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
-        self.assertIsNotNone(receipt1)
-        self.assertEqual(receipt1, receipt2)
+        receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
+        self.assertIsNotNone(receipt)
+        # Without timeout the receipt is only returned if the tx is already mined
+        self.assertEqual(
+            self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None), receipt
+        )
 
         fake_tx_hash = self.w3.keccak(0)
         self.assertIsNone(

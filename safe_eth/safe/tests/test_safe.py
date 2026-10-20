@@ -53,6 +53,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             threshold,
             proxy_factory_address=self.proxy_factory_contract.address,
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_master_copy_address(), master_copy_address)
         self.assertEqual(safe.retrieve_owners(), owners)
@@ -134,6 +135,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         ethereum_tx_send = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account, master_copy_address
         )
+        self.wait_for_receipt(ethereum_tx_send.tx_hash)
         safe = Safe(ethereum_tx_send.contract_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_master_copy_address(), master_copy_address)
 
@@ -267,7 +269,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             tx_gas_price=self.gas_price,
         )
 
-        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertTrue(tx_receipt["status"])
         owner0_new_balance = w3.eth.get_balance(owners[0])
         gas_used = tx_receipt["gasUsed"]
@@ -336,11 +338,12 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             )
 
         # Give erc20 tokens to the safe
-        self.ethereum_client.erc20.send_tokens(
+        tx_hash = self.ethereum_client.erc20.send_tokens(
             my_safe_address, amount_token, erc20_contract.address, funder_account.key
         )
+        self.wait_for_receipt(tx_hash)
 
-        safe.send_multisig_tx(
+        ethereum_tx_sent = safe.send_multisig_tx(
             to,
             value,
             data,
@@ -354,6 +357,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             tx_sender_private_key=owner_account.key,
             tx_gas_price=self.gas_price,
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
 
         safe_token_balance = self.ethereum_client.erc20.get_balance(
             my_safe_address, erc20_contract.address
@@ -491,7 +495,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         tx_hash = nester_contract.constructor().transact(
             {"from": self.w3.eth.accounts[0]}
         )
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         nester = self.w3.eth.contract(address=tx_receipt["contractAddress"], abi=abi)
 
         safe = self.deploy_test_safe(
@@ -537,7 +541,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         )
 
         safe_tx_hash, safe_w3_tx = safe_tx.execute(self.ethereum_test_account.key)
-        self.w3.eth.wait_for_transaction_receipt(safe_tx_hash)
+        self.wait_for_receipt(safe_tx_hash)
 
         # Tx was successfully executed if refund_receiver gets ether
         self.assertGreater(self.ethereum_client.get_balance(refund_receiver), 0)
@@ -589,7 +593,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         )
         set_guard_tx = safe.build_multisig_tx(safe.address, 0, set_guard_data)
         set_guard_tx.sign(owner_account.key)
-        set_guard_tx.execute(self.ethereum_test_account.key)
+        tx_hash, _ = set_guard_tx.execute(self.ethereum_test_account.key)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(safe.retrieve_transaction_guard(), guard_address)
 
     def test_retrieve_module_guard(self):
@@ -608,7 +613,8 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             safe.address, 0, set_module_guard_data
         )
         set_module_guard_tx.sign(owner_account.key)
-        set_module_guard_tx.execute(self.ethereum_test_account.key)
+        tx_hash, _ = set_module_guard_tx.execute(self.ethereum_test_account.key)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(safe.retrieve_module_guard(), module_guard_address)
 
     def test_retrieve_info(self):
@@ -674,10 +680,11 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(self.ethereum_test_account.key)
-        safe_tx.execute(
+        tx_hash, _ = safe_tx.execute(
             tx_sender_private_key=self.ethereum_test_account.key,
             tx_gas_price=self.gas_price,
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(safe.retrieve_modules(), [module_address])
 
         more_modules = [Account.create().address for _ in range(2)]
@@ -688,10 +695,11 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             )
             safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
             safe_tx.sign(self.ethereum_test_account.key)
-            safe_tx.execute(
+            tx_hash, _ = safe_tx.execute(
                 tx_sender_private_key=self.ethereum_test_account.key,
                 tx_gas_price=self.gas_price,
             )
+            self.wait_for_receipt(tx_hash)
         self.assertCountEqual(
             safe.retrieve_modules(pagination=1), [module_address] + more_modules
         )
@@ -706,6 +714,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             self.safe_contract.address,
             initializer=b"",
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
         with self.assertRaises(ContractLogicError):
             self.assertEqual(safe.retrieve_modules(), [])
@@ -720,9 +729,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             {"from": self.ethereum_test_account.address}
         )
 
-        self.ethereum_client.send_unsigned_transaction(
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
             tx, private_key=self.ethereum_test_account.key
         )
+        self.wait_for_receipt(tx_hash)
         self.assertTrue(
             safe.retrieve_is_hash_approved(
                 self.ethereum_test_account.address, fake_tx_hash
@@ -747,7 +757,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, sign_message_data)
         safe_tx.sign(self.ethereum_test_account.key)
-        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
+        tx_hash, _ = safe_tx.execute(
+            tx_sender_private_key=self.ethereum_test_account.key
+        )
+        self.wait_for_receipt(tx_hash)
         self.assertTrue(safe.retrieve_is_message_signed(message_hash))
 
     def test_retrieve_is_message_signed(self):
@@ -767,7 +780,10 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             SafeOperationEnum.DELEGATE_CALL.value,
         )
         safe_tx.sign(self.ethereum_test_account.key)
-        safe_tx.execute(tx_sender_private_key=self.ethereum_test_account.key)
+        tx_hash, _ = safe_tx.execute(
+            tx_sender_private_key=self.ethereum_test_account.key
+        )
+        self.wait_for_receipt(tx_hash)
         self.assertTrue(safe.retrieve_is_message_signed(message_hash))
 
     def test_retrieve_is_owner(self):
@@ -873,7 +889,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
         signatures = (1, int(owners[0], 16), 0), (1, int(owners[1], 16), 0)
         signature_bytes = signatures_to_bytes(signatures)
 
-        safe.send_multisig_tx(
+        ethereum_tx_sent = safe.send_multisig_tx(
             to,
             value,
             data,
@@ -886,6 +902,7 @@ class TestSafe(SafeTestCaseMixin, TestCase):
             signature_bytes,
             self.ethereum_test_account.key,
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
 
         balance = self.w3.eth.get_balance(to)
         self.assertEqual(value, balance)

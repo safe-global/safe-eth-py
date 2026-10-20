@@ -54,7 +54,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
             safe_creation_tx.gas,
             safe_creation_tx.gas_price,
         )
-        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt["status"], 1)
 
         # Funder balance must be bigger after a Safe deployment, as Safe deployment is a little overpriced
@@ -89,7 +89,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
             .constructor()
             .transact({"from": self.ethereum_test_account.address})
         )
-        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         master_copy = tx_receipt["contractAddress"]
 
         salt_nonce = generate_salt_nonce()
@@ -127,7 +127,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
             safe_creation_tx.gas,
             safe_creation_tx.gas_price,
         )
-        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt["status"], 1)
 
         # Funder balance must be bigger after a Safe deployment, as Safe deployment is a little overpriced
@@ -197,7 +197,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
             gas=safe_creation_tx.gas,
             gas_price=safe_creation_tx.gas_price,
         )
-        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt["status"], 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
@@ -268,7 +268,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
             gas=safe_creation_tx.gas,
             gas_price=safe_creation_tx.gas_price,
         )
-        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt["status"], 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
@@ -351,7 +351,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
             gas=safe_creation_tx.gas,
             gas_price=safe_creation_tx.gas_price,
         )
-        tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+        tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(tx_receipt["status"], 1)
         logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
             tx_receipt
@@ -417,7 +417,7 @@ class TestSafeCreation2Tx(SafeTestCaseMixin, TestCase):
                 gas=safe_creation_tx.gas,
                 gas_price=safe_creation_tx.gas_price,
             )
-            tx_receipt = w3.eth.wait_for_transaction_receipt(ethereum_tx_sent.tx_hash)
+            tx_receipt = self.wait_for_receipt(ethereum_tx_sent.tx_hash)
             self.assertEqual(tx_receipt["status"], 1)
             logs = self.proxy_factory_contract.events.ProxyCreation().process_receipt(
                 tx_receipt

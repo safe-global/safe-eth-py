@@ -687,7 +687,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )
         safe_tx.signatures = signatures
         self.assertEqual(safe_tx.call(), 1)
-        safe_tx.execute(self.ethereum_test_account.key)
+        tx_hash, _ = safe_tx.execute(self.ethereum_test_account.key)
+        self.wait_for_receipt(tx_hash)
 
     def test_contract_signature_deprecated(self):
         """
@@ -720,7 +721,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner_1.key)
-        safe_tx.execute(owner_1.key)
+        tx_hash, _ = safe_tx.execute(owner_1.key)
+        self.wait_for_receipt(tx_hash)
 
         safe_signature = SafeSignature.parse_signature(
             signature, safe_tx_hash, safe_tx_hash
@@ -786,7 +788,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             SafeOperationEnum.DELEGATE_CALL.value,
         )
         safe_tx.sign(owner_1.key)
-        safe_tx.execute(owner_1.key)
+        tx_hash, _ = safe_tx.execute(owner_1.key)
+        self.wait_for_receipt(tx_hash)
 
         safe_signature = SafeSignature.parse_signature(signature, safe_tx_hash)[0]
         self.assertTrue(safe_signature.is_valid(self.ethereum_client, None))
@@ -846,7 +849,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner_1.key)
-        safe_tx.execute(owner_1.key)
+        tx_hash, _ = safe_tx.execute(owner_1.key)
+        self.wait_for_receipt(tx_hash)
 
         # Check multiple signatures. In this case we reuse signatures for the same owner, it won't make sense
         # in real life
@@ -933,7 +937,8 @@ class TestSafeContractSignature(SafeTestCaseMixin, TestCase):
             SafeOperationEnum.DELEGATE_CALL.value,
         )
         safe_tx.sign(owner_1.key)
-        safe_tx.execute(owner_1.key)
+        tx_hash, _ = safe_tx.execute(owner_1.key)
+        self.wait_for_receipt(tx_hash)
 
         # Check multiple signatures. In this case we reuse signatures for the same owner, it won't make sense
         # in real life
@@ -1292,7 +1297,8 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner.key)
-        safe_tx.execute(owner.key)
+        tx_hash, _ = safe_tx.execute(owner.key)
+        self.wait_for_receipt(tx_hash)
 
         safe_signature = SafeSignatureAsync.parse_signature(
             signature, safe_tx_hash, safe_tx_hash
@@ -1353,7 +1359,8 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             SafeOperationEnum.DELEGATE_CALL.value,
         )
         safe_tx.sign(owner.key)
-        safe_tx.execute(owner.key)
+        tx_hash, _ = safe_tx.execute(owner.key)
+        self.wait_for_receipt(tx_hash)
 
         safe_signature = SafeSignatureAsync.parse_signature(signature, safe_tx_hash)[0]
         self.assertTrue(self._is_valid_async(safe_signature, None))
@@ -1411,7 +1418,8 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
         )
         safe_tx = safe.build_multisig_tx(safe.address, 0, tx["data"])
         safe_tx.sign(owner.key)
-        safe_tx.execute(owner.key)
+        tx_hash, _ = safe_tx.execute(owner.key)
+        self.wait_for_receipt(tx_hash)
 
         signature_r_1 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s_1 = HexBytes("82".rjust(64, "0"))
@@ -1491,7 +1499,8 @@ class TestSafeContractSignatureAsync(AsyncSignatureTestMixin, SafeTestCaseMixin)
             SafeOperationEnum.DELEGATE_CALL.value,
         )
         safe_tx.sign(owner.key)
-        safe_tx.execute(owner.key)
+        tx_hash, _ = safe_tx.execute(owner.key)
+        self.wait_for_receipt(tx_hash)
 
         signature_r_1 = HexBytes(safe.address.replace("0x", "").rjust(64, "0"))
         signature_s_1 = HexBytes("82".rjust(64, "0"))

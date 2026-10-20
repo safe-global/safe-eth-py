@@ -40,7 +40,6 @@ from .test_ethereum_client import (
     forbid_rpc_calls,
     offchain_lookup_node,
 )
-from .utils import add_wait_for_receipt_middleware
 
 # Manager attributes that must themselves be wrapped in a proxy
 _MANAGER_ATTRS = frozenset(("erc20", "erc721", "tracing", "batch_call_manager"))
@@ -85,8 +84,6 @@ class AsyncEthereumClientTestMixin:
         cls._sync_ethereum_client = cls.ethereum_client
         cls._async_loop = asyncio.new_event_loop()
         cls._async_ethereum_client = AsyncEthereumClient(cls.ethereum_node_url)
-        add_wait_for_receipt_middleware(cls._async_ethereum_client.async_w3)
-        add_wait_for_receipt_middleware(cls._async_ethereum_client.w3)
         cls.ethereum_client = SyncCallProxy(cls._async_ethereum_client, cls._async_loop)
 
     @classmethod

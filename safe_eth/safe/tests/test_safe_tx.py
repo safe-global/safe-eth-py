@@ -76,7 +76,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         tx_hash, _ = safe_tx.execute(
             tx_sender_private_key=to_0x_hex_str(self.ethereum_test_account.key)
         )
-        self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(safe.retrieve_nonce(), 1)
         self.assertEqual(safe.retrieve_threshold(), new_threshold)
         self.assertCountEqual(safe.retrieve_owners(), owners_expected)
@@ -130,7 +130,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         tx_hash, _ = safe_tx.execute(
             tx_sender_private_key=self.ethereum_test_account.key
         )
-        self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
 
         safe_tx.unsign(owners[0].address)
