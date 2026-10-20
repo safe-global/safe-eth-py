@@ -30,7 +30,7 @@ from safe_eth.eth.contracts import (
 )
 from safe_eth.eth.exceptions import ContractAlreadyDeployed
 from safe_eth.eth.tests.ethereum_test_case import EthereumTestCaseMixin
-from safe_eth.eth.tests.utils import send_tx
+from safe_eth.eth.tests.utils import send_tx, wait_for_receipt
 from safe_eth.eth.utils import get_empty_tx_params
 from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSend
@@ -300,8 +300,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             cls.ethereum_test_account,
         )
         tx_hash = cls.ethereum_client.send_raw_transaction(raw_tx)
-        tx_receipt = cls.ethereum_client.get_transaction_receipt(tx_hash, timeout=30)
-        assert tx_receipt is not None
+        tx_receipt = wait_for_receipt(cls.w3, tx_hash)
         assert tx_receipt["status"] == 1
 
     def deploy_test_safe(self, *args, **kwargs) -> Safe:
@@ -332,6 +331,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
             initializer=initializer,
         )
         assert ethereum_tx_sent.contract_address is not None
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         safe = Safe(  # type: ignore[abstract]
             ethereum_tx_sent.contract_address,
             self.ethereum_client,
@@ -557,7 +557,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         tx_hash = guard_contract.constructor().transact(
             {"from": self.w3.eth.accounts[0]}
         )
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         assert tx_receipt["status"] == 1, "Problem deploying example guard"
         return tx_receipt["contractAddress"]
 
@@ -592,7 +592,7 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         tx_hash = guard_contract.constructor(NULL_ADDRESS).transact(
             {"from": self.w3.eth.accounts[0]}
         )
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         assert tx_receipt["status"] == 1, "Problem deploying example module guard"
         return tx_receipt["contractAddress"]
 
@@ -604,6 +604,6 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         """
         contract = get_sign_message_lib_contract(self.ethereum_client.w3)
         tx_hash = contract.constructor().transact({"from": self.w3.eth.accounts[0]})
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         assert tx_receipt["status"] == 1, "Problem deploying sign message lib"
         return tx_receipt["contractAddress"]

@@ -30,6 +30,7 @@ class TestSafeV130(BaseTestSafe):
             self.safe_contract.address,
             initializer=b"",
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         safe = Safe(ethereum_tx_sent.contract_address, self.ethereum_client)
         self.assertEqual(safe.retrieve_modules(), [])
         self.assertEqual(safe.retrieve_all_info().modules, [])

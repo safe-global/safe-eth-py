@@ -72,8 +72,9 @@ coverage report
 to run the Django part of the suite and is not shipped in the wheel.
 
 Test node notes:
-- anvil returns the tx hash before the block is mined. `EthereumTestCaseMixin` adds a
-  `WaitForReceiptMiddleware` to the test client, so tests can read the new state right after a send
+- anvil returns the tx hash before the block is mined, like a real node. A test that reads state
+  after sending a tx must wait for the receipt first (`self.wait_for_receipt` in
+  `EthereumTestCaseMixin`, it polls faster than the web3 default)
 - The Safe Singleton Factory is set with `anvil_setCode`. On other nodes the presigned deployment
   tx is used, which runs out of gas on Amsterdam
 - The block gas limit is 200M: on Amsterdam, deploying the Safe singletons costs more than 10M gas
