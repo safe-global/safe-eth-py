@@ -44,11 +44,11 @@ or newer (the local mypy hook uses `language: unsupported`), and that hook runs 
 
 ### Running Tests
 
-Tests need Postgres (Django test database) and a ganache node on `localhost:8545` started with the
-fixed mnemonic (`-d`), because the test mixins deploy Safe and Multicall contracts on it:
+Tests need Postgres (Django test database) and an anvil node on `localhost:8545` started with the
+test mnemonic and chain id 1337, because the test mixins deploy Safe and Multicall contracts on it:
 
 ```bash
-docker compose up -d db ganache
+docker compose up -d --wait db anvil
 
 # Run all tests
 pytest
@@ -70,6 +70,16 @@ coverage report
 `DJANGO_SETTINGS_MODULE=config.settings.test` is set automatically by `pytest-env`
 (`[tool.pytest_env]` in `pyproject.toml`), so plain `pytest` works. The `config/` package exists only
 to run the Django part of the suite and is not shipped in the wheel.
+
+Test node notes:
+- anvil returns the tx hash before the block is mined. `EthereumTestCaseMixin` adds a
+  `WaitForReceiptMiddleware` to the test client, so tests can read the new state right after a send
+- The Safe Singleton Factory is set with `anvil_setCode`. On other nodes the presigned deployment
+  tx is used, which runs out of gas on Amsterdam
+- The block gas limit is 200M: on Amsterdam, deploying the Safe singletons costs more than 10M gas
+- No stable anvil release implements the Amsterdam gas rules yet. To run the suite on Amsterdam,
+  use a nightly image (e.g. `ghcr.io/foundry-rs/foundry:nightly-f14e39d2a14d2ba9e9132b0aa7e10a3932a054fc`)
+  with `--hardfork amsterdam`
 
 ### Linting and Type Checking
 ```bash

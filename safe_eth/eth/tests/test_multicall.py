@@ -23,9 +23,9 @@ class TestMulticallAddresses(TestCase):
             self.assertTrue(fast_is_checksum_address(address))
 
 
-class TestMulticallGanache(EthereumTestCaseMixin, TestCase):
+class TestMulticallLocalNode(EthereumTestCaseMixin, TestCase):
     """
-    Test Multicall using ganache
+    Test Multicall using the local test node
     """
 
     @mock.patch.object(

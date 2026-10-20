@@ -6,9 +6,14 @@ from eth_account import Account
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from web3.contract import Contract
-from web3.types import Wei
+from web3.exceptions import Web3RPCError
+from web3.types import RPCEndpoint, Wei
 
-from safe_eth.eth.constants import NULL_ADDRESS, SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS
+from safe_eth.eth.constants import (
+    NULL_ADDRESS,
+    SAFE_SINGLETON_FACTORY_ADDRESS,
+    SAFE_SINGLETON_FACTORY_DEPLOYER_ADDRESS,
+)
 from safe_eth.eth.contracts import (
     get_compatibility_fallback_handler_contract,
     get_extensible_fallback_handler_contract,
@@ -40,6 +45,14 @@ from ..extensible_fallback_handler import ExtensibleFallbackHandlerV150
 from ..safe import SafeV001, SafeV100, SafeV111, SafeV130, SafeV141, SafeV150
 
 logger = logging.getLogger(__name__)
+
+# Runtime code of the Safe Singleton Factory (CREATE2 with the first 32 bytes of
+# calldata as salt and the rest as init code). It is the code returned by the init
+# code of the presigned tx in `_send_safe_singleton_factory_presigned_tx`
+SAFE_SINGLETON_FACTORY_RUNTIME_CODE = (
+    "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0"
+    "3601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3"
+)
 
 
 class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
@@ -242,15 +255,39 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         Deploy Safe Singleton Factory for deterministic deployments and speeding up tests,
         due to being able to check quickly if contracts are deployed in their expected addresses
 
-        Singleton factory with `1337` chainId is used
-        Deployer address: 0xE1CB04A0fA36DdD16a06ea828007E35e1a3cBC37
         Expected factory address: 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7
+
+        On anvil the factory code is set with ``anvil_setCode``, as the presigned
+        deployment tx has a fixed gas limit of 100k, which runs out of gas on Amsterdam
+        (EIP-8037). Other nodes (e.g. ganache, still used by downstream projects) get the
+        presigned tx with `1337` chainId, from deployer
+        0xE1CB04A0fA36DdD16a06ea828007E35e1a3cBC37.
 
         :return: `True` if deployed, `False` otherwise
         """
         if cls.ethereum_client.get_singleton_factory_address():
             return False
 
+        try:
+            cls.w3.manager.request_blocking(
+                RPCEndpoint("anvil_setCode"),
+                [SAFE_SINGLETON_FACTORY_ADDRESS, SAFE_SINGLETON_FACTORY_RUNTIME_CODE],
+            )
+        except Web3RPCError as e:
+            # Nodes without the method return -32601 or name it in the error
+            # (ganache returns -32700)
+            error_code = (e.rpc_response or {}).get("error", {}).get("code")
+            if error_code != -32601 and "anvil_setCode" not in str(e):
+                raise
+            cls._send_safe_singleton_factory_presigned_tx()
+
+        # Clear cached empty singleton factory
+        cls.ethereum_client.clear_cache()
+
+        return True
+
+    @classmethod
+    def _send_safe_singleton_factory_presigned_tx(cls) -> None:
         raw_tx = HexBytes(
             "0xf8a78085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3820a96a0460c6ea9b8f791e5d9e67fbf2c70aba92bf88591c39ac3747ea1bedc2ef1750ca04b08a4b5cea15a56276513da7a0c0b34f16e89811d5dd911efba5f8625a921cc"
         )
@@ -266,11 +303,6 @@ class SafeTestCaseMixin(EthereumTestCaseMixin, TestCase):
         tx_receipt = cls.ethereum_client.get_transaction_receipt(tx_hash, timeout=30)
         assert tx_receipt is not None
         assert tx_receipt["status"] == 1
-
-        # Clear cached empty singleton factory
-        cls.ethereum_client.clear_cache()
-
-        return True
 
     def deploy_test_safe(self, *args, **kwargs) -> Safe:
         """

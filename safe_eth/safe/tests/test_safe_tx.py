@@ -436,7 +436,8 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         ).safe_tx_hash
         self.assertEqual(HexBytes(expected_hash), safe_tx_hash)
 
-        # Test with ganache master copy contract v1.3.0
+        # Check against `getTransactionHash` of the Safe v1.5.0 singleton deployed on
+        # the test node. The Safe tx hash is the same for v1.3.0 and newer
         chain_id = self.ethereum_client.w3.eth.chain_id
         safe_tx_hash = SafeTx(
             self.ethereum_client,
