@@ -16,7 +16,7 @@ class TestMinimalProxy(EthereumTestCaseMixin, TestCase):
         tx = {"data": deployment_data}
 
         tx_hash = self.send_tx(tx, account)
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         proxy_address = tx_receipt["contractAddress"]
         code = self.w3.eth.get_code(proxy_address)
         self.assertEqual(code, expected_code)

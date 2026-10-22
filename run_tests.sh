@@ -1,9 +1,8 @@
 #!/bin/sh
-# Postgresql and ganache-cli must be running for the tests
+# Postgresql and anvil must be running for the tests
 
-docker-compose up -d db ganache
-sleep 3
+docker compose up -d --wait db anvil
 
 # python manage.py test --settings=config.settings.test
 DJANGO_SETTINGS_MODULE=config.settings.test pytest
-docker-compose down
+docker compose down

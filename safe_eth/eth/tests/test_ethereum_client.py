@@ -26,7 +26,6 @@ from ..ethereum_client import (
     Erc20Manager,
     EthereumClient,
     EthereumNetwork,
-    FromAddressNotFound,
     InsufficientFunds,
     InvalidNonce,
     SenderAccountNotFoundInNode,
@@ -37,6 +36,7 @@ from ..exceptions import (
     BatchCallException,
     EthereumClientConnectionException,
     InvalidERC20Info,
+    NonceTooLow,
 )
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
@@ -180,7 +180,7 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         token_balance = self.ethereum_client.erc20.get_balance(
             address, erc20_contract.address
         )
-        self.assertTrue(token_balance, amount)
+        self.assertEqual(token_balance, amount)
 
         another_account = Account.create().address
         token_balance = self.ethereum_client.erc20.get_balance(
@@ -449,9 +449,10 @@ class TestERC20Module(EthereumTestCaseMixin, TestCase):
         )
 
         amount_2 = 3
-        self.ethereum_client.erc20.send_tokens(
+        tx_hash = self.ethereum_client.erc20.send_tokens(
             owner_2.address, amount_2, erc20.address, owner.key
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(
             self.ethereum_client.erc20.get_balance(owner.address, erc20.address),
             amount - amount_2,
@@ -689,12 +690,26 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
         with self.assertRaisesMessage(AssertionError, "at least"):
             self.ethereum_client.tracing.trace_filter()
 
-        with self.assertRaisesMessage(
-            Web3RPCError, "The method trace_filter does not exist/is not available"
-        ):
+        to = Account.create().address
+        tx_hash = self.send_ether(to, 7)
+        block_number = self.ethereum_client.get_transaction_receipt(tx_hash)[
+            "blockNumber"
+        ]
+        traces = self.ethereum_client.tracing.trace_filter(
+            from_block=block_number, to_block=block_number, to_address=[to]
+        )
+        self.assertEqual(len(traces), 1)
+        self.assertEqual(HexBytes(traces[0]["transactionHash"]), HexBytes(tx_hash))
+        self.assertEqual(traces[0]["action"]["value"], 7)
+
+        self.assertEqual(
             self.ethereum_client.tracing.trace_filter(
-                to_address=[Account.create().address]
-            )
+                from_block=block_number,
+                to_block=block_number,
+                to_address=[Account.create().address],
+            ),
+            [],
+        )
 
     @mock.patch.object(requests.Response, "json")
     def test_raw_batch_request(self, session_post_mock: MagicMock):
@@ -846,22 +861,24 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
         )
+        self.wait_for_receipt(tx_hash)
         self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
-        _ = self.ethereum_client.send_eth_to(
-            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
-        )
-        self.assertFalse(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
-
-        _ = self.ethereum_client.send_eth_to(
-            self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
-        )
+        for _ in range(2):
+            next_tx_hash = self.ethereum_client.send_eth_to(
+                self.ethereum_test_account.key,
+                to=to,
+                gas_price=self.gas_price,
+                value=value,
+            )
+            self.wait_for_receipt(next_tx_hash)
         self.assertTrue(self.ethereum_client.check_tx_with_confirmations(tx_hash, 2))
 
     def test_estimate_gas(self):
         send_ether_gas = 21000
         from_ = self.ethereum_test_account.address
-        to = Account.create().address
+        # 21000 only holds for an existing account, a new one costs more on Amsterdam (EIP-8037)
+        to = self.create_and_fund_account(initial_wei=1).address
         gas = self.ethereum_client.estimate_gas(
             to, from_=from_, value=5, data=None, block_identifier="pending"
         )
@@ -887,15 +904,16 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         ).build_transaction({"from": from_})
         data = transfer_tx["data"]
 
-        # Ganache does not cares about all this anymore
-        # ---------------------------------------------
-        # Ganache returns error because there is data but address is not a contract
-        # with self.assertRaisesMessage(ValueError, 'transaction which calls a contract function'):
-        #    self.ethereum_client.estimate_gas(from_, to, 0, data, block_identifier='pending')
-        # `to` is not a contract, no functions will be triggered
-        # gas = self.ethereum_client.estimate_gas(from_, to, 0, data, block_identifier='pending')
-        # self.assertGreater(gas, send_ether_gas)
-        # self.assertLess(gas, send_ether_gas + 2000)
+        # `to` is not a contract, so only the calldata is charged on top of a call
+        # without data. The base cost depends on the hardfork (EIP-2780)
+        gas_without_data = self.ethereum_client.estimate_gas(
+            to, from_=from_, value=0, data=b"", block_identifier="pending"
+        )
+        gas = self.ethereum_client.estimate_gas(
+            to, from_=from_, value=0, data=data, block_identifier="pending"
+        )
+        self.assertGreater(gas, gas_without_data)
+        self.assertLess(gas, gas_without_data + 5000)
 
         gas = self.ethereum_client.estimate_gas(
             erc20_contract.address,
@@ -911,7 +929,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         token_balance = self.ethereum_client.erc20.get_balance(
             to, erc20_contract.address
         )
-        self.assertTrue(token_balance, amount_to_send)
+        self.assertEqual(token_balance, amount_to_send)
 
         # Gas will be lowest now because you don't have to pay for storage
         gas2 = self.ethereum_client.estimate_gas(
@@ -997,9 +1015,10 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
     def test_send_eth_to(self):
         address = Account.create().address
         value = 1
-        self.ethereum_client.send_eth_to(
+        tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, address, self.gas_price, value
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(address), value)
 
     def test_send_eth_without_key(self):
@@ -1014,13 +1033,10 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx = {
             "to": to,
             "value": value,
-            "gas": 23000,
+            "gas": self.ethereum_client.estimate_gas(to, from_=address, value=value),
             "gasPrice": self.gas_price,
             "nonce": self.ethereum_client.get_nonce_for_account(address),
         }
-
-        with self.assertRaises(FromAddressNotFound):
-            self.ethereum_client.send_transaction(tx)
 
         # Random address not in the node
         tx["from"] = Account.create().address
@@ -1028,7 +1044,8 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.send_transaction(tx)
 
         tx["from"] = address
-        self.ethereum_client.send_transaction(tx)
+        tx_hash = self.ethereum_client.send_transaction(tx)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), 1)
 
         with self.assertRaises(InvalidNonce):
@@ -1048,7 +1065,7 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx = {
             "to": to,
             "value": value,
-            "gas": 23000,
+            "gas": self.ethereum_client.estimate_gas(to, from_=address, value=value),
         }
 
         with self.assertRaisesMessage(
@@ -1056,31 +1073,33 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         ):
             self.ethereum_client.send_unsigned_transaction(tx)
 
-        self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
         first_nonce = tx["nonce"]
         self.assertGreaterEqual(first_nonce, 0)
 
         # Will use the same nonce
-        with self.assertRaisesMessage(InvalidNonce, "correct nonce"):
+        with self.assertRaises(NonceTooLow):
             self.ethereum_client.send_unsigned_transaction(tx, public_key=address)
 
         # With retry, everything should work
-        self.ethereum_client.send_unsigned_transaction(
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
             tx, public_key=address, retry=True
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 1)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 2)
 
         # We try again with the first nonce, and should work too
         tx["nonce"] = first_nonce
-        self.ethereum_client.send_unsigned_transaction(
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
             tx, public_key=address, retry=True
         )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
-    @pytest.mark.xfail(reason="Last ganache-cli version broke the test")
     def test_send_unsigned_transaction_with_private_key(self):
         account = self.create_and_fund_account(initial_ether=0.1)
         key = account.key
@@ -1090,27 +1109,36 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx = {
             "to": to,
             "value": value,
-            "gas": 23000,
+            "gas": self.ethereum_client.estimate_gas(
+                to, from_=account.address, value=value
+            ),
             "gasPrice": self.gas_price,
         }
 
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
         first_nonce = tx["nonce"]
         self.assertGreaterEqual(first_nonce, 0)
 
         # Will use the same nonce
-        with self.assertRaisesMessage(InvalidNonce, "correct nonce"):
+        with self.assertRaises(NonceTooLow):
             self.ethereum_client.send_unsigned_transaction(tx, private_key=key)
 
         # With retry, everything should work
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=key, retry=True)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=key, retry=True
+        )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 1)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 2)
 
         # We try again with the first nonce, and should work too
         tx["nonce"] = first_nonce
-        self.ethereum_client.send_unsigned_transaction(tx, private_key=key, retry=True)
+        tx_hash = self.ethereum_client.send_unsigned_transaction(
+            tx, private_key=key, retry=True
+        )
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(tx["nonce"], first_nonce + 2)
         self.assertEqual(self.ethereum_client.get_balance(to), value * 3)
 
@@ -1121,10 +1149,12 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
         tx_hash = self.ethereum_client.send_eth_to(
             self.ethereum_test_account.key, to=to, gas_price=self.gas_price, value=value
         )
-        receipt1 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None)
-        receipt2 = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
-        self.assertIsNotNone(receipt1)
-        self.assertEqual(receipt1, receipt2)
+        receipt = self.ethereum_client.get_transaction_receipt(tx_hash, timeout=20)
+        self.assertIsNotNone(receipt)
+        # Without timeout the receipt is only returned if the tx is already mined
+        self.assertEqual(
+            self.ethereum_client.get_transaction_receipt(tx_hash, timeout=None), receipt
+        )
 
         fake_tx_hash = self.w3.keccak(0)
         self.assertIsNone(
@@ -1248,6 +1278,14 @@ class TestEthereumClient(EthereumTestCaseMixin, TestCase):
 
     def test_is_eip1559_supported(self):
         self.assertTrue(self.ethereum_client.is_eip1559_supported())
+
+    def test_estimate_fee_eip1559(self):
+        (
+            base_fee_per_gas,
+            max_priority_fee_per_gas,
+        ) = self.ethereum_client.estimate_fee_eip1559()
+        self.assertGreater(base_fee_per_gas, 0)
+        self.assertGreaterEqual(max_priority_fee_per_gas, 0)
 
     def test_set_eip1559_fees(self):
         with mock.patch.object(
@@ -1467,9 +1505,6 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         self.assertTrue(self.ethereum_client.is_eip1559_supported())
 
     def test_estimate_fee_eip1559(self):
-        """
-        EIP1559 is still not supported on Ganache
-        """
         (
             base_fee_per_gas,
             max_priority_fee_per_gas,
