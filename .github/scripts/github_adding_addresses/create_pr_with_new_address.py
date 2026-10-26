@@ -213,7 +213,7 @@ def upsert_contract_address_master_copy(
     )
 
     match_network = re.search(
-        r"(MASTER_COPIES: Dict\[EthereumNetwork, List\[Tuple\[str, int, str]]] = \{.+EthereumNetwork\."
+        r"(MASTER_COPIES: [Dd]ict\[EthereumNetwork, [Ll]ist\[[Tt]uple\[str, int, str]]] = \{.+EthereumNetwork\."
         + re.escape(chain_enum_name)
         + r": \[)(.+?)(].+PROXY_FACTORIES.+)",
         content,
@@ -258,7 +258,7 @@ def upsert_contract_address_master_copy(
             )
     else:
         match = re.search(
-            r"(MASTER_COPIES: Dict\[EthereumNetwork, List\[Tuple\[str, int, str]]] = \{)(.+?)(}.+PROXY_FACTORIES.+)",
+            r"(MASTER_COPIES: [Dd]ict\[EthereumNetwork, [Ll]ist\[[Tt]uple\[str, int, str]]] = \{)(.+?)(}.+PROXY_FACTORIES.+)",
             content,
             re.MULTILINE | re.DOTALL,
         )
@@ -303,7 +303,7 @@ def upsert_contract_address_proxy_factory(
     )
 
     match_network = re.search(
-        r"(PROXY_FACTORIES: Dict\[EthereumNetwork, List\[Tuple\[str, int]]] = \{.+EthereumNetwork\."
+        r"(PROXY_FACTORIES: [Dd]ict\[EthereumNetwork, [Ll]ist\[[Tt]uple\[str, int]]] = \{.+EthereumNetwork\."
         + re.escape(chain_enum_name)
         + r": \[)(.+?)(].+)",
         content,
@@ -344,7 +344,7 @@ def upsert_contract_address_proxy_factory(
             )
     else:
         match = re.search(
-            r"(PROXY_FACTORIES: Dict\[EthereumNetwork, List\[Tuple\[str, int]]] = \{)(.+?)(}.+)",
+            r"(PROXY_FACTORIES: [Dd]ict\[EthereumNetwork, [Ll]ist\[[Tt]uple\[str, int]]] = \{)(.+?)(}.+)",
             content,
             re.MULTILINE | re.DOTALL,
         )
