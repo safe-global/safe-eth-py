@@ -4357,6 +4357,12 @@ MASTER_COPIES: dict[EthereumNetwork, list[tuple[str, int, str]]] = {
             50998227,
             "1.3.0+L2",
         ),  # v1.3.0+L2
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 50998338, "1.4.1"),  # v1.4.1
+        (
+            "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+            50998346,
+            "1.4.1+L2",
+        ),  # v1.4.1+L2
     ],
 }
 
@@ -6034,6 +6040,7 @@ PROXY_FACTORIES: dict[EthereumNetwork, list[tuple[str, int]]] = {
     ],
     EthereumNetwork.WHITECHAIN: [
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 50998211),  # v1.3.0
+        ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 50998331),  # v1.4.1
     ],
 }
 
