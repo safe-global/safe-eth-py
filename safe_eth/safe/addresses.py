@@ -4357,6 +4357,7 @@ MASTER_COPIES: dict[EthereumNetwork, list[tuple[str, int, str]]] = {
             50998227,
             "1.3.0+L2",
         ),  # v1.3.0+L2
+        ("0x41675C099F32341bf84BFc5382aF534df5C7461a", 50998338, "1.4.1"),  # v1.4.1
     ],
 }
 
