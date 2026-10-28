@@ -154,6 +154,15 @@ class BlockscoutClient:
         EthereumNetwork.GRAVITY: "https://api.mainnet-explorer.gravity.xyz/api/v2/",
         EthereumNetwork.FLUENT_TESTNET: "https://testnet.fluentscan.xyz/api/v2/",
         EthereumNetwork.WHITECHAIN: "https://explorer.whitechain.io/api/v2/",
+        EthereumNetwork.MORPH: "https://explorer-api.morph.network/api/v2/",
+        EthereumNetwork.HEMI: "https://explorer.hemi.xyz/api/v2/",
+        EthereumNetwork.FLUENT: "https://fluentscan.xyz/api/v2/",
+        EthereumNetwork.ROBINHOOD_CHAIN_TESTNET: "https://explorer.testnet.chain.robinhood.com/api/v2/",
+        EthereumNetwork.SCROLL: "https://scrollscan.com/api/v2/",
+        EthereumNetwork.BOT_CHAIN_MAINNET: "https://scan.botchain.ai/api/v2/",
+        EthereumNetwork.WHITECHAIN_SEPOLIA: "https://explorer.testnet.whitechain.io/api/v2/",
+        EthereumNetwork.ARC_TESTNET: "https://explorer.testnet.arc.io/api/v2/",
+        EthereumNetwork.AURORA_MAINNET: "https://explorer.aurora.dev/api/v2/",
     }
 
     def __init__(
