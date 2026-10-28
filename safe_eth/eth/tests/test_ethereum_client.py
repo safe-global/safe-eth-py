@@ -599,6 +599,43 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
             self.ethereum_client.tracing.filter_out_errored_traces(traces), expected
         )
 
+        # Errored trace with a caught errored child: the later siblings of the child
+        # are reverted with the parent and must be dropped too
+        traces = [
+            {"traceAddress": []},
+            {"error": "reverted", "traceAddress": [0]},
+            {"error": "reverted", "traceAddress": [0, 0]},
+            {"traceAddress": [0, 0, 0]},
+            {"traceAddress": [0, 1]},
+            {"traceAddress": [0, 1, 0]},
+            {"traceAddress": [1]},
+            {"error": "reverted", "traceAddress": [2]},
+            {"traceAddress": [2, 0]},
+            {"traceAddress": [3]},
+        ]
+        expected = [
+            {"traceAddress": []},
+            {"traceAddress": [1]},
+            {"traceAddress": [3]},
+        ]
+        self.assertEqual(
+            sorted(traces, key=lambda trace: trace["traceAddress"]), traces
+        )
+        self.assertEqual(
+            self.ethereum_client.tracing.filter_out_errored_traces(traces), expected
+        )
+
+        # Errored root trace: every trace of the tx is dropped
+        traces = [
+            {"error": "reverted", "traceAddress": []},
+            {"traceAddress": [0]},
+            {"error": "reverted", "traceAddress": [0, 0]},
+            {"traceAddress": [1]},
+        ]
+        self.assertEqual(
+            self.ethereum_client.tracing.filter_out_errored_traces(traces), []
+        )
+
     @mock.patch.object(
         TracingManager, "trace_transaction", return_value=internal_txs_errored
     )

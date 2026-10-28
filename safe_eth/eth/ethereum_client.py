@@ -1196,16 +1196,18 @@ class TracingManager(EthereumClientManager):
         new_list = []
         errored_trace_address: list[int] | None = None
         for internal_tx in internal_txs:
-            if internal_tx.get("error") is not None:
-                errored_trace_address = internal_tx["traceAddress"]
-            elif (
+            trace_address = internal_tx["traceAddress"]
+            # Check the subtree first, so an errored trace inside an errored trace
+            # does not replace the outer one and the outer subtree is fully dropped
+            if (
                 errored_trace_address is not None
-                and internal_tx["traceAddress"][: len(errored_trace_address)]
-                == errored_trace_address
+                and trace_address[: len(errored_trace_address)] == errored_trace_address
             ):
                 continue
-            else:
-                new_list.append(internal_tx)
+            if internal_tx.get("error") is not None:
+                errored_trace_address = trace_address
+                continue
+            new_list.append(internal_tx)
         return new_list
 
     def get_previous_trace(
