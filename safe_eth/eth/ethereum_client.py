@@ -126,6 +126,7 @@ _TX_ERROR_MAPPING_RAW: dict[str, type[Exception]] = {
     # https://github.com/openethereum/openethereum/blob/f1dc6821689c7f47d8fd07dfc0a2c5ad557b98ec/crates/rpc/src/v1/helpers/errors.rs#L389
     "doesn't have enough funds": InsufficientFunds,
     "sender account not recognized": SenderAccountNotFoundInNode,
+    "No Signer available": SenderAccountNotFoundInNode,  # Anvil
     "unknown account": UnknownAccount,
     "exceeds block gas limit": GasLimitExceeded,  # Geth
     "exceeds current gas limit": GasLimitExceeded,

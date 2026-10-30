@@ -47,7 +47,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         )
         signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         proxy_factory_contract = get_proxy_factory_contract(
             self.w3, address=tx_receipt["contractAddress"]
         )
@@ -67,7 +67,7 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         )
         signed_tx = deployer_account.sign_transaction(tx)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         logs = proxy_factory_contract.events.ProxyCreation().process_receipt(tx_receipt)
         log = logs[0]
         self.assertEqual(log["event"], "ProxyCreation")

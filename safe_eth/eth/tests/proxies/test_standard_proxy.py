@@ -72,7 +72,7 @@ class TestStandardProxy(SafeTestCaseMixin, TestCase):
         tx_hash = standard_proxy.constructor(singleton_address, b"").transact(
             {"from": self.ethereum_test_account.address}
         )
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+        tx_receipt = self.wait_for_receipt(tx_hash)
         proxy_address = tx_receipt["contractAddress"]
         assert proxy_address is not None
 

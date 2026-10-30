@@ -51,6 +51,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
         ethereum_tx_sent = self.proxy_factory.deploy_proxy_contract_with_nonce(
             self.ethereum_test_account, self.safe_contract.address
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertTrue(
             self.proxy_factory.check_proxy_code(ethereum_tx_sent.contract_address)
         )
@@ -82,6 +83,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
                         self.ethereum_test_account, self.safe_contract.address
                     )
                 )
+                self.wait_for_receipt(deployed_proxy_contract_tx.tx_hash)
                 self.assertTrue(
                     proxy_factory.check_proxy_code(
                         deployed_proxy_contract_tx.contract_address
@@ -132,6 +134,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
             initializer=b"",
             salt_nonce=salt_nonce,
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(ethereum_tx_sent.contract_address, address)
 
         # Calculating the proxy address after deployment should return the same address
@@ -152,6 +155,7 @@ class TestProxyFactory(SafeTestCaseMixin, TestCase):
             salt_nonce=salt_nonce,
             chain_specific=True,
         )
+        self.wait_for_receipt(ethereum_tx_sent.tx_hash)
         self.assertEqual(ethereum_tx_sent.contract_address, chain_specific_address)
 
     def test_deploy_proxy_contract_with_nonce(self):

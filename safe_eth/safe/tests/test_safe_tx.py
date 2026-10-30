@@ -76,7 +76,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         tx_hash, _ = safe_tx.execute(
             tx_sender_private_key=to_0x_hex_str(self.ethereum_test_account.key)
         )
-        self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(safe.retrieve_nonce(), 1)
         self.assertEqual(safe.retrieve_threshold(), new_threshold)
         self.assertCountEqual(safe.retrieve_owners(), owners_expected)
@@ -130,7 +130,7 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         tx_hash, _ = safe_tx.execute(
             tx_sender_private_key=self.ethereum_test_account.key
         )
-        self.ethereum_client.get_transaction_receipt(tx_hash, timeout=60)
+        self.wait_for_receipt(tx_hash)
         self.assertEqual(self.ethereum_client.get_balance(to), value)
 
         safe_tx.unsign(owners[0].address)
@@ -436,7 +436,8 @@ class TestSafeTx(SafeTestCaseMixin, TestCase):
         ).safe_tx_hash
         self.assertEqual(HexBytes(expected_hash), safe_tx_hash)
 
-        # Test with ganache master copy contract v1.3.0
+        # Check against `getTransactionHash` of the Safe v1.5.0 singleton deployed on
+        # the test node. The Safe tx hash is the same for v1.3.0 and newer
         chain_id = self.ethereum_client.w3.eth.chain_id
         safe_tx_hash = SafeTx(
             self.ethereum_client,
