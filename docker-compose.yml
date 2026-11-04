@@ -11,7 +11,7 @@ services:
       retries: 3
 
   anvil:
-    image: ghcr.io/foundry-rs/foundry:v1.8.5
+    image: ghcr.io/foundry-rs/foundry:v1.9.0
     ports:
       - "8545:8545"
     command: >-

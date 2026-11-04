@@ -78,9 +78,8 @@ Test node notes:
 - The Safe Singleton Factory is set with `anvil_setCode`. On other nodes the presigned deployment
   tx is used, which runs out of gas on Amsterdam
 - The block gas limit is 200M: on Amsterdam, deploying the Safe singletons costs more than 10M gas
-- No stable anvil release implements the Amsterdam gas rules yet. To run the suite on Amsterdam,
-  use a nightly image (e.g. `ghcr.io/foundry-rs/foundry:nightly-f14e39d2a14d2ba9e9132b0aa7e10a3932a054fc`)
-  with `--hardfork amsterdam`
+- anvil runs the default hardfork. To run the suite on Amsterdam, start the same image with
+  `--hardfork amsterdam`
 
 ### Linting and Type Checking
 ```bash
