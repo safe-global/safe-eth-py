@@ -6,11 +6,12 @@ from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 from web3 import Web3
 from web3.contract import Contract
-from web3.types import TxParams, Wei
+from web3.types import TxParams, TxReceipt, Wei
 
 from ..ethereum_client import EthereumClient, get_auto_ethereum_client
 from ..multicall import Multicall
-from .utils import deploy_erc20, send_tx
+from ..typing import EthereumData
+from .utils import deploy_erc20, send_tx, wait_for_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +56,16 @@ class EthereumTestCaseMixin:
         except ModuleNotFoundError:
             key = os.environ.get(
                 "ETHEREUM_TEST_PRIVATE_KEY",
-                "b0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773",  # Ganache account 9
+                "b0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773",  # Test mnemonic account 9
             )
         return Account.from_key(key)
 
     @property
     def gas_price(self):
         return self.w3.eth.gas_price
+
+    def wait_for_receipt(self, tx_hash: EthereumData) -> TxReceipt:
+        return wait_for_receipt(self.w3, tx_hash)
 
     def send_tx(self, tx: TxParams, account: LocalAccount) -> bytes:
         return send_tx(self.w3, tx, account)

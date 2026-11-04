@@ -525,7 +525,7 @@ class Safe(SafeCreator, ContractBase, metaclass=ABCMeta):
             error_data: str | None = None
             if "error" in response_data and "data" in response_data["error"]:
                 error_data = response_data["error"]["data"]
-            elif "result" in response_data:  # Ganache-cli
+            elif "result" in response_data:  # Nodes returning revert data as result
                 error_data = response_data["result"]
 
             if error_data:

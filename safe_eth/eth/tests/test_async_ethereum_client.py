@@ -121,17 +121,6 @@ class TestAsyncTracingManager(AsyncEthereumClientTestMixin, TestTracingManager):
         ):
             super().test_get_next_traces()
 
-    def test_trace_filter(self):
-        with self.assertRaisesMessage(AssertionError, "at least"):
-            self.ethereum_client.tracing.trace_filter()
-
-        # Ganache does not implement `trace_filter`; the async batch path surfaces
-        # the node error as a ValueError instead of web3's Web3RPCError.
-        with self.assertRaises(ValueError):
-            self.ethereum_client.tracing.trace_filter(
-                to_address=[Account.create().address]
-            )
-
     def test_raw_batch_request(self):
         payload = [
             {
