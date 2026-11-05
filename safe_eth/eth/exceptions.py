@@ -1,4 +1,5 @@
 from eth_typing import ChecksumAddress
+from web3.exceptions import TransactionNotFound
 
 
 class EthereumClientException(ValueError):
@@ -85,3 +86,11 @@ class BatchCallException(EthereumClientException):
 
 class BatchCallFunctionFailed(BatchCallException):
     pass
+
+
+class TraceNotFound(EthereumClientException, TransactionNotFound):
+    """
+    The node has no traces for the tx, as it returns ``null`` for a tx it does not
+    know. The ``TransactionNotFound`` base keeps it catchable by callers handling
+    web3's ``Web3RPCError``, which the sync tracing methods raise on node errors.
+    """

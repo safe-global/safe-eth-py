@@ -37,6 +37,7 @@ from ..exceptions import (
     EthereumClientConnectionException,
     InvalidERC20Info,
     NonceTooLow,
+    TraceNotFound,
 )
 from .ethereum_test_case import EthereumTestCaseMixin
 from .mocks.mock_internal_txs import creation_internal_txs, internal_txs_errored
@@ -747,6 +748,25 @@ class TestTracingManager(EthereumTestCaseMixin, TestCase):
             ),
             [],
         )
+
+    def test_trace_transaction_unknown_tx(self):
+        """
+        A tx unknown to the node (the node returns `null`) raises `TraceNotFound`,
+        also when it is part of a batch. It is also a `Web3RPCError` and a
+        `ValueError`, which callers already catch for node errors
+        """
+        tx_hash = self.send_ether(Account.create().address, 7)
+        self.assertEqual(
+            len(self.ethereum_client.tracing.trace_transaction(tx_hash)), 1
+        )
+
+        unknown_tx_hash = HexBytes(os.urandom(32))
+        with self.assertRaises(TraceNotFound):
+            self.ethereum_client.tracing.trace_transaction(unknown_tx_hash)
+        with self.assertRaises(TraceNotFound):
+            self.ethereum_client.tracing.trace_transactions([tx_hash, unknown_tx_hash])
+        self.assertTrue(issubclass(TraceNotFound, Web3RPCError))
+        self.assertTrue(issubclass(TraceNotFound, ValueError))
 
     @mock.patch.object(requests.Response, "json")
     def test_raw_batch_request(self, session_post_mock: MagicMock):

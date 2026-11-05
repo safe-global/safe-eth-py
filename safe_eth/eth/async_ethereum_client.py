@@ -83,6 +83,7 @@ from .ethereum_client import (
     build_eth_call_queries,
     build_jsonrpc_batch_payload,
     decode_eth_call_results,
+    format_tx_traces,
     map_tx_exception,
     process_raw_batch_results,
     validate_batch_chunk,
@@ -372,21 +373,24 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
     Async tracing manager.
 
     ``AsyncWeb3`` has no ``tracing`` module, so every method here issues a **raw
-    JSON-RPC** request instead of going through web3's ``w3.tracing.*`` path. Two
-    consequences for callers:
+    JSON-RPC** request instead of going through web3's ``w3.tracing.*`` path. For
+    callers:
 
     - **Error type differs from the sync client.** A node error (e.g. the node not
       supporting ``trace_filter``/``trace_*``) surfaces as a plain ``ValueError``
       from the batch layer, not web3's ``Web3RPCError`` that the sync
       ``TracingManager`` raises. Adjust ``except`` clauses accordingly when porting
       sync code to async.
+    - **A tx unknown to the node raises ``TraceNotFound``** on both clients, as
+      the node returns ``null`` for it.
     - **The web3 tracing middleware/request-munging is bypassed.** Results are
-      decoded with ``trace_list_result_formatter`` (same as the sync plural
-      ``trace_blocks``/``trace_transactions``), so the decoded shape is expected to
-      match. The test suite runs ``async_trace_filter`` against the local anvil
-      node, but the other ``async_trace_*`` methods are only tested with mocked
-      responses. Verify them against a trace-capable node (Erigon / Geth ``debug``)
-      before relying on them in production.
+      decoded with ``trace_list_result_formatter`` (same as the sync
+      ``trace_blocks``/``trace_transaction(s)``), so the decoded shape is expected
+      to match. The test suite runs ``async_trace_filter`` and
+      ``async_trace_transaction(s)`` against the local anvil node, but the other
+      ``async_trace_*`` methods are only tested with mocked responses. Verify them
+      against a trace-capable node (Erigon / Geth ``debug``) before relying on them
+      in production.
     """
 
     async def _async_trace_rpc(self, method: str, params: Sequence[Any]) -> Any:
@@ -428,7 +432,7 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
         result = await self._async_trace_rpc(
             "trace_transaction", [to_0x_hex_str(HexBytes(tx_hash))]
         )
-        return trace_list_result_formatter(result)
+        return format_tx_traces(tx_hash, result)
 
     async def async_trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
@@ -442,7 +446,10 @@ class AsyncTracingManager(TracingManager, AsyncEthereumClientManager):
             ]
         )
         results = await self.ethereum_client.async_raw_batch_request(payload)
-        return [trace_list_result_formatter(tx_traces) for tx_traces in results]
+        return [
+            format_tx_traces(tx_hash, tx_traces)
+            for tx_hash, tx_traces in zip(tx_hashes, results, strict=True)
+        ]
 
     async def async_trace_filter(
         self,

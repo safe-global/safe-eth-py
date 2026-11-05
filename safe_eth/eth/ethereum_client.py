@@ -26,6 +26,7 @@ from web3._utils.method_formatters import (
     transaction_result_formatter,
 )
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
+from web3._utils.rpc_abi import RPC
 from web3.contract.contract import ContractFunction
 from web3.exceptions import (
     BlockNotFound,
@@ -84,6 +85,7 @@ from .exceptions import (
     NonceTooLow,
     ReplacementTransactionUnderpriced,
     SenderAccountNotFoundInNode,
+    TraceNotFound,
     TransactionAlreadyImported,
     TransactionGasPriceTooLow,
     TransactionQueueLimitReached,
@@ -181,6 +183,21 @@ def build_jsonrpc_batch_payload(
         {"id": i, "jsonrpc": "2.0", "method": method, "params": list(params)}
         for i, (method, params) in enumerate(entries)
     ]
+
+
+def format_tx_traces(tx_hash: EthereumHash, tx_traces: Any) -> list[FilterTrace]:
+    """
+    :param tx_hash: Tx the traces belong to, used in the error message
+    :param tx_traces: Raw ``trace_transaction`` result
+    :return: Decoded traces
+    :raises TraceNotFound: If the node returned ``null``, as it does for a tx it
+        does not know
+    """
+    if tx_traces is None:
+        raise TraceNotFound(
+            f"Traces for tx-hash={to_0x_hex_str(HexBytes(tx_hash))} not found"
+        )
+    return trace_list_result_formatter(tx_traces)
 
 
 def process_raw_batch_results(
@@ -1224,7 +1241,8 @@ class TracingManager(EthereumClientManager):
         :param number_traces: Number of traces to skip, by default get the immediately previous one
         :param skip_delegate_calls: If True filter out delegate calls
         :return: Parent trace for a trace
-        :raises: ``ValueError`` if tracing is not supported
+        :raises Web3RPCError: If tracing is not supported
+        :raises TraceNotFound: If the node does not know the tx
         """
         if len(trace_address) < number_traces:
             return None
@@ -1268,7 +1286,8 @@ class TracingManager(EthereumClientManager):
         :param remove_delegate_calls: If True remove delegate calls from result
         :param remove_calls: If True remove calls from result
         :return: Children for a trace, E.g. if address is [0, 1] and number_traces = 1, it will return [0, 1, x]
-        :raises: ``ValueError`` if tracing is not supported
+        :raises Web3RPCError: If tracing is not supported
+        :raises TraceNotFound: If the node does not know the tx
         """
         return self._select_next_traces(
             self.trace_transaction(tx_hash),
@@ -1327,8 +1346,14 @@ class TracingManager(EthereumClientManager):
         """
         :param tx_hash:
         :return: List of internal txs for `tx_hash`
+        :raises TraceNotFound: If the node does not know the tx
         """
-        return self.slow_w3.tracing.trace_transaction(tx_hash)  # type: ignore[attr-defined]
+        return format_tx_traces(
+            tx_hash,
+            self.slow_w3.manager.request_blocking(
+                RPC.trace_transaction, [to_0x_hex_str(HexBytes(tx_hash))]
+            ),
+        )
 
     def trace_transactions(
         self, tx_hashes: Sequence[EthereumHash]
@@ -1336,6 +1361,7 @@ class TracingManager(EthereumClientManager):
         """
         :param tx_hashes:
         :return: For every `tx_hash` a list of internal txs (in the same order as the `tx_hashes` were provided)
+        :raises TraceNotFound: If the node does not know one of the txs
         """
         if not tx_hashes:
             return []
@@ -1346,7 +1372,10 @@ class TracingManager(EthereumClientManager):
             ]
         )
         results = self.ethereum_client.raw_batch_request(payload)
-        return [trace_list_result_formatter(tx_traces) for tx_traces in results]  # type: ignore[arg-type]
+        return [
+            format_tx_traces(tx_hash, tx_traces)
+            for tx_hash, tx_traces in zip(tx_hashes, results, strict=True)
+        ]
 
     def trace_filter(
         self,
