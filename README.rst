@@ -208,6 +208,14 @@ synchronous Etherscan and Blockscout clients do not pool connections and ignore 
 - ``SOURCIFY_CLIENT_MAX_REQUESTS``: Max pool size of concurrent requests. Default ``100``.
 - ``ENS_CLIENT_REQUEST_TIMEOUT``: ENS client request timeout (seconds). Default ``5``.
 
+Some networks (Gnosis, Gnosis Chiado, Immutable zkEVM and its testnet) are only served by the
+`Blockscout PRO API <https://docs.blockscout.com/devs/apis/pro-api>`_. For them, pass a PRO API
+key to the Blockscout clients with ``api_key``. The Blockscout clients
+return ``None`` when there is no verified contract for the address, and raise a
+``BlockscoutClientException`` for any other error: ``BlockscoutApiKeyError`` for a wrong or
+missing key or no credits left, ``BlockscoutRateLimitError``, ``BlockscoutHttpError`` and
+``BlockscoutConnectionError``. Only ``BlockscoutConnectionError`` is also an ``OSError``.
+
 Contributors
 ------------
 `See contributors <https://github.com/safe-global/safe-eth-py/graphs/contributors>`_

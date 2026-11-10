@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Any
 from urllib.parse import urljoin
@@ -6,6 +7,7 @@ import aiohttp
 import requests
 from eth_typing import ChecksumAddress
 
+from ...util.http import wrap_http_exceptions
 from .. import EthereumNetwork
 from .contract_metadata import ContractMetadata
 
@@ -18,7 +20,36 @@ class BlockScoutConfigurationProblem(BlockscoutClientException):
     pass
 
 
+class BlockscoutApiKeyError(BlockscoutClientException):
+    """
+    The PRO API rejected the request: the API key is wrong (HTTP 401), or it is
+    missing or out of credits (HTTP 402)
+    """
+
+
+class BlockscoutRateLimitError(BlockscoutClientException):
+    pass
+
+
+class BlockscoutConnectionError(BlockscoutClientException, ConnectionError):
+    """
+    Blockscout could not be reached, or its response could not be decoded
+    """
+
+
+class BlockscoutHttpError(BlockscoutClientException):
+    def __init__(self, status_code: int):
+        self.status_code = status_code
+        super().__init__(f"Error connecting to Blockscout, HTTP {status_code}")
+
+
 class BlockscoutClient:
+    # Networks with no public Blockscout instance use this url, which needs an API key
+    PRO_API_URL = "https://api.blockscout.com/"
+    # ``message`` of the HTTP 404 that Blockscout returns when there is no verified
+    # contract for the address. Any other 404 (dead instance, network not served by the
+    # PRO API) is an error
+    NOT_FOUND_MESSAGE = "Not found"
     NETWORK_WITH_URL = {
         EthereumNetwork.ACALA_NETWORK: "https://blockscout.acala.network/api/v2/",
         EthereumNetwork.ALEPH_ZERO_EVM: "https://evm-explorer.alephzero.org/api/v2/",
@@ -43,14 +74,14 @@ class BlockscoutClient:
         EthereumNetwork.FLARE_TESTNET_COSTON2: "https://coston2-explorer.flare.network/api/v2/",
         EthereumNetwork.GAME7: "https://mainnet.game7.io/api/v2/",
         EthereumNetwork.GAME7_TESTNET: "https://testnet.game7.io/api/v2/",
-        EthereumNetwork.GNOSIS: "https://gnosis.blockscout.com/api/v2/",
-        EthereumNetwork.GNOSIS_CHIADO_TESTNET: "https://gnosis-chiado.blockscout.com/api/v2/",
+        EthereumNetwork.GNOSIS: "https://api.blockscout.com/100/api/v2/",
+        EthereumNetwork.GNOSIS_CHIADO_TESTNET: "https://api.blockscout.com/10200/api/v2/",
         EthereumNetwork.GPT_MAINNET: "https://explorer.gptprotocol.io/api/v2/",
         EthereumNetwork.HAQQ_CHAIN_TESTNET: "https://explorer.testedge2.haqq.network/api/v2/",
         EthereumNetwork.HAQQ_NETWORK: "https://explorer.haqq.network/api/v2/",
         EthereumNetwork.HASHKEY_CHAIN: "https://explorer.hsk.xyz/api/v2/",
         EthereumNetwork.HASHKEY_CHAIN_TESTNET: "https://hashkeychain-testnet-explorer.alt.technology/api/v2/",
-        EthereumNetwork.IOTA_EVM: "https://iota-evm.blockscout.com/api/v2/",
+        EthereumNetwork.IOTA_EVM: "https://explorer.evm.iota.org/api/v2/",
         EthereumNetwork.INK: "https://explorer.inkonchain.com/api/v2/",
         EthereumNetwork.INK_SEPOLIA: "https://explorer-sepolia.inkonchain.com/api/v2/",
         EthereumNetwork.JAPAN_OPEN_CHAIN_MAINNET: "https://mainnet.japanopenchain.org/api/v2/",
@@ -105,18 +136,17 @@ class BlockscoutClient:
         EthereumNetwork.TAC_TURIN: "https://turin.explorer.tac.build/api/v2/",
         EthereumNetwork.ALEPH_ZERO: "https://evm-explorer-testnet.alephzero.org/api/v2/",
         EthereumNetwork.AUTONOMYS_TAURUS_TESTNET: "https://explorer.auto-evm.taurus.autonomys.xyz/api/v2/",
-        EthereumNetwork.STORY_AENEID_TESTNET: "https://aeneid.storyscan.xyz/api/v2/",
         EthereumNetwork.STORY: "https://mainnet.storyscan.xyz/api/v2/",
         EthereumNetwork.AUTONITY_PICCADILLY_TIBER_TESTNET: "https://piccadilly.autonity.org/api/v2/",
         EthereumNetwork.SONEIUM_TESTNET_MINATO: "https://soneium-minato.blockscout.com/api/v2/",
-        EthereumNetwork.IMMUTABLE_ZKEVM: "https://explorer.immutable.com/api/v2/",
-        EthereumNetwork.IMMUTABLE_ZKEVM_TESTNET: "https://explorer.testnet.immutable.com/api/v2/",
+        EthereumNetwork.IMMUTABLE_ZKEVM: "https://api.blockscout.com/13371/api/v2/",
+        EthereumNetwork.IMMUTABLE_ZKEVM_TESTNET: "https://api.blockscout.com/13473/api/v2/",
         EthereumNetwork.ARENA_Z: "https://explorer.arena-z.gg/api/v2/",
         EthereumNetwork.TAC_SAINT_PETERSBURG: "https://spb.explorer.tac.build/api/v2/",
         EthereumNetwork.TAC_MAINNET: "https://explorer.tac.build/api/v2/",
         EthereumNetwork.SHAPE: "https://shapescan.xyz/api/v2/",
         EthereumNetwork.SHAPE_SEPOLIA_TESTNET: "https://sepolia.shapescan.xyz/api/v2/",
-        EthereumNetwork.STORY_AENEID_TESTNET: "https://aeneid.storyscan.io/api/v2/",
+        EthereumNetwork.STORY_AENEID_TESTNET: "https://aeneid.datanetscan.io/api/v2/",
         EthereumNetwork.ETHEREAL_TESTNET: "https://explorer-ethereal-testnet.t.conduit.xyz/api/v2/",
         EthereumNetwork.ENI_MAINNET: "https://scan.eniac.network/api/v2/",
         EthereumNetwork.VANA: "https://vanascan.io/api/v2/",
@@ -124,7 +154,6 @@ class BlockscoutClient:
         EthereumNetwork.INCENTIV_TESTNET: "https://explorer-testnet.incentiv.io/api/v2/",
         EthereumNetwork.AUTONOMYS_CHRONOS_TESTNET: "https://explorer.auto-evm.chronos.autonomys.xyz/api/v2/",
         EthereumNetwork.BOB: "https://explorer-bob-mainnet-0.t.conduit.xyz/api/v2/",
-        EthereumNetwork.MODE: "https://explorer-mode-mainnet-0.t.conduit.xyz/api/v2/",
         EthereumNetwork.CITREA_TESTNET: "https://explorer.testnet.citrea.xyz/api/v2/",
         EthereumNetwork.VANA_MOKSHA_TESTNET: "https://moksha.vanascan.io/api/v2/",
         EthereumNetwork.MINT_MAINNET: "https://explorer-mint-mainnet-0.t.conduit.xyz/api/v2/",
@@ -171,25 +200,86 @@ class BlockscoutClient:
         request_timeout: int = int(
             os.environ.get("BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT", 10)
         ),
+        api_key: str | None = None,
     ):
+        """
+        :param network:
+        :param request_timeout: Request timeout (seconds)
+        :param api_key: Blockscout PRO API key, required for the networks served by
+            ``PRO_API_URL``. It is only sent to the PRO API, in the ``Authorization``
+            header so it is not part of the url
+        :raises BlockScoutConfigurationProblem: If the network is not supported, or it
+            is served by the PRO API and no ``api_key`` is provided
+        """
         self.network = network
-        self.api_url = self.NETWORK_WITH_URL.get(network, "")
         self.request_timeout = request_timeout
+        self.api_url = self.NETWORK_WITH_URL.get(network, "")
         if not self.api_url:
             raise BlockScoutConfigurationProblem(
                 f"Network {network.name} - {network.value} not supported"
             )
+        self.http_headers: dict[str, str] = {}
+        if self.api_url.startswith(self.PRO_API_URL):
+            if not api_key:
+                raise BlockScoutConfigurationProblem(
+                    f"Network {network.name} - {network.value} needs a Blockscout "
+                    "PRO API key"
+                )
+            self.http_headers["Authorization"] = f"Bearer {api_key}"
         self.http_session = requests.Session()
+        self.http_session.headers.update(self.http_headers)
 
-    def build_url(self, path: str):
+    def build_url(self, path: str) -> str:
         return urljoin(self.api_url, path)
 
-    def _do_request(self, url: str) -> dict[str, Any] | None:
-        response = self.http_session.get(url, timeout=self.request_timeout)
-        if not response.ok:
-            return None
+    @staticmethod
+    def _build_http_error(status_code: int) -> BlockscoutClientException:
+        if status_code in (401, 402):
+            return BlockscoutApiKeyError(
+                "Blockscout rejected the API key (wrong, missing or out of credits), "
+                f"HTTP {status_code}"
+            )
+        if status_code == 429:
+            return BlockscoutRateLimitError(f"Rate limit reached, HTTP {status_code}")
+        return BlockscoutHttpError(status_code)
 
-        return response.json()
+    @classmethod
+    def _process_response(
+        cls, status_code: int, response_text: str
+    ) -> dict[str, Any] | None:
+        """
+        :param status_code: HTTP status code of the response
+        :param response_text: Body of the response
+        :return: Decoded response, ``None`` if there is no verified contract for the
+            address
+        :raises BlockscoutApiKeyError: If the PRO API key is wrong, missing or out of
+            credits
+        :raises BlockscoutRateLimitError: If the rate limit is reached
+        :raises BlockscoutHttpError: For any other non ok HTTP status code
+        :raises json.JSONDecodeError: If a successful response is not JSON
+        """
+        if status_code == 404:
+            try:
+                response_json = json.loads(response_text)
+            except json.JSONDecodeError:
+                response_json = None
+            if (
+                isinstance(response_json, dict)
+                and response_json.get("message") == cls.NOT_FOUND_MESSAGE
+            ):
+                return None
+        if status_code >= 400:
+            raise cls._build_http_error(status_code)
+        return json.loads(response_text)
+
+    def _do_request(self, url: str) -> dict[str, Any] | None:
+        """
+        :raises BlockscoutConnectionError: If Blockscout cannot be reached or the
+            response cannot be decoded
+        """
+        with wrap_http_exceptions(url, BlockscoutConnectionError):
+            response = self.http_session.get(url, timeout=self.request_timeout)
+            return self._process_response(response.status_code, response.text)
 
     @staticmethod
     def _process_contract_metadata(
@@ -230,24 +320,26 @@ class AsyncBlockscoutClient(BlockscoutClient):
             os.environ.get("BLOCKSCOUT_CLIENT_REQUEST_TIMEOUT", 10)
         ),
         max_requests: int = int(os.environ.get("BLOCKSCOUT_CLIENT_MAX_REQUESTS", 100)),
+        api_key: str | None = None,
     ):
-        super().__init__(network, request_timeout)
+        super().__init__(network, request_timeout, api_key=api_key)
         # Limit simultaneous connections to the same host.
         self.async_session = aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(limit_per_host=max_requests)
+            connector=aiohttp.TCPConnector(limit_per_host=max_requests),
+            headers=self.http_headers,
         )
 
     async def _async_do_request(self, url: str) -> dict[str, Any] | None:
         """
         Asynchronous version of _do_request
         """
-        async with self.async_session.get(
-            url, timeout=aiohttp.ClientTimeout(total=self.request_timeout)
-        ) as response:
-            if not response.ok:
-                return None
-
-            return await response.json()
+        with wrap_http_exceptions(url, BlockscoutConnectionError):
+            async with self.async_session.get(
+                url, timeout=aiohttp.ClientTimeout(total=self.request_timeout)
+            ) as response:
+                return self._process_response(
+                    response.status, await response.text(errors="replace")
+                )
 
     async def async_get_contract_metadata(
         self, address: ChecksumAddress

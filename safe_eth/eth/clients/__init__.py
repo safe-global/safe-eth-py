@@ -1,9 +1,13 @@
 # flake8: noqa F401
 from .blockscout_client import (
     AsyncBlockscoutClient,
+    BlockscoutApiKeyError,
     BlockscoutClient,
     BlockscoutClientException,
     BlockScoutConfigurationProblem,
+    BlockscoutConnectionError,
+    BlockscoutHttpError,
+    BlockscoutRateLimitError,
 )
 from .contract_metadata import ContractMetadata
 from .ens_client import EnsClient
@@ -29,8 +33,12 @@ __all__ = [
     "AsyncEtherscanClientV2",
     "AsyncSourcifyClient",
     "BlockScoutConfigurationProblem",
+    "BlockscoutApiKeyError",
     "BlockscoutClient",
     "BlockscoutClientException",
+    "BlockscoutConnectionError",
+    "BlockscoutHttpError",
+    "BlockscoutRateLimitError",
     "ContractMetadata",
     "EnsClient",
     "EtherscanClientV2",
