@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 import unittest
+from contextlib import AbstractContextManager
+from typing import Any, Self
 from unittest import mock
 
 import pytest
@@ -59,17 +61,17 @@ def build_requests_response(status_code: int, body: str) -> requests.Response:
 
 
 class AiohttpResponseMock:
-    def __init__(self, status: int, body: str):
+    def __init__(self, status: int, body: str) -> None:
         self.status = status
         self.body = body
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         return self
 
-    async def __aexit__(self, *args):
+    async def __aexit__(self, *args: object) -> bool:
         return False
 
-    async def text(self, errors: str = "strict"):
+    async def text(self, errors: str = "strict") -> str:
         return self.body
 
 
@@ -169,7 +171,7 @@ class TestBlockscoutClientRequest(unittest.TestCase):
             EthereumNetwork.GNOSIS, api_key="test-key"
         )
 
-    def patch_session_get(self, **kwargs):
+    def patch_session_get(self, **kwargs: Any) -> AbstractContextManager[Any]:
         return mock.patch.object(self.blockscout_client.http_session, "get", **kwargs)
 
     def test_get_contract_metadata_not_found(self):
@@ -216,7 +218,7 @@ class TestAsyncBlockscoutClientRequest(unittest.IsolatedAsyncioTestCase):
         )
         self.addAsyncCleanup(self.blockscout_client.async_session.close)
 
-    def patch_session_get(self, **kwargs):
+    def patch_session_get(self, **kwargs: Any) -> AbstractContextManager[Any]:
         return mock.patch.object(self.blockscout_client.async_session, "get", **kwargs)
 
     async def test_async_session_headers(self):
