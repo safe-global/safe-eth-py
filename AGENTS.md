@@ -203,8 +203,8 @@ Conventions:
   (`safe_eth/eth/tests/utils.py`). An unset `ETHEREUM_MAINNET_NODE` / `ETHEREUM_POLYGON_NODE`
   `pytest.skip`s the module. A variable that is set but points at an unreachable node `pytest.fail`s,
   on a bad response or an `IOError`. Never make a test fail because a node is missing
-- Other optional CI keys: `ETHEREUM_4337_BUNDLER_URL`, `ETHERSCAN_API_KEY`, `ENS_CLIENT_API_KEY`,
-  `SAFE_TRANSACTION_SERVICE_API_KEY`
+- Other optional CI keys: `ETHEREUM_4337_BUNDLER_URL`, `ETHERSCAN_API_KEY`, `BLOCKSCOUT_API_KEY`,
+  `ENS_CLIENT_API_KEY`, `SAFE_TRANSACTION_SERVICE_API_KEY`
 - Recorded API responses go in the `mocks/` package of the module being tested
 - CI reruns failures 3 times (`--reruns 3 --reruns-delay 10`); network flakiness is expected
 - All imports at the top of the file, never inside test functions
