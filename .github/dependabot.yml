@@ -45,6 +45,11 @@ updates:
     cooldown:
       default-days: 7
     groups:
+      # The init and analyze actions must run the same version, so they are always
+      # updated together, majors included
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
       github-actions:
         patterns:
           - "*"
