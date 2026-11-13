@@ -1,4 +1,3 @@
-from eth.constants import SECPK1_N
 from eth_typing import ChecksumAddress, HexAddress, HexStr
 
 NULL_ADDRESS: ChecksumAddress = ChecksumAddress(HexAddress(HexStr("0x" + "0" * 40)))
@@ -17,6 +16,8 @@ SAFE_SINGLETON_FACTORY_ADDRESS: ChecksumAddress = ChecksumAddress(
 ERC20_721_TRANSFER_TOPIC: HexStr = HexStr(
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 )
+
+SECPK1_N: int = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
 
 SIGNATURE_R_MIN_VALUE: int = 1
 SIGNATURE_R_MAX_VALUE: int = SECPK1_N - 1
