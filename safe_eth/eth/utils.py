@@ -3,9 +3,9 @@ from functools import lru_cache
 from typing import Any
 
 import eth_abi
-from eth._utils.address import generate_contract_address
+import rlp
 from eth_account import Account
-from eth_typing import Address, AnyAddress, ChecksumAddress, Hash32, HexAddress, HexStr
+from eth_typing import AnyAddress, ChecksumAddress, Hash32, HexAddress, HexStr
 from eth_utils import to_normalized_address
 from hexbytes import HexBytes
 from sha3 import keccak_256
@@ -217,7 +217,7 @@ def mk_contract_address(address: str | bytes, nonce: int) -> ChecksumAddress:
     :return:
     """
     return fast_to_checksum_address(
-        generate_contract_address(Address(HexBytes(address)), nonce)
+        fast_keccak(rlp.encode([HexBytes(address), nonce]))[12:]
     )
 
 

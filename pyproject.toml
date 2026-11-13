@@ -42,8 +42,8 @@ classifiers = [
 ]
 dependencies = [
     "packaging",
-    "py-evm>=0.7.0a1",
     "requests>=2",
+    "rlp>=4",
     "safe-pysha3>=1.0.7",
     "web3>=7.15",
 ]

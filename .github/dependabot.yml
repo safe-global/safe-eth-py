@@ -17,7 +17,7 @@ updates:
         patterns:
           - "web3"
           - "eth-*"
-          - "py-evm*"
+          - "rlp"
           - "safe-pysha3*"
         update-types:
           - minor

@@ -6,6 +6,7 @@ from eth_abi.packed import encode_packed
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 
+from ..constants import SECPK1_N, SIGNATURE_R_MAX_VALUE, SIGNATURE_S_MAX_VALUE
 from ..contracts import get_proxy_1_0_0_deployed_bytecode, get_proxy_factory_contract
 from ..utils import (
     compare_byte_code,
@@ -186,3 +187,31 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
             mk_contract_address("0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B", 399),
             "0xF03b503CC9Ee8aAA3B17856942a440be0c77Cd84",
         )
+
+        # Vectors generated with py-evm `generate_contract_address`. Nonces 0, 127,
+        # 128 and 2**32 hit the different RLP integer encodings
+        sender = "0x6ac7ea33f8831ea9dcc53393aaa88b25a785dbf0"
+        expected_address_by_nonce = {
+            0: "0xcd234A471b72ba2F1Ccf0A70FCABA648a5eeCD8d",
+            1: "0x343c43A37D37dfF08AE8C4A11544c718AbB4fCF8",
+            127: "0x06d9a77f5E4b311Bae8D559DB9CDB4dF94104aA0",
+            128: "0x08e190dcB7b73F5fcDAbb43e102215c83659A76D",
+            2**32: "0xf4bf328880432064068338F915C49f817dC4Ce18",
+        }
+        for nonce, expected_address in expected_address_by_nonce.items():
+            with self.subTest(nonce=nonce):
+                self.assertEqual(mk_contract_address(sender, nonce), expected_address)
+                self.assertEqual(
+                    mk_contract_address(HexBytes(sender), nonce), expected_address
+                )
+
+    def test_secpk1_n(self):
+        """
+        SECPK1_N is the secp256k1 curve order and the signature limits derive from it
+        """
+        self.assertEqual(
+            SECPK1_N,
+            115792089237316195423570985008687907852837564279074904382605163141518161494337,
+        )
+        self.assertEqual(SIGNATURE_R_MAX_VALUE, SECPK1_N - 1)
+        self.assertEqual(SIGNATURE_S_MAX_VALUE, SECPK1_N // 2)
