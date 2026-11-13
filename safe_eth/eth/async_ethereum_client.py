@@ -70,6 +70,7 @@ from ..util.util import to_0x_hex_str
 from .constants import SAFE_SINGLETON_FACTORY_ADDRESS
 from .contracts import get_erc20_contract, get_erc721_contract
 from .ethereum_client import (
+    DEFAULT_ETHEREUM_NODE_URL,
     BatchCallManager,
     Erc20Info,
     Erc20Manager,
@@ -527,7 +528,7 @@ class AsyncEthereumClient(EthereumClient):
 
     def __init__(
         self,
-        ethereum_node_url: URI = URI("http://localhost:8545"),
+        ethereum_node_url: URI = DEFAULT_ETHEREUM_NODE_URL,
         provider_timeout: int = 15,
         slow_provider_timeout: int = 60,
         retry_count: int = 1,
@@ -1181,7 +1182,9 @@ def get_auto_async_ethereum_client() -> "AsyncEthereumClient":
 
         ethereum_node_url = settings.ETHEREUM_NODE_URL
     except ModuleNotFoundError:
-        ethereum_node_url = os.environ.get("ETHEREUM_NODE_URL")
+        ethereum_node_url = os.environ.get(
+            "ETHEREUM_NODE_URL", DEFAULT_ETHEREUM_NODE_URL
+        )
     return AsyncEthereumClient(
         ethereum_node_url,
         provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
