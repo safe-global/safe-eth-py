@@ -1,4 +1,5 @@
 import os
+import sys
 from collections.abc import Sequence
 from contextlib import contextmanager
 from typing import Any
@@ -23,6 +24,7 @@ from ...util.util import to_0x_hex_str
 from ..constants import GAS_CALL_DATA_BYTE, NULL_ADDRESS
 from ..contracts import get_erc20_contract
 from ..ethereum_client import (
+    DEFAULT_ETHEREUM_NODE_URL,
     Erc20Manager,
     EthereumClient,
     EthereumNetwork,
@@ -1539,6 +1541,24 @@ class TestEthereumClientConstruction(TestCase):
                 erc20.functions.decimals().call()
 
         handle_offchain_lookup.assert_not_called()
+
+    def test_node_url_defaults_to_localhost_without_environment(self):
+        """Without Django settings and `ETHEREUM_NODE_URL`, the auto client uses the default node URL."""
+        self.addCleanup(self.get_auto_client.cache_clear)
+        self.get_auto_client.cache_clear()
+        environment_without_node_url = {
+            key: value
+            for key, value in os.environ.items()
+            if key != "ETHEREUM_NODE_URL"
+        }
+        with (
+            # A `None` entry makes `from django.conf import settings` raise ModuleNotFoundError
+            mock.patch.dict(sys.modules, {"django.conf": None}),
+            mock.patch.dict(os.environ, environment_without_node_url, clear=True),
+        ):
+            ethereum_client = self.get_auto_client()
+
+        self.assertEqual(ethereum_client.ethereum_node_url, DEFAULT_ETHEREUM_NODE_URL)
 
     def test_ccip_read_enabled_from_environment(self):
         self.addCleanup(self.get_auto_client.cache_clear)

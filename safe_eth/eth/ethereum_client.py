@@ -374,11 +374,14 @@ class TxSpeed(Enum):
     FASTEST = 6
 
 
+DEFAULT_ETHEREUM_NODE_URL = URI("http://localhost:8545")
+
+
 @cache
 def get_auto_ethereum_client() -> "EthereumClient":
     """
     Use environment variables to configure `EthereumClient` and build a singleton:
-        - `ETHEREUM_NODE_URL`: No default.
+        - `ETHEREUM_NODE_URL`: `http://localhost:8545` by default.
         - `ETHEREUM_RPC_TIMEOUT`: `10` by default.
         - `ETHEREUM_RPC_SLOW_TIMEOUT`: `60` by default.
         - `ETHEREUM_RPC_RETRY_COUNT`: `1` by default.
@@ -392,7 +395,9 @@ def get_auto_ethereum_client() -> "EthereumClient":
 
         ethereum_node_url = settings.ETHEREUM_NODE_URL
     except ModuleNotFoundError:
-        ethereum_node_url = os.environ.get("ETHEREUM_NODE_URL")
+        ethereum_node_url = os.environ.get(
+            "ETHEREUM_NODE_URL", DEFAULT_ETHEREUM_NODE_URL
+        )
     return EthereumClient(
         ethereum_node_url,
         provider_timeout=int(os.environ.get("ETHEREUM_RPC_TIMEOUT", 10)),
@@ -1502,7 +1507,7 @@ class EthereumClient:
 
     def __init__(
         self,
-        ethereum_node_url: URI = URI("http://localhost:8545"),
+        ethereum_node_url: URI = DEFAULT_ETHEREUM_NODE_URL,
         provider_timeout: int = 15,
         slow_provider_timeout: int = 60,
         retry_count: int = 1,
