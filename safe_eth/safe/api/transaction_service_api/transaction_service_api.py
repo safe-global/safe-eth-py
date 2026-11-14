@@ -63,11 +63,18 @@ class TransactionServiceApi(SafeBaseAPI):
         network: EthereumNetwork,
         ethereum_client: EthereumClient | None = None,
         base_url: str | None = None,
-        api_key: str | None = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY"),
+        api_key: str | None = None,
         request_timeout: int = int(
             os.environ.get("SAFE_TRANSACTION_SERVICE_REQUEST_TIMEOUT", 10)
         ),
     ):
+        """
+        :param api_key: Api key of authenticated Safe services. If not provided, it is
+            read from the ``SAFE_TRANSACTION_SERVICE_API_KEY`` environment variable
+            when the instance is created, so ``from_ethereum_client`` uses it too
+        """
+        if api_key is None:
+            api_key = os.environ.get("SAFE_TRANSACTION_SERVICE_API_KEY")
         super().__init__(network, ethereum_client, base_url, api_key, request_timeout)
 
     def _get_url_by_network(self, network: EthereumNetwork) -> str | None:
