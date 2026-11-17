@@ -10,10 +10,13 @@ permissions: {}
 
 jobs:
   CLAssistant:
+    # Runs under pull_request_target with secrets: never check out or run code from the PR.
+    if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA') || github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     permissions:
+      actions: write # re-run the failed check after "recheck"/signing
       contents: read
-      pull-requests: write
+      pull-requests: write # post and update the signing comment
       issues: write
     steps:
       - name: Checkout reusable workflows
@@ -22,12 +25,12 @@ jobs:
           repository: safe-global/github-reusable-workflows
           token: ${{ secrets.REUSABLE_WORKFLOWS_TOKEN }}
           path: reusable-workflows
-          ref: ea5356563c5c5c31ceda25c7249640e2adc2e4c2 # v2.4.19
+          ref: 14b67a16428ed67f54ea459111608c0a4ce76d38 # v2.4.59
+          persist-credentials: false
       - name: "CLA Assistant"
         uses: ./reusable-workflows/actions/cla
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          personal-access-token: ${{ secrets.CLA_ACCESS_TOKEN }}
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          app-id: ${{ secrets.CLA_APP_ID }}
+          app-private-key: ${{ secrets.CLA_APP_PRIVATE_KEY }}
           allowlist: moisses89,luarx,Uxio0,falvaradorodriguez,*bot
