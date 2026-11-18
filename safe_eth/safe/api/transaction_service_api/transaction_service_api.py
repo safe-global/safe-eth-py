@@ -47,6 +47,7 @@ class TransactionServiceApi(SafeBaseAPI):
         EthereumNetwork.OPTIMISM: "oeth",
         EthereumNetwork.POLYGON: "pol",
         EthereumNetwork.POLYGON_ZKEVM: "zkevm",
+        EthereumNetwork.ROBINHOOD_CHAIN: "robinhood",
         EthereumNetwork.SCROLL: "scr",
         EthereumNetwork.SEPOLIA: "sep",
         EthereumNetwork.SONIC_MAINNET: "sonic",
