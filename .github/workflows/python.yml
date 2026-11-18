@@ -11,21 +11,20 @@ on:
 
 permissions: {}
 
+env:
+  PYTHON_VERSION: "3.13"
+
 jobs:
   linting:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.13]
-
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install uv
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
@@ -108,7 +107,8 @@ jobs:
     - name: Test packaging
       run: uv build
 
-  finish:
+  # Required check on main. Runs always: a skipped required check counts as passed.
+  tests-finish:
     permissions:
       contents: read
     needs: test-app
@@ -116,19 +116,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
+      continue-on-error: true
       uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
       with:
         parallel-finished: true
-
-  # Required status check on `main`. One fixed name for the whole test-app matrix,
-  # so the ruleset does not change when a Python version is added or removed.
-  # A skipped required check counts as passed, so it runs always and fails itself.
-  tests-finish:
-    permissions: {}
-    needs: test-app
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
     - name: Check test-app result
       if: ${{ needs.test-app.result != 'success' }}
       run: exit 1
@@ -146,7 +137,7 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       with:
-        python-version: '3.13'
+        python-version: ${{ env.PYTHON_VERSION }}
     - name: Deploy Package
       run: |
         uv build
