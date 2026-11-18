@@ -38,8 +38,7 @@ jobs:
         run: uv run pre-commit run --all-files
 
   test-app:
-    # Required status checks on `main` use this name. Without it GitHub adds every
-    # matrix value, e.g. `test-app (3.11, not network)`
+    # Without a name GitHub adds every matrix value, e.g. `test-app (3.11, not network)`
     name: test-app (${{ matrix.python-version }})
     permissions:
       contents: read
@@ -120,6 +119,19 @@ jobs:
       uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
       with:
         parallel-finished: true
+
+  # Required status check on `main`. One fixed name for the whole test-app matrix,
+  # so the ruleset does not change when a Python version is added or removed.
+  # A skipped required check counts as passed, so it runs always and fails itself.
+  tests-finish:
+    permissions: {}
+    needs: test-app
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check test-app result
+      if: ${{ needs.test-app.result != 'success' }}
+      run: exit 1
 
   publish:
     permissions:
