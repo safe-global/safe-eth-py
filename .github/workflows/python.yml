@@ -12,7 +12,7 @@ on:
 permissions: {}
 
 env:
-  PYTHON_VERSION: "3.13"
+  PYTHON_VERSION: "3.14"
 
 jobs:
   linting:
@@ -42,11 +42,13 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
+    # Experimental versions do not block tests-finish or cancel the other jobs
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       matrix:
         # Tests marked `network` hit external services (third party APIs, RPC nodes)
-        # with the same keys on every job, so they only run on the newest Python to stay
-        # under their rate limits.
+        # with the same keys on every job, so they only run on one Python version to
+        # stay under their rate limits.
         # Each entry sets `pytest-markers` itself because in GitHub Actions expressions
         # an empty string is falsy: `cond && '' || 'not network'` always returns
         # 'not network'.
@@ -59,6 +61,9 @@ jobs:
             pytest-markers: "not network"
           - python-version: "3.14"
             pytest-markers: ""
+          - python-version: "3.15"
+            pytest-markers: "not network"
+            experimental: true
     services:
       postgres:
         image: postgres:16-alpine
