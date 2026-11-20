@@ -4107,6 +4107,12 @@ MASTER_COPIES: dict[EthereumNetwork, list[tuple[str, int, str]]] = {
             2722988,
             "1.3.0+L2",
         ),  # v1.3.0+L2
+        ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 53785958, "1.5.0"),  # v1.5.0
+        (
+            "0xEdd160fEBBD92E350D4D398fb636302fccd67C7e",
+            53785991,
+            "1.5.0+L2",
+        ),  # v1.5.0+L2
     ],
     EthereumNetwork.XAI_TESTNET_V2: [
         ("0xFf51A5898e281Db6DfC7855790607438dF2ca44b", 14921379, "1.5.0"),  # v1.5.0
@@ -5972,6 +5978,7 @@ PROXY_FACTORIES: dict[EthereumNetwork, list[tuple[str, int]]] = {
         ("0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67", 2720843),  # v1.4.1
         ("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2", 2296),  # v1.3.0
         ("0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC", 2722887),  # v1.3.0
+        ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 53785754),  # v1.5.0
     ],
     EthereumNetwork.XAI_TESTNET_V2: [
         ("0x14F2982D601c9458F93bd70B218933A6f8165e7b", 14921370),  # v1.5.0
