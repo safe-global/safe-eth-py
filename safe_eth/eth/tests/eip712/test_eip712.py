@@ -1,6 +1,8 @@
-from unittest import TestCase
+import time
+from typing import Any
+from unittest import TestCase, mock
 
-from safe_eth.eth.eip712 import eip712_encode_hash
+from safe_eth.eth.eip712 import _TypedDataEncoder, eip712_encode_hash
 from safe_eth.util.util import to_0x_hex_str
 
 
@@ -324,3 +326,149 @@ class TestEIP712(TestCase):
             to_0x_hex_str(eip712_encode_hash(payload)),
             "0x9a55335a1d86221594e96018fc3df611a1485d95b5b2afbef1540ac51f63d249",
         )
+
+    @staticmethod
+    def _build_typed_data(
+        types: dict[str, Any], primary_type: str, message: Any
+    ) -> dict[str, Any]:
+        return {
+            "types": {
+                "EIP712Domain": [{"name": "name", "type": "string"}],
+                **types,
+            },
+            "primaryType": primary_type,
+            "domain": {"name": "MyDApp"},
+            "message": message,
+        }
+
+    def test_eip712_encode_hash_invalid_values(self):
+        """
+        Invalid values and type definitions raise ValueError, including the errors
+        raised by eth_abi
+        """
+        invalid_field_types_and_values = [
+            ("uint8", 256),
+            ("uint8", 1.5),
+            ("uint8", None),
+            ("bool", "yes"),
+            ("address", "0x12"),
+            ("uint8[", []),
+            ("uint8[]", 1),
+        ]
+        invalid_types_and_values: list[tuple[dict[str, Any], dict[str, Any]]] = [
+            (
+                {"Message": [{"name": "value", "type": field_type}]},
+                {"value": field_value},
+            )
+            for field_type, field_value in invalid_field_types_and_values
+        ]
+        invalid_types_and_values += [
+            ({"Message": []}, {}),
+        ]
+        for types, message in invalid_types_and_values:
+            with self.subTest(types=types, message=message):
+                with self.assertRaises(ValueError):
+                    eip712_encode_hash(
+                        self._build_typed_data(types, "Message", message)
+                    )
+
+    def test_eip712_encode_hash_type_hashed_once(self):
+        """
+        Each struct type is encoded once per call, not once per instance
+        """
+        types = {
+            "Mailbox": [{"name": "messages", "type": "Message[]"}],
+            "Message": [
+                {"name": "sender", "type": "Person"},
+                {"name": "body", "type": "string"},
+            ],
+            "Person": [{"name": "wallet", "type": "address"}],
+        }
+        message = {
+            "messages": [
+                {"sender": {"wallet": self.address}, "body": "Hello"} for _ in range(20)
+            ]
+        }
+        with mock.patch.object(
+            _TypedDataEncoder,
+            "encode_type",
+            autospec=True,
+            wraps=_TypedDataEncoder.encode_type,
+        ) as encode_type_mock:
+            eip712_encode_hash(self._build_typed_data(types, "Mailbox", message))
+
+        # EIP712Domain, Mailbox, Message and Person
+        self.assertEqual(encode_type_mock.call_count, 4)
+
+    def test_eip712_encode_hash_many_types_performance(self):
+        """
+        Arrays of structs that reference many types are encoded fast
+        """
+        chained_types: dict[str, Any] = {
+            "Message": [{"name": "values", "type": "Type0[]"}],
+            "Type599": [{"name": "value", "type": "uint8[]"}],
+        }
+        for index in range(599):
+            chained_types[f"Type{index}"] = [
+                {"name": "value", "type": f"Type{index + 1}[]"}
+            ]
+        chained_types_message = {"values": [{"value": []}] * 100}
+
+        type_names = [f"Type{index}" for index in range(30)]
+        # Every type references all the others, Wrapper references all of them
+        connected_types: dict[str, Any] = {
+            "Message": [{"name": "values", "type": "Wrapper[]"}],
+            "Wrapper": [{"name": "value", "type": "Type0[]"}],
+        }
+        for type_name in type_names:
+            connected_types[type_name] = [
+                {"name": f"value{index}", "type": f"{referenced_type_name}[]"}
+                for index, referenced_type_name in enumerate(type_names)
+            ]
+        connected_types_message = {"values": [{"value": []}] * 4500}
+
+        for types, message in [
+            (chained_types, chained_types_message),
+            (connected_types, connected_types_message),
+        ]:
+            typed_data = self._build_typed_data(types, "Message", message)
+            start = time.perf_counter()
+            eip712_encode_hash(typed_data)
+            self.assertLess(time.perf_counter() - start, 1)
+
+    def test_eip712_encode_hash_deep_nesting(self):
+        """
+        Data nested in a long chain of struct types is hashed
+        """
+        deep_types: dict[str, Any] = {
+            f"Type{index}": [
+                {"name": "value", "type": "uint256"},
+                {"name": "nested", "type": f"Type{index + 1}"},
+            ]
+            for index in range(300)
+        }
+        deep_types["Type300"] = [{"name": "value", "type": "uint256"}]
+        deep_message: dict[str, Any] = {"value": 300}
+        for index in reversed(range(300)):
+            deep_message = {"value": index, "nested": deep_message}
+        self.assertEqual(
+            to_0x_hex_str(
+                eip712_encode_hash(
+                    self._build_typed_data(deep_types, "Type0", deep_message)
+                )
+            ),
+            "0x81fe209ae442145eb871ffd4549d4237b328f45df0184d4fffc41236cfb8e310",
+        )
+
+    def test_eip712_encode_hash_too_deep_nesting(self):
+        """
+        Data too deep to encode raises ValueError
+        """
+        recursive_types = {"Node": [{"name": "children", "type": "Node[]"}]}
+        recursive_message: dict[str, Any] = {"children": []}
+        for _ in range(100_000):
+            recursive_message = {"children": [recursive_message]}
+        with self.assertRaises(ValueError):
+            eip712_encode_hash(
+                self._build_typed_data(recursive_types, "Node", recursive_message)
+            )
