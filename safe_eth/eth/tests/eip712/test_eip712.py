@@ -2,6 +2,8 @@ import time
 from typing import Any
 from unittest import TestCase, mock
 
+from eth_abi.registry import registry as default_abi_registry
+
 from safe_eth.eth.eip712 import _TypedDataEncoder, eip712_encode_hash
 from safe_eth.util.util import to_0x_hex_str
 
@@ -354,6 +356,8 @@ class TestEIP712(TestCase):
             ("address", "0x12"),
             ("uint8[", []),
             ("uint8[]", 1),
+            ("(uint256)", [1]),
+            ("(uint256)[]", [[1]]),
         ]
         invalid_types_and_values: list[tuple[dict[str, Any], dict[str, Any]]] = [
             (
@@ -472,3 +476,37 @@ class TestEIP712(TestCase):
             eip712_encode_hash(
                 self._build_typed_data(recursive_types, "Node", recursive_message)
             )
+
+    def test_eip712_encode_hash_abi_encoder_cache(self):
+        """
+        Arrays of any length and structs of any shape do not add entries to the
+        eth_abi encoder caches
+        """
+
+        def get_abi_encoder_cache_sizes() -> tuple[int, int]:
+            return (
+                default_abi_registry.get_tuple_encoder.cache_info().currsize,
+                default_abi_registry.get_encoder.cache_info().currsize,
+            )
+
+        sizes = range(1, 30)
+        types: dict[str, Any] = {
+            f"Message{size}": [
+                {"name": f"value{index}", "type": "uint256"} for index in range(size)
+            ]
+            + [{"name": "values", "type": "address[]"}]
+            for size in sizes
+        }
+        eip712_encode_hash(
+            self._build_typed_data(
+                types, "Message1", {"value0": 0, "values": [self.address]}
+            )
+        )
+        abi_encoder_cache_sizes = get_abi_encoder_cache_sizes()
+
+        for size in sizes:
+            message = {f"value{index}": index for index in range(size)}
+            message["values"] = [self.address] * size
+            eip712_encode_hash(self._build_typed_data(types, f"Message{size}", message))
+
+        self.assertEqual(get_abi_encoder_cache_sizes(), abi_encoder_cache_sizes)

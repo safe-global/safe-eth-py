@@ -169,7 +169,7 @@ and its async counterpart) is instantiated.
 
 Caching
 ~~~~~~~
-- ``CACHE_KECCAK``: ``lru_cache`` max size for keccak256 hashing. Default ``1024``.
+- ``CACHE_KECCAK``: ``lru_cache`` max size for keccak256 hashing. Default ``1024``. Inputs larger than 1024 bytes are not cached.
 - ``CACHE_CHECKSUM_ADDRESS``: ``lru_cache`` max size for checksummed address conversion. Default ``500000``.
 
 Safe contract addresses
