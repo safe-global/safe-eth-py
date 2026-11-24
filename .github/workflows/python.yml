@@ -88,6 +88,22 @@ jobs:
         cache-dependency-glob: "uv.lock"
     - name: Install dependencies
       run: uv sync --group dev --all-extras --frozen
+    - name: Show RPC providers
+      if: matrix.pytest-markers == ''
+      run: |
+        for var in ETHEREUM_MAINNET_NODE ETHEREUM_POLYGON_NODE ETHEREUM_4337_BUNDLER_URL; do
+          host=${!var:-}
+          host=${host#*://}
+          host=${host%%[/?#]*}
+          host=${host##*@}
+          host=${host%%:*}
+          domain=$(awk -F. 'NF > 1 {print $(NF-1) "." $NF; next} {print}' <<<"$host")
+          echo "$var -> ${domain:-<unset>}"
+        done
+      env:
+        ETHEREUM_MAINNET_NODE: ${{ secrets.ETHEREUM_MAINNET_NODE }}
+        ETHEREUM_POLYGON_NODE: ${{ secrets.ETHEREUM_POLYGON_NODE }}
+        ETHEREUM_4337_BUNDLER_URL: ${{ secrets.ETHEREUM_4337_BUNDLER_URL }}
     - name: Run tests and coverage
       run: |
         uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10 -m "${{ matrix.pytest-markers }}"
