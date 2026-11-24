@@ -3,17 +3,19 @@ import os
 from django.test import TestCase
 
 from eth_abi.packed import encode_packed
-from eth_utils import to_checksum_address
+from eth_utils import keccak, to_checksum_address
 from hexbytes import HexBytes
 
 from ..constants import SECPK1_N, SIGNATURE_R_MAX_VALUE, SIGNATURE_S_MAX_VALUE
 from ..contracts import get_proxy_1_0_0_deployed_bytecode, get_proxy_factory_contract
 from ..utils import (
+    _cached_keccak_256,
     compare_byte_code,
     decode_string_or_bytes32,
     fast_bytes_to_checksum_address,
     fast_is_checksum_address,
     fast_keccak,
+    fast_keccak_hex,
     fast_to_checksum_address,
     mk_contract_address,
     mk_contract_address_2,
@@ -142,6 +144,33 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                 "0x387a8233c96e1fc0ad5e284353276177af2186e7afa85296f106336e376669f7"
             ),
         )
+
+    def test_fast_keccak_large_input_not_cached(self):
+        """
+        Inputs larger than 1024 bytes are hashed without being kept in the cache
+        """
+        large_input = os.urandom(1025)
+        # A miss is counted even when the cache is full and an old entry is evicted
+        cache_misses = _cached_keccak_256.cache_info().misses
+        self.assertEqual(
+            fast_keccak(large_input),
+            HexBytes(keccak(large_input)),
+        )
+        self.assertEqual(fast_keccak_hex(large_input), keccak(large_input).hex())
+        self.assertEqual(_cached_keccak_256.cache_info().misses, cache_misses)
+
+    def test_fast_keccak_bytearray(self):
+        """
+        A bytearray or a writable memoryview is hashed like bytes, whether it fits in
+        the cache or not
+        """
+        for size in (32, 1025):
+            with self.subTest(size=size):
+                value = os.urandom(size)
+                self.assertEqual(fast_keccak(bytearray(value)), keccak(value))
+                self.assertEqual(
+                    fast_keccak(memoryview(bytearray(value))), keccak(value)
+                )
 
     def test_fast_to_checksum_address(self):
         for _ in range(10):

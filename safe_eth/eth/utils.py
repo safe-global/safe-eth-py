@@ -24,8 +24,23 @@ def get_empty_tx_params() -> TxParams:
     }
 
 
+# Callers hash user provided data of any size, and every cached entry keeps its input
+# in memory, so larger inputs are not cached
+_KECCAK_CACHE_MAX_INPUT_SIZE = 1024
+
+
 @lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 1024)))
+def _cached_keccak_256(value: bytes) -> keccak_256:
+    return keccak_256(value)
+
+
 def _keccak_256(value: bytes) -> keccak_256:
+    if len(value) > _KECCAK_CACHE_MAX_INPUT_SIZE:
+        return keccak_256(value)
+    try:
+        return _cached_keccak_256(value)
+    except (TypeError, ValueError):  # Unhashable inputs like bytearray or memoryview
+        pass
     return keccak_256(value)
 
 

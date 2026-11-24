@@ -26,16 +26,33 @@ SOFTWARE.
 """
 
 import re
-from typing import Any
+from typing import Any, cast
 
-from eth_abi import encode as encode_abi
 from eth_abi.exceptions import EncodingError, ParseError
+from eth_abi.registry import EncoderCallable
+from eth_abi.registry import registry as default_abi_registry
 from eth_typing import Hash32
 from hexbytes import HexBytes
 
 from ..utils import fast_keccak
 
 _StructTypes = dict[str, list[dict[str, Any]]]
+
+_ABI_INTEGER_SIZES = range(8, 257, 8)
+# eth_abi caches every type string it is given with no size limit, and the types
+# come from user input, so only this bounded set of type strings reaches eth_abi.
+# All of them are encoded in one 32 bytes word.
+_STATIC_ABI_TYPES = frozenset(
+    ["address", "bool", "function", "int", "uint", "fixed", "ufixed"]
+    + [f"{sign}int{bits}" for sign in ("", "u") for bits in _ABI_INTEGER_SIZES]
+    + [f"bytes{size}" for size in range(1, 33)]
+)
+_FIXED_ABI_TYPE_PATTERN = re.compile(
+    rf"u?fixed({'|'.join(map(str, _ABI_INTEGER_SIZES))})x([1-9]|[1-7][0-9]|80)"
+)
+# Every array element scans its type string, and each array dimension is encoded
+# with its own copy of it, so the encoding cost grows with the length of the types
+_MAX_FIELD_TYPE_LENGTH = 256
 
 
 def _remove_array_suffix(type_name: str) -> str:
@@ -69,6 +86,8 @@ class _TypedDataEncoder:
             fields = self.types[type_name]
             if not fields:
                 raise ValueError(f"No type definition specified: {type_name}")
+            if any(len(field["type"]) > _MAX_FIELD_TYPE_LENGTH for field in fields):
+                raise ValueError(f"Field type too long in type {type_name}")
             field_definitions = [f"{field['type']} {field['name']}" for field in fields]
             self._type_definitions[type_name] = (
                 type_name + "(" + ",".join(field_definitions) + ")"
@@ -109,28 +128,26 @@ class _TypedDataEncoder:
         return self._type_hashes[primary_type]
 
     def encode_data(self, primary_type: str, data: dict[str, Any]) -> bytes:
-        encoded_types = ["bytes32"]
-        encoded_values = [self.hash_type(primary_type)]
+        encoded_fields: list[bytes] = [self.hash_type(primary_type)]
         for field in self.types[primary_type]:
-            field_type, field_value = self._encode_field(
-                field["name"], field["type"], data[field["name"]]
+            encoded_fields.append(
+                self._encode_field(field["name"], field["type"], data[field["name"]])
             )
-            encoded_types.append(field_type)
-            encoded_values.append(field_value)
-        return encode_abi(encoded_types, encoded_values)
+        return b"".join(encoded_fields)
 
     def hash_struct(self, primary_type: str, data: dict[str, Any]) -> Hash32:
         return fast_keccak(self.encode_data(primary_type, data))
 
-    def _encode_field(self, name: str, typ: str, value: Any) -> list[Any]:
+    def _encode_field(self, name: str, typ: str, value: Any) -> bytes:
+        """
+        :return: 32 bytes word with the ABI encoding of the value, or its hash for
+            structs, arrays, ``bytes`` and ``string``
+        """
         if typ in self.types:
-            if value is None:
-                return [
-                    "bytes32",
-                    "0x0000000000000000000000000000000000000000000000000000000000000000",
-                ]
-            else:
-                return ["bytes32", fast_keccak(self.encode_data(typ, value))]
+            # A null struct is encoded as a zero word, like MetaMask signTypedData V4
+            if value is None and self.types[typ]:
+                return bytes(32)
+            return fast_keccak(self.encode_data(typ, value))
 
         if value is None:
             raise ValueError(f"Missing value for field {name} of type {typ}")
@@ -144,29 +161,28 @@ class _TypedDataEncoder:
             value = int(value)
 
         if typ == "bytes":
-            return ["bytes32", fast_keccak(value)]
+            return fast_keccak(value)
 
         if typ == "string":
-            # Convert string to bytes.
-            value = value.encode("utf-8")
-            return ["bytes32", fast_keccak(value)]
+            return fast_keccak(value.encode("utf-8"))
 
         if typ.endswith("]"):
-            # Array type
-            if value:
-                parsed_type = typ[: typ.rindex("[")]
-                type_value_pairs = [
-                    self._encode_field(name, parsed_type, v) for v in value
-                ]
-                data_types, data_hashes = zip(*type_value_pairs, strict=False)
-            else:
-                # Empty array
-                data_types, data_hashes = (), ()
+            if not value:
+                return fast_keccak(b"")
+            element_type = typ[: typ.rindex("[")]
+            return fast_keccak(
+                b"".join(
+                    [
+                        self._encode_field(name, element_type, element)
+                        for element in value
+                    ]
+                )
+            )
 
-            h = fast_keccak(encode_abi(data_types, data_hashes))
-            return ["bytes32", h]
-
-        return [typ, value]
+        if typ not in _STATIC_ABI_TYPES and not _FIXED_ABI_TYPE_PATTERN.fullmatch(typ):
+            raise ValueError(f"Not supported type {typ} for field {name}")
+        encoder = cast(EncoderCallable, default_abi_registry.get_encoder(typ))
+        return encoder(value)
 
 
 def encode_data(primary_type: str, data: dict[str, Any], types: _StructTypes) -> bytes:
