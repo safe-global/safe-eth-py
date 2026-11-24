@@ -1570,6 +1570,28 @@ class TestEthereumClientConstruction(TestCase):
             self.assertTrue(w3.provider.global_ccip_read_enabled)
 
 
+def remove_fields_not_in_mock(node_value: Any, mock_value: Any) -> Any:
+    """
+    Remove from ``node_value`` the dict keys that ``mock_value`` does not have, at
+    any depth. The mainnet node is behind a proxy with several upstreams, and each
+    node client returns a different set of optional trace fields. The fields in the
+    mock are still checked: a missing or different one makes the comparison fail.
+    """
+    if isinstance(node_value, dict) and isinstance(mock_value, dict):
+        return {
+            key: remove_fields_not_in_mock(value, mock_value[key])
+            for key, value in node_value.items()
+            if key in mock_value
+        }
+    if isinstance(node_value, list) and isinstance(mock_value, list):
+        cleaned_elements = [
+            remove_fields_not_in_mock(node_element, mock_element)
+            for node_element, mock_element in zip(node_value, mock_value, strict=False)
+        ]
+        return cleaned_elements + node_value[len(mock_value) :]
+    return node_value
+
+
 @pytest.mark.network
 class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
     @classmethod
@@ -1577,6 +1599,11 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
         super().setUpClass()
         mainnet_node = just_test_if_mainnet_node()
         cls.ethereum_client = EthereumClient(URI(mainnet_node))
+
+    def assertTracesMatchMock(self, node_traces: Any, mock_traces: Any) -> None:
+        self.assertEqual(
+            remove_fields_not_in_mock(node_traces, mock_traces), mock_traces
+        )
 
     def test_is_eip1559_supported(self):
         self.assertTrue(self.ethereum_client.is_eip1559_supported())
@@ -1622,7 +1649,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             block_numbers, block_mocks, strict=True
         ):
             with self.subTest(block_number=block_number):
-                self.assertEqual(
+                self.assertTracesMatchMock(
                     self.ethereum_client.tracing.trace_block(block_number),
                     trace_block_mock,
                 )
@@ -1634,7 +1661,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             trace_block_2191709_mock,
             trace_block_15630274_mock,
         ]
-        self.assertEqual(
+        self.assertTracesMatchMock(
             self.ethereum_client.tracing.trace_blocks(block_numbers),
             block_mocks,
         )
@@ -1647,7 +1674,7 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
         ]:
             with self.subTest(tx_hash=tx_hash):
-                self.assertEqual(
+                self.assertTracesMatchMock(
                     self.ethereum_client.tracing.trace_transaction(tx_hash),
                     trace_transaction_mocks[tx_hash],
                 )
@@ -1659,14 +1686,14 @@ class TestEthereumClientWithMainnetNode(EthereumTestCaseMixin, TestCase):
             # Erigon v2.31.0 traceAddress issue https://github.com/ledgerwatch/erigon/issues/6375
             "0xc27273dc6e631d275baa527e1b07cd9097887317c26034bf8ea7bbe38c9353f0",
         ]
-        self.assertEqual(
+        self.assertTracesMatchMock(
             self.ethereum_client.tracing.trace_transactions(tx_hashes),
             [trace_transaction_mocks[tx_hash] for tx_hash in tx_hashes],
         )
 
     def test_trace_filter(self):
         safe_1_3_0_address = "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552"
-        self.assertListEqual(
+        self.assertTracesMatchMock(
             self.ethereum_client.tracing.trace_filter(
                 from_block=12504268, to_block=12504268, to_address=[safe_1_3_0_address]
             ),
