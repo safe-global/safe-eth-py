@@ -2,8 +2,8 @@ use pyo3::buffer::PyUntypedBuffer;
 use pyo3::exceptions::{PyBufferError, PyTypeError, PyValueError};
 use pyo3::intern;
 use pyo3::prelude::*;
-use pyo3::sync::critical_section::with_critical_section;
-use pyo3::types::{PyBytes, PyInt, PyString};
+use pyo3::sync::critical_section::{with_critical_section, with_critical_section2};
+use pyo3::types::{PyBytes, PyInt, PyMemoryView, PyString};
 use secp256k1::Message;
 use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use tiny_keccak::{Hasher, Keccak};
@@ -166,10 +166,10 @@ fn keccak256<'py>(py: Python<'py>, data: &Bound<'py, PyAny>) -> PyResult<Bound<'
     }
     // Other threads can write to a mutable buffer while it is hashed, so it is copied first,
     // holding the object lock that a `bytearray` also takes to change its content on
-    // free-threaded Python
+    // free-threaded Python. For a `memoryview` that is the lock of the object it exposes
     let mut data_copy = vec![0u8; buffer.len_bytes()];
     if !data_copy.is_empty() {
-        with_critical_section(data, || {
+        let copy_buffer = || {
             // SAFETY: `buffer` is held until the end of the function, so its `len_bytes`
             // C-contiguous bytes at `buf_ptr` stay allocated
             unsafe {
@@ -179,7 +179,18 @@ fn keccak256<'py>(py: Python<'py>, data: &Bound<'py, PyAny>) -> PyResult<Bound<'
                     data_copy.len(),
                 );
             }
-        });
+        };
+        let memory_view_object = data
+            .cast::<PyMemoryView>()
+            .ok()
+            .and_then(|memory_view| memory_view.getattr(intern!(py, "obj")).ok())
+            .filter(|memory_view_object| !memory_view_object.is_none());
+        match memory_view_object {
+            Some(memory_view_object) => {
+                with_critical_section2(data, &memory_view_object, copy_buffer)
+            }
+            None => with_critical_section(data, copy_buffer),
+        }
     }
     let digest = keccak256_digest_releasing_gil(py, &data_copy);
     Ok(PyBytes::new(py, &digest))

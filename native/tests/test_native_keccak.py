@@ -173,6 +173,54 @@ class TestKeccak256(unittest.TestCase):
                 writer_thread.join()
         self.assertTrue(all(len(digest) == 32 for digest in digests))
 
+    def test_buffer_rewritten_by_other_threads_is_hashed_whole(self):
+        """
+        Other threads replace the whole content of a `bytearray` while it is hashed, directly
+        or through a `memoryview`: each digest is the one of a full content, never of a mix
+        of two (the case that matters on free-threaded Python)
+        """
+        first_content = os.urandom(GIL_RELEASE_MIN_LENGTH * 50)
+        second_content = os.urandom(len(first_content))
+        expected_digests = {
+            reference_keccak256(first_content),
+            reference_keccak256(second_content),
+        }
+        shared_data = bytearray(first_content)
+        stop_event = threading.Event()
+
+        def rewrite_shared_data() -> None:
+            while not stop_event.is_set():
+                shared_data[:] = first_content
+                shared_data[:] = second_content
+
+        for buffer in (
+            shared_data,
+            memoryview(shared_data),
+            memoryview(shared_data)[0:],
+        ):
+            with self.subTest(buffer_type=type(buffer).__name__):
+                writer_threads = [
+                    threading.Thread(target=rewrite_shared_data) for _ in range(2)
+                ]
+                stop_event.clear()
+                for writer_thread in writer_threads:
+                    writer_thread.start()
+                try:
+                    with ThreadPoolExecutor(max_workers=4) as executor:
+                        digests = set(
+                            executor.map(
+                                lambda _, buffer=buffer: safe_eth_native.keccak256(
+                                    buffer
+                                ),
+                                range(300),
+                            )
+                        )
+                finally:
+                    stop_event.set()
+                    for writer_thread in writer_threads:
+                        writer_thread.join()
+                self.assertLessEqual(digests, expected_digests)
+
     def test_rejects_other_types(self):
         """Text must be encoded first, and other objects without a buffer are rejected"""
         for value in ("text", None, 1, [1, 2], object()):
