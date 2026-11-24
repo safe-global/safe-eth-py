@@ -159,6 +159,15 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
         self.assertEqual(fast_keccak_hex(large_input), keccak(large_input).hex())
         self.assertEqual(_cached_keccak_256.cache_info().misses, cache_misses)
 
+    def test_fast_keccak_bytearray(self):
+        """
+        A bytearray is hashed like bytes, whether it fits in the cache or not
+        """
+        for size in (32, 1025):
+            with self.subTest(size=size):
+                value = os.urandom(size)
+                self.assertEqual(fast_keccak(bytearray(value)), keccak(value))
+
     def test_fast_to_checksum_address(self):
         for _ in range(10):
             address = os.urandom(20).hex()

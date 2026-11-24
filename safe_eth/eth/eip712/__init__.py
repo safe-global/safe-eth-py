@@ -50,6 +50,9 @@ _STATIC_ABI_TYPES = frozenset(
 _FIXED_ABI_TYPE_PATTERN = re.compile(
     rf"u?fixed({'|'.join(map(str, _ABI_INTEGER_SIZES))})x([1-9]|[1-7][0-9]|80)"
 )
+# Every array element scans its type string, and each array dimension is encoded
+# with its own copy of it, so the encoding cost grows with the length of the types
+_MAX_FIELD_TYPE_LENGTH = 256
 
 
 def _remove_array_suffix(type_name: str) -> str:
@@ -83,6 +86,8 @@ class _TypedDataEncoder:
             fields = self.types[type_name]
             if not fields:
                 raise ValueError(f"No type definition specified: {type_name}")
+            if any(len(field["type"]) > _MAX_FIELD_TYPE_LENGTH for field in fields):
+                raise ValueError(f"Field type too long in type {type_name}")
             field_definitions = [f"{field['type']} {field['name']}" for field in fields]
             self._type_definitions[type_name] = (
                 type_name + "(" + ",".join(field_definitions) + ")"
@@ -138,11 +143,14 @@ class _TypedDataEncoder:
         :return: 32 bytes word with the ABI encoding of the value, or its hash for
             structs, arrays, ``bytes`` and ``string``
         """
+        if typ in self.types:
+            # A null struct is encoded as a zero word, like MetaMask signTypedData V4
+            if value is None and self.types[typ]:
+                return bytes(32)
+            return fast_keccak(self.encode_data(typ, value))
+
         if value is None:
             raise ValueError(f"Missing value for field {name} of type {typ}")
-
-        if typ in self.types:
-            return fast_keccak(self.encode_data(typ, value))
 
         # Accept string bytes
         if "bytes" in typ and isinstance(value, str):

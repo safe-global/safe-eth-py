@@ -37,7 +37,11 @@ def _cached_keccak_256(value: bytes) -> keccak_256:
 def _keccak_256(value: bytes) -> keccak_256:
     if len(value) > _KECCAK_CACHE_MAX_INPUT_SIZE:
         return keccak_256(value)
-    return _cached_keccak_256(value)
+    try:
+        return _cached_keccak_256(value)
+    except TypeError:  # Unhashable inputs like bytearray
+        pass
+    return keccak_256(value)
 
 
 def fast_keccak(value: bytes) -> Hash32:

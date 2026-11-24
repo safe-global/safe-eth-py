@@ -1,11 +1,31 @@
+import os
 import time
 from typing import Any
 from unittest import TestCase, mock
 
 from eth_abi.registry import registry as default_abi_registry
 
-from safe_eth.eth.eip712 import _TypedDataEncoder, eip712_encode_hash
+from safe_eth.eth.eip712 import (
+    _MAX_FIELD_TYPE_LENGTH,
+    _TypedDataEncoder,
+    eip712_encode_hash,
+    hash_struct,
+)
+from safe_eth.eth.utils import fast_keccak
 from safe_eth.util.util import to_0x_hex_str
+
+# Dimensions of the longest uint256 array type that fits in the max field type length
+_MAX_ARRAY_DIMENSIONS = (_MAX_FIELD_TYPE_LENGTH - len("uint256")) // len("[]")
+
+
+def _build_nested_list(dimensions: int) -> Any:
+    """
+    :return: ``1`` nested in ``dimensions`` lists
+    """
+    nested_list: Any = 1
+    for _ in range(dimensions):
+        nested_list = [nested_list]
+    return nested_list
 
 
 class TestEIP712(TestCase):
@@ -358,6 +378,10 @@ class TestEIP712(TestCase):
             ("uint8[]", 1),
             ("(uint256)", [1]),
             ("(uint256)[]", [[1]]),
+            (
+                "uint256" + "[]" * (_MAX_ARRAY_DIMENSIONS + 1),
+                _build_nested_list(_MAX_ARRAY_DIMENSIONS + 1),
+            ),
         ]
         invalid_types_and_values: list[tuple[dict[str, Any], dict[str, Any]]] = [
             (
@@ -368,6 +392,10 @@ class TestEIP712(TestCase):
         ]
         invalid_types_and_values += [
             ({"Message": []}, {}),
+            (
+                {"Message": [{"name": "value", "type": "Empty"}], "Empty": []},
+                {"value": None},
+            ),
         ]
         for types, message in invalid_types_and_values:
             with self.subTest(types=types, message=message):
@@ -375,6 +403,60 @@ class TestEIP712(TestCase):
                     eip712_encode_hash(
                         self._build_typed_data(types, "Message", message)
                     )
+
+    def test_eip712_encode_null_struct(self):
+        """
+        A null struct, alone or in an array, is encoded as a zero word
+        """
+        types = {
+            "Group": [
+                {"name": "leader", "type": "Person"},
+                {"name": "members", "type": "Person[]"},
+            ],
+            "Person": [{"name": "name", "type": "string"}],
+        }
+        group_type_hash = fast_keccak(
+            b"Group(Person leader,Person[] members)Person(string name)"
+        )
+        self.assertEqual(
+            hash_struct("Group", {"leader": None, "members": [None]}, types),
+            fast_keccak(group_type_hash + bytes(32) + fast_keccak(bytes(32))),
+        )
+
+    def test_eip712_encode_hash_bytearray(self):
+        """
+        A bytearray value of a bytes field is hashed like bytes
+        """
+        types = {"Message": [{"name": "value", "type": "bytes"}]}
+        value = os.urandom(32)
+        self.assertEqual(
+            eip712_encode_hash(
+                self._build_typed_data(types, "Message", {"value": bytearray(value)})
+            ),
+            eip712_encode_hash(
+                self._build_typed_data(types, "Message", {"value": value})
+            ),
+        )
+
+    def test_eip712_encode_max_field_type_length(self):
+        """
+        An array with as many dimensions as fit in the max field type length is
+        hashed
+        """
+        field_type = "uint256" + "[]" * _MAX_ARRAY_DIMENSIONS
+        types = {"Message": [{"name": "value", "type": field_type}]}
+        # Each array is hashed from the hashes of its elements
+        encoded_value = (1).to_bytes(32, "big")
+        for _ in range(_MAX_ARRAY_DIMENSIONS):
+            encoded_value = fast_keccak(encoded_value)
+        self.assertEqual(
+            hash_struct(
+                "Message", {"value": _build_nested_list(_MAX_ARRAY_DIMENSIONS)}, types
+            ),
+            fast_keccak(
+                fast_keccak(f"Message({field_type} value)".encode()) + encoded_value
+            ),
+        )
 
     def test_eip712_encode_hash_type_hashed_once(self):
         """
