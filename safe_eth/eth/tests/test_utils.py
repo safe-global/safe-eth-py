@@ -161,12 +161,16 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
 
     def test_fast_keccak_bytearray(self):
         """
-        A bytearray is hashed like bytes, whether it fits in the cache or not
+        A bytearray or a writable memoryview is hashed like bytes, whether it fits in
+        the cache or not
         """
         for size in (32, 1025):
             with self.subTest(size=size):
                 value = os.urandom(size)
                 self.assertEqual(fast_keccak(bytearray(value)), keccak(value))
+                self.assertEqual(
+                    fast_keccak(memoryview(bytearray(value))), keccak(value)
+                )
 
     def test_fast_to_checksum_address(self):
         for _ in range(10):

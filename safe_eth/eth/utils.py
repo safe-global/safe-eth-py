@@ -39,7 +39,7 @@ def _keccak_256(value: bytes) -> keccak_256:
         return keccak_256(value)
     try:
         return _cached_keccak_256(value)
-    except TypeError:  # Unhashable inputs like bytearray
+    except (TypeError, ValueError):  # Unhashable inputs like bytearray or memoryview
         pass
     return keccak_256(value)
 
