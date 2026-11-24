@@ -20,6 +20,14 @@ Just run ``uv add safe-eth-py``
 If you want django ethereum utils (models, serializers, filters...) you need to run
 ``uv add safe-eth-py[django]``
 
+For faster signature recovery (``ecrecover``), ``secp256r1`` (passkey) signature
+verification, keccak256 and address checksums, install the native (Rust) extension with
+``uv add safe-eth-py[native]``. It is used when it is installed, with the same results as the
+Python code. It also becomes the keccak256 of ``eth-hash``, used by ``web3``, ``eth-utils``
+and ``eth-account``, unless ``ETH_HASH_BACKEND`` selects an ``eth-hash`` backend. Wheels are
+published for Linux, macOS and Windows; see `native/README.md
+<https://github.com/safe-global/safe-eth-py/blob/main/native/README.md>`_.
+
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_
 
@@ -30,9 +38,12 @@ Clone the repo, then to set it up:
 
 .. code-block:: bash
 
-    uv sync --group dev --frozen
+    uv sync --group dev --all-extras --frozen
     source .venv/bin/activate
     pre-commit install -f
+
+``--all-extras`` builds the native extension in ``native/``, which needs a Rust toolchain and a
+C compiler.
 
 Add new address for new chains
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -170,8 +181,11 @@ and its async counterpart) is instantiated.
 Caching
 ~~~~~~~
 - ``CACHE_KECCAK``: ``lru_cache`` max number of entries for keccak256 hashing. Default ``1024``.
-  Inputs larger than 1 KiB are never cached, whatever the value of ``CACHE_KECCAK``.
+  Inputs larger than 1 KiB are never cached, whatever the value of ``CACHE_KECCAK``. Not used
+  with the native extension, which is faster than a cache lookup.
 - ``CACHE_CHECKSUM_ADDRESS``: ``lru_cache`` max size for checksummed address conversion. Default ``500000``.
+  With the native extension there is a second cache of the same size, keyed by the address as
+  given, so the same address as ``bytes``, lowercase and checksummed text uses three entries.
 
 Safe contract addresses
 ~~~~~~~~~~~~~~~~~~~~~~~~~

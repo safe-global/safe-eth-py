@@ -3,7 +3,8 @@ from eth_keys.exceptions import BadSignature
 from hexbytes import HexBytes
 
 from safe_eth.eth.constants import NULL_ADDRESS
-from safe_eth.eth.utils import fast_to_checksum_address
+from safe_eth.eth.utils import fast_bytes_to_checksum_address, fast_to_checksum_address
+from safe_eth.util import native
 
 
 def signature_split(signatures: bytes | str, pos: int = 0) -> tuple[int, int, int]:
@@ -53,6 +54,18 @@ def get_signing_address(signed_hash: bytes, v: int, r: int, s: int) -> str:
     :return: checksummed ethereum address, for example `0x568c93675A8dEb121700A6FAdDdfE7DFAb66Ae4A`
     :rtype: str or `NULL_ADDRESS` if signature is not valid
     """
+    if (
+        native.safe_eth_native is not None
+        and isinstance(signed_hash, bytes)
+        and len(signed_hash) == 32
+        and type(v) is int
+        and type(r) is int
+        and type(s) is int
+    ):
+        signer_address_bytes = native.safe_eth_native.ecrecover(signed_hash, v, r, s)
+        if signer_address_bytes is None:
+            return NULL_ADDRESS
+        return fast_bytes_to_checksum_address(signer_address_bytes)
     try:
         public_key = keys.ecdsa_recover(signed_hash, keys.Signature(vrs=(v - 27, r, s)))
         return fast_to_checksum_address(public_key.to_canonical_address())

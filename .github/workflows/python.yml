@@ -88,6 +88,10 @@ jobs:
         cache-dependency-glob: "uv.lock"
     - name: Install dependencies
       run: uv sync --group dev --all-extras --frozen
+      env:
+        # The native extension is built for tests: fat LTO only makes release wheels faster
+        CARGO_PROFILE_RELEASE_LTO: "false"
+        CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "16"
     - name: Run tests and coverage
       run: |
         uv run coverage run --source=$SOURCE_FOLDER -m pytest -W ignore::DeprecationWarning -rxXs --reruns 3 --reruns-delay 10 -m "${{ matrix.pytest-markers }}"
@@ -136,7 +140,8 @@ jobs:
     needs:
       - linting
       - test-app
-    if: (github.event_name == 'release' && github.event.action == 'released')
+    # `native-v*` tags release the native extension, not safe-eth-py
+    if: (github.event_name == 'release' && github.event.action == 'released' && !startsWith(github.event.release.tag_name, 'native-v'))
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Install uv

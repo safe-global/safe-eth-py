@@ -1,6 +1,6 @@
 import os
 from functools import lru_cache
-from typing import Any
+from typing import Any, cast
 
 import eth_abi
 import rlp
@@ -11,6 +11,7 @@ from hexbytes import HexBytes
 from sha3 import keccak_256
 from web3.types import TxParams, Wei
 
+from safe_eth.util import native
 from safe_eth.util.util import to_0x_hex_str
 
 
@@ -44,19 +45,31 @@ def _keccak_256(value: bytes) -> keccak_256:
     return keccak_256(value)
 
 
+def _keccak_256_digest(value: bytes) -> bytes:
+    if native.safe_eth_native is not None:
+        try:
+            return native.safe_eth_native.keccak256(value)
+        except (TypeError, BufferError):
+            # Raised again below by pysha3, with its own error message
+            pass
+    return _keccak_256(value).digest()
+
+
 def fast_keccak(value: bytes) -> Hash32:
     """
-    Calculates ethereum keccak256 using fast library `pysha3`
+    Calculates ethereum keccak256 using the native extension if installed, or the fast
+    library `pysha3`
 
     :param value:
     :return: Keccak256 used by ethereum as `HexBytes`
     """
-    return Hash32(HexBytes(_keccak_256(value).digest()))
+    return Hash32(HexBytes(_keccak_256_digest(value)))
 
 
 def fast_keccak_text(value: str) -> Hash32:
     """
-    Calculates ethereum keccak256 using fast library `pysha3`
+    Calculates ethereum keccak256 using the native extension if installed, or the fast
+    library `pysha3`
 
     :param value:
     :return: Keccak256 used by ethereum as `HexBytes`
@@ -66,13 +79,12 @@ def fast_keccak_text(value: str) -> Hash32:
 
 def fast_keccak_hex(value: bytes) -> HexStr:
     """
-    Same as `fast_keccak`, but it's a little more optimal calling `hexdigest()`
-    than calling `digest()` and then `hex()`
+    Same as `fast_keccak`, but returns a hex string
 
     :param value:
     :return: Keccak256 used by ethereum as a hex string (not 0x prefixed)
     """
-    return HexStr(_keccak_256(value).hexdigest())
+    return HexStr(_keccak_256_digest(value).hex())
 
 
 def _build_checksum_address(
@@ -104,15 +116,24 @@ def _build_checksum_address(
     )
 
 
-@lru_cache(maxsize=int(os.getenv("CACHE_CHECKSUM_ADDRESS", 500_000)))
+_CACHE_CHECKSUM_ADDRESS_SIZE = int(os.getenv("CACHE_CHECKSUM_ADDRESS", 500_000))
+
+
+@lru_cache(maxsize=_CACHE_CHECKSUM_ADDRESS_SIZE)
 def _fast_to_checksum_address(address: HexAddress):
     address_hash = fast_keccak_hex(address.encode())
     return _build_checksum_address(address, address_hash)
 
 
+@lru_cache(maxsize=_CACHE_CHECKSUM_ADDRESS_SIZE)
+def _native_to_checksum_address(value: str | bytes) -> ChecksumAddress:
+    return cast(ChecksumAddress, native.safe_eth_native.to_checksum_address(value))
+
+
 def fast_to_checksum_address(value: AnyAddress | str | bytes) -> ChecksumAddress:
     """
-    Converts to checksum_address. Uses more optimal `pysha3` instead of `eth_utils` for keccak256 calculation
+    Converts to checksum_address. Uses the native extension if installed, or the more
+    optimal `pysha3` instead of `eth_utils` for keccak256 calculation
 
     :param value:
     :return:
@@ -123,23 +144,35 @@ def fast_to_checksum_address(value: AnyAddress | str | bytes) -> ChecksumAddress
                 f"Cannot convert {value.hex()} to a checksum address, 20 bytes were expected"
             )
 
+    if native.safe_eth_native is not None and isinstance(value, (str, bytes)):
+        try:
+            return _native_to_checksum_address(value)
+        except ValueError:
+            # Raised below by `to_normalized_address`, with the eth-utils error message
+            pass
+
     norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
     return _fast_to_checksum_address(norm_address)
 
 
 def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
     """
-    Converts to checksum_address. Uses more optimal `pysha3` instead of `eth_utils` for keccak256 calculation.
+    Converts to checksum_address. Uses the native extension if installed, or the more
+    optimal `pysha3` instead of `eth_utils` for keccak256 calculation.
     As input is already in bytes, some checks and conversions can be skipped, providing a speedup of ~50%
 
     :param value:
     :return:
     """
+    if not isinstance(value, bytes) and len(value) == 20:
+        value = bytes(value)
     if len(value) != 20:
         raise ValueError(
             f"Cannot convert {bytes(value).hex()} to a checksum address, 20 bytes were expected"
         )
-    norm_address = HexAddress(HexStr(bytes(value).hex()))
+    if native.safe_eth_native is not None:
+        return _native_to_checksum_address(value)
+    norm_address = HexAddress(HexStr(value.hex()))
     return _fast_to_checksum_address(norm_address)
 
 
@@ -150,6 +183,8 @@ def fast_is_checksum_address(value: AnyAddress | str | bytes) -> bool:
     :param value:
     :return: `True` if checksummed, `False` otherwise
     """
+    if native.safe_eth_native is not None:
+        return native.safe_eth_native.is_checksum_address(value)
     if not isinstance(value, str) or len(value) != 42 or not value.startswith("0x"):
         return False
     try:

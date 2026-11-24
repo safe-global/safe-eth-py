@@ -1,0 +1,187 @@
+name: Native extension
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "native-v*"
+    paths:
+      - "native/**"
+      - ".github/workflows/native.yml"
+  pull_request:
+    paths:
+      - "native/**"
+      - ".github/workflows/native.yml"
+
+permissions: {}
+
+env:
+  # Pinned, so a new clippy lint cannot break CI without a code change
+  RUST_TOOLCHAIN: "1.100.0"
+  MATURIN_VERSION: v1.16.0
+  # uv 0.13.9 on Python 3.14 Alpine, to test the musl wheels
+  ALPINE_UV_IMAGE: ghcr.io/astral-sh/uv@sha256:cf4d33eb056b454a922b80e3594c0621ac56e83e118ec4e7415c58ae65466ede
+
+jobs:
+  linting:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the Rust toolchains
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy,rustfmt
+          minimum_rust_version=$(grep -m1 '^rust-version = ' Cargo.toml | cut -d '"' -f 2)
+          rustup toolchain install "$minimum_rust_version" --profile minimal
+          echo "MINIMUM_RUST_VERSION=$minimum_rust_version" >> "$GITHUB_ENV"
+      - name: Check formatting
+        run: cargo "+$RUST_TOOLCHAIN" fmt --check
+      - name: Run clippy
+        run: cargo "+$RUST_TOOLCHAIN" clippy --locked --all-targets -- -D warnings
+      - name: Build with the minimum Rust version of Cargo.toml
+        run: cargo "+$MINIMUM_RUST_VERSION" check --locked
+
+  wheels:
+    name: wheels (${{ matrix.os }}, ${{ matrix.target }}, ${{ matrix.manylinux }})
+    permissions:
+      contents: read
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+            manylinux: "2_28"
+          - os: ubuntu-24.04-arm
+            target: aarch64
+            manylinux: "2_28"
+          - os: ubuntu-latest
+            target: x86_64
+            manylinux: musllinux_1_2
+          - os: ubuntu-24.04-arm
+            target: aarch64
+            manylinux: musllinux_1_2
+          - os: macos-15-intel
+            target: x86_64
+            manylinux: auto
+          - os: macos-latest
+            target: aarch64
+            manylinux: auto
+          - os: windows-latest
+            target: x64
+            manylinux: auto
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      # One abi3 wheel built with the oldest supported Python, and one wheel per
+      # free-threaded version, as abi3 wheels do not load on free-threaded builds
+      - name: Select the Python interpreters
+        id: interpreters
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            # The manylinux and musllinux images have them on the PATH
+            echo "interpreters=python3.11 python3.14t python3.15t" >> "$GITHUB_OUTPUT"
+          else
+            uv python install 3.11 3.14t 3.15t
+            echo "interpreters=$(uv python find 3.11) $(uv python find 3.14t) $(uv python find 3.15t)" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build the wheels
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+        with:
+          maturin-version: ${{ env.MATURIN_VERSION }}
+          working-directory: native
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          args: --release --locked --out dist --interpreter ${{ steps.interpreters.outputs.interpreters }}
+      - name: Run the tests on every supported Python, free-threaded included
+        if: matrix.manylinux != 'musllinux_1_2'
+        shell: bash
+        run: |
+          for python_version in 3.11 3.12 3.13 3.14 3.15 3.14t 3.15t; do
+            uv venv --python "$python_version" ".venv-$python_version"
+            # The wheel built above, never the one on PyPI or a cached one of the same version
+            uv pip install --python ".venv-$python_version" --no-index --no-cache \
+              --find-links native/dist safe-eth-native
+            uv pip install --python ".venv-$python_version" --exclude-newer "7 days" \
+              --group native/pyproject.toml:test
+            uv run --no-project --python ".venv-$python_version" python -m pytest native/tests
+          done
+      - name: Run the tests in Alpine
+        if: matrix.manylinux == 'musllinux_1_2'
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work -e PYTHONDONTWRITEBYTECODE=1 "$ALPINE_UV_IMAGE" sh -ec '
+            uv venv --python 3.14 /tmp/venv
+            uv pip install --python /tmp/venv --no-index --no-cache --find-links native/dist safe-eth-native
+            uv pip install --python /tmp/venv --exclude-newer "7 days" --group native/pyproject.toml:test
+            uv run --no-project --python /tmp/venv python -m pytest -p no:cacheprovider native/tests
+          '
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.target }}-${{ matrix.manylinux }}
+          path: native/dist
+          if-no-files-found: error
+
+  sdist:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the sdist
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+        with:
+          maturin-version: ${{ env.MATURIN_VERSION }}
+          working-directory: native
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: wheels-sdist
+          path: native/dist
+          if-no-files-found: error
+
+  publish:
+    needs:
+      - linting
+      - wheels
+      - sdist
+    if: startsWith(github.ref, 'refs/tags/native-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # PyPI trusted publishing
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Full history, to check the tagged commit is on main
+          fetch-depth: 0
+      - name: Check the tagged commit is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Check the tag matches the package version
+        run: |
+          cargo_version=$(grep -m1 '^version = ' native/Cargo.toml | cut -d '"' -f 2)
+          test "$GITHUB_REF_NAME" = "native-v$cargo_version"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always dist/*
