@@ -36,8 +36,8 @@ source .venv/bin/activate
 pre-commit install -f
 ```
 
-`--all-extras` pulls the `django` extra, which the test suite needs, and the `native` extra, which
-builds the Rust extension in `native/` (it needs a Rust toolchain and a C compiler). `uv.lock` is
+`--all-extras` pulls the `django` extra, which the test suite needs. `uv sync` builds the Rust
+extension in `native/`, a required dependency (it needs a Rust toolchain and a C compiler). `uv.lock` is
 the source of truth: always sync `--frozen`, run `uv lock` after editing `pyproject.toml` and
 commit both.
 `[tool.uv] exclude-newer = "7 days"` rejects packages published in the last 7 days, so a brand new
@@ -110,7 +110,7 @@ mirrors the sync client for async callers; a feature added to one usually has to
 Performance rules that hold across the codebase:
 - Prefer `batch_call` / multicall over N sequential RPC calls
 - Prefer `fast_to_checksum_address` / `fast_is_checksum_address` / `fast_keccak`
-  (`safe_eth/eth/utils.py`, pysha3-backed and `lru_cache`d) over the `Web3` equivalents
+  (`safe_eth/eth/utils.py`, backed by the native extension) over the `Web3` equivalents
 
 ### Contracts are loaded from bundled ABIs
 
@@ -171,7 +171,6 @@ list with defaults; the groups are:
 - **RPC client**: `ETHEREUM_NODE_URL` (ignored under Django, which uses `settings.ETHEREUM_NODE_URL`),
   `ETHEREUM_RPC_TIMEOUT`, `ETHEREUM_RPC_SLOW_TIMEOUT`, `ETHEREUM_RPC_RETRY_COUNT`,
   `ETHEREUM_RPC_BATCH_REQUEST_MAX_SIZE`
-- **Caching**: `CACHE_KECCAK`, `CACHE_CHECKSUM_ADDRESS` (`lru_cache` sizes for the fast helpers)
 - **Contract addresses**: `SAFE_SINGLETON_FACTORY_ADDRESS`, `SAFE_SIMULATE_TX_ACCESSOR_ADDRESS`, for
   chains where the deterministic address differs
 - **Transaction Service**: `SAFE_TRANSACTION_SERVICE_API_KEY` (JWT from developer.safe.global),
@@ -319,36 +318,37 @@ files generated from upstream sources, instead of being read from an API or JSON
 
 ### Fast Keccak and Checksum Helpers
 
-**Decision**: `safe_eth/eth/utils.py` provides pysha3-backed, `lru_cache`d `fast_keccak`,
-`fast_to_checksum_address` and `fast_is_checksum_address`, used everywhere instead of the `Web3`
+**Decision**: `safe_eth/eth/utils.py` provides `fast_keccak`, `fast_to_checksum_address` and
+`fast_is_checksum_address` on top of the native extension, used everywhere instead of the `Web3`
 equivalents.
 
-**Rationale**: the indexers checksum millions of addresses; the cached implementation is
-significantly faster, and the cache sizes are tunable with `CACHE_KECCAK` / `CACHE_CHECKSUM_ADDRESS`.
+**Rationale**: the indexers checksum millions of addresses; the native implementation is
+significantly faster. They have no cache: a hit saves ~0.25 us, while a full cache takes
+~150 MiB per process and is slower than the native call on misses and with free-threading.
 `safe_eth/eth/tests/test_keccak_performance.py` benchmarks it against `eth_utils` and `Web3` with
 pytest-benchmark.
 
-### Optional Native Extension
+### Native Extension
 
 **Decision**: `native/` is a Rust (PyO3, maturin) package, `safe-eth-native`, published apart from
-safe-eth-py and installed with the `native` extra. `fast_keccak`, the checksum helpers,
-`get_signing_address` and `p256.verify` use it through `safe_eth.util.native` when it is
-installed, and their Python implementation otherwise.
+safe-eth-py and required by it. `fast_keccak`, the checksum helpers, `get_signing_address` and
+`p256.verify` use it, and `safe_eth.util.native` makes it the keccak256 of eth-hash.
 
 **Rationale**:
 - ecrecover with eth-keys is ~3.5 ms on Python 3.14 (coincurve has no 3.14 wheel), libsecp256k1 is
   ~25 us. P-256 verify and the checksum helpers are 10-20x faster
-- safe-eth-py stays a pure Python wheel: platforms without a native wheel still install it
+- safe-eth-py stays a pure Python wheel; the native one has wheels for every platform the
+  services run on, and builds from source with Rust elsewhere
 - Same repository, so a change and its Python callers are reviewed and tested together
 
 **Rules**:
-- The native path must give the same result as the Python one, including the error type and
-  message. Inputs the native function does not take go to the Python implementation
-- Tests of a helper with a native path use `with_and_without_native` and
-  `assert_same_outcome_with_and_without_native` (`safe_eth/util/tests/native_test_utils.py`)
+- A helper gives the same result as its reference implementation (eth-utils, eth-keys,
+  pycryptodome, the Python P-256 code), including the error type and message. Inputs the native
+  function does not take go to the Python code (eth-keys for `get_signing_address`)
+- Tests compare the helpers with the reference using `assert_same_outcome_as_reference`
+  (`safe_eth/util/tests/native_test_utils.py`)
 - `native/tests` checks the extension against reference implementations and published vectors,
-  see `native/README.md`. The tests need the extension installed (`--all-extras`) and fail without
-  it, the same as for any other dependency
+  see `native/README.md`
 
 ### Django Is an Optional Extra
 

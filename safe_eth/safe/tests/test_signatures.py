@@ -1,9 +1,11 @@
 import os
 import random
 import unittest
+from unittest import mock
 
 from django.test import TestCase
 
+import safe_eth_native
 from eth_account import Account
 from eth_account.messages import defunct_hash_message
 from hexbytes import HexBytes
@@ -11,12 +13,9 @@ from hexbytes import HexBytes
 from safe_eth.eth.constants import NULL_ADDRESS, SECPK1_N
 from safe_eth.eth.contracts import get_compatibility_fallback_handler_contract
 from safe_eth.eth.utils import fast_keccak_text
-from safe_eth.util.tests.native_test_utils import (
-    assert_same_outcome_with_and_without_native,
-    with_and_without_native,
-)
+from safe_eth.util.tests.native_test_utils import assert_same_outcome_as_reference
 
-from ..signatures import get_signing_address
+from ..signatures import _get_signing_address_with_eth_keys, get_signing_address
 from .safe_test_case import SafeTestCaseMixin
 
 
@@ -24,7 +23,6 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
     EIP1271_MAGIC_VALUE = "20c13b0b"
     EIP1271_MAGIC_VALUE_UPDATED = "1626ba7e"
 
-    @with_and_without_native
     def test_get_signing_address(self):
         account = Account.create()
         # Random hash
@@ -109,9 +107,9 @@ class IntSubclass(int):
     pass
 
 
-class TestGetSigningAddressWithAndWithoutNative(unittest.TestCase):
+class TestGetSigningAddressSameAsEthKeys(unittest.TestCase):
     """
-    The native extension and eth-keys recover the same address, or return
+    `get_signing_address` and eth-keys recover the same address, or return
     `NULL_ADDRESS`, or raise the same error
     """
 
@@ -132,19 +130,32 @@ class TestGetSigningAddressWithAndWithoutNative(unittest.TestCase):
                         get_signing_address(signed_hash, v, signature.r, s),
                         account.address,
                     )
-                    assert_same_outcome_with_and_without_native(
-                        self, get_signing_address, signed_hash, v, signature.r, s
+                    assert_same_outcome_as_reference(
+                        self,
+                        get_signing_address,
+                        _get_signing_address_with_eth_keys,
+                        signed_hash,
+                        v,
+                        signature.r,
+                        s,
                     )
-                    assert_same_outcome_with_and_without_native(
-                        self, get_signing_address, signed_hash, 55 - v, signature.r, s
+                    assert_same_outcome_as_reference(
+                        self,
+                        get_signing_address,
+                        _get_signing_address_with_eth_keys,
+                        signed_hash,
+                        55 - v,
+                        signature.r,
+                        s,
                     )
 
     def test_random_values(self):
         """Random `r` and `s`, about half of them without a point on the curve"""
         for _ in range(100):
-            assert_same_outcome_with_and_without_native(
+            assert_same_outcome_as_reference(
                 self,
                 get_signing_address,
+                _get_signing_address_with_eth_keys,
                 os.urandom(32),
                 random.choice((27, 28)),
                 random.randrange(1, SECPK1_N),
@@ -184,9 +195,10 @@ class TestGetSigningAddressWithAndWithoutNative(unittest.TestCase):
                     get_signing_address(signed_hash, invalid_v, invalid_r, invalid_s),
                     NULL_ADDRESS,
                 )
-                assert_same_outcome_with_and_without_native(
+                assert_same_outcome_as_reference(
                     self,
                     get_signing_address,
+                    _get_signing_address_with_eth_keys,
                     signed_hash,
                     invalid_v,
                     invalid_r,
@@ -209,15 +221,31 @@ class TestGetSigningAddressWithAndWithoutNative(unittest.TestCase):
             (v, IntSubclass(r), s),
             (v, None, s),
         ):
-            with self.subTest(v=not_int_v, r=not_int_r, s=not_int_s):
-                assert_same_outcome_with_and_without_native(
+            with (
+                self.subTest(v=not_int_v, r=not_int_r, s=not_int_s),
+                mock.patch.object(
+                    safe_eth_native, "ecrecover", wraps=safe_eth_native.ecrecover
+                ) as native_ecrecover,
+            ):
+                assert_same_outcome_as_reference(
                     self,
                     get_signing_address,
+                    _get_signing_address_with_eth_keys,
                     signed_hash,
                     not_int_v,
                     not_int_r,
                     not_int_s,
                 )
+                native_ecrecover.assert_not_called()
+        self.assertEqual(
+            get_signing_address(signed_hash, v, IntSubclass(r), s), account.address
+        )
+        # The same values as `int` go to the native extension
+        with mock.patch.object(
+            safe_eth_native, "ecrecover", wraps=safe_eth_native.ecrecover
+        ) as native_ecrecover:
+            self.assertEqual(get_signing_address(signed_hash, v, r, s), account.address)
+        native_ecrecover.assert_called_once_with(signed_hash, v, r, s)
 
     def test_invalid_hashes(self):
         """Hashes the native extension does not take go to eth-keys"""
@@ -234,12 +262,19 @@ class TestGetSigningAddressWithAndWithoutNative(unittest.TestCase):
             memoryview(signed_hash),
             None,
         ):
-            with self.subTest(signed_hash=invalid_hash):
-                assert_same_outcome_with_and_without_native(
+            with (
+                self.subTest(signed_hash=invalid_hash),
+                mock.patch.object(
+                    safe_eth_native, "ecrecover", wraps=safe_eth_native.ecrecover
+                ) as native_ecrecover,
+            ):
+                assert_same_outcome_as_reference(
                     self,
                     get_signing_address,
+                    _get_signing_address_with_eth_keys,
                     invalid_hash,
                     signature.v,
                     signature.r,
                     signature.s,
                 )
+                native_ecrecover.assert_not_called()

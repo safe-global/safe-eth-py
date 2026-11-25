@@ -6,7 +6,7 @@ Native (Rust) versions of the hot paths of [safe-eth-py](https://github.com/safe
 | --- | --- | --- |
 | `ecrecover(message_hash, v, r, s) -> bytes \| None` | eth-keys `ecdsa_recover` | [libsecp256k1](https://github.com/bitcoin-core/secp256k1) |
 | `p256_verify(message_hash, r, s, public_key_x, public_key_y) -> bool` | `safe_eth.safe.p256.verify` | RustCrypto [`p256`](https://github.com/RustCrypto/elliptic-curves) |
-| `keccak256(data) -> bytes` | pysha3 `keccak_256` | [`tiny-keccak`](https://github.com/debris/tiny-keccak) |
+| `keccak256(data) -> bytes` | the eth-hash backend (pycryptodome) | [`tiny-keccak`](https://github.com/debris/tiny-keccak) |
 | `to_checksum_address(value) -> str` | `fast_to_checksum_address` | |
 | `is_checksum_address(value) -> bool` | `fast_is_checksum_address` | |
 
@@ -17,12 +17,11 @@ wrong type, or a hash that is not 32 bytes for `ecrecover`, raises. Both release
 while they run, and so does `keccak256` for inputs of 2048 bytes or more. `keccak256` hashes
 the raw bytes of `bytes` or of any C-contiguous buffer, like `hashlib`.
 
-The package is not meant to be used directly. Install it with the `native` extra of
-safe-eth-py, which uses it when it is installed and falls back to the Python code when it is
-not:
+The package is not meant to be used directly. safe-eth-py requires it, so it is installed with
+it:
 
 ```bash
-pip install "safe-eth-py[native]"
+pip install safe-eth-py
 ```
 
 ## Usage
@@ -101,7 +100,7 @@ extension and installs it in the safe-eth-py environment, and `pytest native/tes
 its tests. uv rebuilds it when a file in `src/` changes.
 
 The tests compare every function with reference implementations (eth-keys, eth-utils,
-pycryptodome, and pysha3 in the safe-eth-py tests) and run the vectors of the Keccak team,
+pycryptodome) and run the vectors of the Keccak team,
 Wycheproof, EIP-55, and the test suites of go-ethereum, eth-keys, eth-utils, coincurve and
 libsecp256k1. See
 [`tests/vectors`](https://github.com/safe-global/safe-eth-py/blob/main/native/tests/vectors/README.md)

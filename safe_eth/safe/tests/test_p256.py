@@ -3,15 +3,14 @@ import json
 import os
 import unittest
 from pathlib import Path
+from unittest import mock
 
+import safe_eth_native
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 
-from ...util.tests.native_test_utils import (
-    assert_same_outcome_with_and_without_native,
-    with_and_without_native,
-)
+from ...util.tests.native_test_utils import assert_same_outcome_as_reference
 from .. import p256
 
 # Known-answer vectors from RFC 6979 Appendix A.2.5 (NIST P-256, SHA-256).
@@ -31,7 +30,6 @@ TEST_S = 0x019F4113742A2B14BD25926B49C649155F267E60D3814B4C0CC84250E46F0083
 
 
 class TestP256(unittest.TestCase):
-    @with_and_without_native
     def test_verify_valid_signatures(self):
         self.assertTrue(
             p256.verify(SAMPLE_HASH, SAMPLE_R, SAMPLE_S, PUBLIC_KEY_X, PUBLIC_KEY_Y)
@@ -40,14 +38,12 @@ class TestP256(unittest.TestCase):
             p256.verify(TEST_HASH, TEST_R, TEST_S, PUBLIC_KEY_X, PUBLIC_KEY_Y)
         )
 
-    @with_and_without_native
     def test_verify_wrong_message(self):
         # `sample` signature against `test` digest must not verify
         self.assertFalse(
             p256.verify(TEST_HASH, SAMPLE_R, SAMPLE_S, PUBLIC_KEY_X, PUBLIC_KEY_Y)
         )
 
-    @with_and_without_native
     def test_verify_tampered_signature(self):
         self.assertFalse(
             p256.verify(SAMPLE_HASH, SAMPLE_R + 1, SAMPLE_S, PUBLIC_KEY_X, PUBLIC_KEY_Y)
@@ -56,13 +52,11 @@ class TestP256(unittest.TestCase):
             p256.verify(SAMPLE_HASH, SAMPLE_R, SAMPLE_S + 1, PUBLIC_KEY_X, PUBLIC_KEY_Y)
         )
 
-    @with_and_without_native
     def test_verify_wrong_public_key(self):
         self.assertFalse(
             p256.verify(SAMPLE_HASH, SAMPLE_R, SAMPLE_S, PUBLIC_KEY_X + 1, PUBLIC_KEY_Y)
         )
 
-    @with_and_without_native
     def test_verify_signature_out_of_range(self):
         # `r` and `s` must be in [1, n-1]
         self.assertFalse(
@@ -78,7 +72,6 @@ class TestP256(unittest.TestCase):
             p256.verify(SAMPLE_HASH, SAMPLE_R, p256._N, PUBLIC_KEY_X, PUBLIC_KEY_Y)
         )
 
-    @with_and_without_native
     def test_verify_public_key_not_on_curve(self):
         self.assertFalse(p256._is_on_curve(PUBLIC_KEY_X, PUBLIC_KEY_Y + 1))
         self.assertFalse(
@@ -99,8 +92,8 @@ WYCHEPROOF_P256_VECTORS = (
 )
 
 
-class TestP256VerifyWithAndWithoutNative(unittest.TestCase):
-    """The native extension and the Python implementation give the same result"""
+class TestP256VerifySameAsPython(unittest.TestCase):
+    """`verify` and the Python implementation give the same result"""
 
     def test_random_signatures(self):
         """Valid, high `s` and changed signatures, and hashes out of the 32 bytes range"""
@@ -124,7 +117,9 @@ class TestP256VerifyWithAndWithoutNative(unittest.TestCase):
                 (message_hash + 2**256, r, s, public_key_x, public_key_y),
                 (-message_hash, r, s, public_key_x, public_key_y),
             ):
-                assert_same_outcome_with_and_without_native(self, p256.verify, *values)
+                assert_same_outcome_as_reference(
+                    self, p256.verify, p256._verify_in_python, *values
+                )
 
     def test_invalid_values(self):
         """Values out of range and public keys that are not on the curve"""
@@ -142,8 +137,15 @@ class TestP256VerifyWithAndWithoutNative(unittest.TestCase):
             (SAMPLE_R, SAMPLE_S, p256._GX, p256._GY),
         ):
             with self.subTest(r=r, s=s, public_key_x=public_key_x):
-                assert_same_outcome_with_and_without_native(
-                    self, p256.verify, SAMPLE_HASH, r, s, public_key_x, public_key_y
+                assert_same_outcome_as_reference(
+                    self,
+                    p256.verify,
+                    p256._verify_in_python,
+                    SAMPLE_HASH,
+                    r,
+                    s,
+                    public_key_x,
+                    public_key_y,
                 )
 
     def test_values_that_are_not_int(self):
@@ -153,10 +155,24 @@ class TestP256VerifyWithAndWithoutNative(unittest.TestCase):
             for not_int_value in (float(values[position]), str(values[position]), True):
                 not_int_values = list(values)
                 not_int_values[position] = not_int_value
-                with self.subTest(position=position, value=not_int_value):
-                    assert_same_outcome_with_and_without_native(
-                        self, p256.verify, *not_int_values
+                with (
+                    self.subTest(position=position, value=not_int_value),
+                    mock.patch.object(
+                        safe_eth_native,
+                        "p256_verify",
+                        wraps=safe_eth_native.p256_verify,
+                    ) as native_p256_verify,
+                ):
+                    assert_same_outcome_as_reference(
+                        self, p256.verify, p256._verify_in_python, *not_int_values
                     )
+                    native_p256_verify.assert_not_called()
+        # The same values as `int` go to the native extension
+        with mock.patch.object(
+            safe_eth_native, "p256_verify", wraps=safe_eth_native.p256_verify
+        ) as native_p256_verify:
+            self.assertTrue(p256.verify(*values))
+        native_p256_verify.assert_called_once()
 
     def test_wycheproof_vectors(self):
         """Wycheproof P-256 SHA-256 vectors, which the Python implementation also has to pass"""
@@ -182,9 +198,10 @@ class TestP256VerifyWithAndWithoutNative(unittest.TestCase):
                         p256.verify(message_hash, r, s, public_key_x, public_key_y),
                         test["result"] == "valid",
                     )
-                    assert_same_outcome_with_and_without_native(
+                    assert_same_outcome_as_reference(
                         self,
                         p256.verify,
+                        p256._verify_in_python,
                         message_hash,
                         r,
                         s,
