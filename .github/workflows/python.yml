@@ -153,4 +153,4 @@ jobs:
         uv build
         uv publish
       env:
-        UV_PUBLISH_TOKEN: ${{ secrets.PIPY_SAFE_ETH_TOKEN }}
+        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_SAFE_ETH_TOKEN }}
