@@ -19,8 +19,37 @@ class TestNative(TestCase):
 
 class TestNativeKeccakInEthHash(TestCase):
     def test_eth_hash_uses_native_keccak(self):
-        """Importing safe-eth-py makes the native keccak256 the eth-hash one"""
+        """Importing safe-eth-py makes the native keccak256 the eth-hash one, `new()` included"""
         self.assertIs(eth_hash_keccak.hasher, native.safe_eth_native.keccak256)
+        self.assertIs(eth_hash_keccak.preimage, native.NativeKeccakPreimage)
+        self.assertIsInstance(eth_hash_keccak.new(b""), native.NativeKeccakPreimage)
+
+    def test_eth_hash_new_same_digests_as_pysha3(self):
+        """
+        `keccak.new()` gives the pysha3 digests after each update, for every input type
+        pysha3 takes, and its copies are independent
+        """
+        first_part, second_part, third_part = (
+            os.urandom(length) for length in (0, 137, 3000)
+        )
+        preimage = eth_hash_keccak.new(bytearray(first_part))
+        expected_hash = keccak_256(first_part)
+        self.assertEqual(preimage.digest(), expected_hash.digest())
+        for part in (second_part, bytearray(third_part), memoryview(second_part)):
+            preimage.update(part)
+            expected_hash.update(part)
+            self.assertEqual(preimage.digest(), expected_hash.digest())
+        preimage_copy = preimage.copy()
+        preimage_copy.update(b"only in the copy")
+        self.assertEqual(preimage.digest(), expected_hash.digest())
+        expected_hash.update(b"only in the copy")
+        self.assertEqual(preimage_copy.digest(), expected_hash.digest())
+        with self.assertRaises(TypeError):
+            preimage.update("text")
+        with self.assertRaisesRegex(
+            TypeError, "Can only compute the hash of `bytes` or `bytearray`"
+        ):
+            eth_hash_keccak.new("text")
 
     def test_eth_hash_calls_hasher(self):
         """
@@ -69,14 +98,20 @@ class TestNativeKeccakInEthHash(TestCase):
             with (
                 self.subTest(patch=patch),
                 mock.patch.object(eth_hash_keccak, "hasher") as hasher,
+                mock.patch.object(eth_hash_keccak, "preimage") as preimage,
                 patch,
             ):
                 native.use_native_keccak_in_eth_hash()
                 self.assertIs(eth_hash_keccak.hasher, hasher)
-        # Without patches it is replaced, so the checks above can fail
-        with mock.patch.object(eth_hash_keccak, "hasher"):
+                self.assertIs(eth_hash_keccak.preimage, preimage)
+        # Without patches they are replaced, so the checks above can fail
+        with (
+            mock.patch.object(eth_hash_keccak, "hasher"),
+            mock.patch.object(eth_hash_keccak, "preimage"),
+        ):
             native.use_native_keccak_in_eth_hash()
             self.assertIs(eth_hash_keccak.hasher, native.safe_eth_native.keccak256)
+            self.assertIs(eth_hash_keccak.preimage, native.NativeKeccakPreimage)
 
     def test_restore_eth_hash_backend(self):
         """eth-hash goes back to its own backend, with the same digests, and can use native again"""
@@ -84,7 +119,15 @@ class TestNativeKeccakInEthHash(TestCase):
         try:
             native.restore_eth_hash_backend()
             self.assertIs(eth_hash_keccak.hasher, native.eth_hash_backend_hasher)
+            self.assertIs(eth_hash_keccak.preimage, native.eth_hash_backend_preimage)
             self.assertEqual(eth_utils.keccak(data), keccak_256(data).digest())
+            self.assertNotIsInstance(
+                eth_hash_keccak.new(data), native.NativeKeccakPreimage
+            )
+            self.assertEqual(
+                eth_hash_keccak.new(data).digest(), keccak_256(data).digest()
+            )
         finally:
             native.use_native_keccak_in_eth_hash()
         self.assertIs(eth_hash_keccak.hasher, native.safe_eth_native.keccak256)
+        self.assertIs(eth_hash_keccak.preimage, native.NativeKeccakPreimage)

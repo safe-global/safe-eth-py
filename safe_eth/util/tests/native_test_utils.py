@@ -20,6 +20,9 @@ def without_native() -> Iterator[None]:
     with (
         mock.patch.object(native, "safe_eth_native", None),
         mock.patch.object(eth_hash_keccak, "hasher", native.eth_hash_backend_hasher),
+        mock.patch.object(
+            eth_hash_keccak, "preimage", native.eth_hash_backend_preimage
+        ),
     ):
         yield
 
