@@ -3344,6 +3344,20 @@ wheels = [
 ]
 
 [[package]]
+name = "safe-eth-native"
+source = { directory = "native" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+test = [
+    { name = "eth-keys" },
+    { name = "eth-utils" },
+    { name = "pycryptodome" },
+    { name = "pytest" },
+]
+
+[[package]]
 name = "safe-eth-py"
 source = { editable = "." }
 dependencies = [
@@ -3361,6 +3375,9 @@ django = [
     { name = "djangorestframework" },
     { name = "psycopg", extra = ["binary", "pool"] },
 ]
+native = [
+    { name = "safe-eth-native" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -3373,6 +3390,7 @@ dev = [
     { name = "ipython" },
     { name = "mypy" },
     { name = "pre-commit" },
+    { name = "pycryptodome" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
     { name = "pytest-django" },
@@ -3395,10 +3413,11 @@ requires-dist = [
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'django'", specifier = ">=3" },
     { name = "requests", specifier = ">=2" },
     { name = "rlp", specifier = ">=4" },
+    { name = "safe-eth-native", marker = "extra == 'native'", directory = "native" },
     { name = "safe-pysha3", specifier = ">=1.0.7" },
     { name = "web3", specifier = ">=7.15" },
 ]
-provides-extras = ["django"]
+provides-extras = ["django", "native"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -3411,6 +3430,7 @@ dev = [
     { name = "ipython" },
     { name = "mypy" },
     { name = "pre-commit" },
+    { name = "pycryptodome" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
     { name = "pytest-django" },

@@ -1,10 +1,20 @@
+import os
+import random
+import unittest
+
 from django.test import TestCase
 
 from eth_account import Account
+from eth_account.messages import defunct_hash_message
+from hexbytes import HexBytes
 
-from safe_eth.eth.constants import NULL_ADDRESS
+from safe_eth.eth.constants import NULL_ADDRESS, SECPK1_N
 from safe_eth.eth.contracts import get_compatibility_fallback_handler_contract
 from safe_eth.eth.utils import fast_keccak_text
+from safe_eth.util.tests.native_test_utils import (
+    assert_same_outcome_with_and_without_native,
+    with_and_without_native,
+)
 
 from ..signatures import get_signing_address
 from .safe_test_case import SafeTestCaseMixin
@@ -14,6 +24,7 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
     EIP1271_MAGIC_VALUE = "20c13b0b"
     EIP1271_MAGIC_VALUE_UPDATED = "1626ba7e"
 
+    @with_and_without_native
     def test_get_signing_address(self):
         account = Account.create()
         # Random hash
@@ -92,3 +103,143 @@ class TestSafeSignature(SafeTestCaseMixin, TestCase):
             ).call(),
             bytes.fromhex(self.EIP1271_MAGIC_VALUE),
         )
+
+
+class IntSubclass(int):
+    pass
+
+
+class TestGetSigningAddressWithAndWithoutNative(unittest.TestCase):
+    """
+    The native extension and eth-keys recover the same address, or return
+    `NULL_ADDRESS`, or raise the same error
+    """
+
+    def test_valid_signatures(self):
+        """Low `s` and high `s` signatures, over raw and EIP-191 hashes"""
+        for _ in range(10):
+            account = Account.create()
+            for signed_hash in (
+                os.urandom(32),
+                HexBytes(os.urandom(32)),
+                defunct_hash_message(primitive=os.urandom(32)),
+            ):
+                signature = account.unsafe_sign_hash(signed_hash)
+                high_s_v = 55 - signature.v
+                high_s = SECPK1_N - signature.s
+                for v, s in ((signature.v, signature.s), (high_s_v, high_s)):
+                    self.assertEqual(
+                        get_signing_address(signed_hash, v, signature.r, s),
+                        account.address,
+                    )
+                    assert_same_outcome_with_and_without_native(
+                        self, get_signing_address, signed_hash, v, signature.r, s
+                    )
+                    assert_same_outcome_with_and_without_native(
+                        self, get_signing_address, signed_hash, 55 - v, signature.r, s
+                    )
+
+    def test_random_values(self):
+        """Random `r` and `s`, about half of them without a point on the curve"""
+        for _ in range(100):
+            assert_same_outcome_with_and_without_native(
+                self,
+                get_signing_address,
+                os.urandom(32),
+                random.choice((27, 28)),
+                random.randrange(1, SECPK1_N),
+                random.randrange(1, SECPK1_N),
+            )
+
+    def test_invalid_values(self):
+        """Values the precompile rejects give `NULL_ADDRESS`"""
+        account = Account.create()
+        signed_hash = os.urandom(32)
+        signature = account.unsafe_sign_hash(signed_hash)
+        v, r, s = signature.v, signature.r, signature.s
+        for invalid_v, invalid_r, invalid_s in (
+            (0, r, s),
+            (1, r, s),
+            (26, r, s),
+            (29, r, s),
+            (31, r, s),
+            (32, r, s),
+            (v + 4, r, s),
+            (v - 8, r, s),
+            (-1, r, s),
+            (2**64 + v, r, s),
+            (v, 0, s),
+            (v, r, 0),
+            (v, SECPK1_N, s),
+            (v, r, SECPK1_N),
+            (v, 2**256, s),
+            (v, r, 2**256),
+            (v, -1, s),
+            (v, r, -1),
+            # 5 is not the x coordinate of a point
+            (v, 5, s),
+        ):
+            with self.subTest(v=invalid_v, r=invalid_r, s=invalid_s):
+                self.assertEqual(
+                    get_signing_address(signed_hash, invalid_v, invalid_r, invalid_s),
+                    NULL_ADDRESS,
+                )
+                assert_same_outcome_with_and_without_native(
+                    self,
+                    get_signing_address,
+                    signed_hash,
+                    invalid_v,
+                    invalid_r,
+                    invalid_s,
+                )
+
+    def test_values_that_are_not_int(self):
+        """`v`, `r` and `s` that are not exactly `int` go to eth-keys"""
+        account = Account.create()
+        signed_hash = os.urandom(32)
+        signature = account.unsafe_sign_hash(signed_hash)
+        v, r, s = signature.v, signature.r, signature.s
+        for not_int_v, not_int_r, not_int_s in (
+            (float(v), r, s),
+            (str(v), r, s),
+            (v, float(r), s),
+            (v, r, str(s)),
+            (v, True, s),
+            (v, r, True),
+            (v, IntSubclass(r), s),
+            (v, None, s),
+        ):
+            with self.subTest(v=not_int_v, r=not_int_r, s=not_int_s):
+                assert_same_outcome_with_and_without_native(
+                    self,
+                    get_signing_address,
+                    signed_hash,
+                    not_int_v,
+                    not_int_r,
+                    not_int_s,
+                )
+
+    def test_invalid_hashes(self):
+        """Hashes the native extension does not take go to eth-keys"""
+        account = Account.create()
+        signed_hash = os.urandom(32)
+        signature = account.unsafe_sign_hash(signed_hash)
+        for invalid_hash in (
+            b"",
+            signed_hash[:31],
+            signed_hash + b"\x00",
+            signed_hash.hex(),
+            "0x" + signed_hash.hex(),
+            bytearray(signed_hash),
+            memoryview(signed_hash),
+            None,
+        ):
+            with self.subTest(signed_hash=invalid_hash):
+                assert_same_outcome_with_and_without_native(
+                    self,
+                    get_signing_address,
+                    invalid_hash,
+                    signature.v,
+                    signature.r,
+                    signature.s,
+                )

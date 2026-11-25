@@ -1,0 +1,24 @@
+[package]
+name = "safe-eth-native"
+version = "0.2.1"
+edition = "2024"
+rust-version = "1.88"
+description = "Native ecrecover, P-256 verify, keccak256 and EIP-55 checksum helpers for safe-eth-py"
+license = "MIT"
+repository = "https://github.com/safe-global/safe-eth-py"
+publish = false
+include = ["/src", "/Cargo.toml", "/Cargo.lock", "/pyproject.toml", "/README.md", "/LICENSE", "/safe_eth_native.pyi"]
+
+[lib]
+name = "safe_eth_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+p256 = { version = "0.14.0", default-features = false, features = ["ecdsa", "arithmetic"] }
+pyo3 = { version = "0.30.1", features = ["abi3-py311", "extension-module"] }
+secp256k1 = { version = "0.33.1", default-features = false, features = ["recovery", "std"] }
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1

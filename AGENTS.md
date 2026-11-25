@@ -36,8 +36,10 @@ source .venv/bin/activate
 pre-commit install -f
 ```
 
-`--all-extras` pulls the `django` extra, which the test suite needs. `uv.lock` is the source of
-truth: always sync `--frozen`, run `uv lock` after editing `pyproject.toml` and commit both.
+`--all-extras` pulls the `django` extra, which the test suite needs, and the `native` extra, which
+builds the Rust extension in `native/` (it needs a Rust toolchain and a C compiler). `uv.lock` is
+the source of truth: always sync `--frozen`, run `uv lock` after editing `pyproject.toml` and
+commit both.
 `[tool.uv] exclude-newer = "7 days"` rejects packages published in the last 7 days, so a brand new
 release cannot be locked yet. Use the `pre-commit` from the venv: the config needs pre-commit 4.4.0
 or newer (the local mypy hook uses `language: unsupported`), and that hook runs `uv run mypy .`.
@@ -252,6 +254,9 @@ Bump `VERSION` in `safe_eth/__init__.py` in its own PR (hatch reads it as the pa
 publish a GitHub release. The `publish` job in `.github/workflows/python.yml` runs `uv build` and
 `uv publish` on the `released` event.
 
+The native extension (`safe-eth-native` on PyPI) has its own version and release steps, in
+`native/README.md`. Release it before a safe-eth-py release that needs the new version.
+
 ## Python Version
 
 Supported: **3.11 to 3.14** (CI matrix). mypy and Ruff target 3.11. Do not use syntax or stdlib
@@ -322,6 +327,28 @@ equivalents.
 significantly faster, and the cache sizes are tunable with `CACHE_KECCAK` / `CACHE_CHECKSUM_ADDRESS`.
 `safe_eth/eth/tests/test_keccak_performance.py` benchmarks it against `eth_utils` and `Web3` with
 pytest-benchmark.
+
+### Optional Native Extension
+
+**Decision**: `native/` is a Rust (PyO3, maturin) package, `safe-eth-native`, published apart from
+safe-eth-py and installed with the `native` extra. `fast_keccak`, the checksum helpers,
+`get_signing_address` and `p256.verify` use it through `safe_eth.util.native` when it is
+installed, and their Python implementation otherwise.
+
+**Rationale**:
+- ecrecover with eth-keys is ~3.5 ms on Python 3.14 (coincurve has no 3.14 wheel), libsecp256k1 is
+  ~25 us. P-256 verify and the checksum helpers are 10-20x faster
+- safe-eth-py stays a pure Python wheel: platforms without a native wheel still install it
+- Same repository, so a change and its Python callers are reviewed and tested together
+
+**Rules**:
+- The native path must give the same result as the Python one, including the error type and
+  message. Inputs the native function does not take go to the Python implementation
+- Tests of a helper with a native path use `with_and_without_native` and
+  `assert_same_outcome_with_and_without_native` (`safe_eth/util/tests/native_test_utils.py`)
+- `native/tests` checks the extension against reference implementations and published vectors,
+  see `native/README.md`. The tests need the extension installed (`--all-extras`) and fail without
+  it, the same as for any other dependency
 
 ### Django Is an Optional Extra
 

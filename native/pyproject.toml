@@ -1,0 +1,49 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "safe-eth-native"
+dynamic = ["version", "description"]
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+    { name = "Uxío", email = "uxio@safe.global" },
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+]
+
+[project.urls]
+Homepage = "https://github.com/safe-global/safe-eth-py"
+Source = "https://github.com/safe-global/safe-eth-py/tree/main/native"
+Tracker = "https://github.com/safe-global/safe-eth-py/issues"
+
+[dependency-groups]
+# Reference implementations the tests compare against. They have no C extension that
+# turns the GIL back on, and pycryptodome builds from source where it has no wheel (3.14t)
+test = [
+    "eth-keys",
+    "eth-utils",
+    "pycryptodome",
+    "pytest",
+]
+
+[tool.uv]
+# Rebuild the extension when the Rust code changes, not only pyproject.toml
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "Cargo.toml" },
+    { file = "Cargo.lock" },
+    { file = "src/**/*.rs" },
+]

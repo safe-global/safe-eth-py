@@ -59,6 +59,8 @@ dev = [
     "ipython",
     "mypy",
     "pre-commit",
+    # Signs P-256 test signatures
+    "pycryptodome",
     "pytest",
     "pytest-benchmark",
     "pytest-django",
@@ -78,6 +80,9 @@ django = [
     "django>=2",
     "djangorestframework>=2",
     "psycopg[binary,pool]>=3",
+]
+native = [
+    "safe-eth-native>=0.2.0,<1.0",
 ]
 
 [project.urls]
@@ -173,6 +178,10 @@ exclude-newer = "7 days"
 exclude-newer-package = { safe-pysha3 = false }
 compile-bytecode = true
 
+[tool.uv.sources]
+# Built from this repo, so changes to the Rust code are tested with the Python code
+safe-eth-native = { path = "native" }
+
 [tool.mypy]
 python_version = "3.11"
 exclude = "env|docs|config|.github"
@@ -180,6 +189,8 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
+# Type stubs of the native extension, also when it is not installed
+mypy_path = "$MYPY_CONFIG_FILE_DIR/native"
 
 [tool.pytest.ini_options]
 markers = [
