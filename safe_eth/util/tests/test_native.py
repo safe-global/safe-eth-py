@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 from unittest import TestCase, mock
 
 import eth_utils
@@ -15,6 +17,19 @@ class TestNativeKeccakInEthHash(TestCase):
         self.assertIs(eth_hash_keccak.hasher, native.safe_eth_native.keccak256)
         self.assertIs(eth_hash_keccak.preimage, native.NativeKeccakPreimage)
         self.assertIsInstance(eth_hash_keccak.new(b""), native.NativeKeccakPreimage)
+
+    def test_import_safe_eth_uses_native_keccak(self):
+        """A bare `import safe_eth`, with no submodule, makes the native keccak256 the eth-hash one"""
+        check_code = (
+            "import safe_eth, safe_eth_native\n"
+            "from eth_hash.auto import keccak\n"
+            "assert keccak.hasher is safe_eth_native.keccak256\n"
+            "assert keccak.preimage.__name__ == 'NativeKeccakPreimage'\n"
+        )
+        environment = {
+            key: value for key, value in os.environ.items() if key != "ETH_HASH_BACKEND"
+        }
+        subprocess.run([sys.executable, "-c", check_code], check=True, env=environment)
 
     def test_eth_hash_new_same_digests_as_pycryptodome(self):
         """
