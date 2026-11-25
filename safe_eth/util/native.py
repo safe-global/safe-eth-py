@@ -27,7 +27,10 @@ class NativeKeccakPreimage(PreImageAPI):
     """
     ``keccak.new()`` of eth-hash with the native keccak256. The data is kept and hashed
     again on each ``digest()``, as the pycryptodome backend of eth-hash also keeps it to
-    be able to copy.
+    be able to copy. So each ``digest()`` costs the size of all the data so far, and many
+    ``update()`` and ``digest()`` calls on the same object take quadratic time. Nothing in
+    web3, eth-utils or eth-account uses ``keccak.new()``; if something calls it in a loop,
+    a native class that keeps the Keccak state is the fix.
     """
 
     def __init__(self, value: bytes | bytearray) -> None:
