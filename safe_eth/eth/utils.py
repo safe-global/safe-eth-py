@@ -125,9 +125,13 @@ def _fast_to_checksum_address(address: HexAddress):
     return _build_checksum_address(address, address_hash)
 
 
+# Only the 20 bytes form is cached, so each address takes one entry: text has several
+# spellings of the same address, and the native call is cheaper than normalizing it
 @lru_cache(maxsize=_CACHE_CHECKSUM_ADDRESS_SIZE)
-def _native_to_checksum_address(value: str | bytes) -> ChecksumAddress:
-    return cast(ChecksumAddress, native.safe_eth_native.to_checksum_address(value))
+def _native_bytes_to_checksum_address(address_bytes: bytes) -> ChecksumAddress:
+    return cast(
+        ChecksumAddress, native.safe_eth_native.to_checksum_address(address_bytes)
+    )
 
 
 def fast_to_checksum_address(value: AnyAddress | str | bytes) -> ChecksumAddress:
@@ -144,12 +148,17 @@ def fast_to_checksum_address(value: AnyAddress | str | bytes) -> ChecksumAddress
                 f"Cannot convert {value.hex()} to a checksum address, 20 bytes were expected"
             )
 
-    if native.safe_eth_native is not None and isinstance(value, (str, bytes)):
-        try:
-            return _native_to_checksum_address(value)
-        except ValueError:
-            # Raised below by `to_normalized_address`, with the eth-utils error message
-            pass
+    if native.safe_eth_native is not None:
+        if isinstance(value, bytes):
+            return _native_bytes_to_checksum_address(value)
+        if isinstance(value, str):
+            try:
+                return cast(
+                    ChecksumAddress, native.safe_eth_native.to_checksum_address(value)
+                )
+            except ValueError:
+                # Raised below by `to_normalized_address`, with the eth-utils error message
+                pass
 
     norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
     return _fast_to_checksum_address(norm_address)
@@ -171,7 +180,7 @@ def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
             f"Cannot convert {bytes(value).hex()} to a checksum address, 20 bytes were expected"
         )
     if native.safe_eth_native is not None:
-        return _native_to_checksum_address(value)
+        return _native_bytes_to_checksum_address(value)
     norm_address = HexAddress(HexStr(value.hex()))
     return _fast_to_checksum_address(norm_address)
 

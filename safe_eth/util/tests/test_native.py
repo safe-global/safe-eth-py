@@ -55,10 +55,16 @@ class TestNativeKeccakInEthHash(TestCase):
                     eth_hash_keccak(value)
 
     def test_eth_hash_backend_env_is_respected(self):
-        """`ETH_HASH_BACKEND` and a missing extension leave the eth-hash backend as it is"""
+        """
+        `ETH_HASH_BACKEND`, a missing extension, or a native keccak256 that gives a wrong
+        digest for the empty input leave the eth-hash backend as it is
+        """
+        broken_native_extension = mock.Mock()
+        broken_native_extension.keccak256.return_value = bytes(32)
         for patch in (
             mock.patch.dict(os.environ, {"ETH_HASH_BACKEND": "pysha3"}),
             mock.patch.object(native, "safe_eth_native", None),
+            mock.patch.object(native, "safe_eth_native", broken_native_extension),
         ):
             with (
                 self.subTest(patch=patch),
@@ -71,3 +77,14 @@ class TestNativeKeccakInEthHash(TestCase):
         with mock.patch.object(eth_hash_keccak, "hasher"):
             native.use_native_keccak_in_eth_hash()
             self.assertIs(eth_hash_keccak.hasher, native.safe_eth_native.keccak256)
+
+    def test_restore_eth_hash_backend(self):
+        """eth-hash goes back to its own backend, with the same digests, and can use native again"""
+        data = os.urandom(100)
+        try:
+            native.restore_eth_hash_backend()
+            self.assertIs(eth_hash_keccak.hasher, native.eth_hash_backend_hasher)
+            self.assertEqual(eth_utils.keccak(data), keccak_256(data).digest())
+        finally:
+            native.use_native_keccak_in_eth_hash()
+        self.assertIs(eth_hash_keccak.hasher, native.safe_eth_native.keccak256)

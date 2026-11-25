@@ -18,6 +18,7 @@ from ..constants import SECPK1_N, SIGNATURE_R_MAX_VALUE, SIGNATURE_S_MAX_VALUE
 from ..contracts import get_proxy_1_0_0_deployed_bytecode, get_proxy_factory_contract
 from ..utils import (
     _cached_keccak_256,
+    _native_bytes_to_checksum_address,
     compare_byte_code,
     decode_string_or_bytes32,
     fast_bytes_to_checksum_address,
@@ -328,6 +329,29 @@ def build_address_values(address_bytes: bytes) -> list:
         1.0,
         [address_bytes],
     ]
+
+
+class TestNativeChecksumAddressCache(unittest.TestCase):
+    def test_one_entry_per_address(self):
+        """
+        Only the 20 bytes form of an address is cached with the native extension, so the
+        same address as bytes, `HexBytes` and text in any case takes one entry at most
+        """
+        _native_bytes_to_checksum_address.cache_clear()
+        address_bytes = os.urandom(20)
+        checksum_address = to_checksum_address(address_bytes)
+        for value in (
+            "0x" + address_bytes.hex(),
+            "0X" + address_bytes.hex().upper(),
+            checksum_address,
+            address_bytes.hex(),
+        ):
+            self.assertEqual(fast_to_checksum_address(value), checksum_address)
+        self.assertEqual(_native_bytes_to_checksum_address.cache_info().currsize, 0)
+        for value in (address_bytes, HexBytes(address_bytes), bytearray(address_bytes)):
+            self.assertEqual(fast_to_checksum_address(value), checksum_address)
+            self.assertEqual(fast_bytes_to_checksum_address(value), checksum_address)
+        self.assertEqual(_native_bytes_to_checksum_address.cache_info().currsize, 1)
 
 
 class TestFastHelpersWithAndWithoutNative(unittest.TestCase):

@@ -184,8 +184,9 @@ Caching
   Inputs larger than 1 KiB are never cached, whatever the value of ``CACHE_KECCAK``. Not used
   with the native extension, which is faster than a cache lookup.
 - ``CACHE_CHECKSUM_ADDRESS``: ``lru_cache`` max size for checksummed address conversion. Default ``500000``.
-  With the native extension there is a second cache of the same size, keyed by the address as
-  given, so the same address as ``bytes``, lowercase and checksummed text uses three entries.
+  With the native extension it caches only addresses given as 20 bytes, one entry per address;
+  addresses given as text call the native code directly, which is faster than a cache lookup on
+  the Python path.
 
 Safe contract addresses
 ~~~~~~~~~~~~~~~~~~~~~~~~~

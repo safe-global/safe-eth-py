@@ -89,7 +89,7 @@ class TestP256(unittest.TestCase):
         self.assertTrue(p256._is_on_curve(p256._GX, p256._GY))
 
 
-# Wycheproof vectors of the native extension tests
+# Wycheproof vectors of the native extension tests, not in the safe-eth-py package
 WYCHEPROOF_P256_VECTORS = (
     Path(__file__).parents[3]
     / "native"
@@ -160,6 +160,10 @@ class TestP256VerifyWithAndWithoutNative(unittest.TestCase):
 
     def test_wycheproof_vectors(self):
         """Wycheproof P-256 SHA-256 vectors, which the Python implementation also has to pass"""
+        if not WYCHEPROOF_P256_VECTORS.exists():
+            self.skipTest(
+                "The vectors are in the repository, not in the safe-eth-py package"
+            )
         test_data = json.loads(WYCHEPROOF_P256_VECTORS.read_text())
         for test_group in test_data["testGroups"]:
             public_key_x = int(test_group["publicKey"]["wx"], 16)
