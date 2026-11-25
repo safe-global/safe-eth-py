@@ -3,7 +3,7 @@ Safe-eth-py (previously known as Gnosis-py)
 
 .. class:: no-web no-pdf
 
-|ci| |coveralls| |python| |django| |pipy| |readthedocs| |ruff|
+|ci| |coveralls| |python| |django| |pypi| |readthedocs| |ruff|
 
 Safe-eth-py includes a set of libraries to work with Ethereum and relevant Ethereum projects:
   - `EthereumClient`, a wrapper over Web3.py `Web3` client including utilities to deal with ERC20/721
@@ -248,7 +248,7 @@ Contributors
 .. |django| image:: https://img.shields.io/badge/Django-5-blue.svg
     :alt: Django 5
 
-.. |pipy| image:: https://badge.fury.io/py/safe-eth-py.svg
+.. |pypi| image:: https://badge.fury.io/py/safe-eth-py.svg
     :target: https://badge.fury.io/py/safe-eth-py
     :alt: Pypi package
 

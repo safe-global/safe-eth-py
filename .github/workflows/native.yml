@@ -184,4 +184,4 @@ jobs:
       - name: Publish to PyPI
         run: uv publish dist/*
         env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PIPY_SAFE_ETH_NATIVE_TOKEN }}
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_SAFE_ETH_NATIVE_TOKEN }}

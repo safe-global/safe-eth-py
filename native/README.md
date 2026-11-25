@@ -113,4 +113,4 @@ Python 3.14 only, so the free-threaded musl wheels are built but not tested.
 Bump `version` in `Cargo.toml`, then push a `native-v<version>` tag on a commit of `main`. Push
 only the tag: a GitHub release would also run the safe-eth-py release workflow, for nothing.
 The `Native extension` workflow builds the wheels and the sdist and publishes them to PyPI
-with the `PIPY_SAFE_ETH_NATIVE_TOKEN` repository secret.
+with the `PYPI_SAFE_ETH_NATIVE_TOKEN` repository secret.
