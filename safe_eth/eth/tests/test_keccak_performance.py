@@ -11,12 +11,11 @@ from safe_eth.util.tests.native_test_utils import eth_hash_backend
 TEST_SIZES = [16, 1024, 64 * 1024, 1024 * 1024]
 
 
-# --- 1. Data Fixture (Forces Cache Miss) ---
+# --- 1. Data Fixture ---
 @pytest.fixture(scope="function", params=TEST_SIZES)
 def random_data(request):
     """
     Fixture that yields a new, random byte string for each test parameter.
-    This guarantees a cache miss for fast_keccak on every run.
     """
     size = request.param
     name = f"{size // 1024}KB" if size >= 1024 else f"{size}B"
