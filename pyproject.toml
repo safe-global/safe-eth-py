@@ -44,7 +44,7 @@ dependencies = [
     "packaging",
     "requests>=2",
     "rlp>=4",
-    "safe-pysha3>=1.0.7",
+    "safe-eth-native>=0.2.1,<1.0",
     "web3>=7.15",
 ]
 
@@ -80,9 +80,6 @@ django = [
     "django>=2",
     "djangorestframework>=2",
     "psycopg[binary,pool]>=3",
-]
-native = [
-    "safe-eth-native>=0.2.0,<1.0",
 ]
 
 [project.urls]
@@ -174,8 +171,6 @@ safe-foundation = ["py_eth_sig_utils"]
 [tool.uv]
 # Reject packages published less than 7 days ago to avoid supply-chain attacks
 exclude-newer = "7 days"
-# safe-pysha3 is maintained by Safe, so new releases can be used right away
-exclude-newer-package = { safe-pysha3 = false }
 compile-bytecode = true
 
 [tool.uv.sources]
@@ -189,8 +184,6 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
-# Type stubs of the native extension, also when it is not installed
-mypy_path = "$MYPY_CONFIG_FILE_DIR/native"
 
 [tool.pytest.ini_options]
 markers = [

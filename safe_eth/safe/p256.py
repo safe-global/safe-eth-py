@@ -1,6 +1,6 @@
 """
-``secp256r1`` (NIST P-256) ECDSA signature **verification**, in pure Python, or with the
-native extension when it is installed (``safe-eth-py[native]``).
+``secp256r1`` (NIST P-256) ECDSA signature **verification**, with the native extension, or
+in pure Python for values that are not exactly ``int``.
 
 This is used to validate Safe ``secp256r1`` owner signatures off-chain (the ``v == 2``
 case introduced in Safe ``1.5.0``). On-chain those signatures are verified through the
@@ -15,7 +15,7 @@ the integer ``z`` (matching the precompile, which is fed a pre-computed digest),
 is responsible for hashing the message beforehand.
 """
 
-from safe_eth.util import native
+import safe_eth_native
 
 # Domain parameters for the NIST P-256 (a.k.a. secp256r1, prime256v1) curve.
 # See https://www.secg.org/sec2-v2.pdf section 2.4.2.
@@ -115,7 +115,7 @@ def verify(
 ) -> bool:
     """
     Verify a ``secp256r1`` (P-256) ECDSA signature. Uses the native extension, with the
-    same rules, if it is installed and every value is an ``int``.
+    same rules, if every value is an ``int``.
 
     :param message_hash: Hash of the signed message as an integer. It must already be the
         digest, exactly as fed to the ``P256VERIFY`` precompile (no extra hashing is done here)
@@ -125,13 +125,19 @@ def verify(
     :param public_key_y: ``y`` coordinate of the signer public key
     :return: ``True`` if the signature is valid, ``False`` otherwise
     """
-    if native.safe_eth_native is not None and all(
+    if all(
         type(value) is int for value in (message_hash, r, s, public_key_x, public_key_y)
     ):
         # Only ``message_hash`` modulo n is used, also by the precompile
-        return native.safe_eth_native.p256_verify(
+        return safe_eth_native.p256_verify(
             message_hash % _N, r, s, public_key_x, public_key_y
         )
+    return _verify_in_python(message_hash, r, s, public_key_x, public_key_y)
+
+
+def _verify_in_python(
+    message_hash: int, r: int, s: int, public_key_x: int, public_key_y: int
+) -> bool:
     if not (1 <= r < _N and 1 <= s < _N):
         return False
     if not _is_on_curve(public_key_x, public_key_y):

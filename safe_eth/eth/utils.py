@@ -1,17 +1,14 @@
-import os
-from functools import lru_cache
 from typing import Any, cast
 
 import eth_abi
 import rlp
+import safe_eth_native
 from eth_account import Account
-from eth_typing import AnyAddress, ChecksumAddress, Hash32, HexAddress, HexStr
+from eth_typing import AnyAddress, ChecksumAddress, Hash32, HexStr
 from eth_utils import to_normalized_address
 from hexbytes import HexBytes
-from sha3 import keccak_256
 from web3.types import TxParams, Wei
 
-from safe_eth.util import native
 from safe_eth.util.util import to_0x_hex_str
 
 
@@ -25,51 +22,19 @@ def get_empty_tx_params() -> TxParams:
     }
 
 
-# Callers hash user provided data of any size, and every cached entry keeps its input
-# in memory, so larger inputs are not cached
-_KECCAK_CACHE_MAX_INPUT_SIZE = 1024
-
-
-@lru_cache(maxsize=int(os.getenv("CACHE_KECCAK", 1024)))
-def _cached_keccak_256(value: bytes) -> keccak_256:
-    return keccak_256(value)
-
-
-def _keccak_256(value: bytes) -> keccak_256:
-    if len(value) > _KECCAK_CACHE_MAX_INPUT_SIZE:
-        return keccak_256(value)
-    try:
-        return _cached_keccak_256(value)
-    except (TypeError, ValueError):  # Unhashable inputs like bytearray or memoryview
-        pass
-    return keccak_256(value)
-
-
-def _keccak_256_digest(value: bytes) -> bytes:
-    if native.safe_eth_native is not None:
-        try:
-            return native.safe_eth_native.keccak256(value)
-        except (TypeError, BufferError):
-            # Raised again below by pysha3, with its own error message
-            pass
-    return _keccak_256(value).digest()
-
-
 def fast_keccak(value: bytes) -> Hash32:
     """
-    Calculates ethereum keccak256 using the native extension if installed, or the fast
-    library `pysha3`
+    Calculates ethereum keccak256 using the native extension
 
     :param value:
     :return: Keccak256 used by ethereum as `HexBytes`
     """
-    return Hash32(HexBytes(_keccak_256_digest(value)))
+    return Hash32(HexBytes(safe_eth_native.keccak256(value)))
 
 
 def fast_keccak_text(value: str) -> Hash32:
     """
-    Calculates ethereum keccak256 using the native extension if installed, or the fast
-    library `pysha3`
+    Calculates ethereum keccak256 using the native extension
 
     :param value:
     :return: Keccak256 used by ethereum as `HexBytes`
@@ -84,91 +49,34 @@ def fast_keccak_hex(value: bytes) -> HexStr:
     :param value:
     :return: Keccak256 used by ethereum as a hex string (not 0x prefixed)
     """
-    return HexStr(_keccak_256_digest(value).hex())
-
-
-def _build_checksum_address(
-    norm_address: HexStr, address_hash: HexStr
-) -> ChecksumAddress:
-    """
-    https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md
-
-    :param norm_address: address in lowercase (not 0x prefixed)
-    :param address_hash: keccak256 of `norm_address` (not 0x prefixed)
-    :return:
-    """
-    return ChecksumAddress(
-        HexAddress(
-            HexStr(
-                "0x"
-                + (
-                    "".join(
-                        (
-                            norm_address[i].upper()
-                            if int(address_hash[i], 16) > 7
-                            else norm_address[i]
-                        )
-                        for i in range(0, 40)
-                    )
-                )
-            )
-        )
-    )
-
-
-_CACHE_CHECKSUM_ADDRESS_SIZE = int(os.getenv("CACHE_CHECKSUM_ADDRESS", 500_000))
-
-
-@lru_cache(maxsize=_CACHE_CHECKSUM_ADDRESS_SIZE)
-def _fast_to_checksum_address(address: HexAddress):
-    address_hash = fast_keccak_hex(address.encode())
-    return _build_checksum_address(address, address_hash)
-
-
-# Only the 20 bytes form is cached, so each address takes one entry: text has several
-# spellings of the same address, and the native call is cheaper than normalizing it
-@lru_cache(maxsize=_CACHE_CHECKSUM_ADDRESS_SIZE)
-def _native_bytes_to_checksum_address(address_bytes: bytes) -> ChecksumAddress:
-    return cast(
-        ChecksumAddress, native.safe_eth_native.to_checksum_address(address_bytes)
-    )
+    return HexStr(safe_eth_native.keccak256(value).hex())
 
 
 def fast_to_checksum_address(value: AnyAddress | str | bytes) -> ChecksumAddress:
     """
-    Converts to checksum_address. Uses the native extension if installed, or the more
-    optimal `pysha3` instead of `eth_utils` for keccak256 calculation
+    Converts to checksum_address using the native extension
 
     :param value:
     :return:
     """
     if isinstance(value, bytes):
-        if len(value) != 20:
-            raise ValueError(
-                f"Cannot convert {value.hex()} to a checksum address, 20 bytes were expected"
-            )
-
-    if native.safe_eth_native is not None:
-        if isinstance(value, bytes):
-            return _native_bytes_to_checksum_address(value)
-        if isinstance(value, str):
-            try:
-                return cast(
-                    ChecksumAddress, native.safe_eth_native.to_checksum_address(value)
-                )
-            except ValueError:
-                # Raised below by `to_normalized_address`, with the eth-utils error message
-                pass
-
-    norm_address = HexAddress(HexStr(to_normalized_address(value)[2:]))
-    return _fast_to_checksum_address(norm_address)
+        return fast_bytes_to_checksum_address(value)
+    if isinstance(value, str):
+        try:
+            return cast(ChecksumAddress, safe_eth_native.to_checksum_address(value))
+        except ValueError:
+            # Raised below by `to_normalized_address`, with the eth-utils error message
+            pass
+    return cast(
+        ChecksumAddress,
+        safe_eth_native.to_checksum_address(to_normalized_address(value)),
+    )
 
 
 def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
     """
-    Converts to checksum_address. Uses the native extension if installed, or the more
-    optimal `pysha3` instead of `eth_utils` for keccak256 calculation.
-    As input is already in bytes, some checks and conversions can be skipped, providing a speedup of ~50%
+    Converts 20 bytes, or an iterable of 20 byte values, to checksum_address using the
+    native extension
 
     :param value:
     :return:
@@ -179,10 +87,7 @@ def fast_bytes_to_checksum_address(value: bytes) -> ChecksumAddress:
         raise ValueError(
             f"Cannot convert {bytes(value).hex()} to a checksum address, 20 bytes were expected"
         )
-    if native.safe_eth_native is not None:
-        return _native_bytes_to_checksum_address(value)
-    norm_address = HexAddress(HexStr(value.hex()))
-    return _fast_to_checksum_address(norm_address)
+    return cast(ChecksumAddress, safe_eth_native.to_checksum_address(value))
 
 
 def fast_is_checksum_address(value: AnyAddress | str | bytes) -> bool:
@@ -192,14 +97,7 @@ def fast_is_checksum_address(value: AnyAddress | str | bytes) -> bool:
     :param value:
     :return: `True` if checksummed, `False` otherwise
     """
-    if native.safe_eth_native is not None:
-        return native.safe_eth_native.is_checksum_address(value)
-    if not isinstance(value, str) or len(value) != 42 or not value.startswith("0x"):
-        return False
-    try:
-        return fast_to_checksum_address(value) == value
-    except ValueError:
-        return False
+    return safe_eth_native.is_checksum_address(value)
 
 
 def get_eth_address_with_invalid_checksum() -> str:

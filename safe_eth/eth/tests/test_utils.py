@@ -2,23 +2,22 @@ import array
 import os
 import random
 import unittest
+from typing import Any
 
 from django.test import TestCase
 
 from eth_abi.packed import encode_packed
-from eth_utils import keccak, to_checksum_address
+from eth_typing import ChecksumAddress
+from eth_utils import is_checksum_address, to_checksum_address
 from hexbytes import HexBytes
 
 from ...util.tests.native_test_utils import (
-    assert_same_outcome_with_and_without_native,
-    with_and_without_native,
-    without_native,
+    assert_same_outcome_as_reference,
+    reference_keccak256,
 )
 from ..constants import SECPK1_N, SIGNATURE_R_MAX_VALUE, SIGNATURE_S_MAX_VALUE
 from ..contracts import get_proxy_1_0_0_deployed_bytecode, get_proxy_factory_contract
 from ..utils import (
-    _cached_keccak_256,
-    _native_bytes_to_checksum_address,
     compare_byte_code,
     decode_string_or_bytes32,
     fast_bytes_to_checksum_address,
@@ -130,9 +129,8 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
             compare_byte_code(proxy_with_metadata, proxy_with_different_metadata)
         )
 
-    @with_and_without_native
     def test_fast_keccak(self):
-        """Known keccak256 digests from `fast_keccak`, with and without the native extension"""
+        """Known keccak256 digests from `fast_keccak`"""
         text = "chidori"
         self.assertEqual(
             fast_keccak(text.encode()),
@@ -157,37 +155,6 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
             ),
         )
 
-    def test_fast_keccak_large_input_not_cached(self):
-        """
-        Inputs larger than 1024 bytes are hashed without being kept in the cache, which
-        only the Python implementation uses
-        """
-        large_input = os.urandom(1025)
-        with without_native():
-            # A miss is counted even when the cache is full and an old entry is evicted
-            cache_misses = _cached_keccak_256.cache_info().misses
-            self.assertEqual(
-                fast_keccak(large_input),
-                HexBytes(keccak(large_input)),
-            )
-            self.assertEqual(fast_keccak_hex(large_input), keccak(large_input).hex())
-            self.assertEqual(_cached_keccak_256.cache_info().misses, cache_misses)
-
-    @with_and_without_native
-    def test_fast_keccak_bytearray(self):
-        """
-        A bytearray or a writable memoryview is hashed like bytes, whether it fits in
-        the cache or not
-        """
-        for size in (32, 1025):
-            with self.subTest(size=size):
-                value = os.urandom(size)
-                self.assertEqual(fast_keccak(bytearray(value)), keccak(value))
-                self.assertEqual(
-                    fast_keccak(memoryview(bytearray(value))), keccak(value)
-                )
-
-    @with_and_without_native
     def test_fast_to_checksum_address(self):
         for _ in range(10):
             address = os.urandom(20).hex()
@@ -195,7 +162,6 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                 fast_to_checksum_address(address), to_checksum_address(address)
             )
 
-    @with_and_without_native
     def test_fast_bytes_to_checksum_address(self):
         with self.assertRaises(ValueError):
             fast_bytes_to_checksum_address(os.urandom(19))
@@ -230,7 +196,6 @@ class TestUtils(EthereumTestCaseMixin, TestCase):
                 fast_bytes_to_checksum_address(address), to_checksum_address(address)
             )
 
-    @with_and_without_native
     def test_fast_is_checksum_address(self):
         self.assertFalse(fast_is_checksum_address(None))
         self.assertFalse(fast_is_checksum_address(""))
@@ -331,37 +296,25 @@ def build_address_values(address_bytes: bytes) -> list:
     ]
 
 
-class TestNativeChecksumAddressCache(unittest.TestCase):
-    def test_one_entry_per_address(self):
-        """
-        Only the 20 bytes form of an address is cached with the native extension, so the
-        same address as bytes, `HexBytes` and text in any case takes one entry at most
-        """
-        _native_bytes_to_checksum_address.cache_clear()
-        address_bytes = os.urandom(20)
-        checksum_address = to_checksum_address(address_bytes)
-        for value in (
-            "0x" + address_bytes.hex(),
-            "0X" + address_bytes.hex().upper(),
-            checksum_address,
-            address_bytes.hex(),
-        ):
-            self.assertEqual(fast_to_checksum_address(value), checksum_address)
-        self.assertEqual(_native_bytes_to_checksum_address.cache_info().currsize, 0)
-        for value in (address_bytes, HexBytes(address_bytes), bytearray(address_bytes)):
-            self.assertEqual(fast_to_checksum_address(value), checksum_address)
-            self.assertEqual(fast_bytes_to_checksum_address(value), checksum_address)
-        self.assertEqual(_native_bytes_to_checksum_address.cache_info().currsize, 1)
+def reference_bytes_to_checksum_address(value: Any) -> ChecksumAddress:
+    """`fast_bytes_to_checksum_address` built on eth-utils, which only takes `bytes`"""
+    if not isinstance(value, bytes) and len(value) == 20:
+        value = bytes(value)
+    if len(value) != 20:
+        raise ValueError(
+            f"Cannot convert {bytes(value).hex()} to a checksum address, 20 bytes were expected"
+        )
+    return to_checksum_address(value)
 
 
-class TestFastHelpersWithAndWithoutNative(unittest.TestCase):
+class TestFastHelpersSameAsReference(unittest.TestCase):
     """
-    The native extension and the Python implementation return the same values, and raise
-    the same errors with the same messages
+    The fast helpers return the same values as pycryptodome and eth-utils, and raise the
+    same errors with the same messages as eth-utils
     """
 
     def test_fast_keccak(self):
-        """`fast_keccak`, `fast_keccak_hex` and `fast_keccak_text` for bytes of every length and for other types"""
+        """`fast_keccak`, `fast_keccak_hex` and `fast_keccak_text` for bytes of every length and other buffers"""
         values = [
             b"",
             b"1234",
@@ -372,20 +325,31 @@ class TestFastHelpersWithAndWithoutNative(unittest.TestCase):
             bytearray(os.urandom(2000)),
             memoryview(bytearray(os.urandom(32))),
             memoryview(os.urandom(32)).cast("I"),
-            memoryview(os.urandom(32))[::2],
             array.array("b", os.urandom(32)),
             array.array("I", os.urandom(32)),
-            "text",
-            None,
-            1,
-            [1, 2],
         ] + [os.urandom(length) for length in range(300)]
         for value in values:
+            with self.subTest(value=value):
+                expected_digest = reference_keccak256(value)
+                self.assertEqual(fast_keccak(value), HexBytes(expected_digest))
+                self.assertIsInstance(fast_keccak(value), HexBytes)
+                self.assertEqual(fast_keccak_hex(value), expected_digest.hex())
+        for text in ("", "chidori", "ñ" * 100):
+            self.assertEqual(fast_keccak_text(text), reference_keccak256(text.encode()))
+
+    def test_fast_keccak_invalid_values(self):
+        """Values that are not a buffer raise `TypeError`, and non contiguous buffers `BufferError`"""
+        for value, error in (
+            ("text", TypeError),
+            (None, TypeError),
+            (1, TypeError),
+            ([1, 2], TypeError),
+            (memoryview(os.urandom(32))[::2], BufferError),
+        ):
             for function in (fast_keccak, fast_keccak_hex):
                 with self.subTest(function=function.__name__, value=value):
-                    assert_same_outcome_with_and_without_native(self, function, value)
-        for text in ("", "chidori", "ñ" * 100):
-            assert_same_outcome_with_and_without_native(self, fast_keccak_text, text)
+                    with self.assertRaises(error):
+                        function(value)
 
     def test_checksum_address_helpers(self):
         """The checksum helpers for every form of an address and for invalid values"""
@@ -393,9 +357,19 @@ class TestFastHelpersWithAndWithoutNative(unittest.TestCase):
             os.urandom(20) for _ in range(300)
         ]:
             for value in build_address_values(address_bytes):
-                for function in (
-                    fast_to_checksum_address,
+                if isinstance(value, bytes) and len(value) != 20:
+                    with self.assertRaisesRegex(ValueError, "20 bytes were expected"):
+                        fast_to_checksum_address(value)
+                else:
+                    assert_same_outcome_as_reference(
+                        self, fast_to_checksum_address, to_checksum_address, value
+                    )
+                assert_same_outcome_as_reference(
+                    self,
                     fast_bytes_to_checksum_address,
-                    fast_is_checksum_address,
-                ):
-                    assert_same_outcome_with_and_without_native(self, function, value)
+                    reference_bytes_to_checksum_address,
+                    value,
+                )
+                assert_same_outcome_as_reference(
+                    self, fast_is_checksum_address, is_checksum_address, value
+                )

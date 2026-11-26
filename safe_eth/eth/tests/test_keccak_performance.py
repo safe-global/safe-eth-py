@@ -5,18 +5,17 @@ from eth_utils import keccak
 from web3 import Web3
 
 from safe_eth.eth.utils import fast_keccak
-from safe_eth.util.tests.native_test_utils import without_native
+from safe_eth.util.tests.native_test_utils import eth_hash_backend
 
 # Define the message sizes (parameters)
 TEST_SIZES = [16, 1024, 64 * 1024, 1024 * 1024]
 
 
-# --- 1. Data Fixture (Forces Cache Miss) ---
+# --- 1. Data Fixture ---
 @pytest.fixture(scope="function", params=TEST_SIZES)
 def random_data(request):
     """
     Fixture that yields a new, random byte string for each test parameter.
-    This guarantees a cache miss for fast_keccak on every run.
     """
     size = request.param
     name = f"{size // 1024}KB" if size >= 1024 else f"{size}B"
@@ -30,8 +29,8 @@ def test_keccak_web3_py(benchmark, random_data):
     name, data = random_data
     # Group results by the input size name
     benchmark.group = f"Keccak-{name}"
-    # With its own eth-hash backend, as the native extension replaces it when installed
-    with without_native():
+    # With its own eth-hash backend, as safe-eth-py replaces it with the native one
+    with eth_hash_backend():
         benchmark(Web3.keccak, data)
 
 
@@ -39,8 +38,8 @@ def test_keccak_eth_utils(benchmark, random_data):
     name, data = random_data
     # Group results by the input size name
     benchmark.group = f"Keccak-{name}"
-    # With its own eth-hash backend, as the native extension replaces it when installed
-    with without_native():
+    # With its own eth-hash backend, as safe-eth-py replaces it with the native one
+    with eth_hash_backend():
         benchmark(keccak, data)
 
 
