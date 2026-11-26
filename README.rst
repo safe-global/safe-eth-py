@@ -27,7 +27,8 @@ and ``eth-account``, unless ``ETH_HASH_BACKEND`` selects an ``eth-hash`` backend
 published for Linux (glibc 2.28 or newer, or musl), macOS and Windows; on other platforms pip
 builds it from source, which needs a Rust toolchain and a C compiler. See `native/README.md
 <https://github.com/safe-global/safe-eth-py/blob/main/native/README.md>`_.
-``ETH_HASH_BACKEND=pysha3`` is not supported: pysha3 is not installed with safe-eth-py.
+``ETH_HASH_BACKEND=pysha3`` is not supported: pysha3 is not installed with safe-eth-py, so
+``import safe_eth`` fails with it.
 
 If you have issues building **coincurve** maybe
 `you are missing some libraries <https://ofek.dev/coincurve/install/#source>`_

@@ -13,6 +13,10 @@ from eth_hash.auto import keccak as eth_hash_keccak
 eth_hash_backend_hasher = eth_hash_keccak.hasher
 eth_hash_backend_preimage = eth_hash_keccak.preimage
 
+EMPTY_INPUT_KECCAK256 = bytes.fromhex(
+    "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+)
+
 
 class NativeKeccakPreimage(PreImageAPI):
     """
@@ -37,16 +41,33 @@ class NativeKeccakPreimage(PreImageAPI):
         return NativeKeccakPreimage(self._data)
 
 
+def check_native_keccak256() -> None:
+    """
+    :raises ImportError: if the native keccak256 of an empty input is wrong, as all the
+        hashes of the process would be wrong too
+    """
+    if safe_eth_native.keccak256(b"") != EMPTY_INPUT_KECCAK256:
+        raise ImportError(
+            "safe-eth-native keccak256 returns wrong digests, reinstall safe-eth-native"
+        )
+
+
 def use_native_keccak_in_eth_hash() -> None:
     """
     Make the native keccak256 the one of eth-hash, for ``keccak()`` and ``keccak.new()``,
     so web3, eth-utils and eth-account use it, unless ``ETH_HASH_BACKEND`` selects an
     eth-hash backend. eth-hash cannot register a new backend, so its ``hasher`` and
     ``preimage`` attributes are replaced.
+
+    :raises ImportError: if the backend set in ``ETH_HASH_BACKEND`` is not installed.
+        eth-hash loads and checks its backend on the first hash, so it is done here
     """
-    if not os.getenv("ETH_HASH_BACKEND"):
+    if os.getenv("ETH_HASH_BACKEND"):
+        eth_hash_keccak(b"")
+    else:
         eth_hash_keccak.hasher = safe_eth_native.keccak256  # type: ignore[assignment]
         eth_hash_keccak.preimage = NativeKeccakPreimage  # type: ignore[assignment]
 
 
+check_native_keccak256()
 use_native_keccak_in_eth_hash()

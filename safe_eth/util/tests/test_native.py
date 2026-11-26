@@ -31,6 +31,50 @@ class TestNativeKeccakInEthHash(TestCase):
         }
         subprocess.run([sys.executable, "-c", check_code], check=True, env=environment)
 
+    def test_import_safe_eth_with_eth_hash_backend_env(self):
+        """
+        `import safe_eth` fails if the backend in `ETH_HASH_BACKEND` is not installed,
+        instead of the first hash, and works with one that is installed
+        """
+        environment = dict(os.environ)
+        for eth_hash_backend_name, check_code in (
+            ("pysha3", "import safe_eth"),
+            (
+                "pycryptodome",
+                "import safe_eth, safe_eth_native\n"
+                "from eth_hash.auto import keccak\n"
+                "assert keccak.hasher is not safe_eth_native.keccak256\n",
+            ),
+        ):
+            environment["ETH_HASH_BACKEND"] = eth_hash_backend_name
+            with self.subTest(eth_hash_backend_name=eth_hash_backend_name):
+                process = subprocess.run(
+                    [sys.executable, "-c", check_code],
+                    env=environment,
+                    capture_output=True,
+                    text=True,
+                )
+                if eth_hash_backend_name == "pysha3":
+                    self.assertNotEqual(process.returncode, 0)
+                    self.assertIn(
+                        "ImportError: The backend specified in ETH_HASH_BACKEND, "
+                        "'pysha3', is not installed",
+                        process.stderr,
+                    )
+                else:
+                    self.assertEqual(process.returncode, 0, process.stderr)
+
+    def test_wrong_native_keccak256_fails(self):
+        """A native keccak256 with wrong digests raises, so `import safe_eth` fails"""
+        native.check_native_keccak256()
+        with mock.patch.object(
+            native.safe_eth_native, "keccak256", return_value=bytes(32)
+        ):
+            with self.assertRaisesRegex(
+                ImportError, "safe-eth-native keccak256 returns wrong digests"
+            ):
+                native.check_native_keccak256()
+
     def test_eth_hash_new_same_digests_as_pycryptodome(self):
         """
         `keccak.new()` gives the pycryptodome digests after each update, for `bytes`,
@@ -93,7 +137,10 @@ class TestNativeKeccakInEthHash(TestCase):
                     eth_hash_keccak(value)
 
     def test_eth_hash_backend_env_is_respected(self):
-        """`ETH_HASH_BACKEND` leaves the eth-hash backend as it is"""
+        """
+        `ETH_HASH_BACKEND` leaves the eth-hash backend as it is, and it hashes once so
+        eth-hash loads its backend
+        """
         with (
             mock.patch.object(eth_hash_keccak, "hasher") as hasher,
             mock.patch.object(eth_hash_keccak, "preimage") as preimage,
@@ -102,6 +149,7 @@ class TestNativeKeccakInEthHash(TestCase):
             native.use_native_keccak_in_eth_hash()
             self.assertIs(eth_hash_keccak.hasher, hasher)
             self.assertIs(eth_hash_keccak.preimage, preimage)
+            hasher.assert_called_once_with(b"")
         # Without `ETH_HASH_BACKEND` they are replaced, so the check above can fail
         with (
             mock.patch.object(eth_hash_keccak, "hasher"),
