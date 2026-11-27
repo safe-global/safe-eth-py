@@ -343,10 +343,13 @@ safe-eth-py and required by it. `fast_keccak`, the checksum helpers, `get_signin
 
 **Rules**:
 - A helper gives the same result as its reference implementation (eth-utils, eth-keys,
-  pycryptodome, the Python P-256 code), including the error type and message. Inputs the native
-  function does not take go to the Python code (eth-keys for `get_signing_address`)
+  pycryptodome), including the error type and message. Inputs the native function does not take
+  are converted first (`to_normalized_address`, `operator.index`); `get_signing_address` sends
+  them to eth-keys
 - Tests compare the helpers with the reference using `assert_same_outcome_as_reference`
-  (`safe_eth/util/tests/native_test_utils.py`)
+  (`safe_eth/util/tests/native_test_utils.py`). `p256.verify` has no Python reference:
+  `native/tests` checks the native function, and `test_p256.py` checks only the integer
+  conversion and the message hash modulo n
 - `native/tests` checks the extension against reference implementations and published vectors,
   see `native/README.md`
 

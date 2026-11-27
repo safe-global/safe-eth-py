@@ -5,7 +5,7 @@ Native (Rust) versions of the hot paths of [safe-eth-py](https://github.com/safe
 | Function | Replaces | Backed by |
 | --- | --- | --- |
 | `ecrecover(message_hash, v, r, s) -> bytes \| None` | eth-keys `ecdsa_recover` | [libsecp256k1](https://github.com/bitcoin-core/secp256k1) |
-| `p256_verify(message_hash, r, s, public_key_x, public_key_y) -> bool` | `safe_eth.safe.p256.verify` | RustCrypto [`p256`](https://github.com/RustCrypto/elliptic-curves) |
+| `p256_verify(message_hash, r, s, public_key_x, public_key_y) -> bool` | the pure Python P-256 verifier that `safe_eth.safe.p256` used to have | RustCrypto [`p256`](https://github.com/RustCrypto/elliptic-curves) |
 | `keccak256(data) -> bytes` | the eth-hash backend (pycryptodome) | [`tiny-keccak`](https://github.com/debris/tiny-keccak) |
 | `to_checksum_address(value) -> str` | `fast_to_checksum_address` | |
 | `is_checksum_address(value) -> bool` | `fast_is_checksum_address` | |
