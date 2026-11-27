@@ -191,6 +191,12 @@ To work with Multisig Transactions:
   safe_tx.call()  # Check it works
   safe_tx.execute(tx_sender_private_key)
 
+When you later send the outer Ethereum transaction that delivers a signed Safe transaction
+(for example through ``web3`` ``TxParams``), an EIP-2930 ``accessList`` can reduce gas for
+calls that touch many storage slots. It is optional, not required for every Safe. See
+`EIP-2930 access lists <https://ethereum.stackexchange.com/questions/123750/how-to-implement-eip-2930-access-list>`_
+and the `EIP-2929 gas schedule <https://github.com/folia-app/eip-2929>`_ for background.
+
 To interact with the Transaction Service API:
 
 .. code-block:: python
